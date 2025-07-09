@@ -1,0 +1,447 @@
+# ===================================
+# G3DAI Comprehensive .gitignore
+# Multi-Service AI Platform Repository
+# ===================================
+
+# ===================================
+# NODE.JS & NPM
+# ===================================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+.npm
+.yarn-integrity
+.pnp
+.pnp.js
+
+# Package lock files (choose one strategy)
+# Option 1: Include lock files for reproducible builds
+# package-lock.json
+# yarn.lock
+# Option 2: Exclude lock files (uncomment if needed)
+# package-lock.json
+# yarn.lock
+
+# ===================================
+# NEXT.JS & REACT
+# ===================================
+.next/
+out/
+build/
+dist/
+.vercel
+.turbo
+
+# Next.js build output
+.next/
+out/
+
+# Nuxt.js build / generate output
+.nuxt
+dist
+
+# Gatsby files
+.cache/
+public
+
+# Storybook build outputs
+.out
+.storybook-out
+storybook-static
+
+# ===================================
+# TYPESCRIPT & JAVASCRIPT
+# ===================================
+*.tsbuildinfo
+.eslintcache
+*.js.map
+*.d.ts.map
+
+# TypeScript cache
+*.tscache
+
+# ===================================
+# AI PLATFORMS SPECIFIC
+# ===================================
+
+# AI Platform builds
+ai-platforms/*/build/
+ai-platforms/*/dist/
+ai-platforms/*/.next/
+ai-platforms/*/out/
+ai-platforms/*/node_modules/
+
+# AI Model files (large binary files)
+*.h5
+*.pb
+*.onnx
+*.tflite
+*.mlmodel
+*.coreml
+*.pth
+*.pt
+*.safetensors
+*.bin
+*.model
+*.pkl
+*.joblib
+
+# Training data and datasets
+ai-platforms/*/data/
+ai-platforms/*/datasets/
+ai-platforms/*/training-data/
+ai-platforms/*/models/checkpoints/
+ai-platforms/*/models/weights/
+
+# AI Platform specific temp files
+ai-platforms/*/temp/
+ai-platforms/*/tmp/
+ai-platforms/*/cache/
+ai-platforms/*/.cache/
+
+# ===================================
+# BACKEND SERVICES
+# ===================================
+
+# Backend builds
+backend/*/build/
+backend/*/dist/
+backend/*/target/
+backend/*/node_modules/
+
+# API documentation builds
+backend/*/docs/build/
+backend/*/api-docs/
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+*.db-journal
+
+# Backend logs
+backend/*/logs/
+backend/*/*.log
+
+# ===================================
+# DEPLOYMENT & INFRASTRUCTURE
+# ===================================
+
+# Docker
+.dockerignore
+Dockerfile.dev
+docker-compose.override.yml
+docker-compose.local.yml
+
+# Kubernetes secrets
+deployment/k8s/secrets/
+deployment/k8s/*/secrets/
+deployment/helm/*/secrets/
+*.secret.yaml
+*.secret.yml
+
+# Terraform
+deployment/terraform/*.tfstate
+deployment/terraform/*.tfstate.*
+deployment/terraform/.terraform/
+deployment/terraform/.terraform.lock.hcl
+deployment/terraform/terraform.tfvars
+deployment/terraform/*.tfplan
+
+# Ansible
+deployment/ansible/inventory/hosts
+deployment/ansible/group_vars/*/vault.yml
+deployment/ansible/*.retry
+
+# Cloud provider configs
+.aws/
+.gcp/
+.azure/
+
+# ===================================
+# SHARED COMPONENTS
+# ===================================
+
+# Shared builds
+shared/*/build/
+shared/*/dist/
+shared/*/node_modules/
+shared/*/.next/
+
+# Shared UI component builds
+shared/ui/storybook-static/
+shared/ui/.storybook-out/
+
+# ===================================
+# ENVIRONMENT & SECRETS
+# ===================================
+
+# Environment files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env.*.local
+
+# API Keys and secrets
+.secrets/
+secrets/
+*.key
+*.pem
+*.p12
+*.pfx
+*.crt
+*.cer
+*.der
+
+# Service account files
+*-service-account.json
+*-credentials.json
+gcp-key.json
+aws-credentials.json
+
+# ===================================
+# DEVELOPMENT TOOLS
+# ===================================
+
+# IDE files
+.vscode/settings.json
+.vscode/launch.json
+.vscode/extensions.json
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# ===================================
+# TESTING & COVERAGE
+# ===================================
+
+# Test results
+coverage/
+*.lcov
+.nyc_output
+.coverage
+htmlcov/
+.pytest_cache/
+.tox/
+.nox/
+
+# Jest
+jest-coverage/
+test-results/
+*.test.js.snap
+
+# ===================================
+# LOGS & MONITORING
+# ===================================
+
+# Application logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Monitoring and profiling
+.clinic/
+.0x/
+profile-*
+
+# ===================================
+# TEMPORARY & CACHE FILES
+# ===================================
+
+# Temporary folders
+tmp/
+temp/
+.tmp/
+.temp/
+
+# Cache directories
+.cache/
+.parcel-cache/
+.rpt2_cache/
+.rts2_cache_cjs/
+.rts2_cache_es/
+.rts2_cache_umd/
+
+# Optional npm cache directory
+.npm
+
+# Optional eslint cache
+.eslintcache
+
+# Optional stylelint cache
+.stylelintcache
+
+# ===================================
+# AI/ML SPECIFIC
+# ===================================
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+*/.ipynb_checkpoints/*
+
+# IPython
+profile_default/
+ipython_config.py
+
+# PyTorch
+*.pth
+*.pt
+
+# TensorFlow
+*.pb
+*.h5
+*.hdf5
+checkpoint
+*.ckpt
+*.ckpt.*
+model.ckpt.*
+
+# Weights & Biases
+wandb/
+
+# MLflow
+mlruns/
+mlartifacts/
+
+# DVC (Data Version Control)
+.dvc/
+.dvcignore
+
+# ===================================
+# DOCUMENTATION
+# ===================================
+
+# Generated documentation
+docs/build/
+docs/_build/
+docs/site/
+site/
+
+# Sphinx documentation
+docs/_build/
+docs/_static/
+docs/_templates/
+
+# MkDocs
+site/
+
+# ===================================
+# PLATFORM SPECIFIC IGNORES
+# ===================================
+
+# AnnotateAI specific
+ai-platforms/annotateai/uploads/
+ai-platforms/annotateai/annotations/
+ai-platforms/annotateai/exports/
+
+# MedSight Pro specific
+ai-platforms/medsight-pro/dicom-cache/
+ai-platforms/medsight-pro/processed-images/
+
+# BioAI specific
+ai-platforms/bioai/analysis-results/
+ai-platforms/bioai/genomic-data/
+
+# NeuroAI specific
+ai-platforms/neuroai/brain-scans/
+ai-platforms/neuroai/eeg-data/
+
+# VideoAI specific
+ai-platforms/videoai/video-cache/
+ai-platforms/videoai/processed-videos/
+
+# VoiceAI specific
+ai-platforms/voiceai/audio-cache/
+ai-platforms/voiceai/voice-models/
+
+# ===================================
+# BACKUP & ARCHIVE FILES
+# ===================================
+
+# Backup files
+*.bak
+*.backup
+*.old
+*.orig
+*.save
+*.swp
+*.tmp
+
+# Archive files
+*.tar
+*.tar.gz
+*.tgz
+*.zip
+*.rar
+*.7z
+
+# ===================================
+# CUSTOM G3DAI IGNORES
+# ===================================
+
+# G3D Engine builds
+g3d-engine/build/
+g3d-engine/dist/
+
+# Performance benchmarks
+benchmarks/results/
+performance-tests/outputs/
+
+# User-generated content
+user-uploads/
+user-data/
+customer-data/
+
+# Analytics and metrics
+analytics-data/
+metrics/
+telemetry/
+
+# License files (if sensitive)
+# licenses/
+# *.license
+
+# ===================================
+# OPTIONAL: UNCOMMENT IF NEEDED
+# ===================================
+
+# Uncomment if you want to ignore all log files
+# *.log
+
+# Uncomment if you want to ignore all environment files
+# .env*
+
+# Uncomment if you want to ignore all build directories
+# build/
+# dist/
+
+# Uncomment if you want to ignore all node_modules
+# **/node_modules/
+
+# ===================================
+# END OF .gitignore
+# =================================== 

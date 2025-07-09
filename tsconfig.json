@@ -1,0 +1,46 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "lib": ["DOM", "DOM.Iterable", "ES6"],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": false,
+    "forceConsistentCasingInFileNames": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "module": "ESNext",
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "react-jsx",
+    "baseUrl": ".",
+    "paths": {
+      "@shared/*": ["shared/*"],
+      "@shared/ui/*": ["shared/ui/src/*"],
+      "@shared/api/*": ["shared/api-gateway/src/*"],
+      "@backend/*": ["backend/src/*"],
+      "@infrastructure/*": ["infrastructure/*"],
+      "@deployment/*": ["deployment/*"],
+      "@core/*": ["core/*"]
+    }
+  },
+  "include": [
+    "ai-platforms/**/*.ts",
+    "ai-platforms/**/*.tsx",
+    "shared/**/*.ts",
+    "shared/**/*.tsx",
+    "backend/**/*.ts",
+    "backend/**/*.tsx",
+    "infrastructure/**/*.ts",
+    "infrastructure/**/*.tsx",
+    "core/**/*.ts",
+    "core/**/*.tsx"
+  ],
+  "exclude": [
+    "node_modules",
+    "**/*.d.ts",
+    "**/dist/**",
+    "**/build/**",
+    "**/.next/**"
+  ]
+} 

@@ -1,0 +1,41 @@
+{
+  "name": "@g3d/g3dai-monorepo",
+  "version": "1.0.0",
+  "description": "G3DAI - Multi-Platform AI Services Suite",
+  "private": true,
+  "workspaces": [
+    "ai-platforms/*",
+    "shared/*",
+    "backend/*",
+    "infrastructure/*"
+  ],
+  "scripts": {
+    "type-check": "tsc --noEmit",
+    "type-check:all": "tsc --build",
+    "type-check:platforms": "npm run type-check --workspaces --if-present",
+    "build:all": "npm run build --workspaces --if-present",
+    "dev:annotateai": "npm run dev --workspace=ai-platforms/annotateai",
+    "dev:medsight": "npm run dev --workspace=ai-platforms/medsight-pro",
+    "dev:bioai": "npm run dev --workspace=ai-platforms/bioai",
+    "dev:neuroai": "npm run dev --workspace=ai-platforms/neuroai",
+    "test:all": "npm run test --workspaces --if-present",
+    "lint:all": "npm run lint --workspaces --if-present",
+    "clean": "rm -rf node_modules && rm -rf ai-platforms/*/node_modules && rm -rf shared/*/node_modules",
+    "install:all": "npm install && npm install --workspaces",
+    "setup": "npm run install:all && npm run type-check:all"
+  },
+  "devDependencies": {
+    "@types/node": "^20.19.6",
+    "typescript": "^5.8.3"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/g3d/g3dai.git"
+  },
+  "author": "G3D Team",
+  "license": "MIT"
+}
