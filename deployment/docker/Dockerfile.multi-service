@@ -1,0 +1,158 @@
+# Multi-stage Dockerfile for G3D AI Services
+# This template can be used for all 16 services with ARG customization
+
+# Build stage
+FROM node:18-alpine AS builder
+
+# Set build arguments
+ARG SERVICE_NAME
+ARG SERVICE_PORT=3000
+
+# Install build dependencies
+RUN apk add --no-cache \
+    python3 \
+    make \
+    g++ \
+    cairo-dev \
+    jpeg-dev \
+    pango-dev \
+    musl-dev \
+    giflib-dev \
+    pixman-dev \
+    pangomm-dev \
+    libjpeg-turbo-dev \
+    freetype-dev
+
+# Set working directory
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+COPY shared/package*.json ./shared/
+COPY ${SERVICE_NAME}/package*.json ./${SERVICE_NAME}/
+
+# Install dependencies
+RUN npm ci --only=production --no-audit --no-fund
+
+# Copy source code
+COPY shared/ ./shared/
+COPY ${SERVICE_NAME}/ ./${SERVICE_NAME}/
+COPY backend/ ./backend/
+
+# Build the application
+WORKDIR /app/${SERVICE_NAME}
+RUN npm run build
+
+# Production stage
+FROM node:18-alpine AS production
+
+# Set production arguments
+ARG SERVICE_NAME
+ARG SERVICE_PORT=3000
+ARG NODE_ENV=production
+
+# Install runtime dependencies
+RUN apk add --no-cache \
+    cairo \
+    jpeg \
+    pango \
+    musl \
+    giflib \
+    pixman \
+    pangomm \
+    libjpeg-turbo \
+    freetype \
+    dumb-init \
+    && addgroup -g 1001 -S nodejs \
+    && adduser -S g3d -u 1001
+
+# Set environment variables
+ENV NODE_ENV=${NODE_ENV}
+ENV PORT=${SERVICE_PORT}
+ENV SERVICE_NAME=${SERVICE_NAME}
+
+# Create app directory
+WORKDIR /app
+
+# Copy built application from builder stage
+COPY --from=builder --chown=g3d:nodejs /app/${SERVICE_NAME}/dist ./dist
+COPY --from=builder --chown=g3d:nodejs /app/${SERVICE_NAME}/package*.json ./
+COPY --from=builder --chown=g3d:nodejs /app/node_modules ./node_modules
+COPY --from=builder --chown=g3d:nodejs /app/shared ./shared
+
+# Copy health check script
+COPY deployment/scripts/health-check.js ./health-check.js
+
+# Create logs directory
+RUN mkdir -p /app/logs && chown -R g3d:nodejs /app/logs
+
+# Switch to non-root user
+USER g3d
+
+# Expose port
+EXPOSE ${SERVICE_PORT}
+
+# Add health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+    CMD node health-check.js || exit 1
+
+# Use dumb-init to handle signals properly
+ENTRYPOINT ["dumb-init", "--"]
+
+# Start the application
+CMD ["node", "dist/index.js"]
+
+# GPU-enabled stage for AI services
+FROM nvidia/cuda:11.8-runtime-ubuntu20.04 AS gpu-production
+
+# Install Node.js
+RUN apt-get update && apt-get install -y \
+    curl \
+    && curl -fsSL https://deb.nodesource.com/setup_18.x | bash - \
+    && apt-get install -y nodejs \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Set production arguments
+ARG SERVICE_NAME
+ARG SERVICE_PORT=3000
+ARG NODE_ENV=production
+
+# Set environment variables
+ENV NODE_ENV=${NODE_ENV}
+ENV PORT=${SERVICE_PORT}
+ENV SERVICE_NAME=${SERVICE_NAME}
+ENV NVIDIA_VISIBLE_DEVICES=all
+ENV NVIDIA_DRIVER_CAPABILITIES=compute,utility
+
+# Create non-root user
+RUN groupadd -g 1001 nodejs \
+    && useradd -r -u 1001 -g nodejs g3d
+
+# Create app directory
+WORKDIR /app
+
+# Copy built application from builder stage
+COPY --from=builder --chown=g3d:nodejs /app/${SERVICE_NAME}/dist ./dist
+COPY --from=builder --chown=g3d:nodejs /app/${SERVICE_NAME}/package*.json ./
+COPY --from=builder --chown=g3d:nodejs /app/node_modules ./node_modules
+COPY --from=builder --chown=g3d:nodejs /app/shared ./shared
+
+# Copy health check script
+COPY deployment/scripts/health-check.js ./health-check.js
+
+# Create logs directory
+RUN mkdir -p /app/logs && chown -R g3d:nodejs /app/logs
+
+# Switch to non-root user
+USER g3d
+
+# Expose port
+EXPOSE ${SERVICE_PORT}
+
+# Add health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=120s --retries=3 \
+    CMD node health-check.js || exit 1
+
+# Start the application
+CMD ["node", "dist/index.js"]
