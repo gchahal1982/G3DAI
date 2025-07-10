@@ -1,0 +1,400 @@
+# G3DAI Production Docker Compose
+# Multi-service deployment for AnnotateAI and MedSight Pro platforms
+
+version: '3.8'
+
+services:
+  # AnnotateAI Platform
+  annotateai:
+    build:
+      context: ../../ai-platforms/annotateai
+      dockerfile: Dockerfile
+    container_name: g3dai-annotateai
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - DATABASE_URL=postgresql://annotateai:${ANNOTATEAI_DB_PASSWORD}@postgres:5432/annotateai
+      - REDIS_URL=redis://redis:6379/0
+      - ML_COMPUTE_ENDPOINT=http://ml-compute:8000
+      - MONITORING_ENDPOINT=http://monitoring:9090
+    depends_on:
+      - postgres
+      - redis
+      - ml-compute
+    networks:
+      - g3dai-network
+    volumes:
+      - annotateai-data:/app/data
+      - shared-models:/app/models
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.annotateai.rule=Host(`annotateai.g3dai.com`)"
+      - "traefik.http.routers.annotateai.tls=true"
+      - "traefik.http.routers.annotateai.tls.certresolver=letsencrypt"
+      - "traefik.http.services.annotateai.loadbalancer.server.port=3000"
+    deploy:
+      replicas: 3
+      resources:
+        limits:
+          cpus: '2'
+          memory: 4G
+        reservations:
+          cpus: '1'
+          memory: 2G
+      update_config:
+        parallelism: 1
+        delay: 10s
+        order: start-first
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+
+  # MedSight Pro Platform
+  medsight-pro:
+    build:
+      context: ../../ai-platforms/medsight-pro
+      dockerfile: Dockerfile
+    container_name: g3dai-medsight-pro
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - DATABASE_URL=postgresql://medsight:${MEDSIGHT_DB_PASSWORD}@postgres:5432/medsight
+      - REDIS_URL=redis://redis:6379/1
+      - DICOM_STORAGE_PATH=/app/dicom-storage
+      - HIPAA_AUDIT_ENABLED=true
+      - MEDICAL_COMPLIANCE_MODE=true
+      - ENCRYPTION_LEVEL=enhanced
+      - MONITORING_ENDPOINT=http://monitoring:9090
+    depends_on:
+      - postgres
+      - redis
+      - medical-compute
+    networks:
+      - g3dai-network
+      - medical-network
+    volumes:
+      - medsight-data:/app/data
+      - dicom-storage:/app/dicom-storage
+      - medical-models:/app/models
+      - hipaa-audit-logs:/app/logs
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.medsight.rule=Host(`medsight.g3dai.com`)"
+      - "traefik.http.routers.medsight.tls=true"
+      - "traefik.http.routers.medsight.tls.certresolver=letsencrypt"
+      - "traefik.http.services.medsight.loadbalancer.server.port=3000"
+    deploy:
+      replicas: 2
+      resources:
+        limits:
+          cpus: '4'
+          memory: 8G
+        reservations:
+          cpus: '2'
+          memory: 4G
+      update_config:
+        parallelism: 1
+        delay: 15s
+        order: start-first
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+
+  # Load Balancer (Traefik)
+  traefik:
+    image: traefik:v3.0
+    container_name: g3dai-traefik
+    restart: unless-stopped
+    command:
+      - --api.dashboard=true
+      - --api.insecure=true
+      - --providers.docker=true
+      - --providers.docker.exposedbydefault=false
+      - --entrypoints.web.address=:80
+      - --entrypoints.websecure.address=:443
+      - --certificatesresolvers.letsencrypt.acme.tlschallenge=true
+      - --certificatesresolvers.letsencrypt.acme.email=admin@g3dai.com
+      - --certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json
+      - --metrics.prometheus=true
+      - --metrics.prometheus.addEntryPointsLabels=true
+      - --metrics.prometheus.addServicesLabels=true
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8080:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - letsencrypt:/letsencrypt
+    networks:
+      - g3dai-network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+
+  # Database (PostgreSQL)
+  postgres:
+    image: postgres:15-alpine
+    container_name: g3dai-postgres
+    restart: unless-stopped
+    environment:
+      - POSTGRES_DB=g3dai
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+    networks:
+      - g3dai-network
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 4G
+        reservations:
+          cpus: '1'
+          memory: 2G
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: g3dai-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD}
+    volumes:
+      - redis-data:/data
+    networks:
+      - g3dai-network
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1G
+
+  # ML Compute Service
+  ml-compute:
+    image: g3dai/ml-compute:latest
+    container_name: g3dai-ml-compute
+    restart: unless-stopped
+    environment:
+      - COMPUTE_MODE=distributed
+      - GPU_ENABLED=true
+      - MAX_WORKERS=4
+    volumes:
+      - shared-models:/models
+      - ml-compute-cache:/cache
+    networks:
+      - g3dai-network
+    deploy:
+      resources:
+        limits:
+          cpus: '4'
+          memory: 8G
+        reservations:
+          cpus: '2'
+          memory: 4G
+      placement:
+        constraints:
+          - node.labels.gpu==true
+
+  # Medical Compute Service (HIPAA Compliant)
+  medical-compute:
+    image: g3dai/medical-compute:latest
+    container_name: g3dai-medical-compute
+    restart: unless-stopped
+    environment:
+      - COMPUTE_MODE=secure
+      - HIPAA_COMPLIANCE=true
+      - ENCRYPTION_AT_REST=true
+      - AUDIT_LOGGING=true
+    volumes:
+      - medical-models:/models
+      - medical-compute-cache:/cache
+      - hipaa-audit-logs:/logs
+    networks:
+      - g3dai-network
+      - medical-network
+    deploy:
+      resources:
+        limits:
+          cpus: '6'
+          memory: 12G
+        reservations:
+          cpus: '3'
+          memory: 6G
+      placement:
+        constraints:
+          - node.labels.medical==true
+
+  # Monitoring (Prometheus)
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: g3dai-prometheus
+    restart: unless-stopped
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=200h'
+      - '--web.enable-lifecycle'
+    volumes:
+      - ../monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus-data:/prometheus
+    ports:
+      - "9090:9090"
+    networks:
+      - g3dai-network
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 2G
+
+  # Monitoring Dashboard (Grafana)
+  grafana:
+    image: grafana/grafana:latest
+    container_name: g3dai-grafana
+    restart: unless-stopped
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD}
+      - GF_USERS_ALLOW_SIGN_UP=false
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ../monitoring/grafana-datasources.yml:/etc/grafana/provisioning/datasources/datasources.yml
+    ports:
+      - "3001:3000"
+    networks:
+      - g3dai-network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+
+  # Log Aggregation (ELK Stack)
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.8.0
+    container_name: g3dai-elasticsearch
+    restart: unless-stopped
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
+    volumes:
+      - elasticsearch-data:/usr/share/elasticsearch/data
+    networks:
+      - g3dai-network
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 4G
+
+  # Log Processing (Logstash)
+  logstash:
+    image: docker.elastic.co/logstash/logstash:8.8.0
+    container_name: g3dai-logstash
+    restart: unless-stopped
+    volumes:
+      - ../monitoring/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
+    depends_on:
+      - elasticsearch
+    networks:
+      - g3dai-network
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1G
+
+  # Log Visualization (Kibana)
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.8.0
+    container_name: g3dai-kibana
+    restart: unless-stopped
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    ports:
+      - "5601:5601"
+    depends_on:
+      - elasticsearch
+    networks:
+      - g3dai-network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 1G
+
+networks:
+  g3dai-network:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.20.0.0/16
+  medical-network:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.21.0.0/16
+    labels:
+      - "hipaa.compliant=true"
+
+volumes:
+  # Application Data
+  annotateai-data:
+    driver: local
+  medsight-data:
+    driver: local
+  dicom-storage:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /mnt/secure-medical-storage
+  
+  # Database & Cache
+  postgres-data:
+    driver: local
+  redis-data:
+    driver: local
+  
+  # ML Models & Compute
+  shared-models:
+    driver: local
+  medical-models:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /mnt/secure-medical-models
+  ml-compute-cache:
+    driver: local
+  medical-compute-cache:
+    driver: local
+  
+  # Monitoring & Logs
+  prometheus-data:
+    driver: local
+  grafana-data:
+    driver: local
+  elasticsearch-data:
+    driver: local
+  hipaa-audit-logs:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /mnt/secure-audit-logs
+  
+  # SSL Certificates
+  letsencrypt:
+    driver: local 

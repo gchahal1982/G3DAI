@@ -1,0 +1,291 @@
+# Prometheus Configuration for G3DAI Production Monitoring
+# Monitors AnnotateAI, MedSight Pro, and infrastructure components
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    cluster: 'g3dai-production'
+    replica: 'prometheus-1'
+
+# Alertmanager configuration
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+          - alertmanager:9093
+
+# Load alerting rules
+rule_files:
+  - "alerts/g3dai-alerts.yml"
+  - "alerts/infrastructure-alerts.yml"
+  - "alerts/medical-compliance-alerts.yml"
+
+# Scrape configurations
+scrape_configs:
+  # Prometheus self-monitoring
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+    scrape_interval: 10s
+    metrics_path: '/metrics'
+
+  # AnnotateAI Platform Monitoring
+  - job_name: 'annotateai'
+    static_configs:
+      - targets: ['annotateai:3000']
+    metrics_path: '/api/metrics'
+    scrape_interval: 10s
+    params:
+      module: ['annotateai']
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: annotateai:3000
+    metric_relabel_configs:
+      - source_labels: [__name__]
+        regex: 'annotateai_.*'
+        target_label: platform
+        replacement: 'annotateai'
+
+  # MedSight Pro Platform Monitoring
+  - job_name: 'medsight-pro'
+    static_configs:
+      - targets: ['medsight-pro:3000']
+    metrics_path: '/api/metrics/medical'
+    scrape_interval: 10s
+    params:
+      module: ['medsight']
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: medsight-pro:3000
+    metric_relabel_configs:
+      - source_labels: [__name__]
+        regex: 'medsight_.*'
+        target_label: platform
+        replacement: 'medsight-pro'
+      - source_labels: [__name__]
+        regex: 'hipaa_.*'
+        target_label: compliance
+        replacement: 'hipaa'
+
+  # ML Compute Service Monitoring
+  - job_name: 'ml-compute'
+    static_configs:
+      - targets: ['ml-compute:8000']
+    metrics_path: '/metrics'
+    scrape_interval: 5s
+    params:
+      format: ['prometheus']
+    metric_relabel_configs:
+      - source_labels: [__name__]
+        regex: 'ml_.*'
+        target_label: service
+        replacement: 'ml-compute'
+      - source_labels: [__name__]
+        regex: 'gpu_.*'
+        target_label: resource
+        replacement: 'gpu'
+
+  # Medical Compute Service Monitoring (HIPAA Compliant)
+  - job_name: 'medical-compute'
+    static_configs:
+      - targets: ['medical-compute:8000']
+    metrics_path: '/metrics/secure'
+    scrape_interval: 5s
+    params:
+      format: ['prometheus']
+      compliance: ['hipaa']
+    metric_relabel_configs:
+      - source_labels: [__name__]
+        regex: 'medical_.*'
+        target_label: service
+        replacement: 'medical-compute'
+      - source_labels: [__name__]
+        regex: 'dicom_.*'
+        target_label: data_type
+        replacement: 'dicom'
+
+  # Infrastructure Services Monitoring
+  - job_name: 'postgres'
+    static_configs:
+      - targets: ['postgres:5432']
+    metrics_path: '/metrics'
+    scrape_interval: 30s
+    params:
+      module: ['postgres']
+
+  - job_name: 'redis'
+    static_configs:
+      - targets: ['redis:6379']
+    metrics_path: '/metrics'
+    scrape_interval: 30s
+
+  # Load Balancer Monitoring (Traefik)
+  - job_name: 'traefik'
+    static_configs:
+      - targets: ['traefik:8080']
+    metrics_path: '/metrics'
+    scrape_interval: 10s
+
+  # Node Exporter for Host Metrics
+  - job_name: 'node-exporter'
+    static_configs:
+      - targets: ['node-exporter:9100']
+    scrape_interval: 15s
+
+  # cAdvisor for Container Metrics
+  - job_name: 'cadvisor'
+    static_configs:
+      - targets: ['cadvisor:8080']
+    scrape_interval: 10s
+    metrics_path: '/metrics'
+
+  # Blackbox Exporter for Endpoint Monitoring
+  - job_name: 'blackbox'
+    metrics_path: /probe
+    params:
+      module: [http_2xx]
+    static_configs:
+      - targets:
+          - http://annotateai:3000/api/health
+          - http://medsight-pro:3000/api/health/medical
+          - http://ml-compute:8000/health
+          - http://medical-compute:8000/health/secure
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: blackbox-exporter:9115
+
+  # Custom Application Metrics
+  - job_name: 'annotateai-ml-metrics'
+    static_configs:
+      - targets: ['annotateai:3000']
+    metrics_path: '/api/metrics/ml'
+    scrape_interval: 5s
+    params:
+      detailed: ['true']
+    metric_relabel_configs:
+      - source_labels: [__name__]
+        regex: 'ml_inference_.*'
+        target_label: ml_type
+        replacement: 'inference'
+      - source_labels: [__name__]
+        regex: 'video_annotation_.*'
+        target_label: ml_type
+        replacement: 'video'
+      - source_labels: [__name__]
+        regex: 'synthetic_data_.*'
+        target_label: ml_type
+        replacement: 'synthetic'
+
+  - job_name: 'medsight-medical-metrics'
+    static_configs:
+      - targets: ['medsight-pro:3000']
+    metrics_path: '/api/metrics/medical/detailed'
+    scrape_interval: 5s
+    params:
+      compliance: ['hipaa']
+      audit: ['true']
+    metric_relabel_configs:
+      - source_labels: [__name__]
+        regex: 'dicom_.*'
+        target_label: medical_type
+        replacement: 'dicom'
+      - source_labels: [__name__]
+        regex: 'patient_.*'
+        target_label: medical_type
+        replacement: 'patient'
+      - source_labels: [__name__]
+        regex: 'compliance_.*'
+        target_label: audit_type
+        replacement: 'compliance'
+
+  # Security Metrics
+  - job_name: 'security-metrics'
+    static_configs:
+      - targets: 
+          - 'annotateai:3000'
+          - 'medsight-pro:3000'
+    metrics_path: '/api/metrics/security'
+    scrape_interval: 10s
+    params:
+      level: ['detailed']
+    metric_relabel_configs:
+      - source_labels: [__name__]
+        regex: 'security_.*'
+        target_label: security_domain
+        replacement: 'platform'
+      - source_labels: [__name__]
+        regex: 'auth_.*'
+        target_label: security_domain
+        replacement: 'authentication'
+
+  # Performance Metrics
+  - job_name: 'performance-metrics'
+    static_configs:
+      - targets:
+          - 'annotateai:3000'
+          - 'medsight-pro:3000'
+    metrics_path: '/api/metrics/performance'
+    scrape_interval: 5s
+    params:
+      detailed: ['true']
+    metric_relabel_configs:
+      - source_labels: [__name__]
+        regex: 'response_time_.*'
+        target_label: perf_type
+        replacement: 'latency'
+      - source_labels: [__name__]
+        regex: 'throughput_.*'
+        target_label: perf_type
+        replacement: 'throughput'
+
+# Remote write configuration for long-term storage
+remote_write:
+  - url: "http://cortex:9009/api/prom/push"
+    queue_config:
+      max_samples_per_send: 10000
+      max_shards: 200
+      capacity: 20000
+
+# Recording rules for performance optimization
+recording_rules:
+  - name: g3dai_performance_rules
+    rules:
+      - record: annotateai:ml_inference_rate
+        expr: rate(annotateai_ml_inference_total[5m])
+      - record: annotateai:video_processing_rate
+        expr: rate(annotateai_video_frames_processed_total[5m])
+      - record: medsight:dicom_processing_rate
+        expr: rate(medsight_dicom_studies_processed_total[5m])
+      - record: medsight:patient_access_rate
+        expr: rate(medsight_patient_accesses_total[5m])
+
+  - name: g3dai_resource_rules
+    rules:
+      - record: platform:cpu_usage
+        expr: 100 - (avg by (instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100)
+      - record: platform:memory_usage
+        expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100
+      - record: platform:disk_usage
+        expr: 100 - ((node_filesystem_avail_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"}) * 100)
+
+  - name: g3dai_medical_compliance_rules
+    rules:
+      - record: medsight:hipaa_compliance_score
+        expr: (medsight_hipaa_compliant_operations_total / medsight_total_operations_total) * 100
+      - record: medsight:audit_trail_completeness
+        expr: (medsight_audit_logged_operations_total / medsight_total_operations_total) * 100
+      - record: medsight:encryption_coverage
+        expr: (medsight_encrypted_data_transfers_total / medsight_total_data_transfers_total) * 100 

@@ -1,0 +1,607 @@
+# G3DAI Staging Environment Kubernetes Configuration
+# Comprehensive staging deployment with auto-scaling and monitoring
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: g3dai-staging
+  labels:
+    environment: staging
+    project: g3dai
+    compliance: hipaa
+
+---
+# ConfigMap for staging environment
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: g3dai-staging-config
+  namespace: g3dai-staging
+data:
+  NODE_ENV: "staging"
+  LOG_LEVEL: "debug"
+  METRICS_ENABLED: "true"
+  TRACING_ENABLED: "true"
+  HEALTH_CHECK_INTERVAL: "30s"
+  PERFORMANCE_MONITORING: "true"
+
+---
+# Secret for staging credentials
+apiVersion: v1
+kind: Secret
+metadata:
+  name: g3dai-staging-secrets
+  namespace: g3dai-staging
+type: Opaque
+data:
+  postgres-password: cGFzc3dvcmQxMjM=  # base64 encoded
+  redis-password: cmVkaXNwYXNzd29yZA==
+  jwt-secret: and0c2VjcmV0a2V5Zm9yc3RhZ2luZw==
+
+---
+# AnnotateAI Staging Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: annotateai-staging
+  namespace: g3dai-staging
+  labels:
+    app: annotateai
+    environment: staging
+    version: latest
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: annotateai
+      environment: staging
+  template:
+    metadata:
+      labels:
+        app: annotateai
+        environment: staging
+        version: latest
+    spec:
+      containers:
+      - name: annotateai
+        image: g3dai/annotateai:staging
+        ports:
+        - containerPort: 3000
+          name: http
+        env:
+        - name: NODE_ENV
+          value: "staging"
+        - name: PORT
+          value: "3000"
+        - name: DATABASE_URL
+          value: "postgresql://annotateai:$(POSTGRES_PASSWORD)@postgres-staging:5432/annotateai"
+        - name: REDIS_URL
+          value: "redis://redis-staging:6379/0"
+        - name: METRICS_ENDPOINT
+          value: "http://prometheus-staging:9090"
+        envFrom:
+        - configMapRef:
+            name: g3dai-staging-config
+        - secretRef:
+            name: g3dai-staging-secrets
+        resources:
+          requests:
+            memory: "1Gi"
+            cpu: "500m"
+          limits:
+            memory: "2Gi"
+            cpu: "1000m"
+        livenessProbe:
+          httpGet:
+            path: /api/health
+            port: 3000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /api/health
+            port: 3000
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        volumeMounts:
+        - name: app-data
+          mountPath: /app/data
+        - name: models-cache
+          mountPath: /app/models
+      volumes:
+      - name: app-data
+        persistentVolumeClaim:
+          claimName: annotateai-staging-pvc
+      - name: models-cache
+        persistentVolumeClaim:
+          claimName: models-cache-pvc
+
+---
+# MedSight Pro Staging Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: medsight-pro-staging
+  namespace: g3dai-staging
+  labels:
+    app: medsight-pro
+    environment: staging
+    compliance: hipaa
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: medsight-pro
+      environment: staging
+  template:
+    metadata:
+      labels:
+        app: medsight-pro
+        environment: staging
+        compliance: hipaa
+    spec:
+      containers:
+      - name: medsight-pro
+        image: g3dai/medsight-pro:staging
+        ports:
+        - containerPort: 3000
+          name: http
+        env:
+        - name: NODE_ENV
+          value: "staging"
+        - name: PORT
+          value: "3000"
+        - name: DATABASE_URL
+          value: "postgresql://medsight:$(POSTGRES_PASSWORD)@postgres-staging:5432/medsight"
+        - name: REDIS_URL
+          value: "redis://redis-staging:6379/1"
+        - name: MEDICAL_COMPLIANCE_MODE
+          value: "true"
+        - name: HIPAA_AUDIT_ENABLED
+          value: "true"
+        - name: ENCRYPTION_LEVEL
+          value: "enhanced"
+        envFrom:
+        - configMapRef:
+            name: g3dai-staging-config
+        - secretRef:
+            name: g3dai-staging-secrets
+        resources:
+          requests:
+            memory: "2Gi"
+            cpu: "1000m"
+          limits:
+            memory: "4Gi"
+            cpu: "2000m"
+        livenessProbe:
+          httpGet:
+            path: /api/health/medical
+            port: 3000
+          initialDelaySeconds: 45
+          periodSeconds: 15
+        readinessProbe:
+          httpGet:
+            path: /api/health/medical
+            port: 3000
+          initialDelaySeconds: 10
+          periodSeconds: 10
+        volumeMounts:
+        - name: medical-data
+          mountPath: /app/data
+        - name: dicom-storage
+          mountPath: /app/dicom-storage
+        - name: audit-logs
+          mountPath: /app/logs
+      volumes:
+      - name: medical-data
+        persistentVolumeClaim:
+          claimName: medsight-staging-pvc
+      - name: dicom-storage
+        persistentVolumeClaim:
+          claimName: dicom-storage-pvc
+      - name: audit-logs
+        persistentVolumeClaim:
+          claimName: audit-logs-pvc
+
+---
+# Services for applications
+apiVersion: v1
+kind: Service
+metadata:
+  name: annotateai-staging-service
+  namespace: g3dai-staging
+  labels:
+    app: annotateai
+    environment: staging
+spec:
+  selector:
+    app: annotateai
+    environment: staging
+  ports:
+  - name: http
+    port: 3000
+    targetPort: 3000
+  type: ClusterIP
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: medsight-pro-staging-service
+  namespace: g3dai-staging
+  labels:
+    app: medsight-pro
+    environment: staging
+    compliance: hipaa
+spec:
+  selector:
+    app: medsight-pro
+    environment: staging
+  ports:
+  - name: http
+    port: 3000
+    targetPort: 3000
+  type: ClusterIP
+
+---
+# Horizontal Pod Autoscaler for AnnotateAI
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: annotateai-staging-hpa
+  namespace: g3dai-staging
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: annotateai-staging
+  minReplicas: 1
+  maxReplicas: 5
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80
+  behavior:
+    scaleUp:
+      stabilizationWindowSeconds: 60
+      policies:
+      - type: Percent
+        value: 100
+        periodSeconds: 15
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+      - type: Percent
+        value: 50
+        periodSeconds: 60
+
+---
+# Horizontal Pod Autoscaler for MedSight Pro
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: medsight-pro-staging-hpa
+  namespace: g3dai-staging
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: medsight-pro-staging
+  minReplicas: 1
+  maxReplicas: 3
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 80
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 85
+  behavior:
+    scaleUp:
+      stabilizationWindowSeconds: 120
+      policies:
+      - type: Percent
+        value: 50
+        periodSeconds: 60
+    scaleDown:
+      stabilizationWindowSeconds: 600
+      policies:
+      - type: Percent
+        value: 25
+        periodSeconds: 120
+
+---
+# PostgreSQL for staging
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: postgres-staging
+  namespace: g3dai-staging
+spec:
+  serviceName: postgres-staging
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres
+      environment: staging
+  template:
+    metadata:
+      labels:
+        app: postgres
+        environment: staging
+    spec:
+      containers:
+      - name: postgres
+        image: postgres:15-alpine
+        ports:
+        - containerPort: 5432
+        env:
+        - name: POSTGRES_DB
+          value: "g3dai_staging"
+        - name: POSTGRES_USER
+          value: "postgres"
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: g3dai-staging-secrets
+              key: postgres-password
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "1Gi"
+            cpu: "500m"
+        volumeMounts:
+        - name: postgres-data
+          mountPath: /var/lib/postgresql/data
+  volumeClaimTemplates:
+  - metadata:
+      name: postgres-data
+    spec:
+      accessModes: ["ReadWriteOnce"]
+      resources:
+        requests:
+          storage: 10Gi
+
+---
+# Redis for staging
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis-staging
+  namespace: g3dai-staging
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redis
+      environment: staging
+  template:
+    metadata:
+      labels:
+        app: redis
+        environment: staging
+    spec:
+      containers:
+      - name: redis
+        image: redis:7-alpine
+        ports:
+        - containerPort: 6379
+        args:
+        - redis-server
+        - --appendonly
+        - "yes"
+        - --requirepass
+        - "$(REDIS_PASSWORD)"
+        env:
+        - name: REDIS_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: g3dai-staging-secrets
+              key: redis-password
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "200m"
+        volumeMounts:
+        - name: redis-data
+          mountPath: /data
+      volumes:
+      - name: redis-data
+        persistentVolumeClaim:
+          claimName: redis-staging-pvc
+
+---
+# Persistent Volume Claims
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: annotateai-staging-pvc
+  namespace: g3dai-staging
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: medsight-staging-pvc
+  namespace: g3dai-staging
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: dicom-storage-pvc
+  namespace: g3dai-staging
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 20Gi
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: audit-logs-pvc
+  namespace: g3dai-staging
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: models-cache-pvc
+  namespace: g3dai-staging
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 15Gi
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: redis-staging-pvc
+  namespace: g3dai-staging
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+
+---
+# Ingress for staging environment
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: g3dai-staging-ingress
+  namespace: g3dai-staging
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    cert-manager.io/cluster-issuer: "letsencrypt-staging"
+spec:
+  tls:
+  - hosts:
+    - annotateai-staging.g3dai.com
+    - medsight-staging.g3dai.com
+    secretName: g3dai-staging-tls
+  rules:
+  - host: annotateai-staging.g3dai.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: annotateai-staging-service
+            port:
+              number: 3000
+  - host: medsight-staging.g3dai.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: medsight-pro-staging-service
+            port:
+              number: 3000
+
+---
+# Network Policy for security
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: g3dai-staging-network-policy
+  namespace: g3dai-staging
+spec:
+  podSelector: {}
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: g3dai-staging
+    - namespaceSelector:
+        matchLabels:
+          name: monitoring
+  egress:
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          name: g3dai-staging
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          name: monitoring
+  - to: []
+    ports:
+    - protocol: TCP
+      port: 53
+    - protocol: UDP
+      port: 53
+
+---
+# Service Monitor for Prometheus
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: g3dai-staging-monitoring
+  namespace: g3dai-staging
+  labels:
+    app: g3dai-staging
+spec:
+  selector:
+    matchLabels:
+      app: annotateai
+  endpoints:
+  - port: http
+    path: /api/metrics
+    interval: 30s
+  - port: http
+    path: /api/metrics/medical
+    interval: 30s 
