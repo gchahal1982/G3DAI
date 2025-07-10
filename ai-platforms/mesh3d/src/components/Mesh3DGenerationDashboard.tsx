@@ -5,7 +5,7 @@
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import styled, { keyframes } from 'styled-components';
-import { GlassCard, GlassButton } from '@shared/ui/components';
+
 
 
 // Mesh3D Theme (3D purple/magenta theme)

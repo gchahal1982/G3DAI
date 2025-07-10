@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { GlassCard } from '@shared/ui/components';
 
 
 // G3D ClimateAI - Environmental Modeling and Prediction Platform

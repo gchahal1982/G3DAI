@@ -321,11 +321,11 @@ export class G3DLoadBalancer extends EventEmitter {
             return false;
         }
 
-        if (job.constraints.region && node.region !== job.constraints.region) {
+        if (job.requirements.region && node.region !== job.requirements.region) {
             return false;
         }
 
-        if (job.constraints.zone && node.zone !== job.constraints.zone) {
+        if (job.requirements.zone && node.zone !== job.requirements.zone) {
             return false;
         }
 

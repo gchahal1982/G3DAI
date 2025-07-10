@@ -195,7 +195,7 @@ export class G3DComputeShaders {
             // Request adapter
             this.adapter = await navigator.gpu.requestAdapter({
                 powerPreference: this.config.device.preferredDevice === 'gpu' ? 'high-performance' : 'low-power'
-            });
+            }) as any;
 
             if (!this.adapter) {
                 throw new Error('Failed to get WebGPU adapter');
@@ -1053,6 +1053,13 @@ export class G3DComputeShaders {
     
     async createComputeShader(name: string, source: string): Promise<void> {
         await this.createKernel(name, name, source);
+    }
+    
+    /**
+     * Get kernel by name
+     */
+    getKernel(name: string): ComputeKernel | undefined {
+        return this.kernels.get(name);
     }
 }
 

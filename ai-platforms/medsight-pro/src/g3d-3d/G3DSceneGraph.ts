@@ -738,7 +738,7 @@ export class G3DSceneNode {
 
         // Dispose children
         for (const child of this.children) {
-            child.cleanup();
+            child.dispose();
         }
         this.children = [];
 
@@ -1158,7 +1158,7 @@ export class G3DSceneGraph {
     }
 
     public dispose(): void {
-        this.rootNode.cleanup();
+        this.rootNode.dispose();
         this.nodeRegistry.clear();
         this.lastCullingResult = null;
 

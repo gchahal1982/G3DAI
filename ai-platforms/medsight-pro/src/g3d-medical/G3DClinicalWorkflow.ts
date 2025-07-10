@@ -170,8 +170,15 @@ export interface G3DClinicalDecisionSupport {
 
 export interface G3DCDSTrigger {
     type: 'finding' | 'measurement' | 'pattern' | 'temporal' | 'comparative';
-    conditions: object;
+    conditions: G3DCDSConditions;
     threshold?: number;
+}
+
+export interface G3DCDSConditions {
+    severity?: 'mild' | 'moderate' | 'severe' | 'critical';
+    modality?: 'CT' | 'MRI' | 'PET' | 'US' | 'XR' | 'MG' | 'NM' | 'RF';
+    bodyPart?: string;
+    [key: string]: any; // Allow additional properties
 }
 
 export interface G3DCDSAction {
@@ -337,6 +344,10 @@ export class G3DDICOMProcessor {
 
         // Simplified DICOM export - real implementation would reconstruct proper DICOM
         return dicomData.pixelData;
+    }
+
+    getParsedStudiesCount(): number {
+        return this.parsedStudies.size;
     }
 }
 
@@ -740,7 +751,7 @@ export class G3DClinicalWorkflowManager {
     getWorkflowMetrics(): object {
         return {
             config: this.config,
-            studiesProcessed: this.dicomProcessor.parsedStudies.size,
+            studiesProcessed: this.dicomProcessor.getParsedStudiesCount(),
             reportsGenerated: this.reports.size,
             qaProtocols: this.qaProtocols.size,
             cdsRules: this.cdsRules.size,

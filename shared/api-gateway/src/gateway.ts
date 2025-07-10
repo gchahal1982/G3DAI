@@ -10,7 +10,17 @@ import rateLimit from 'express-rate-limit';
 import { createProxyMiddleware, Options } from 'http-proxy-middleware';
 import Redis from 'ioredis';
 import jwt from 'jsonwebtoken';
-import { AuthService } from '../auth/src/services/AuthService';
+
+// Extend Express Request interface
+declare global {
+    namespace Express {
+        interface Request {
+            user?: any;
+            startTime?: number;
+            id?: string;
+        }
+    }
+}
 
 export interface ServiceConfig {
     id: string;
@@ -586,7 +596,7 @@ export class APIGateway {
         if (metrics) {
             metrics.requests++;
 
-            const latency = Date.now() - req.startTime;
+            const latency = req.startTime ? Date.now() - req.startTime : 0;
             metrics.latency.push(latency);
 
             // Keep only last 100 latency measurements
@@ -608,7 +618,7 @@ export class APIGateway {
             for (const [serviceId, service] of this.services.entries()) {
                 try {
                     const response = await fetch(`${service.upstream}${service.healthCheck}`, {
-                        timeout: 5000
+                        signal: AbortSignal.timeout(5000)
                     });
 
                     const isHealthy = response.ok;

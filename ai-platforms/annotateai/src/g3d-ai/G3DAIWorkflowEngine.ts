@@ -669,14 +669,7 @@ export class G3DAIWorkflowEngine {
      */
     private initializeComponents(): void {
         // Initialize model runner for ML tasks
-        this.modelRunner = new G3DModelRunner({
-            enableG3DAcceleration: true,
-            batchSize: 64,
-            optimization: {
-                enabled: true,
-                techniques: ['gpu_acceleration', 'pipeline_optimization', 'memory_pooling']
-            }
-        });
+        this.modelRunner = new G3DModelRunner();
 
         // Initialize compute shaders for GPU tasks
         this.computeShaders = new G3DComputeShaders({

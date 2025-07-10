@@ -149,7 +149,7 @@ export class Object3D {
     parent: Object3D | null;
 
     // G3D internals
-    private _g3dNode: G3DSceneNode | null = null;
+    public _g3dNode: G3DSceneNode | null = null;
 
     constructor() {
         this.position = new Vector3();
@@ -597,7 +597,7 @@ export class WebGLRenderer {
 
     dispose(): void {
         if (this._g3dRenderer) {
-            this._g3dRenderer.cleanup();
+            this._g3dRenderer.dispose();
         }
     }
 }

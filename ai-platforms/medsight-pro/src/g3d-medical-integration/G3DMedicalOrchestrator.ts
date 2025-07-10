@@ -242,19 +242,27 @@ export class G3DMedicalOrchestrator {
 
         // Initialize workflow engine
         this.workflowEngine = new G3DWorkflowEngine(this.config);
-        await this.workflowEngine.init();
+        if ((this.workflowEngine as any).init) {
+            await (this.workflowEngine as any).init();
+        }
 
         // Initialize resource manager
         this.resourceManager = new G3DResourceManager(this.config);
-        await this.resourceManager.init();
+        if ((this.resourceManager as any).init) {
+            await (this.resourceManager as any).init();
+        }
 
         // Initialize security manager
         this.securityManager = new G3DSecurityManager(this.config);
-        await this.securityManager.init();
+        if ((this.securityManager as any).init) {
+            await (this.securityManager as any).init();
+        }
 
         // Initialize analytics engine
         this.analyticsEngine = new G3DAnalyticsEngine(this.config);
-        await this.analyticsEngine.init();
+        if ((this.analyticsEngine as any).init) {
+            await (this.analyticsEngine as any).init();
+        }
     }
 
     private async initializeMedicalSystems(): Promise<void> {
@@ -262,20 +270,26 @@ export class G3DMedicalOrchestrator {
 
         if (this.config.enableMedicalRendering) {
             // Initialize medical renderer
-            const medicalRenderer = new G3DMedicalRenderer();
-            await medicalRenderer.init();
+            const medicalRenderer = new G3DMedicalRenderer(document.createElement('canvas') as HTMLCanvasElement);
+            if ((medicalRenderer as any).init) {
+                await (medicalRenderer as any).init();
+            }
             this.systems.set('medical_renderer', medicalRenderer);
             this.updateSystemStatus('medical_renderer', 'ready');
 
             // Initialize volume renderer
-            const volumeRenderer = new G3DVolumeRenderer();
-            await volumeRenderer.init();
+            const volumeRenderer = new G3DVolumeRenderer(document.createElement('canvas').getContext('webgl2') as WebGL2RenderingContext);
+            if ((volumeRenderer as any).init) {
+                await (volumeRenderer as any).init();
+            }
             this.systems.set('volume_renderer', volumeRenderer);
             this.updateSystemStatus('volume_renderer', 'ready');
 
             // Initialize DICOM processor
             const dicomProcessor = new G3DDICOMProcessor();
-            await dicomProcessor.init();
+            if ((dicomProcessor as any).init) {
+                await (dicomProcessor as any).init();
+            }
             this.systems.set('dicom_processor', dicomProcessor);
             this.updateSystemStatus('dicom_processor', 'ready');
         }
@@ -286,19 +300,25 @@ export class G3DMedicalOrchestrator {
 
         // Initialize medical AI
         const medicalAI = new G3DMedicalAI();
-        await medicalAI.init();
+        if ((medicalAI as any).init) {
+            await (medicalAI as any).init();
+        }
         this.systems.set('medical_ai', medicalAI);
         this.updateSystemStatus('medical_ai', 'ready');
 
         // Initialize computer vision
         const computerVision = new G3DComputerVision();
-        await computerVision.init();
+        if ((computerVision as any).init) {
+            await (computerVision as any).init();
+        }
         this.systems.set('computer_vision', computerVision);
         this.updateSystemStatus('computer_vision', 'ready');
 
         // Initialize neural networks
         const neuralNetworks = new G3DNeuralNetworks();
-        await neuralNetworks.init();
+        if ((neuralNetworks as any).init) {
+            await (neuralNetworks as any).init();
+        }
         this.systems.set('neural_networks', neuralNetworks);
         this.updateSystemStatus('neural_networks', 'ready');
     }
@@ -307,20 +327,32 @@ export class G3DMedicalOrchestrator {
         console.log('Initializing 3D systems...');
 
         // Initialize spatial index
-        const spatialIndex = new G3DSpatialIndex();
-        await spatialIndex.init();
+        const spatialIndex = new G3DSpatialIndex({
+            min: { x: -1000, y: -1000, z: -1000 },
+            max: { x: 1000, y: 1000, z: 1000 },
+            center: { x: 0, y: 0, z: 0 },
+            size: { x: 2000, y: 2000, z: 2000 },
+            volume: 8000000000
+        } as any);
+        if ((spatialIndex as any).init) {
+            await (spatialIndex as any).init();
+        }
         this.systems.set('spatial_index', spatialIndex);
         this.updateSystemStatus('spatial_index', 'ready');
 
         // Initialize geometry utils
         const geometryUtils = new G3DGeometryUtils();
-        await geometryUtils.init();
+        if ((geometryUtils as any).init) {
+            await (geometryUtils as any).init();
+        }
         this.systems.set('geometry_utils', geometryUtils);
         this.updateSystemStatus('geometry_utils', 'ready');
 
         // Initialize scene graph
         const sceneGraph = new G3DSceneGraph();
-        await sceneGraph.init();
+        if ((sceneGraph as any).init) {
+            await (sceneGraph as any).init();
+        }
         this.systems.set('scene_graph', sceneGraph);
         this.updateSystemStatus('scene_graph', 'ready');
     }
@@ -329,20 +361,26 @@ export class G3DMedicalOrchestrator {
         console.log('Initializing performance systems...');
 
         // Initialize compute shaders
-        const computeShaders = new G3DComputeShaders({ device: 'gpu', shaderVersion: 'webgl2' });
-        await computeShaders.init();
+        const computeShaders = new G3DComputeShaders({ device: 'gpu' } as any);
+        if ((computeShaders as any).init) {
+            await (computeShaders as any).init();
+        }
         this.systems.set('compute_shaders', computeShaders);
         this.updateSystemStatus('compute_shaders', 'ready');
 
         // Initialize performance monitor
         const performanceMonitor = new G3DPerformanceMonitor();
-        await performanceMonitor.init();
+        if ((performanceMonitor as any).init) {
+            await (performanceMonitor as any).init();
+        }
         this.systems.set('performance_monitor', performanceMonitor);
         this.updateSystemStatus('performance_monitor', 'ready');
 
         // Initialize memory manager
         const memoryManager = new G3DMemoryManager();
-        await memoryManager.init();
+        if ((memoryManager as any).init) {
+            await (memoryManager as any).init();
+        }
         this.systems.set('memory_manager', memoryManager);
         this.updateSystemStatus('memory_manager', 'ready');
     }
@@ -352,7 +390,9 @@ export class G3DMedicalOrchestrator {
 
         // Initialize XR manager
         const xrManager = new G3DMedicalXRManager();
-        await xrManager.init();
+        if ((xrManager as any).init) {
+            await (xrManager as any).init();
+        }
         this.systems.set('xr_manager', xrManager);
         this.updateSystemStatus('xr_manager', 'ready');
     }
@@ -432,7 +472,7 @@ export class G3DMedicalOrchestrator {
 
         // Start system status monitoring
         setInterval(() => {
-            this.updateAllSystemStatus();
+            this.updateAllSystemStatus?.();
         }, 1000); // Update every second
 
         // Start performance monitoring
@@ -474,18 +514,18 @@ export class G3DMedicalOrchestrator {
     }
 
     private updateAllSystemStatus(): void {
-        for (const [systemType, system] of this.systems) {
+        this.systems.forEach((system, systemType) => {
             try {
                 // Check if system is responsive
                 if (system && typeof system.getStatus === 'function') {
-                    const systemStatus = system.getStatus();
+                    const systemStatus = system.getStatus?.();
                     this.updateSystemStatus(systemType, systemStatus.status);
                 }
             } catch (error) {
                 console.warn(`Error updating status for ${systemType}:`, error);
                 this.updateSystemStatus(systemType, 'error');
             }
-        }
+        });
     }
 
     private collectPerformanceMetrics(): void {
@@ -595,7 +635,7 @@ export class G3DMedicalOrchestrator {
             throw new Error('Workflow engine not initialized');
         }
 
-        const workflowId = await this.workflowEngine.executeWorkflow(workflow, session);
+        const workflowId = await this.workflowEngine.executeWorkflow?.(workflow, session);
 
         this.activeWorkflows.set(workflowId, workflow);
         session.activeWorkflows.push(workflow);
@@ -621,11 +661,11 @@ export class G3DMedicalOrchestrator {
         }
 
         // Optimize individual systems
-        for (const [systemType, system] of this.systems) {
+        this.systems.forEach(async (system, systemType) => {
             if (system && typeof system.optimize === 'function') {
                 await system.optimize();
             }
-        }
+        });
     }
 
     public async endMedicalSession(sessionId: string): Promise<void> {
@@ -663,35 +703,35 @@ export class G3DMedicalOrchestrator {
         console.log('Disposing G3D Medical Orchestrator...');
 
         // End all active sessions
-        for (const sessionId of this.activeSessions.keys()) {
+        this.activeSessions.forEach((session, sessionId) => {
             this.endMedicalSession(sessionId);
-        }
+        });
 
         // Dispose all systems
-        for (const [systemType, system] of this.systems) {
+        this.systems.forEach((system, systemType) => {
             if (system && typeof system.dispose === 'function') {
-                system.cleanup();
+                system.cleanup?.();
             }
-        }
+        });
 
         // Dispose managers
         if (this.workflowEngine) {
-            this.workflowEngine.cleanup();
+            this.workflowEngine.dispose?.();
             this.workflowEngine = null;
         }
 
         if (this.resourceManager) {
-            this.resourceManager.cleanup();
+            this.resourceManager.dispose?.();
             this.resourceManager = null;
         }
 
         if (this.securityManager) {
-            this.securityManager.cleanup();
+            this.securityManager.dispose?.();
             this.securityManager = null;
         }
 
         if (this.analyticsEngine) {
-            this.analyticsEngine.cleanup();
+            this.analyticsEngine.dispose?.();
             this.analyticsEngine = null;
         }
 

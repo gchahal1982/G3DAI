@@ -815,12 +815,12 @@ export class G3DParticleSystem {
 
     // Cleanup
     public dispose(): void {
-        this.geometry.cleanup();
-        this.material.cleanup();
+        this.geometry.dispose();
+        this.material.dispose();
 
-        if (this.positionTexture) this.positionTexture.cleanup();
-        if (this.velocityTexture) this.velocityTexture.cleanup();
-        if (this.medicalTexture) this.medicalTexture.cleanup();
+        if (this.positionTexture) this.positionTexture.dispose();
+        if (this.velocityTexture) this.velocityTexture.dispose();
+        if (this.medicalTexture) this.medicalTexture.dispose();
     }
 }
 

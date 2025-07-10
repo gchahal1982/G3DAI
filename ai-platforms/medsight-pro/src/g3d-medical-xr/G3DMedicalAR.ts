@@ -279,11 +279,11 @@ export class G3DMedicalAR {
 
             // Initialize medical renderer
             this.medicalRenderer = new G3DMedicalARRenderer(this.config);
-            await this.medicalRenderer.init();
+            await this.medicalRenderer.initialize();
 
             // Initialize tracking manager
             this.trackingManager = new G3DARTrackingManager(this.config);
-            await this.trackingManager.init();
+            await this.trackingManager.initialize();
 
             // Initialize guidance system
             this.guidanceSystem = {
@@ -986,12 +986,12 @@ export class G3DMedicalAR {
 
         // Clean up managers
         if (this.medicalRenderer) {
-            this.medicalRenderer.cleanup();
+            this.medicalRenderer.dispose();
             this.medicalRenderer = null;
         }
 
         if (this.trackingManager) {
-            this.trackingManager.cleanup();
+            this.trackingManager.dispose();
             this.trackingManager = null;
         }
 

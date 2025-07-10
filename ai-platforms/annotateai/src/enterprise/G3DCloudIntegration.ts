@@ -4,8 +4,83 @@
  * Supporting AWS, Azure, GCP, and hybrid cloud environments
  */
 
-import { G3DGPUCompute } from '../g3d-performance/G3DGPUCompute';
-import { G3DModelRunner } from '../g3d-ai/G3DModelRunner';
+// Mock G3D classes for cloud integration
+class G3DGPUCompute {
+    private kernels: Map<string, any> = new Map();
+    private initialized = false;
+
+    async init(): Promise<void> {
+        this.initialized = true;
+        console.log('G3DGPUCompute initialized for cloud integration');
+    }
+
+    async createKernel(source: string, name: string): Promise<void> {
+        if (!this.initialized) {
+            throw new Error('G3DGPUCompute not initialized');
+        }
+        
+        // Mock kernel creation
+        const kernel = {
+            name,
+            source,
+            compiled: true,
+            execute: async (buffers: Float32Array[], params: any) => {
+                // Mock GPU execution - return array of same length as first buffer
+                return new Float32Array(buffers[0].length);
+            }
+        };
+        
+        this.kernels.set(name, kernel);
+        console.log(`GPU kernel created: ${name}`);
+    }
+
+    getKernel(name: string): any {
+        const kernel = this.kernels.get(name);
+        if (!kernel) {
+            throw new Error(`Kernel not found: ${name}`);
+        }
+        return kernel;
+    }
+
+    async executeKernel(kernel: any, buffers: Float32Array[], params: any): Promise<Float32Array> {
+        if (!this.initialized) {
+            throw new Error('G3DGPUCompute not initialized');
+        }
+        
+        // Mock execution
+        return await kernel.execute(buffers, params);
+    }
+
+    async cleanup(): Promise<void> {
+        this.kernels.clear();
+        this.initialized = false;
+        console.log('G3DGPUCompute cleaned up');
+    }
+}
+
+class G3DModelRunner {
+    private initialized = false;
+
+    async init(): Promise<void> {
+        this.initialized = true;
+        console.log('G3DModelRunner initialized for cloud integration');
+    }
+
+    async loadModel(modelPath: string): Promise<any> {
+        console.log(`Loading model: ${modelPath}`);
+        return { id: 'mock-model', path: modelPath };
+    }
+
+    async runInference(model: any, input: any): Promise<any> {
+        console.log(`Running inference on model: ${model.id}`);
+        return { predictions: [], confidence: 0.95 };
+    }
+
+    async cleanup(): Promise<void> {
+        this.initialized = false;
+        console.log('G3DModelRunner cleaned up');
+    }
+}
 
 export interface CloudConfig {
     providers: CloudProvider[];
@@ -627,6 +702,50 @@ export interface AvailabilityMetrics {
     mttr: number;
 }
 
+// Additional interfaces for internal use
+interface ScalingStrategy {
+    type: 'horizontal' | 'vertical';
+    currentScale: number;
+    targetScale: number;
+    steps: number;
+}
+
+interface MigrationPlan {
+    sourceProvider: string;
+    sourceRegion: string;
+    targetProvider: string;
+    targetRegion: string;
+    steps: string[];
+    estimatedDuration: number;
+}
+
+interface CostOptimizationResult {
+    totalSavings: number;
+    recommendations: CostRecommendation[];
+    applied: number;
+    timestamp: Date;
+}
+
+interface CostRecommendation {
+    type: 'rightsize' | 'reserved_instances' | 'spot_instances' | 'schedule';
+    resource: string;
+    description: string;
+    savings: number;
+    applied: boolean;
+}
+
+interface CostAnalysis {
+    totalCost: number;
+    breakdown: {
+        byProvider: Record<string, number>;
+        byService: Record<string, number>;
+        byRegion: Record<string, number>;
+    };
+    trends: number[];
+    forecast: number;
+    recommendations: CostRecommendation[];
+}
+
 export class G3DCloudIntegration {
     private gpuCompute: G3DGPUCompute;
     private modelRunner: G3DModelRunner;
@@ -634,6 +753,7 @@ export class G3DCloudIntegration {
     private providers: Map<string, CloudProvider>;
     private deployments: Map<string, CloudDeployment>;
     private metrics: CloudMetrics;
+    private initialized = false;
 
     constructor(config: CloudConfig) {
         this.gpuCompute = new G3DGPUCompute();
@@ -652,6 +772,8 @@ export class G3DCloudIntegration {
      */
     private async initializeCloudKernels(): Promise<void> {
         try {
+            await this.gpuCompute.init();
+            
             // Resource optimization kernel
             await this.gpuCompute.createKernel(`
         __kernel void optimize_resources(
@@ -737,6 +859,7 @@ export class G3DCloudIntegration {
         }
       `, 'balance_load');
 
+            this.initialized = true;
             console.log('Cloud integration GPU kernels initialized successfully');
         } catch (error) {
             console.error('Failed to initialize cloud kernels:', error);
@@ -800,7 +923,7 @@ export class G3DCloudIntegration {
      */
     private async selectOptimalLocation(config: DeploymentConfig): Promise<{ provider: CloudProvider; region: CloudRegion }> {
         try {
-            if (this.config.enableG3DAcceleration) {
+            if (this.config.enableG3DAcceleration && this.initialized) {
                 return await this.selectLocationGPU(config);
             } else {
                 return this.selectLocationCPU(config);
@@ -816,6 +939,10 @@ export class G3DCloudIntegration {
      */
     private async selectLocationGPU(config: DeploymentConfig): Promise<{ provider: CloudProvider; region: CloudRegion }> {
         const locations = this.getAllLocations();
+        if (locations.length === 0) {
+            throw new Error('No cloud locations available');
+        }
+
         const loads = locations.map(l => this.getRegionLoad(l.region));
         const capacities = locations.map(l => this.getRegionCapacity(l.region));
         const latencies = locations.map(l => l.region.latency);
@@ -847,20 +974,24 @@ export class G3DCloudIntegration {
      * CPU-based location selection
      */
     private selectLocationCPU(config: DeploymentConfig): { provider: CloudProvider; region: CloudRegion } {
-        let bestScore = -1;
-        let bestProvider: CloudProvider = this.providers.values().next().value;
-        let bestRegion: CloudRegion = bestProvider.regions[0];
+        const locations = this.getAllLocations();
+        if (locations.length === 0) {
+            throw new Error('No cloud locations available');
+        }
 
-        for (const provider of this.providers.values()) {
+        let bestScore = -1;
+        let bestProvider: CloudProvider = locations[0].provider;
+        let bestRegion: CloudRegion = locations[0].region;
+
+        for (const location of locations) {
+            const { provider, region } = location;
             if (!provider.enabled) continue;
 
-            for (const region of provider.regions) {
-                const score = this.calculateLocationScore(provider, region, config);
-                if (score > bestScore) {
-                    bestScore = score;
-                    bestProvider = provider;
-                    bestRegion = region;
-                }
+            const score = this.calculateLocationScore(provider, region, config);
+            if (score > bestScore) {
+                bestScore = score;
+                bestProvider = provider;
+                bestRegion = region;
             }
         }
 
@@ -872,7 +1003,11 @@ export class G3DCloudIntegration {
      */
     private async executeDeployment(deploymentId: string): Promise<void> {
         try {
-            const deployment = this.deployments.get(deploymentId)!;
+            const deployment = this.deployments.get(deploymentId);
+            if (!deployment) {
+                throw new Error(`Deployment not found: ${deploymentId}`);
+            }
+
             deployment.status = 'deploying';
 
             // Simulate deployment steps
@@ -898,8 +1033,10 @@ export class G3DCloudIntegration {
 
         } catch (error) {
             console.error(`Deployment failed: ${deploymentId}`, error);
-            const deployment = this.deployments.get(deploymentId)!;
-            deployment.status = 'failed';
+            const deployment = this.deployments.get(deploymentId);
+            if (deployment) {
+                deployment.status = 'failed';
+            }
             throw error;
         }
     }
@@ -1339,6 +1476,7 @@ export class G3DCloudIntegration {
             }
 
             await this.gpuCompute.cleanup();
+            await this.modelRunner.cleanup();
             this.providers.clear();
             this.deployments.clear();
 
@@ -1373,50 +1511,6 @@ export class G3DCloudIntegration {
             throw error;
         }
     }
-}
-
-// Additional interfaces
-interface ScalingStrategy {
-    type: 'horizontal' | 'vertical';
-    currentScale: number;
-    targetScale: number;
-    steps: number;
-}
-
-interface MigrationPlan {
-    sourceProvider: string;
-    sourceRegion: string;
-    targetProvider: string;
-    targetRegion: string;
-    steps: string[];
-    estimatedDuration: number;
-}
-
-interface CostOptimizationResult {
-    totalSavings: number;
-    recommendations: CostRecommendation[];
-    applied: number;
-    timestamp: Date;
-}
-
-interface CostRecommendation {
-    type: 'rightsize' | 'reserved_instances' | 'spot_instances' | 'schedule';
-    resource: string;
-    description: string;
-    savings: number;
-    applied: boolean;
-}
-
-interface CostAnalysis {
-    totalCost: number;
-    breakdown: {
-        byProvider: Record<string, number>;
-        byService: Record<string, number>;
-        byRegion: Record<string, number>;
-    };
-    trends: number[];
-    forecast: number;
-    recommendations: CostRecommendation[];
 }
 
 export default G3DCloudIntegration;

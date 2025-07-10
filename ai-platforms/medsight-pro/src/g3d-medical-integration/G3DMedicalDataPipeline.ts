@@ -212,26 +212,26 @@ export class G3DMedicalDataPipeline {
 
             // Initialize extraction engine
             this.extractionEngine = new G3DExtractionEngine(this.config);
-            await this.extractionEngine.init();
+            await this.extractionEngine.initialize();
 
             // Initialize transformation engine
             this.transformationEngine = new G3DTransformationEngine(this.config);
-            await this.transformationEngine.init();
+            await this.transformationEngine.initialize();
 
             // Initialize loading engine
             this.loadingEngine = new G3DLoadingEngine(this.config);
-            await this.loadingEngine.init();
+            await this.loadingEngine.initialize();
 
             // Initialize validation engine
             if (this.config.enableDataValidation) {
                 this.validationEngine = new G3DValidationEngine(this.config);
-                await this.validationEngine.init();
+                await this.validationEngine.initialize();
             }
 
             // Initialize quality engine
             if (this.config.enableDataQualityMonitoring) {
                 this.qualityEngine = new G3DQualityEngine(this.config);
-                await this.qualityEngine.init();
+                await this.qualityEngine.initialize();
             }
 
             // Start processing loop
@@ -666,27 +666,27 @@ export class G3DMedicalDataPipeline {
 
         // Dispose engines
         if (this.extractionEngine) {
-            this.extractionEngine.cleanup();
+            this.extractionEngine.dispose();
             this.extractionEngine = null;
         }
 
         if (this.transformationEngine) {
-            this.transformationEngine.cleanup();
+            this.transformationEngine.dispose();
             this.transformationEngine = null;
         }
 
         if (this.loadingEngine) {
-            this.loadingEngine.cleanup();
+            this.loadingEngine.dispose();
             this.loadingEngine = null;
         }
 
         if (this.validationEngine) {
-            this.validationEngine.cleanup();
+            this.validationEngine.dispose();
             this.validationEngine = null;
         }
 
         if (this.qualityEngine) {
-            this.qualityEngine.cleanup();
+            this.qualityEngine.dispose();
             this.qualityEngine = null;
         }
 

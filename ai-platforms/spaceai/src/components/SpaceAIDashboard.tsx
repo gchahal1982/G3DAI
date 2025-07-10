@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { GlassCard } from '@shared/ui/components';
+
 
 
 // G3D SpaceAI - Satellite Imagery and Space Data Analysis Platform

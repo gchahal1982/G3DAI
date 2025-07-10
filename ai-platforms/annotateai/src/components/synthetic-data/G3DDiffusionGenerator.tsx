@@ -406,7 +406,7 @@ export const G3DDiffusionGenerator: React.FC<G3DDiffusionGeneratorProps> = ({
             return combineEmbeddings(embeddings, negEmbeddings);
         }
 
-        return embeddings;
+        return embeddings.data as Float32Array;
     };
 
     // Prepare initial latents
@@ -673,7 +673,7 @@ export const G3DDiffusionGenerator: React.FC<G3DDiffusionGeneratorProps> = ({
     const setupVisualizationScene = async () => { };
     const startRenderLoop = () => { };
     const cleanup = () => {
-        rendererRef.current?.cleanup();
+        (rendererRef.current as any)?.cleanup?.();
     };
 
     return (

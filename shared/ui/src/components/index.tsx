@@ -3,11 +3,10 @@
  * Glassmorphism design system for all AI services
  */
 
-import React from 'react';
-import styled from 'styled-components';
+import * as React from 'react';
 
 // Base Glassmorphism Theme
-export const baseGlassmorphismTheme = {
+const duplicateBaseGlassmorphismTheme = {
     colors: {
         primary: '#6366f1',
         secondary: '#8b5cf6',
@@ -35,7 +34,7 @@ export const baseGlassmorphismTheme = {
 };
 
 // Service-specific theme overrides
-export const serviceThemeOverrides = {
+const duplicateServiceThemeOverrides = {
     'vision-pro': {
         colors: {
             primary: '#2563eb',
@@ -78,24 +77,19 @@ interface GlassCardProps {
     onClick?: () => void;
 }
 
-const StyledGlassCard = styled.div`
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
-  border-radius: 12px;
-  padding: 1.5rem;
-  transition: all 0.3s ease;
-  
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
-  }
-`;
+const glassCardStyle: React.CSSProperties = {
+    background: 'rgba(255, 255, 255, 0.05)',
+    border: '1px solid rgba(255, 255, 255, 0.1)',
+    backdropFilter: 'blur(10px)',
+    borderRadius: '12px',
+    padding: '1.5rem',
+    transition: 'all 0.3s ease'
+};
 
 export const GlassCard: React.FC<GlassCardProps> = ({ children, className, onClick }) => (
-    <StyledGlassCard className= { className } onClick = { onClick } >
-        { children }
-        </StyledGlassCard>
+    <div style={glassCardStyle} className={className} onClick={onClick}>
+        {children}
+    </div>
 );
 
 // Glass Button Component
@@ -108,29 +102,18 @@ interface GlassButtonProps {
     className?: string;
 }
 
-const StyledGlassButton = styled.button<{ variant: string; size: string }>`
-  background: #6366f1;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
-  border-radius: 8px;
-  color: white;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  padding: 0.75rem 1.5rem;
-  font-size: 1rem;
-  
-  &:hover:not(:disabled) {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    opacity: 0.9;
-  }
-  
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-`;
+const glassButtonStyle: React.CSSProperties = {
+    background: '#6366f1',
+    border: '1px solid rgba(255, 255, 255, 0.1)',
+    backdropFilter: 'blur(10px)',
+    borderRadius: '8px',
+    color: 'white',
+    fontWeight: 600,
+    cursor: 'pointer',
+    transition: 'all 0.3s ease',
+    padding: '0.75rem 1.5rem',
+    fontSize: '1rem'
+};
 
 export const GlassButton: React.FC<GlassButtonProps> = ({
     children,
@@ -140,15 +123,14 @@ export const GlassButton: React.FC<GlassButtonProps> = ({
     onClick,
     className
 }) => (
-    <StyledGlassButton 
-    variant= { variant }
-size = { size }
-disabled = { disabled }
-onClick = { onClick }
-className = { className }
+    <button 
+        style={glassButtonStyle}
+        disabled={disabled}
+        onClick={onClick}
+        className={className}
     >
-    { children }
-    </StyledGlassButton>
+        {children}
+    </button>
 );
 
 // Glass Input Component
@@ -161,32 +143,17 @@ interface GlassInputProps {
     className?: string;
 }
 
-const StyledGlassInput = styled.input`
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
-  border-radius: 8px;
-  padding: 0.75rem 1rem;
-  color: white;
-  font-size: 1rem;
-  width: 100%;
-  transition: all 0.3s ease;
-  
-  &::placeholder {
-    color: rgba(255, 255, 255, 0.5);
-  }
-  
-  &:focus {
-    outline: none;
-    border-color: #6366f1;
-    box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
-  }
-  
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-`;
+const glassInputStyle: React.CSSProperties = {
+    background: 'rgba(255, 255, 255, 0.05)',
+    border: '1px solid rgba(255, 255, 255, 0.1)',
+    backdropFilter: 'blur(10px)',
+    borderRadius: '8px',
+    padding: '0.75rem 1rem',
+    color: 'white',
+    fontSize: '1rem',
+    width: '100%',
+    transition: 'all 0.3s ease'
+};
 
 export const GlassInput: React.FC<GlassInputProps> = ({
     type = 'text',
@@ -196,13 +163,14 @@ export const GlassInput: React.FC<GlassInputProps> = ({
     disabled = false,
     className
 }) => (
-    <StyledGlassInput
-    type= { type }
-placeholder = { placeholder }
-value = { value }
-onChange = { onChange }
-disabled = { disabled }
-className = { className }
+    <input
+        style={glassInputStyle}
+        type={type}
+        placeholder={placeholder}
+        value={value}
+        onChange={onChange}
+        disabled={disabled}
+        className={className}
     />
 );
 
@@ -214,86 +182,69 @@ interface GlassModalProps {
     title?: string;
 }
 
-const ModalOverlay = styled.div<{ isOpen: boolean }>`
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(4px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-`;
+const modalOverlayStyle: React.CSSProperties = {
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    background: 'rgba(0, 0, 0, 0.5)',
+    backdropFilter: 'blur(4px)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 1000
+};
 
-const ModalContent = styled.div`
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
-  border-radius: 12px;
-  padding: 2rem;
-  max-width: 90vw;
-  max-height: 90vh;
-  overflow-y: auto;
-  position: relative;
-`;
-
-const ModalHeader = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1.5rem;
-  
-  h2 {
-    margin: 0;
-    color: white;
-    font-size: 1.5rem;
-    font-weight: 600;
-  }
-`;
-
-const CloseButton = styled.button`
-  background: none;
-  border: none;
-  color: white;
-  font-size: 1.5rem;
-  cursor: pointer;
-  padding: 0.5rem;
-  border-radius: 4px;
-  transition: background 0.3s ease;
-  
-  &:hover {
-    background: rgba(255, 255, 255, 0.1);
-  }
-`;
+const modalContentStyle: React.CSSProperties = {
+    background: 'rgba(255, 255, 255, 0.05)',
+    border: '1px solid rgba(255, 255, 255, 0.1)',
+    backdropFilter: 'blur(10px)',
+    borderRadius: '12px',
+    padding: '2rem',
+    maxWidth: '90vw',
+    maxHeight: '90vh',
+    overflowY: 'auto',
+    position: 'relative'
+};
 
 export const GlassModal: React.FC<GlassModalProps> = ({
     isOpen,
     onClose,
     children,
     title
-}) => (
-    <ModalOverlay isOpen= { isOpen } onClick = { onClose } >
-        <ModalContent onClick={(e) => e.stopPropagation()}>
-            { title && (
-                <ModalHeader>
-                <h2>{ title } </h2>
-                < CloseButton onClick = { onClose } >×</CloseButton>
-                    </ModalHeader>
-      )}
-{ children }
-</ModalContent>
-    </ModalOverlay>
-);
+}) => {
+    if (!isOpen) return null;
+    
+    return (
+        <div style={modalOverlayStyle} onClick={onClose}>
+            <div style={modalContentStyle} onClick={(e) => e.stopPropagation()}>
+                {title && (
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                        <h2 style={{ margin: 0, color: 'white', fontSize: '1.5rem', fontWeight: 600 }}>{title}</h2>
+                        <button 
+                            onClick={onClose}
+                            style={{ 
+                                background: 'none', 
+                                border: 'none', 
+                                color: 'white', 
+                                fontSize: '1.5rem', 
+                                cursor: 'pointer', 
+                                padding: '0.5rem' 
+                            }}
+                        >
+                            ×
+                        </button>
+                    </div>
+                )}
+                {children}
+            </div>
+        </div>
+    );
+};
 
 // Export all components
 export {
-    baseGlassmorphismTheme,
-    serviceThemeOverrides,
-    GlassCard,
-    GlassButton,
-    GlassInput,
-    GlassModal
+    duplicateBaseGlassmorphismTheme,
+    duplicateServiceThemeOverrides
 };

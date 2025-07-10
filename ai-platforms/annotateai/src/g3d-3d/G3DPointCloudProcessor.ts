@@ -570,6 +570,49 @@ export class G3DPointCloudProcessor {
         }
     }
 
+    /**
+     * Create point cloud geometry from points
+     */
+    createPointCloud(points: Float32Array, colors?: Float32Array, normals?: Float32Array): any {
+        const pointCloudData = {
+            points: points,
+            colors: colors || null,
+            normals: normals || null,
+            count: points.length / 3
+        };
+
+        // Create a basic point cloud object
+        const pointCloud = {
+            type: 'pointcloud',
+            data: pointCloudData,
+            visible: true,
+            material: {
+                color: { r: 1, g: 1, b: 1, a: 1 },
+                size: 1.0
+            },
+            
+            // Basic methods for point cloud manipulation
+            setVisible: (visible: boolean) => {
+                pointCloud.visible = visible;
+            },
+            
+            setColor: (color: { r: number; g: number; b: number; a?: number }) => {
+                pointCloud.material.color = { ...color, a: color.a || 1 };
+            },
+            
+            setSize: (size: number) => {
+                pointCloud.material.size = size;
+            },
+            
+            updatePoints: (newPoints: Float32Array) => {
+                pointCloud.data.points = newPoints;
+                pointCloud.data.count = newPoints.length / 3;
+            }
+        };
+
+        return pointCloud;
+    }
+
     // Private helper methods
 
     /**

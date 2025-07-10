@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { GlassCard } from '@shared/ui/components';
 
 
 // G3D MetaverseAI - Immersive Virtual World Builder Platform

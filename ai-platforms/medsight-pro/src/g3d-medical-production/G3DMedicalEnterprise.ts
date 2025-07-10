@@ -620,23 +620,23 @@ export class G3DMedicalEnterprise {
 
             // Initialize facility manager
             this.facilityManager = new G3DFacilityManager(this.config);
-            await this.facilityManager.init();
+            await this.facilityManager.initialize();
 
             // Initialize network manager
             this.networkManager = new G3DNetworkManager(this.config);
-            await this.networkManager.init();
+            await this.networkManager.initialize();
 
             // Initialize compliance manager
             this.complianceManager = new G3DEnterpriseComplianceManager(this.config);
-            await this.complianceManager.init();
+            await this.complianceManager.initialize();
 
             // Initialize resource manager
             this.resourceManager = new G3DEnterpriseResourceManager(this.config);
-            await this.resourceManager.init();
+            await this.resourceManager.initialize();
 
             // Initialize analytics manager
             this.analyticsManager = new G3DEnterpriseAnalyticsManager(this.config);
-            await this.analyticsManager.init();
+            await this.analyticsManager.initialize();
 
             this.isInitialized = true;
             console.log('G3D Medical Enterprise System initialized successfully');
@@ -1111,27 +1111,27 @@ export class G3DMedicalEnterprise {
 
         // Dispose managers
         if (this.facilityManager) {
-            this.facilityManager.cleanup();
+            this.facilityManager.dispose();
             this.facilityManager = null;
         }
 
         if (this.networkManager) {
-            this.networkManager.cleanup();
+            this.networkManager.dispose();
             this.networkManager = null;
         }
 
         if (this.complianceManager) {
-            this.complianceManager.cleanup();
+            this.complianceManager.dispose();
             this.complianceManager = null;
         }
 
         if (this.resourceManager) {
-            this.resourceManager.cleanup();
+            this.resourceManager.dispose();
             this.resourceManager = null;
         }
 
         if (this.analyticsManager) {
-            this.analyticsManager.cleanup();
+            this.analyticsManager.dispose();
             this.analyticsManager = null;
         }
 

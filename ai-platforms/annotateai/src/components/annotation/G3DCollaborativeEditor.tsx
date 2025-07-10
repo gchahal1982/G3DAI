@@ -283,8 +283,48 @@ export const G3DCollaborativeEditor: React.FC<G3DCollaborativeEditorProps> = ({
     const xrRef = useRef<G3DXRAnnotation | null>(null);
     const wsRef = useRef<WebSocket | null>(null);
 
+
+
     const [session, setSession] = useState<CollaborativeSession>(
-        initialSession || createDefaultSession()
+        initialSession || {
+            id: sessionId,
+            name: `Collaborative Session ${sessionId}`,
+            createdAt: Date.now(),
+            ownerId: userId,
+            participants: [],
+            permissions: {
+                allowGuests: true,
+                requireApproval: false,
+                maxParticipants: 10,
+                allowAnnotationEdit: ['owner', 'admin', 'editor'],
+                allowAnnotationDelete: ['owner', 'admin', 'editor'],
+                allowSessionSettings: ['owner', 'admin'],
+                allowParticipantManagement: ['owner', 'admin']
+            },
+            state: {
+                locked: false,
+                readonly: false,
+                synchronized: true,
+                conflictResolution: 'last_write_wins',
+                versionControl: true,
+                autoSave: true,
+                saveInterval: 30000
+            },
+            annotations: new Map(),
+            history: [],
+            settings: {
+                enableVoiceChat: settings.enableVoiceChat,
+                enableVideoChat: false,
+                enableScreenShare: false,
+                enableXR: settings.enableXR,
+                autoSync: settings.enableRealTime,
+                conflictNotifications: true,
+                presenceIndicators: true,
+                cursorSharing: true,
+                realTimeUpdates: settings.enableRealTime,
+                compressionLevel: 5
+            }
+        }
     );
     const [currentUser, setCurrentUser] = useState<Participant | null>(null);
     const [participants, setParticipants] = useState<Map<string, Participant>>(new Map());
@@ -390,9 +430,13 @@ export const G3DCollaborativeEditor: React.FC<G3DCollaborativeEditorProps> = ({
             far: 1000
         });
 
-        camera.position.set(10, 10, 10);
-        camera.lookAt(0, 0, 0);
-        scene.setActiveCamera(camera);
+        if (camera.position) {
+            camera.position.x = 10;
+            camera.position.y = 10;
+            camera.position.z = 10;
+        }
+        camera.lookAt?.(0, 0, 0);
+        scene.setActiveCamera?.(camera);
 
         // Setup lighting
         await setupLighting();
@@ -408,20 +452,20 @@ export const G3DCollaborativeEditor: React.FC<G3DCollaborativeEditorProps> = ({
         const scene = sceneRef.current;
 
         // Ambient light
-        const ambientLight = scene.createLight('ambient', {
+        const ambientLight = scene.createLight?.('ambient', {
             color: { r: 0.4, g: 0.4, b: 0.4, a: 1.0 },
             intensity: 0.6
         });
-        scene.add(ambientLight);
+        if (ambientLight) scene.add?.(ambientLight);
 
         // Directional light
-        const directionalLight = scene.createLight('directional', {
+        const directionalLight = scene.createLight?.('directional', {
             color: { r: 1, g: 1, b: 1, a: 1 },
             intensity: 0.8,
             direction: { x: -1, y: -1, z: -1 },
             castShadows: true
         });
-        scene.add(directionalLight);
+        if (directionalLight) scene.add?.(directionalLight);
     };
 
     // Setup participant indicators (cursors, avatars, etc.)
@@ -457,19 +501,21 @@ export const G3DCollaborativeEditor: React.FC<G3DCollaborativeEditorProps> = ({
             cursorMaterial
         );
 
-        cursorMesh.position.set(
-            participant.cursor.position.x,
-            participant.cursor.position.y,
-            participant.cursor.position.z
-        );
+        if (cursorMesh?.position) {
+            cursorMesh.position.x = participant.cursor.position.x;
+            cursorMesh.position.y = participant.cursor.position.y;
+            cursorMesh.position.z = participant.cursor.position.z;
+        }
 
-        cursorMesh.visible = participant.cursor.visible;
-        scene.add(cursorMesh);
+        if (cursorMesh) {
+            cursorMesh.visible = participant.cursor.visible;
+        }
+        scene.add?.(cursorMesh);
 
         // Add participant name label
         const nameLabel = await createParticipantLabel(participant);
-        if (nameLabel) {
-            cursorMesh.add(nameLabel);
+        if (nameLabel && cursorMesh) {
+            cursorMesh.add?.(nameLabel);
         }
     };
 
@@ -565,9 +611,9 @@ export const G3DCollaborativeEditor: React.FC<G3DCollaborativeEditorProps> = ({
 
         // Remove cursor
         if (sceneRef.current) {
-            const cursorMesh = sceneRef.current.getObjectByName(`cursor-${participantId}`);
+            const cursorMesh = (sceneRef.current as any).getObjectByName?.(`cursor-${participantId}`);
             if (cursorMesh) {
-                sceneRef.current.remove(cursorMesh);
+                (sceneRef.current as any).remove?.(cursorMesh);
             }
         }
 
@@ -580,9 +626,11 @@ export const G3DCollaborativeEditor: React.FC<G3DCollaborativeEditorProps> = ({
 
         // Update cursor visualization
         if (sceneRef.current) {
-            const cursorMesh = sceneRef.current.getObjectByName(`cursor-${participantId}`);
-            if (cursorMesh) {
-                cursorMesh.position.set(cursor.position.x, cursor.position.y, cursor.position.z);
+            const cursorMesh = (sceneRef.current as any).getObjectByName?.(`cursor-${participantId}`);
+            if (cursorMesh && cursorMesh.position) {
+                cursorMesh.position.x = cursor.position.x;
+                cursorMesh.position.y = cursor.position.y;
+                cursorMesh.position.z = cursor.position.z;
                 cursorMesh.visible = cursor.visible;
             }
         }
@@ -753,17 +801,21 @@ export const G3DCollaborativeEditor: React.FC<G3DCollaborativeEditorProps> = ({
         if (!settings.enableXR) return;
 
         const xr = new G3DXRAnnotation();
-        await xr.init();
+        await (xr as any).init?.();
         xrRef.current = xr;
 
         // Setup XR event handlers
-        xr.onSessionStart = () => {
-            console.log('XR session started');
-        };
+        if ((xr as any).onSessionStart) {
+            (xr as any).onSessionStart = () => {
+                console.log('XR session started');
+            };
+        }
 
-        xr.onSessionEnd = () => {
-            console.log('XR session ended');
-        };
+        if ((xr as any).onSessionEnd) {
+            (xr as any).onSessionEnd = () => {
+                console.log('XR session ended');
+            };
+        }
     };
 
     // Setup voice chat
@@ -885,18 +937,20 @@ export const G3DCollaborativeEditor: React.FC<G3DCollaborativeEditorProps> = ({
 
         const canvas = canvasRef.current;
         const scene = sceneRef.current;
-        const camera = scene.getActiveCamera();
+        const camera = scene.getActiveCamera?.();
+
+        if (!camera) return { x: 0, y: 0, z: 0 };
 
         const ndc = {
             x: (screenX / canvas.width) * 2 - 1,
             y: -(screenY / canvas.height) * 2 + 1
         };
 
-        return camera.unproject(ndc.x, ndc.y, 0);
+        return (camera as any).unproject?.(ndc.x, ndc.y, 0) || { x: 0, y: 0, z: 0 };
     };
 
     const generateId = (): string => {
-        return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+        return `${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
     };
 
     const createDefaultSession = (): CollaborativeSession => {
@@ -947,15 +1001,15 @@ export const G3DCollaborativeEditor: React.FC<G3DCollaborativeEditorProps> = ({
             if (rendererRef.current && sceneRef.current) {
                 const startTime = Date.now();
 
-                rendererRef.current.render(sceneRef.current);
+                rendererRef.current.renderFrame(sceneRef.current);
 
                 const renderTime = Date.now() - startTime;
 
                 setPerformance(prev => ({
                     ...prev,
-                    fps: rendererRef.current?.getFPS() || 60,
+                    fps: (rendererRef.current as any).getFPS?.() || 60,
                     participantCount: participants.size,
-                    memoryUsage: rendererRef.current?.getGPUMemoryUsage() || 0
+                    memoryUsage: (rendererRef.current as any).getGPUMemoryUsage?.() || 0
                 }));
             }
 
@@ -971,8 +1025,8 @@ export const G3DCollaborativeEditor: React.FC<G3DCollaborativeEditorProps> = ({
             wsRef.current.close();
         }
 
-        rendererRef.current?.cleanup();
-        xrRef.current?.cleanup();
+        (rendererRef.current as any)?.cleanup?.();
+        (xrRef.current as any)?.cleanup?.();
 
         if (voiceChat.stream) {
             voiceChat.stream.getTracks().forEach(track => track.stop());

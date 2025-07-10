@@ -9,6 +9,7 @@ export interface IUser extends Document {
     password: string;
     firstName: string;
     lastName: string;
+    fullName: string; // Virtual property
     avatar?: string;
 
     // Account status
@@ -16,11 +17,14 @@ export interface IUser extends Document {
     isEmailVerified: boolean;
     emailVerificationToken?: string;
     emailVerifiedAt?: Date;
+    displayName?: string;
 
     // Authentication
     lastLoginAt?: Date;
     loginCount: number;
     refreshTokens: string[];
+    loginAttempts: number;
+    lockUntil?: Date;
 
     // Password management
     passwordResetToken?: string;
@@ -35,7 +39,9 @@ export interface IUser extends Document {
     // Organization and team management
     organizationId?: mongoose.Types.ObjectId;
     role: 'owner' | 'admin' | 'member' | 'viewer';
+    roles: string[]; // Legacy support for roles array
     permissions: string[];
+    scopes: string[];
 
     // Subscription and billing
     subscriptionId?: string; // Stripe subscription ID
@@ -46,15 +52,13 @@ export interface IUser extends Document {
     trialEndsAt?: Date;
 
     // Service access and usage
-    serviceAccess: {
-        [serviceName: string]: {
-            enabled: boolean;
-            tier: 'free' | 'starter' | 'professional' | 'enterprise';
-            usageLimit: number;
-            usageCount: number;
-            resetDate: Date;
-        };
-    };
+    serviceAccess: Map<string, {
+        enabled: boolean;
+        tier: 'free' | 'starter' | 'professional' | 'enterprise';
+        usageLimit: number;
+        usageCount: number;
+        resetDate: Date;
+    }>;
 
     // API access
     apiKeys: {
@@ -108,6 +112,12 @@ export interface IUser extends Document {
     trackUsage(serviceName: string, operation: string, cost?: number): Promise<void>;
     canAccessService(serviceName: string): boolean;
     hasPermission(permission: string): boolean;
+    generateEmailVerificationToken(): string;
+    generatePasswordResetToken(): string;
+    isLocked(): boolean;
+    incrementLoginAttempts(): Promise<void>;
+    resetLoginAttempts(): Promise<void>;
+    updateLastLogin(): Promise<void>;
 }
 
 // User schema with comprehensive business features
@@ -155,6 +165,7 @@ const UserSchema = new Schema<IUser>({
     },
     emailVerificationToken: String,
     emailVerifiedAt: Date,
+    displayName: String,
 
     // Authentication
     lastLoginAt: Date,
@@ -165,6 +176,11 @@ const UserSchema = new Schema<IUser>({
     refreshTokens: [{
         type: String
     }],
+    loginAttempts: {
+        type: Number,
+        default: 0
+    },
+    lockUntil: Date,
 
     // Password management
     passwordResetToken: String,
@@ -191,7 +207,13 @@ const UserSchema = new Schema<IUser>({
         enum: ['owner', 'admin', 'member', 'viewer'],
         default: 'owner'
     },
+    roles: [{
+        type: String
+    }],
     permissions: [{
+        type: String
+    }],
+    scopes: [{
         type: String
     }],
 
@@ -355,12 +377,12 @@ UserSchema.methods.generateAuthToken = function (): string {
             role: this.role,
             organizationId: this.organizationId
         },
-        process.env.JWT_SECRET!,
+        process.env.JWT_SECRET || 'default-secret',
         {
-            expiresIn: process.env.JWT_EXPIRES_IN || '24h',
+            expiresIn: '24h',
             issuer: 'g3d-ai-services',
             audience: 'g3d-users'
-        }
+        } as jwt.SignOptions
     );
 };
 
@@ -368,7 +390,7 @@ UserSchema.methods.generateAuthToken = function (): string {
 UserSchema.methods.generateRefreshToken = function (): string {
     const refreshToken = jwt.sign(
         { userId: this._id },
-        process.env.JWT_REFRESH_SECRET!,
+        process.env.JWT_REFRESH_SECRET || 'refresh-secret',
         {
             expiresIn: '30d',
             issuer: 'g3d-ai-services',
@@ -451,6 +473,63 @@ UserSchema.methods.hasPermission = function (permission: string): boolean {
     return this.permissions.includes(permission) ||
         this.permissions.includes('*') ||
         this.role === 'owner';
+};
+
+// Generate email verification token
+UserSchema.methods.generateEmailVerificationToken = function (): string {
+    const crypto = require('crypto');
+    const token = crypto.randomBytes(32).toString('hex');
+    this.emailVerificationToken = token;
+    return token;
+};
+
+// Generate password reset token
+UserSchema.methods.generatePasswordResetToken = function (): string {
+    const crypto = require('crypto');
+    const token = crypto.randomBytes(32).toString('hex');
+    this.passwordResetToken = token;
+    this.passwordResetExpires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+    return token;
+};
+
+// Check if account is locked
+UserSchema.methods.isLocked = function (): boolean {
+    return !!(this.lockUntil && this.lockUntil > Date.now());
+};
+
+// Increment login attempts
+UserSchema.methods.incrementLoginAttempts = async function (): Promise<void> {
+    // If we have a previous lock that has expired, restart at 1
+    if (this.lockUntil && this.lockUntil < Date.now()) {
+        return this.updateOne({
+            $unset: { lockUntil: 1 },
+            $set: { loginAttempts: 1 }
+        });
+    }
+    
+    const updates: any = { $inc: { loginAttempts: 1 } };
+    
+    // After 5 failed attempts, lock for 2 hours
+    if (this.loginAttempts + 1 >= 5 && !this.isLocked()) {
+        updates.$set = { lockUntil: Date.now() + 2 * 60 * 60 * 1000 }; // 2 hours
+    }
+    
+    return this.updateOne(updates);
+};
+
+// Reset login attempts
+UserSchema.methods.resetLoginAttempts = async function (): Promise<void> {
+    return this.updateOne({
+        $unset: { loginAttempts: 1, lockUntil: 1 }
+    });
+};
+
+// Update last login
+UserSchema.methods.updateLastLogin = async function (): Promise<void> {
+    return this.updateOne({
+        $set: { lastLoginAt: new Date() },
+        $inc: { loginCount: 1 }
+    });
 };
 
 export const User = mongoose.model<IUser>('User', UserSchema);

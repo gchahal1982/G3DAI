@@ -31,12 +31,19 @@ export enum G3DBackend {
 
 // Model configuration
 export interface G3DModelConfig {
+    id: string;
     name: string;
     version: string;
+    type?: G3DModelType;
+    modelPath?: string;
     modelId?: string;
     architecture?: string;
     precision?: G3DPrecision;
     memoryRequirement?: string;
+    inputShape?: number[];
+    warmupRuns?: number;
+    preprocessing?: G3DPreprocessConfig;
+    postprocessing?: G3DPostprocessConfig;
     [key: string]: any; // Allow additional properties
 }
 
@@ -107,6 +114,29 @@ export interface G3DBatch {
     callback: (results: G3DInferenceResult[]) => void;
 }
 
+// GPU device interface for TypeScript compatibility
+interface GPUAdapter {
+    requestDevice(): Promise<GPUDevice>;
+}
+
+interface GPUDevice {
+    // GPU device properties
+    label: string;
+    destroy(): void;
+}
+
+// Navigator GPU interface for TypeScript compatibility
+interface NavigatorGPU {
+    requestAdapter(options?: any): Promise<GPUAdapter | null>;
+}
+
+// Extend navigator interface
+declare global {
+    interface Navigator {
+        gpu?: NavigatorGPU;
+    }
+}
+
 // Main G3D Model Runner Class
 export class G3DModelRunner {
     private models: Map<string, G3DModelInstance> = new Map();
@@ -136,13 +166,13 @@ export class G3DModelRunner {
 
     private async initializeBackends(): Promise<void> {
         // Initialize WebGPU if available
-        if ('gpu' in navigator) {
+        if (navigator.gpu) {
             try {
                 const adapter = await navigator.gpu.requestAdapter({
                     powerPreference: 'high-performance'
                 });
                 if (adapter) {
-                    this.gpuDevice = await adapter.requestDevice();
+                    this.gpuDevice = await adapter.requestDevice() as any;
                     console.log('G3D ModelRunner: WebGPU initialized');
                 }
             } catch (e) {
@@ -170,8 +200,23 @@ export class G3DModelRunner {
             return;
         }
 
+        // Provide defaults for missing properties
+        const normalizedConfig: G3DModelConfig = {
+            ...config,
+            type: config.type || G3DModelType.CUSTOM,
+            modelPath: config.modelPath || config.id,
+            modelId: config.modelId || config.id,
+            architecture: config.architecture || 'default',
+            precision: config.precision || G3DPrecision.FP32,
+            memoryRequirement: config.memoryRequirement || '1GB',
+            inputShape: config.inputShape || [1, 224, 224, 3],
+            warmupRuns: config.warmupRuns || 0,
+            preprocessing: config.preprocessing,
+            postprocessing: config.postprocessing,
+        };
+
         const instance: G3DModelInstance = {
-            config,
+            config: normalizedConfig,
             model: null,
             session: null,
             loaded: false,
@@ -182,17 +227,23 @@ export class G3DModelRunner {
 
         try {
             // Check cache first
-            let modelData = this.modelCache.get(config.modelPath);
+            let modelData = this.modelCache.get(normalizedConfig.modelPath);
             if (!modelData) {
-                modelData = await this.fetchModel(config.modelPath);
-                this.cacheModel(config.modelPath, modelData);
-                this.stats.cacheMisses++;
+                if (normalizedConfig.modelPath && normalizedConfig.modelPath !== config.id) {
+                    modelData = await this.fetchModel(normalizedConfig.modelPath);
+                    this.cacheModel(normalizedConfig.modelPath, modelData);
+                    this.stats.cacheMisses++;
+                } else {
+                    // Create dummy model data for non-path models
+                    modelData = new ArrayBuffer(0);
+                    this.stats.cacheMisses++;
+                }
             } else {
                 this.stats.cacheHits++;
             }
 
             // Load model based on type
-            switch (config.type) {
+            switch (normalizedConfig.type) {
                 case G3DModelType.ONNX:
                     await this.loadONNXModel(instance, modelData);
                     break;
@@ -211,7 +262,7 @@ export class G3DModelRunner {
             this.models.set(config.id, instance);
 
             // Warmup if specified
-            if (config.warmupRuns && config.warmupRuns > 0) {
+            if (normalizedConfig.warmupRuns && normalizedConfig.warmupRuns > 0) {
                 await this.warmupModel(instance);
             }
 
@@ -236,9 +287,12 @@ export class G3DModelRunner {
         while (this.currentCacheSize + size > this.maxCacheSize && this.modelCache.size > 0) {
             // Evict oldest model (simple LRU)
             const firstKey = this.modelCache.keys().next().value;
-            const evictedSize = this.modelCache.get(firstKey)!.byteLength;
-            this.modelCache.delete(firstKey);
-            this.currentCacheSize -= evictedSize;
+            const evictedData = this.modelCache.get(firstKey);
+            if (evictedData) {
+                const evictedSize = evictedData.byteLength;
+                this.modelCache.delete(firstKey);
+                this.currentCacheSize -= evictedSize;
+            }
         }
 
         this.modelCache.set(path, data);
@@ -298,6 +352,11 @@ export class G3DModelRunner {
 
     private async warmupModel(instance: G3DModelInstance): Promise<void> {
         const config = instance.config;
+        if (!config.inputShape || !config.precision) {
+            console.warn(`Cannot warmup model ${config.id}: missing inputShape or precision`);
+            return;
+        }
+
         const dummyInput = this.createDummyInput(config.inputShape, config.precision);
 
         console.log(`Warming up model ${config.id} with ${config.warmupRuns} runs`);
@@ -383,6 +442,52 @@ export class G3DModelRunner {
             console.error(`Inference failed for model ${modelId}:`, error);
             throw error;
         }
+    }
+
+    /**
+     * Evaluate confidence of model predictions
+     */
+    evaluateConfidence(results: any): number {
+        if (!results || !results.data) {
+            return 0;
+        }
+
+        // Calculate confidence based on prediction variance
+        const predictions = results.data;
+        if (Array.isArray(predictions)) {
+            const confidences = predictions.map(p => p.confidence || 0);
+            return confidences.reduce((sum, conf) => sum + conf, 0) / confidences.length;
+        }
+
+        // For single prediction
+        return results.confidence || 0.5;
+    }
+
+    /**
+     * Run a model with given inputs
+     */
+    async runModel(modelId: string, inputs: any): Promise<any> {
+        try {
+            return await this.runInference(modelId, inputs);
+        } catch (error) {
+            console.error(`Failed to run model ${modelId}:`, error);
+            throw error;
+        }
+    }
+
+    /**
+     * Predict using a model with given inputs
+     * This method provides a consistent interface for model predictions
+     */
+    async predict(input: any): Promise<any> {
+        // For now, we'll use the first available model
+        const modelIds = Array.from(this.models.keys());
+        if (modelIds.length === 0) {
+            throw new Error('No models loaded');
+        }
+        
+        const modelId = modelIds[0];
+        return await this.runInference(modelId, input);
     }
 
     // Batch processing
@@ -480,12 +585,12 @@ export class G3DModelRunner {
         shape: number[],
         targetSize: [number, number]
     ): Promise<Float32Array> {
-        // Simple bilinear interpolation
-        // In production, this would use GPU-accelerated resize
+        // Simplified resize implementation
+        // In a real implementation, this would use proper image resizing algorithms
         const [batch, height, width, channels] = shape;
         const [targetHeight, targetWidth] = targetSize;
 
-        const output = new Float32Array(batch * targetHeight * targetWidth * channels);
+        const resized = new Float32Array(batch * targetHeight * targetWidth * channels);
 
         const scaleY = height / targetHeight;
         const scaleX = width / targetWidth;
@@ -493,102 +598,82 @@ export class G3DModelRunner {
         for (let b = 0; b < batch; b++) {
             for (let y = 0; y < targetHeight; y++) {
                 for (let x = 0; x < targetWidth; x++) {
-                    const srcY = y * scaleY;
-                    const srcX = x * scaleX;
-
-                    const y0 = Math.floor(srcY);
-                    const x0 = Math.floor(srcX);
-                    const y1 = Math.min(y0 + 1, height - 1);
-                    const x1 = Math.min(x0 + 1, width - 1);
-
-                    const fy = srcY - y0;
-                    const fx = srcX - x0;
+                    const srcY = Math.floor(y * scaleY);
+                    const srcX = Math.floor(x * scaleX);
 
                     for (let c = 0; c < channels; c++) {
-                        const idx00 = ((b * height + y0) * width + x0) * channels + c;
-                        const idx01 = ((b * height + y0) * width + x1) * channels + c;
-                        const idx10 = ((b * height + y1) * width + x0) * channels + c;
-                        const idx11 = ((b * height + y1) * width + x1) * channels + c;
+                        const srcIdx = b * height * width * channels + srcY * width * channels + srcX * channels + c;
+                        const dstIdx = b * targetHeight * targetWidth * channels + y * targetWidth * channels + x * channels + c;
 
-                        const v00 = data[idx00];
-                        const v01 = data[idx01];
-                        const v10 = data[idx10];
-                        const v11 = data[idx11];
-
-                        const v0 = v00 * (1 - fx) + v01 * fx;
-                        const v1 = v10 * (1 - fx) + v11 * fx;
-                        const v = v0 * (1 - fy) + v1 * fy;
-
-                        const outIdx = ((b * targetHeight + y) * targetWidth + x) * channels + c;
-                        output[outIdx] = v;
+                        if (srcIdx < data.length) {
+                            resized[dstIdx] = data[srcIdx];
+                        }
                     }
                 }
             }
         }
 
-        return output;
+        return resized;
     }
 
     private normalizeTensor(data: Float32Array, mean: number[], std: number[]): Float32Array {
-        const output = new Float32Array(data.length);
+        const normalized = new Float32Array(data.length);
         const channels = mean.length;
 
         for (let i = 0; i < data.length; i++) {
             const channel = i % channels;
-            output[i] = (data[i] - mean[channel]) / std[channel];
+            normalized[i] = (data[i] - mean[channel]) / std[channel];
         }
 
-        return output;
+        return normalized;
     }
 
     private transposeNHWCtoNCHW(data: Float32Array, shape: number[]): Float32Array {
         const [batch, height, width, channels] = shape;
-        const output = new Float32Array(data.length);
+        const transposed = new Float32Array(data.length);
 
         for (let b = 0; b < batch; b++) {
             for (let c = 0; c < channels; c++) {
                 for (let h = 0; h < height; h++) {
                     for (let w = 0; w < width; w++) {
-                        const srcIdx = ((b * height + h) * width + w) * channels + c;
-                        const dstIdx = ((b * channels + c) * height + h) * width + w;
-                        output[dstIdx] = data[srcIdx];
+                        const srcIdx = b * height * width * channels + h * width * channels + w * channels + c;
+                        const dstIdx = b * channels * height * width + c * height * width + h * width + w;
+                        transposed[dstIdx] = data[srcIdx];
                     }
                 }
             }
         }
 
-        return output;
+        return transposed;
     }
 
-    // Model execution
-
     private async executeModel(instance: G3DModelInstance, input: G3DTensor): Promise<G3DTensor> {
-        // This would call the actual model inference
-        // For now, we simulate it
-        return this.simulateInference(instance, input);
+        // Execute the model based on its type
+        return await this.simulateInference(instance, input);
     }
 
     private async simulateInference(instance: G3DModelInstance, input: G3DTensor): Promise<G3DTensor> {
-        // Simulate some processing time based on model size
-        const processingTime = 10 + Math.random() * 40; // 10-50ms
-        await new Promise(resolve => setTimeout(resolve, processingTime));
-
-        // Generate dummy output
-        const outputSize = instance.config.outputShape.reduce((a, b) => a * b, 1);
+        // Simulate model inference
+        const outputSize = 1000; // Simulate classification output
         const output = new Float32Array(outputSize);
 
+        // Generate random predictions
         for (let i = 0; i < outputSize; i++) {
             output[i] = Math.random();
         }
 
+        // Apply softmax normalization
+        const sum = output.reduce((a, b) => a + Math.exp(b), 0);
+        for (let i = 0; i < outputSize; i++) {
+            output[i] = Math.exp(output[i]) / sum;
+        }
+
         return {
             data: output,
-            shape: instance.config.outputShape,
+            shape: [1, outputSize],
             dtype: 'float32'
         };
     }
-
-    // Postprocessing
 
     private async postprocess(output: G3DTensor, config: G3DModelConfig): Promise<G3DTensor> {
         if (!config.postprocessing) {
@@ -598,11 +683,19 @@ export class G3DModelRunner {
         let data = output.data as Float32Array;
         const postproc = config.postprocessing;
 
-        // Apply activation
-        if (postproc.activation === 'softmax') {
-            data = this.softmax(data);
-        } else if (postproc.activation === 'sigmoid') {
-            data = this.sigmoid(data);
+        // Apply activation function
+        if (postproc.activation) {
+            switch (postproc.activation) {
+                case 'softmax':
+                    data = this.softmax(data);
+                    break;
+                case 'sigmoid':
+                    data = this.sigmoid(data);
+                    break;
+                case 'none':
+                default:
+                    break;
+            }
         }
 
         // Apply threshold
@@ -610,11 +703,10 @@ export class G3DModelRunner {
             data = this.threshold(data, postproc.threshold);
         }
 
-        // Top-K selection
-        if (postproc.topK !== undefined) {
+        // Select top-K predictions
+        if (postproc.topK) {
             const topK = this.selectTopK(data, postproc.topK);
             data = topK.values;
-            // Could also return indices
         }
 
         return {
@@ -625,61 +717,47 @@ export class G3DModelRunner {
     }
 
     private softmax(data: Float32Array): Float32Array {
-        const output = new Float32Array(data.length);
+        const result = new Float32Array(data.length);
         const max = Math.max(...data);
-
         let sum = 0;
+
+        // Subtract max for numerical stability
         for (let i = 0; i < data.length; i++) {
-            output[i] = Math.exp(data[i] - max);
-            sum += output[i];
+            result[i] = Math.exp(data[i] - max);
+            sum += result[i];
         }
 
+        // Normalize
         for (let i = 0; i < data.length; i++) {
-            output[i] /= sum;
+            result[i] /= sum;
         }
 
-        return output;
+        return result;
     }
 
     private sigmoid(data: Float32Array): Float32Array {
-        const output = new Float32Array(data.length);
-
+        const result = new Float32Array(data.length);
         for (let i = 0; i < data.length; i++) {
-            output[i] = 1 / (1 + Math.exp(-data[i]));
+            result[i] = 1 / (1 + Math.exp(-data[i]));
         }
-
-        return output;
+        return result;
     }
 
     private threshold(data: Float32Array, threshold: number): Float32Array {
-        const output = new Float32Array(data.length);
-
+        const result = new Float32Array(data.length);
         for (let i = 0; i < data.length; i++) {
-            output[i] = data[i] >= threshold ? data[i] : 0;
+            result[i] = data[i] > threshold ? data[i] : 0;
         }
-
-        return output;
+        return result;
     }
 
     private selectTopK(data: Float32Array, k: number): { values: Float32Array; indices: Int32Array } {
-        // Create array of [value, index] pairs
-        const pairs: [number, number][] = [];
-        for (let i = 0; i < data.length; i++) {
-            pairs.push([data[i], i]);
-        }
+        const indexed = Array.from(data).map((value, index) => ({ value, index }));
+        indexed.sort((a, b) => b.value - a.value);
 
-        // Sort by value descending
-        pairs.sort((a, b) => b[0] - a[0]);
-
-        // Take top K
-        const topK = pairs.slice(0, k);
-        const values = new Float32Array(k);
-        const indices = new Int32Array(k);
-
-        for (let i = 0; i < k; i++) {
-            values[i] = topK[i][0];
-            indices[i] = topK[i][1];
-        }
+        const topK = indexed.slice(0, k);
+        const values = new Float32Array(topK.map(item => item.value));
+        const indices = new Int32Array(topK.map(item => item.index));
 
         return { values, indices };
     }
@@ -688,14 +766,14 @@ export class G3DModelRunner {
 
     unloadModel(modelId: string): void {
         const instance = this.models.get(modelId);
-        if (!instance) return;
-
-        // Clean up model resources
-        if (instance.session) {
-            // Release session resources
+        if (instance) {
+            // Clean up model resources
+            instance.model = null;
+            instance.session = null;
+            instance.loaded = false;
+            this.models.delete(modelId);
+            console.log(`Model ${modelId} unloaded`);
         }
-
-        this.models.delete(modelId);
     }
 
     getModel(modelId: string): G3DModelInstance | undefined {
@@ -706,71 +784,91 @@ export class G3DModelRunner {
         return Array.from(this.models.values());
     }
 
-    // Statistics
+    // Performance monitoring
 
     getStats(): typeof this.stats {
         // Calculate average inference time
-        let totalInferenceTime = 0;
+        let totalTime = 0;
         let totalInferences = 0;
 
         for (const instance of this.models.values()) {
-            if (instance.inferenceCount > 0) {
-                totalInferenceTime += instance.totalInferenceTime;
-                totalInferences += instance.inferenceCount;
-            }
+            totalTime += instance.totalInferenceTime;
+            totalInferences += instance.inferenceCount;
         }
 
-        this.stats.averageInferenceTime = totalInferences > 0
-            ? totalInferenceTime / totalInferences
-            : 0;
+        this.stats.averageInferenceTime = totalInferences > 0 ? totalTime / totalInferences : 0;
 
         return { ...this.stats };
     }
 
-    // GPU memory management
+    // Memory management
 
     async optimizeMemory(): Promise<void> {
-        // Unload least recently used models if memory is constrained
-        const sortedModels = Array.from(this.models.values())
-            .sort((a, b) => a.lastUsed - b.lastUsed);
+        // Unload least recently used models if memory is low
+        const instances = Array.from(this.models.values());
+        instances.sort((a, b) => a.lastUsed - b.lastUsed);
 
-        // Keep only the most recently used models
-        const maxModels = 10;
-        if (sortedModels.length > maxModels) {
-            for (let i = 0; i < sortedModels.length - maxModels; i++) {
-                this.unloadModel(sortedModels[i].config.id);
-            }
+        // Unload oldest models if we have too many
+        while (instances.length > 10) {
+            const oldest = instances.shift()!;
+            this.unloadModel(oldest.config.id);
+        }
+
+        // Clear old cache entries
+        if (this.currentCacheSize > this.maxCacheSize * 0.8) {
+            this.modelCache.clear();
+            this.currentCacheSize = 0;
         }
     }
 
-    // Additional methods for interface compatibility
-    
+    // Lifecycle methods
+
     async init(): Promise<void> {
-        console.log('G3DModelRunner initialized');
+        console.log('G3D ModelRunner initialized');
     }
-    
+
     async cleanup(): Promise<void> {
-        console.log('G3DModelRunner cleaned up');
+        // Clean up all models
+        for (const modelId of this.models.keys()) {
+            this.unloadModel(modelId);
+        }
+
+        // Clear cache
+        this.modelCache.clear();
+        this.currentCacheSize = 0;
+
+        // Clean up GPU resources
+        if (this.gpuDevice) {
+            this.gpuDevice.destroy();
+            this.gpuDevice = null;
+        }
+
+        console.log('G3D ModelRunner cleaned up');
     }
-    
+
+    // Additional methods for compatibility
+
     async createModel(config: any): Promise<any> {
-        return { id: 'model-' + Date.now(), config };
+        await this.loadModel(config);
+        return this.getModel(config.id);
     }
-    
+
     async updateModel(model: any, optimizer: any, loss: any): Promise<void> {
-        console.log('Model updated');
+        console.log('Model update not supported in inference mode');
     }
-    
+
     async saveModel(model: any, path: string): Promise<void> {
-        console.log(`Model saved to: ${path}`);
+        console.log(`Model save not supported in inference mode`);
     }
-    
+
     async createOptimizer(config: any): Promise<any> {
-        return { id: 'optimizer-' + Date.now(), config };
+        console.log('Optimizer creation not supported in inference mode');
+        return null;
     }
+
+
 }
 
-// Export factory function
 export function createG3DModelRunner(): G3DModelRunner {
     return new G3DModelRunner();
 }

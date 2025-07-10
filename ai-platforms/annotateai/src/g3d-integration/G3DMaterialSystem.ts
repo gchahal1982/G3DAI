@@ -624,49 +624,6 @@ export class G3DMaterialSystem {
 
     // Texture management
 
-    createTexture(source: ImageBitmap | HTMLImageElement | HTMLCanvasElement, params?: Partial<G3DTexture>): G3DTexture {
-        const texture: G3DTexture = {
-            id: this.generateId(),
-            source,
-            width: source.width,
-            height: source.height,
-            format: params?.format || (WebGPU ? 'rgba8unorm' : 0x1908), // RGBA
-            wrapS: params?.wrapS || (WebGPU ? 'repeat' : 0x2901), // REPEAT
-            wrapT: params?.wrapT || (WebGPU ? 'repeat' : 0x2901),
-            minFilter: params?.minFilter || (WebGPU ? 'linear' : 0x2729), // LINEAR_MIPMAP_LINEAR
-            magFilter: params?.magFilter || (WebGPU ? 'linear' : 0x2729),
-            anisotropy: params?.anisotropy ?? 16,
-            generateMipmaps: params?.generateMipmaps ?? true,
-            needsUpdate: true
-        };
-
-        this.textures.set(texture.id, texture);
-        return texture;
-    }
-
-    setMaterialTexture(material: G3DMaterial, type: G3DTextureType, texture: G3DTexture): void {
-        material.textures.set(type, texture);
-
-        // Update uniform
-        const uniformName = `uUse${type.charAt(0).toUpperCase() + type.slice(1)}Map`;
-        const uniform = material.uniforms.get(uniformName);
-        if (uniform) {
-            uniform.value = 1;
-            uniform.needsUpdate = true;
-        }
-
-        // Add texture uniform
-        const textureUniformName = `u${type.charAt(0).toUpperCase() + type.slice(1)}Map`;
-        material.uniforms.set(textureUniformName, {
-            name: textureUniformName,
-            type: 'sampler2D',
-            value: texture,
-            needsUpdate: true
-        });
-    }
-
-    // Material management
-
     getMaterial(id: string): G3DMaterial | undefined {
         return this.materials.get(id);
     }
@@ -719,6 +676,359 @@ export class G3DMaterialSystem {
 
     getAllTextures(): G3DTexture[] {
         return Array.from(this.textures.values());
+    }
+
+    /**
+     * Create a material with flexible parameters
+     */
+    createMaterial(params: any): G3DMaterial {
+        const materialType = params.type || 'basic';
+        
+        switch (materialType) {
+            case 'basic':
+                return this.createBasicMaterial(
+                    params.name || 'basic_material',
+                    params.color ? vec4.fromValues(params.color.r, params.color.g, params.color.b, params.color.a) : vec4.fromValues(0.8, 0.8, 0.8, 1.0)
+                );
+            
+            case 'pbr':
+            case 'standard':
+                return this.createPBRMaterial(params.name || 'pbr_material', {
+                    baseColor: params.color ? vec4.fromValues(params.color.r, params.color.g, params.color.b, params.color.a) : vec4.fromValues(1, 1, 1, 1),
+                    metalness: params.metalness || 0,
+                    roughness: params.roughness || 0.5,
+                    emissive: params.emissive ? vec3.fromValues(params.emissive.r, params.emissive.g, params.emissive.b) : vec3.fromValues(0, 0, 0),
+                    emissiveIntensity: params.emissiveIntensity || 0
+                });
+            
+            case 'glass':
+                return this.createGlassMaterial(params.name || 'glass_material', {
+                    baseColor: params.color ? vec4.fromValues(params.color.r, params.color.g, params.color.b, params.opacity || 0.5) : vec4.fromValues(1, 1, 1, 0.5),
+                    roughness: params.roughness || 0.1,
+                    transmission: params.transmission || 0.9,
+                    thickness: params.thickness || 0.1
+                });
+            
+            case 'points':
+                return this.createPointsMaterial(params.name || 'points_material', {
+                    color: params.color ? vec4.fromValues(params.color.r, params.color.g, params.color.b, params.color.a) : vec4.fromValues(1, 1, 1, 1),
+                    size: params.size || 1,
+                    vertexColors: params.vertexColors || false
+                });
+            
+            default:
+                return this.createBasicMaterial(params.name || 'default_material', vec4.fromValues(0.8, 0.8, 0.8, 1.0));
+        }
+    }
+
+    /**
+     * Create a texture from various sources
+     */
+    async createTexture(source: HTMLImageElement | HTMLCanvasElement | ImageBitmap | ImageData | string): Promise<G3DTexture> {
+        const textureId = this.generateId();
+        
+        let imageSource: HTMLImageElement | HTMLCanvasElement | ImageBitmap;
+        
+        if (typeof source === 'string') {
+            // Load image from URL
+            imageSource = await this.loadImageFromUrl(source);
+        } else if (source instanceof ImageData) {
+            // Convert ImageData to canvas
+            imageSource = this.imageDataToCanvas(source);
+        } else {
+            imageSource = source;
+        }
+
+        const texture: G3DTexture = {
+            id: textureId,
+            source: imageSource,
+            width: imageSource.width || (source as ImageData).width,
+            height: imageSource.height || (source as ImageData).height,
+            format: (WebGPU ? 'rgba8unorm' : 0x1908) as any, // RGBA
+            wrapS: (WebGPU ? 'repeat' : 0x2901) as any, // REPEAT
+            wrapT: (WebGPU ? 'repeat' : 0x2901) as any,
+            minFilter: (WebGPU ? 'linear' : 0x2729) as any, // LINEAR_MIPMAP_LINEAR
+            magFilter: (WebGPU ? 'linear' : 0x2729) as any,
+            anisotropy: 16,
+            generateMipmaps: true,
+            needsUpdate: true
+        };
+
+        this.textures.set(textureId, texture);
+        return texture;
+    }
+
+    setMaterialTexture(material: G3DMaterial, type: G3DTextureType, texture: G3DTexture): void {
+        material.textures.set(type, texture);
+
+        // Update uniform
+        const uniformName = `uUse${type.charAt(0).toUpperCase() + type.slice(1)}Map`;
+        const uniform = material.uniforms.get(uniformName);
+        if (uniform) {
+            uniform.value = 1;
+            uniform.needsUpdate = true;
+        }
+
+        // Add texture uniform
+        const textureUniformName = `u${type.charAt(0).toUpperCase() + type.slice(1)}Map`;
+        material.uniforms.set(textureUniformName, {
+            name: textureUniformName,
+            type: 'sampler2D',
+            value: texture,
+            needsUpdate: true
+        });
+    }
+
+    /**
+     * Create a text sprite
+     */
+    createTextSprite(text: string, options: any = {}): any {
+        const fontSize = options.fontSize || 16;
+        const color = options.color || { r: 1, g: 1, b: 1, a: 1 };
+        const backgroundColor = options.backgroundColor || { r: 0, g: 0, b: 0, a: 0.7 };
+        const padding = options.padding || 4;
+
+        // Create canvas for text rendering
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+            throw new Error('Failed to get 2D context for text sprite');
+        }
+
+        // Set font
+        ctx.font = `${fontSize}px Arial`;
+        
+        // Measure text
+        const textMetrics = ctx.measureText(text);
+        const textWidth = textMetrics.width;
+        const textHeight = fontSize;
+
+        // Set canvas size
+        canvas.width = textWidth + padding * 2;
+        canvas.height = textHeight + padding * 2;
+
+        // Draw background
+        ctx.fillStyle = `rgba(${backgroundColor.r * 255}, ${backgroundColor.g * 255}, ${backgroundColor.b * 255}, ${backgroundColor.a})`;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Draw text
+        ctx.fillStyle = `rgba(${color.r * 255}, ${color.g * 255}, ${color.b * 255}, ${color.a})`;
+        ctx.font = `${fontSize}px Arial`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(text, canvas.width / 2, canvas.height / 2);
+
+        // Create sprite object
+        const sprite = {
+            id: this.generateId(),
+            type: 'sprite',
+            canvas: canvas,
+            texture: null as any,
+            position: { x: 0, y: 0, z: 0 },
+            scale: { x: 1, y: 1, z: 1 },
+            visible: true,
+            userData: { text, options }
+        };
+
+        // Create texture from canvas
+        this.createTexture(canvas).then(texture => {
+            sprite.texture = texture;
+        });
+
+        return sprite;
+    }
+
+    /**
+     * Update material properties
+     */
+    updateMaterial(material: G3DMaterial, updates: any): void {
+        if (!material) return;
+
+        // Update basic properties
+        if (updates.color) {
+            const colorUniform = material.uniforms.get('uBaseColor');
+            if (colorUniform) {
+                colorUniform.value = vec4.fromValues(updates.color.r, updates.color.g, updates.color.b, updates.color.a || 1);
+                colorUniform.needsUpdate = true;
+            }
+        }
+
+        if (updates.emissive) {
+            const emissiveUniform = material.uniforms.get('uEmissive');
+            if (emissiveUniform) {
+                emissiveUniform.value = vec3.fromValues(updates.emissive.r, updates.emissive.g, updates.emissive.b);
+                emissiveUniform.needsUpdate = true;
+            }
+        }
+
+        if (updates.emissiveIntensity !== undefined) {
+            const emissiveIntensityUniform = material.uniforms.get('uEmissiveIntensity');
+            if (emissiveIntensityUniform) {
+                emissiveIntensityUniform.value = updates.emissiveIntensity;
+                emissiveIntensityUniform.needsUpdate = true;
+            }
+        }
+
+        if (updates.opacity !== undefined) {
+            const colorUniform = material.uniforms.get('uBaseColor');
+            if (colorUniform && colorUniform.value) {
+                (colorUniform.value as vec4)[3] = updates.opacity;
+                colorUniform.needsUpdate = true;
+            }
+        }
+
+        // Update PBR properties
+        if (material.type === G3DMaterialType.PBR) {
+            if (updates.metalness !== undefined) {
+                const metalnessUniform = material.uniforms.get('uMetalness');
+                if (metalnessUniform) {
+                    metalnessUniform.value = updates.metalness;
+                    metalnessUniform.needsUpdate = true;
+                }
+            }
+
+            if (updates.roughness !== undefined) {
+                const roughnessUniform = material.uniforms.get('uRoughness');
+                if (roughnessUniform) {
+                    roughnessUniform.value = updates.roughness;
+                    roughnessUniform.needsUpdate = true;
+                }
+            }
+        }
+
+        // Update visibility and other properties
+        if (updates.visible !== undefined) {
+            material.visible = updates.visible;
+        }
+
+        if (updates.transparent !== undefined) {
+            material.blendMode = updates.transparent ? G3DBlendMode.TRANSPARENT : G3DBlendMode.OPAQUE;
+        }
+
+        if (updates.wireframe !== undefined) {
+            material.wireframe = updates.wireframe;
+        }
+    }
+
+    /**
+     * Create a glass material
+     */
+    createGlassMaterial(name: string, params: any = {}): G3DMaterial {
+        const material: G3DMaterial = {
+            id: this.generateId(),
+            name,
+            type: G3DMaterialType.PBR,
+            shader: this.shaderLibrary.getShader('pbr'),
+            uniforms: new Map(),
+            textures: new Map(),
+            blendMode: G3DBlendMode.TRANSPARENT,
+            doubleSided: false,
+            depthWrite: false,
+            depthTest: true,
+            wireframe: false,
+            visible: true
+        };
+
+        // Set glass-specific uniforms
+        material.uniforms.set('uBaseColor', { 
+            name: 'uBaseColor', 
+            type: 'vec4', 
+            value: params.baseColor || vec4.fromValues(1, 1, 1, 0.5), 
+            needsUpdate: true 
+        });
+        material.uniforms.set('uMetalness', { 
+            name: 'uMetalness', 
+            type: 'float', 
+            value: 0, 
+            needsUpdate: true 
+        });
+        material.uniforms.set('uRoughness', { 
+            name: 'uRoughness', 
+            type: 'float', 
+            value: params.roughness || 0.1, 
+            needsUpdate: true 
+        });
+        material.uniforms.set('uTransmission', { 
+            name: 'uTransmission', 
+            type: 'float', 
+            value: params.transmission || 0.9, 
+            needsUpdate: true 
+        });
+        material.uniforms.set('uThickness', { 
+            name: 'uThickness', 
+            type: 'float', 
+            value: params.thickness || 0.1, 
+            needsUpdate: true 
+        });
+
+        this.materials.set(material.id, material);
+        return material;
+    }
+
+    /**
+     * Create a points material
+     */
+    createPointsMaterial(name: string, params: any = {}): G3DMaterial {
+        const material: G3DMaterial = {
+            id: this.generateId(),
+            name,
+            type: G3DMaterialType.BASIC,
+            shader: this.shaderLibrary.getShader('points'),
+            uniforms: new Map(),
+            textures: new Map(),
+            blendMode: G3DBlendMode.OPAQUE,
+            doubleSided: false,
+            depthWrite: true,
+            depthTest: true,
+            wireframe: false,
+            visible: true
+        };
+
+        // Set points-specific uniforms
+        material.uniforms.set('uBaseColor', { 
+            name: 'uBaseColor', 
+            type: 'vec4', 
+            value: params.color || vec4.fromValues(1, 1, 1, 1), 
+            needsUpdate: true 
+        });
+        material.uniforms.set('uPointSize', { 
+            name: 'uPointSize', 
+            type: 'float', 
+            value: params.size || 1, 
+            needsUpdate: true 
+        });
+        material.uniforms.set('uVertexColors', { 
+            name: 'uVertexColors', 
+            type: 'bool', 
+            value: params.vertexColors ? 1 : 0, 
+            needsUpdate: true 
+        });
+
+        this.materials.set(material.id, material);
+        return material;
+    }
+
+    // Helper methods
+
+    private async loadImageFromUrl(url: string): Promise<HTMLImageElement> {
+        return new Promise((resolve, reject) => {
+            const img = new Image();
+            img.onload = () => resolve(img);
+            img.onerror = reject;
+            img.crossOrigin = 'anonymous';
+            img.src = url;
+        });
+    }
+
+    private imageDataToCanvas(imageData: ImageData): HTMLCanvasElement {
+        const canvas = document.createElement('canvas');
+        canvas.width = imageData.width;
+        canvas.height = imageData.height;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+            ctx.putImageData(imageData, 0, 0);
+        }
+        return canvas;
     }
 }
 

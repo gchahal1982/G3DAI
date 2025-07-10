@@ -279,17 +279,17 @@ class Vec3 {
         return { x: v.x * scalar, y: v.y * scalar, z: v.z * scalar };
     }
 
-    static length(v: Vector3): number {
+    static magnitude(v: Vector3): number {
         return Math.sqrt(v.x * v.x + v.y * v.y + v.z * v.z);
     }
 
     static normalize(v: Vector3): Vector3 {
-        const len = Vec3.length(v);
+        const len = Vec3.magnitude(v);
         return len > 0 ? Vec3.multiply(v, 1 / len) : Vec3.create(0, 0, 0);
     }
 
     static distance(a: Vector3, b: Vector3): number {
-        return Vec3.length(Vec3.subtract(a, b));
+        return Vec3.magnitude(Vec3.subtract(a, b));
     }
 
     static min(a: Vector3, b: Vector3): Vector3 {
@@ -821,7 +821,7 @@ export class SceneNode extends EventEmitter {
 
         // Remove all children
         while (this.children.length > 0) {
-            this.children[0].cleanup();
+            this.children[0].dispose();
         }
 
         // Clear data
@@ -877,7 +877,7 @@ export class G3DSceneGraph extends EventEmitter {
     public removeNode(node: SceneNode): boolean {
         const success = this.unregisterNode(node);
         if (success) {
-            node.cleanup();
+            node.dispose();
             this.markNeedsUpdate();
             this.emit('nodeRemoved', { node });
         }
@@ -1169,7 +1169,7 @@ export class G3DSceneGraph extends EventEmitter {
     public clear(): void {
         this.root.traverse(node => {
             if (node !== this.root) {
-                node.cleanup();
+                node.dispose();
             }
         });
 

@@ -323,23 +323,23 @@ export class G3DMedicalAnalytics {
 
             // Initialize metrics collector
             this.metricsCollector = new G3DMetricsCollector(this.config);
-            await this.metricsCollector.init();
+            await this.metricsCollector.initialize();
 
             // Initialize insight engine
             if (this.config.enableMedicalInsights) {
                 this.insightEngine = new G3DMedicalInsightEngine(this.config);
-                await this.insightEngine.init();
+                await this.insightEngine.initialize();
             }
 
             // Initialize report generator
             if (this.config.enableAutomatedReporting) {
                 this.reportGenerator = new G3DReportGenerator(this.config);
-                await this.reportGenerator.init();
+                await this.reportGenerator.initialize();
             }
 
             // Initialize alert manager
             this.alertManager = new G3DAlertManager(this.config);
-            await this.alertManager.init();
+            await this.alertManager.initialize();
 
             // Set up default dashboards
             await this.createDefaultDashboards();
@@ -865,22 +865,22 @@ export class G3DMedicalAnalytics {
 
         // Dispose managers
         if (this.metricsCollector) {
-            this.metricsCollector.cleanup();
+            this.metricsCollector.dispose();
             this.metricsCollector = null;
         }
 
         if (this.insightEngine) {
-            this.insightEngine.cleanup();
+            this.insightEngine.dispose();
             this.insightEngine = null;
         }
 
         if (this.reportGenerator) {
-            this.reportGenerator.cleanup();
+            this.reportGenerator.dispose();
             this.reportGenerator = null;
         }
 
         if (this.alertManager) {
-            this.alertManager.cleanup();
+            this.alertManager.dispose();
             this.alertManager = null;
         }
 

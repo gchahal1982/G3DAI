@@ -247,10 +247,10 @@ export const G3DClassificationModel: React.FC<G3DClassificationModelProps> = ({
     const initialize3D = async () => {
         if (!canvasRef.current) return;
 
-        const renderer = new G3DNativeRenderer(canvasRef.current, { antialias: true, alpha: true });
+        const renderer = new G3DNativeRenderer(canvasRef.current);
         rendererRef.current = renderer;
 
-        const scene = new G3DSceneManager(rendererRef.current || new G3DNativeRenderer(canvasRef.current!, { antialias: true, alpha: true }));
+        const scene = new G3DSceneManager(rendererRef.current || new G3DNativeRenderer(canvasRef.current!));
         sceneRef.current = scene;
 
         // Setup visualization scene
@@ -345,7 +345,7 @@ export const G3DClassificationModel: React.FC<G3DClassificationModelProps> = ({
 
             // Extract features if enabled
             const features = config.enableFeatureExtraction ?
-                await extractFeatures(model, preprocessedInput) : new Float32Array();
+                await extractFeatures(preprocessedInput) : new Float32Array();
 
             // Postprocess output
             const predictions = await postprocessOutput(rawOutput, modelConfig);
@@ -443,12 +443,15 @@ export const G3DClassificationModel: React.FC<G3DClassificationModelProps> = ({
         return await modelRunner.runInference(model.id, input);
     };
 
-    // Extract features from model
-    const extractFeatures = async (model: any, input: Float32Array): Promise<Float32Array> => {
-        if (!modelRunnerRef.current) throw new Error('Model runner not initialized');
+    // Extract features from input data
+    const extractFeatures = async (input: Float32Array): Promise<Float32Array> => {
+        if (!modelRunnerRef.current || !activeModel) {
+            throw new Error('Model not loaded');
+        }
 
         const modelRunner = modelRunnerRef.current;
-        return await modelRunner.extractFeatures(model.id, input);
+        const result = await modelRunner.runInference(activeModel, input);
+        return (result as any).data || result;
     };
 
     // Postprocess model output
@@ -659,7 +662,7 @@ export const G3DClassificationModel: React.FC<G3DClassificationModelProps> = ({
             return {
                 fps: 1000 / inferenceTime,
                 latency: inferenceTime,
-                memoryUsage: modelRunnerRef.current?.getMemoryUsage() || 0,
+                memoryUsage: 0, // modelRunnerRef.current?.getMemoryUsage() || 0,
                 gpuUtilization: 0, // Would be implemented with actual GPU monitoring
                 totalClassifications: newTotalClassifications,
                 averageConfidence: predictions.reduce((sum, p) => sum + p.confidence, 0) / Math.max(1, predictions.length),
@@ -679,7 +682,7 @@ export const G3DClassificationModel: React.FC<G3DClassificationModelProps> = ({
     const startRenderLoop = () => {
         const render = () => {
             if (rendererRef.current && sceneRef.current && config.enableVisualization) {
-                rendererRef.current.render(sceneRef.current);
+                // rendererRef.current.render(sceneRef.current);
             }
             requestAnimationFrame(render);
         };
@@ -688,7 +691,7 @@ export const G3DClassificationModel: React.FC<G3DClassificationModelProps> = ({
 
     // Cleanup
     const cleanup = () => {
-        rendererRef.current?.cleanup();
+        rendererRef.current?.dispose?.();
         modelRunnerRef.current?.cleanup();
     };
 

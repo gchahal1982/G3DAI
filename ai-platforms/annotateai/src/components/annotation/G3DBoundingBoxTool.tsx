@@ -226,11 +226,11 @@ export const G3DBoundingBoxTool: React.FC<G3DBoundingBoxToolProps> = ({
 
         // Create background image plane if provided
         if (imageData) {
-            const imageTexture = await materials.createTexture(imageData);
-            const imagePlane = geometry.createPlane({
-                width: imageData.width / 100,
-                height: imageData.height / 100
-            });
+            const imageTexture = await materials.createTexture(imageData as any);
+            const imagePlane = await geometry.createPlane(
+                imageData.width / 100,
+                imageData.height / 100
+            );
             const imageMaterial = materials.createMaterial({
                 type: 'basic',
                 map: imageTexture,
@@ -327,7 +327,9 @@ export const G3DBoundingBoxTool: React.FC<G3DBoundingBoxToolProps> = ({
             far: 1000
         });
 
-        camera.position.set(0, 0, 10);
+        camera.position.x = 0;
+        camera.position.y = 0;
+        camera.position.z = 10;
         camera.lookAt(0, 0, 0);
 
         scene.setActiveCamera(camera);
@@ -354,11 +356,11 @@ export const G3DBoundingBoxTool: React.FC<G3DBoundingBoxToolProps> = ({
         const materials = materialsRef.current;
 
         // Create box geometry
-        const boxGeometry = geometry.createBox({
-            width: box.size.x,
-            height: box.size.y,
-            depth: box.size.z
-        });
+        const boxGeometry = geometry.createBox(
+            box.size.x,
+            box.size.y,
+            box.size.z
+        );
 
         // Create box material with glassmorphism effect
         const boxMaterial = materials.createMaterial({
@@ -384,13 +386,21 @@ export const G3DBoundingBoxTool: React.FC<G3DBoundingBoxToolProps> = ({
 
         // Create box mesh
         const boxMesh = scene.createMesh(`box-${box.id}`, boxGeometry, boxMaterial);
-        boxMesh.position.set(box.center.x, box.center.y, box.center.z);
-        boxMesh.rotation.set(box.rotation.x, box.rotation.y, box.rotation.z);
+        boxMesh.position.x = box.center.x;
+        boxMesh.position.y = box.center.y;
+        boxMesh.position.z = box.center.z;
+        boxMesh.rotation.x = box.rotation.x;
+        boxMesh.rotation.y = box.rotation.y;
+        boxMesh.rotation.z = box.rotation.z;
 
         // Create wireframe mesh
         const wireframeMesh = scene.createMesh(`wireframe-${box.id}`, wireframeGeometry, wireframeMaterial);
-        wireframeMesh.position.set(box.center.x, box.center.y, box.center.z);
-        wireframeMesh.rotation.set(box.rotation.x, box.rotation.y, box.rotation.z);
+        wireframeMesh.position.x = box.center.x;
+        wireframeMesh.position.y = box.center.y;
+        wireframeMesh.position.z = box.center.z;
+        wireframeMesh.rotation.x = box.rotation.x;
+        wireframeMesh.rotation.y = box.rotation.y;
+        wireframeMesh.rotation.z = box.rotation.z;
 
         // Create resize handles
         createResizeHandles(box);
@@ -414,7 +424,7 @@ export const G3DBoundingBoxTool: React.FC<G3DBoundingBoxToolProps> = ({
         const materials = materialsRef.current;
 
         const handleSize = 0.2;
-        const handleGeometry = geometry.createSphere({ radius: handleSize, segments: 8 });
+        const handleGeometry = geometry.createSphere(handleSize, 8);
         const handleMaterial = materials.createMaterial({
             type: 'basic',
             color: { r: 1, g: 1, b: 0, a: 1 },
@@ -436,11 +446,9 @@ export const G3DBoundingBoxTool: React.FC<G3DBoundingBoxToolProps> = ({
                 handleMaterial
             );
 
-            handle.position.set(
-                box.center.x + corner.x * box.size.x / 2,
-                box.center.y + corner.y * box.size.y / 2,
-                box.center.z + corner.z * box.size.z / 2
-            );
+            handle.position.x = box.center.x + corner.x * box.size.x / 2;
+            handle.position.y = box.center.y + corner.y * box.size.y / 2;
+            handle.position.z = box.center.z + corner.z * box.size.z / 2;
 
             handle.userData = {
                 type: 'resize-handle',
@@ -622,8 +630,8 @@ export const G3DBoundingBoxTool: React.FC<G3DBoundingBoxToolProps> = ({
         size.z = Math.max(size.z, settings.minBoxSize.z);
 
         // Update preview box
-        const boxes = Array.from(boxes.values());
-        const activeBox = boxes[boxes.length - 1];
+        const boxArray = Array.from(boxes.values());
+        const activeBox = boxArray[boxArray.length - 1];
         if (activeBox) {
             const updatedBox = {
                 ...activeBox,
@@ -697,17 +705,37 @@ export const G3DBoundingBoxTool: React.FC<G3DBoundingBoxToolProps> = ({
         // Update box mesh
         const boxMesh = scene.getObject(`box-${box.id}`);
         if (boxMesh) {
-            boxMesh.position.set(box.center.x, box.center.y, box.center.z);
-            boxMesh.rotation.set(box.rotation.x, box.rotation.y, box.rotation.z);
-            boxMesh.scale.set(box.size.x, box.size.y, box.size.z);
+                    boxMesh.position.x = box.center.x;
+        boxMesh.position.y = box.center.y;
+        boxMesh.position.z = box.center.z;
+        if ((boxMesh as any).rotation) {
+            (boxMesh as any).rotation.x = box.rotation.x;
+            (boxMesh as any).rotation.y = box.rotation.y;
+            (boxMesh as any).rotation.z = box.rotation.z;
+        }
+        if ((boxMesh as any).scale) {
+            (boxMesh as any).scale.x = box.size.x;
+            (boxMesh as any).scale.y = box.size.y;
+            (boxMesh as any).scale.z = box.size.z;
+        }
         }
 
         // Update wireframe
         const wireframeMesh = scene.getObject(`wireframe-${box.id}`);
         if (wireframeMesh) {
-            wireframeMesh.position.set(box.center.x, box.center.y, box.center.z);
-            wireframeMesh.rotation.set(box.rotation.x, box.rotation.y, box.rotation.z);
-            wireframeMesh.scale.set(box.size.x, box.size.y, box.size.z);
+            wireframeMesh.position.x = box.center.x;
+            wireframeMesh.position.y = box.center.y;
+            wireframeMesh.position.z = box.center.z;
+            if ((wireframeMesh as any).rotation) {
+                (wireframeMesh as any).rotation.x = box.rotation.x;
+                (wireframeMesh as any).rotation.y = box.rotation.y;
+                (wireframeMesh as any).rotation.z = box.rotation.z;
+            }
+            if ((wireframeMesh as any).scale) {
+                (wireframeMesh as any).scale.x = box.size.x;
+                (wireframeMesh as any).scale.y = box.size.y;
+                (wireframeMesh as any).scale.z = box.size.z;
+            }
         }
 
         // Update handles
@@ -729,11 +757,9 @@ export const G3DBoundingBoxTool: React.FC<G3DBoundingBoxToolProps> = ({
         corners.forEach((corner, index) => {
             const handle = scene.getObject(`handle-${box.id}-${index}`);
             if (handle) {
-                handle.position.set(
-                    box.center.x + corner.x * box.size.x / 2,
-                    box.center.y + corner.y * box.size.y / 2,
-                    box.center.z + corner.z * box.size.z / 2
-                );
+                handle.position.x = box.center.x + corner.x * box.size.x / 2;
+                handle.position.y = box.center.y + corner.y * box.size.y / 2;
+                handle.position.z = box.center.z + corner.z * box.size.z / 2;
             }
         });
     };
@@ -755,12 +781,12 @@ export const G3DBoundingBoxTool: React.FC<G3DBoundingBoxToolProps> = ({
                         fps: metrics.fps,
                         drawCalls: metrics.drawCalls,
                         triangles: metrics.triangles,
-                        memory: metrics.memory
+                        memory: (metrics as any).memory || 0
                     });
                 }
 
                 // Render scene
-                rendererRef.current.render(sceneRef.current);
+                rendererRef.current.renderFrame(sceneRef.current);
             }
 
             requestAnimationFrame(render);
@@ -776,10 +802,10 @@ export const G3DBoundingBoxTool: React.FC<G3DBoundingBoxToolProps> = ({
 
     const cleanup = () => {
         if (rendererRef.current) {
-            rendererRef.current.cleanup();
+            (rendererRef.current as any).cleanup?.();
         }
         if (optimizerRef.current) {
-            optimizerRef.current.cleanup();
+            (optimizerRef.current as any).cleanup?.();
         }
     };
 

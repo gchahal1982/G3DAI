@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { GlassCard } from '@shared/ui/components';
+
 
 
 // G3D QuantumAI - Quantum-Classical Hybrid Computing Platform

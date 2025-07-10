@@ -5,7 +5,7 @@ import {
   TextureSet,
   RenderedImage,
   ExportedFormat
-} from '@/types/render.types';
+} from '../types/render.types';
 
 export class ThreeDGenerationEngine {
   private textTo3D: any; // Text3DGenerator

@@ -1,9 +1,9 @@
 import Stripe from 'stripe';
-import { User, IUser } from '../../auth-service/src/models/User';
+import { User, IUser } from '../../../auth-service/src/models/User';
 
 // Initialize Stripe
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-    apiVersion: '2023-10-16',
+    apiVersion: '2025-06-30.basil',
 });
 
 // Service pricing configuration
@@ -144,7 +144,7 @@ export class StripeService {
             email: user.email,
             name: user.fullName,
             metadata: {
-                userId: user._id.toString(),
+                userId: (user._id as any).toString(),
                 organizationId: user.organizationId?.toString() || '',
             }
         });
@@ -185,7 +185,7 @@ export class StripeService {
             customer: user.customerId!,
             items: [{ price: priceId }],
             metadata: {
-                userId: user._id.toString(),
+                userId: (user._id as any).toString(),
                 serviceName,
                 tier,
                 usageLimit: tierPricing.limit.toString()
@@ -236,7 +236,7 @@ export class StripeService {
             customer: user.customerId!,
             items: [{ price: priceId }],
             metadata: {
-                userId: user._id.toString(),
+                userId: (user._id as any).toString(),
                 bundleName,
                 services: bundle.services.join(',')
             }
@@ -287,7 +287,7 @@ export class StripeService {
             // Find usage-based items in subscription
             for (const item of subscription.items.data) {
                 if (item.price.recurring?.usage_type === 'metered') {
-                    await stripe.subscriptionItems.createUsageRecord(item.id, {
+                    await (stripe.subscriptionItems as any).createUsageRecord(item.id, {
                         quantity,
                         timestamp: Math.floor(Date.now() / 1000),
                         action: 'increment'
@@ -455,7 +455,7 @@ export class StripeService {
         user.subscriptionStatus = subscription.status as any;
 
         if (subscription.status === 'active') {
-            user.subscriptionEndsAt = new Date(subscription.current_period_end * 1000);
+            user.subscriptionEndsAt = new Date((subscription as any).current_period_end * 1000);
         }
 
         await user.save();

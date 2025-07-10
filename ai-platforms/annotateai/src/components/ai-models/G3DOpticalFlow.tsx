@@ -319,10 +319,10 @@ export const G3DOpticalFlow: React.FC<G3DOpticalFlowProps> = ({
     const initialize3D = async () => {
         if (!canvasRef.current) return;
 
-        const renderer = new G3DNativeRenderer(canvasRef.current, { antialias: true, alpha: true });
+        const renderer = new G3DNativeRenderer(canvasRef.current);
         rendererRef.current = renderer;
 
-        const scene = new G3DSceneManager(rendererRef.current || new G3DNativeRenderer(canvasRef.current!, { antialias: true, alpha: true }));
+        const scene = new G3DSceneManager(rendererRef.current || new G3DNativeRenderer(canvasRef.current!));
         sceneRef.current = scene;
 
         // Setup visualization scene
@@ -938,7 +938,7 @@ export const G3DOpticalFlow: React.FC<G3DOpticalFlowProps> = ({
             return {
                 fps: 1000 / computationTime,
                 latency: computationTime,
-                memoryUsage: modelRunnerRef.current?.getMemoryUsage() || 0,
+                memoryUsage: 0, // modelRunnerRef.current?.getMemoryUsage() || 0,
                 gpuUtilization: 0, // Would be implemented with actual GPU monitoring
                 totalFlowComputations: newTotalComputations,
                 averageEPE: calculateAverageEPE(result.flowField),
@@ -1047,7 +1047,9 @@ export const G3DOpticalFlow: React.FC<G3DOpticalFlowProps> = ({
     const setupVisualizationScene = async () => { };
     const startRenderLoop = () => { };
     const cleanup = () => {
-        rendererRef.current?.cleanup();
+        if (rendererRef.current?.dispose) {
+            rendererRef.current.dispose();
+        }
         modelRunnerRef.current?.cleanup();
     };
 

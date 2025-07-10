@@ -272,7 +272,7 @@ export class G3DRenderPipeline extends EventEmitter {
             culledObjects: 0
         };
 
-        this.init();
+        this.initialize();
     }
 
     /**
@@ -290,20 +290,15 @@ export class G3DRenderPipeline extends EventEmitter {
                 throw new Error('No GPU adapter available');
             }
 
-            this.device = await adapter.requestDevice({
-                requiredFeatures: ['depth-clip-control', 'texture-compression-bc'] as any,
-                requiredLimits: {
-                    maxTextureDimension2D: 8192,
-                    maxBindGroups: 8
-                }
-            });
+            this.device = await adapter.requestDevice() as any;
 
             this.context = this.canvas!.getContext('webgpu');
             if (!this.context) {
                 throw new Error('Failed to get WebGPU context');
             }
 
-            const format = navigator.gpu.getPreferredCanvasFormat();
+            // Use a standard format for WebGPU canvas
+            const format = 'bgra8unorm';
             this.context.configure({
                 device: this.device,
                 format,

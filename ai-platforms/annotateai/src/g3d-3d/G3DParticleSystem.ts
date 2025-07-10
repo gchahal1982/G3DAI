@@ -510,7 +510,7 @@ class GPUParticleCompute {
             const adapter = await navigator.gpu.requestAdapter();
             if (!adapter) return;
 
-            this.device = await adapter.requestDevice();
+            this.device = await adapter.requestDevice() as GPUDevice;
             await this.createComputePipeline();
         } catch (error) {
             console.warn('Failed to initialize WebGPU:', error);
@@ -979,7 +979,7 @@ export class G3DParticleSystem extends EventEmitter {
         this.emitters = [];
         this.updaters = [];
         this.forceFields = [];
-        this.gpuCompute.cleanup();
+        this.gpuCompute.dispose();
         this.removeAllListeners();
         console.log('G3D Particle System disposed');
     }

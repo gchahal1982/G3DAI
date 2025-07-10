@@ -498,7 +498,7 @@ export class G3DAPIGateway {
           
           route_scores[req_idx * route_count + route_idx] = score;
         }
-      `, 'route_requests');
+      `);
 
             // Load balancing kernel
             await this.gpuCompute.createKernel(`
@@ -520,7 +520,7 @@ export class G3DAPIGateway {
           float score = weight * health * (1.0f - load);
           target_scores[idx] = max(score, 0.0f);
         }
-      `, 'balance_load');
+      `);
 
             // Security analysis kernel
             await this.gpuCompute.createKernel(`
@@ -546,7 +546,7 @@ export class G3DAPIGateway {
           
           threat_scores[req_idx * pattern_count + pattern_idx] = similarity / feature_count;
         }
-      `, 'analyze_security');
+      `);
 
             console.log('API Gateway GPU kernels initialized successfully');
         } catch (error) {

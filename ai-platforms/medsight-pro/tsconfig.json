@@ -4,7 +4,8 @@
     "lib": [
       "DOM",
       "DOM.Iterable",
-      "ES6"
+      "ES6",
+      "WebWorker"
     ],
     "allowJs": true,
     "skipLibCheck": true,
@@ -38,6 +39,7 @@
   },
   "include": [
     "next-env.d.ts",
+    "webgpu.d.ts",
     "**/*.ts",
     "**/*.tsx"
   ],

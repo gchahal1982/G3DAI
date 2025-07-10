@@ -124,7 +124,7 @@ export class G3DGANGenerator {
             if (idx + 1 < size) noise[idx + 1] = z1;
           }
         }
-      `, 'generate_noise');
+      `);
 
             // Adversarial loss kernel
             await this.gpuCompute.createKernel(`
@@ -146,7 +146,7 @@ export class G3DGANGenerator {
           // Generator loss (fool discriminator)
           g_loss[idx] = -log(fake_scores[idx] + 1e-8f);
         }
-      `, 'compute_adversarial_loss');
+      `);
 
             // Feature matching loss kernel
             await this.gpuCompute.createKernel(`
@@ -167,7 +167,7 @@ export class G3DGANGenerator {
           }
           fm_loss[idx] = loss / feature_size;
         }
-      `, 'compute_feature_matching_loss');
+      `);
 
             // Gradient penalty kernel
             await this.gpuCompute.createKernel(`
@@ -191,7 +191,7 @@ export class G3DGANGenerator {
           float penalty_val = grad_norm - 1.0f;
           penalty[idx] = penalty_val * penalty_val;
         }
-      `, 'compute_gradient_penalty');
+      `);
 
             console.log('GAN GPU kernels initialized successfully');
         } catch (error) {
@@ -634,9 +634,9 @@ export class G3DGANGenerator {
             // Compute loss
             let dLoss: number;
             if (config.enableG3DAcceleration) {
-                dLoss = await this.computeDiscriminatorLossGPU(realScores, fakeScores, config.batchSize);
+                dLoss = await this.computeDiscriminatorLossGPU(realScores.data as Float32Array, fakeScores.data as Float32Array, config.batchSize);
             } else {
-                dLoss = this.computeDiscriminatorLossCPU(realScores, fakeScores);
+                dLoss = this.computeDiscriminatorLossCPU(realScores.data as Float32Array, fakeScores.data as Float32Array);
             }
 
             // Update discriminator
@@ -675,9 +675,9 @@ export class G3DGANGenerator {
             // Compute generator loss
             let gLoss: number;
             if (config.enableG3DAcceleration) {
-                gLoss = await this.computeGeneratorLossGPU(fakeScores, config.batchSize);
+                gLoss = await this.computeGeneratorLossGPU(fakeScores.data as Float32Array, config.batchSize);
             } else {
-                gLoss = this.computeGeneratorLossCPU(fakeScores);
+                gLoss = this.computeGeneratorLossCPU(fakeScores.data as Float32Array);
             }
 
             // Update generator
@@ -979,7 +979,7 @@ export class G3DGANGenerator {
 
             // Cleanup GPU resources
             await this.gpuCompute.cleanup();
-            await this.memoryManager.cleanup();
+            await this.memoryManager.dispose();
 
             console.log('G3D GAN Generator cleanup completed');
         } catch (error) {

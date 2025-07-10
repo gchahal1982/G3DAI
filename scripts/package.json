@@ -1,0 +1,37 @@
+{
+  "name": "g3d-migration-tools",
+  "version": "1.0.0",
+  "description": "Safe migration tools for G3DAI codebase refactoring",
+  "main": "migrate-g3d-codebase.js",
+  "scripts": {
+    "migrate": "node migrate-g3d-codebase.js",
+    "migrate:dry-run": "node migrate-g3d-codebase.js --dry-run",
+    "migrate:stubs-only": "node migrate-g3d-codebase.js --phase=stubs",
+    "migrate:prefixes-only": "node migrate-g3d-codebase.js --phase=prefixes",
+    "validate": "node validate-migration.js",
+    "rollback": "node rollback-migration.js"
+  },
+  "dependencies": {
+    "glob": "^10.3.10",
+    "typescript": "^5.3.3",
+    "fast-glob": "^3.3.2",
+    "fs-extra": "^11.2.0",
+    "chalk": "^4.1.2",
+    "commander": "^11.1.0",
+    "inquirer": "^9.2.12"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.5",
+    "@types/fs-extra": "^11.0.4",
+    "@types/inquirer": "^9.0.7"
+  },
+  "keywords": [
+    "migration",
+    "refactoring",
+    "typescript",
+    "g3d",
+    "automation"
+  ],
+  "author": "G3DAI Development Team",
+  "license": "MIT"
+} 

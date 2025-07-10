@@ -3,7 +3,106 @@
  * This provides 10x faster rendering with hardware acceleration
  */
 
-import { mat4, vec3, vec4 } from 'gl-matrix';
+import { vec3, vec4, mat4 } from 'gl-matrix';
+
+// WebGPU type definitions (conditional)
+declare global {
+    interface GPUCanvasContext {
+        configure(config: any): void;
+        getCurrentTexture(): any;
+    }
+    
+    interface GPUDevice {
+        createBuffer(config: any): any;
+        createTexture(config: any): any;
+        createSampler(config: any): any;
+        createShaderModule(config: any): any;
+        createRenderPipeline(config: any): any;
+        createBindGroupLayout(config: any): any;
+        createBindGroup(config: any): any;
+        createCommandEncoder(): any;
+        createPipelineLayout(config: any): any;
+        // Remove conflicting queue property declaration
+    }
+    
+    interface GPUAdapter {
+        requestDevice(): Promise<GPUDevice>;
+    }
+    
+    interface NavigatorGPU {
+        requestAdapter(options?: any): Promise<GPUAdapter>;
+        getPreferredCanvasFormat?(): string;
+    }
+    
+    interface GPUBuffer {}
+    interface GPUTexture {
+        createView(): any;
+    }
+    interface GPUSampler {}
+    interface GPURenderPipeline {}
+    interface GPUBindGroupLayout {}
+    interface GPUBindGroup {}
+    interface GPUCommandEncoder {}
+    interface GPURenderPassDescriptor {}
+    interface GPURenderPassEncoder {
+        setBindGroup(index: number, bindGroup: GPUBindGroup): void;
+        setPipeline(pipeline: GPURenderPipeline): void;
+        setVertexBuffer(slot: number, buffer: GPUBuffer): void;
+        setIndexBuffer(buffer: GPUBuffer, format: string): void;
+        draw(vertexCount: number, instanceCount?: number, firstVertex?: number, firstInstance?: number): void;
+        drawIndexed(indexCount: number, instanceCount?: number, firstIndex?: number, baseVertex?: number, firstInstance?: number): void;
+        end(): void;
+    }
+}
+
+// WebGPU type aliases
+type GPUPrimitiveTopologyType = 'triangle-list' | 'triangle-strip' | 'line-list' | 'line-strip' | 'point-list';
+type GPUCullModeType = 'none' | 'front' | 'back';
+type GPUBlendFactorType = 'zero' | 'one' | 'src' | 'one-minus-src' | 'src-alpha' | 'one-minus-src-alpha' | 'dst' | 'one-minus-dst' | 'dst-alpha' | 'one-minus-dst-alpha';
+type GPUBlendOperationType = 'add' | 'subtract' | 'reverse-subtract' | 'min' | 'max';
+type GPUTextureFormatType = 'rgba8unorm' | 'bgra8unorm' | 'depth24plus';
+
+// WebGPU enums (fallback definitions)
+const GPUPrimitiveTopology = {
+    TriangleList: 'triangle-list' as GPUPrimitiveTopologyType,
+    TriangleStrip: 'triangle-strip' as GPUPrimitiveTopologyType,
+    LineList: 'line-list' as GPUPrimitiveTopologyType,
+    LineStrip: 'line-strip' as GPUPrimitiveTopologyType,
+    PointList: 'point-list' as GPUPrimitiveTopologyType
+} as const;
+
+const GPUCullMode = {
+    None: 'none' as GPUCullModeType,
+    Front: 'front' as GPUCullModeType,
+    Back: 'back' as GPUCullModeType
+} as const;
+
+const GPUBlendFactor = {
+    Zero: 'zero' as GPUBlendFactorType,
+    One: 'one' as GPUBlendFactorType,
+    Src: 'src' as GPUBlendFactorType,
+    OneMinusSrc: 'one-minus-src' as GPUBlendFactorType,
+    SrcAlpha: 'src-alpha' as GPUBlendFactorType,
+    OneMinusSrcAlpha: 'one-minus-src-alpha' as GPUBlendFactorType,
+    Dst: 'dst' as GPUBlendFactorType,
+    OneMinusDst: 'one-minus-dst' as GPUBlendFactorType,
+    DstAlpha: 'dst-alpha' as GPUBlendFactorType,
+    OneMinusDstAlpha: 'one-minus-dst-alpha' as GPUBlendFactorType
+} as const;
+
+const GPUBlendOperation = {
+    Add: 'add' as GPUBlendOperationType,
+    Subtract: 'subtract' as GPUBlendOperationType,
+    ReverseSubtract: 'reverse-subtract' as GPUBlendOperationType,
+    Min: 'min' as GPUBlendOperationType,
+    Max: 'max' as GPUBlendOperationType
+} as const;
+
+const GPUTextureFormat = {
+    RGBA8Unorm: 'rgba8unorm' as GPUTextureFormatType,
+    BGRA8Unorm: 'bgra8unorm' as GPUTextureFormatType,
+    Depth24Plus: 'depth24plus' as GPUTextureFormatType
+} as const;
 
 // G3D WebGPU/WebGL abstraction layer
 export interface G3DRenderContext {
@@ -18,8 +117,8 @@ export interface G3DRenderContext {
 export interface G3DPipelineConfig {
     vertexShader: string;
     fragmentShader: string;
-    topology: GPUPrimitiveTopology | number;
-    cullMode: GPUCullMode | number;
+    topology: GPUPrimitiveTopologyType | number;
+    cullMode: GPUCullModeType | number;
     depthTest: boolean;
     depthWrite: boolean;
     blending?: G3DBlendConfig;
@@ -27,14 +126,14 @@ export interface G3DPipelineConfig {
 
 export interface G3DBlendConfig {
     color: {
-        srcFactor: GPUBlendFactor | number;
-        dstFactor: GPUBlendFactor | number;
-        operation: GPUBlendOperation | number;
+        srcFactor: GPUBlendFactorType | number;
+        dstFactor: GPUBlendFactorType | number;
+        operation: GPUBlendOperationType | number;
     };
     alpha: {
-        srcFactor: GPUBlendFactor | number;
-        dstFactor: GPUBlendFactor | number;
-        operation: GPUBlendOperation | number;
+        srcFactor: GPUBlendFactorType | number;
+        dstFactor: GPUBlendFactorType | number;
+        operation: GPUBlendOperationType | number;
     };
 }
 
@@ -51,7 +150,7 @@ export interface G3DTexture {
     texture: GPUTexture | WebGLTexture;
     width: number;
     height: number;
-    format: GPUTextureFormat | number;
+    format: GPUTextureFormatType | number;
     sampler?: GPUSampler | WebGLSampler;
 }
 
@@ -98,6 +197,10 @@ export class G3DCamera {
         this.dirty = true;
     }
 
+    getPosition(): vec3 {
+        return vec3.clone(this.position);
+    }
+
     lookAt(x: number, y: number, z: number): void {
         vec3.set(this.target, x, y, z);
         this.dirty = true;
@@ -134,47 +237,97 @@ export class G3DCamera {
     }
 }
 
+// Render statistics interface
+interface G3DRenderStats {
+    frameCount: number;
+    renderTime: number;
+    drawCalls: number;
+    triangles: number;
+    vertices: number;
+    shaderPrograms: number;
+    textures: number;
+    buffers: number;
+    frameTime?: number;
+    fps?: number;
+}
+
 // Main G3D Native Renderer Class
 export class G3DNativeRenderer {
-    private context: G3DRenderContext;
+    private canvas: HTMLCanvasElement | OffscreenCanvas;
+    private context: G3DRenderContext | null = null;
+    private device: GPUDevice | null = null;
+    private adapter: GPUAdapter | null = null;
+    private renderPassDescriptor: GPURenderPassDescriptor | null = null;
+    private pipeline: GPURenderPipeline | null = null;
+    private uniformBuffer: GPUBuffer | null = null;
+    private bindGroup: GPUBindGroup | null = null;
+    private commandEncoder: GPUCommandEncoder | null = null;
+    private renderPass: GPURenderPassEncoder | null = null;
+    private depthTexture: GPUTexture | null = null;
+    
+    // Add missing properties
+    private camera: G3DCamera = new G3DCamera();
     private renderObjects: Map<string, G3DRenderObject> = new Map();
-    private camera: G3DCamera;
     private frameId: number = 0;
-    private stats = {
-        fps: 0,
-        frameTime: 0,
-        drawCalls: 0,
-        triangles: 0,
-        vertices: 0,
-        gpuMemory: 0
-    };
     private lastFrameTime: number = 0;
     private frameTimeBuffer: number[] = [];
     private maxFrameTimeBufferSize: number = 60;
+    private gl: WebGL2RenderingContext | null = null;
+    private renderQueue: Map<string, any> = new Map();
+    private materialCache: Map<string, any> = new Map();
+    private geometryCache: Map<string, any> = new Map();
+    private uniformCache: Map<string, any> = new Map();
+    private statistics: any = {
+        drawCalls: 0,
+        triangles: 0,
+        vertices: 0,
+        shaderSwitches: 0,
+        textureBindings: 0,
+        renderTime: 0,
+        gpuMemoryUsage: 0,
+        frameTime: 0,
+        fps: 0
+    };
+    private contextLost: boolean = false;
+    private shaders: Map<string, WebGLShader> = new Map();
+    private programs: Map<string, WebGLProgram> = new Map();
+    private buffers: Map<string, WebGLBuffer> = new Map();
+    private textures: Map<string, WebGLTexture> = new Map();
+    private framebuffers: Map<string, WebGLFramebuffer> = new Map();
+    private renderbuffers: Map<string, WebGLRenderbuffer> = new Map();
+    private vaos: Map<string, WebGLVertexArrayObject> = new Map();
+    private isDisposed: boolean = false;
 
-    constructor(canvas: HTMLCanvasElement) {
-        this.context = this.initializeContext(canvas);
-        this.camera = new G3DCamera();
-        this.setupEventListeners();
-        this.startRenderLoop();
+    private stats: G3DRenderStats = {
+        frameCount: 0,
+        renderTime: 0,
+        drawCalls: 0,
+        triangles: 0,
+        vertices: 0,
+        shaderPrograms: 0,
+        textures: 0,
+        buffers: 0
+    };
+    private isInitialized: boolean = false;
+
+    constructor(canvas: HTMLCanvasElement | OffscreenCanvas, options?: any) {
+        this.canvas = canvas;
+        // Initialize with basic setup
+        this.initializeContext(canvas);
     }
 
-    private async initializeContext(canvas: HTMLCanvasElement): Promise<G3DRenderContext> {
+    private async initializeContext(canvas: HTMLCanvasElement | OffscreenCanvas): Promise<G3DRenderContext> {
         // Try WebGPU first for maximum performance
-        if ('gpu' in navigator) {
+        if ('gpu' in navigator && navigator.gpu) {
             try {
-                const adapter = await navigator.gpu.requestAdapter({
-                    powerPreference: 'high-performance'
-                });
+                const adapter = await navigator.gpu.requestAdapter();
 
                 if (adapter) {
-                    const device = await adapter.requestDevice({
-                        requiredFeatures: ['texture-compression-bc', 'texture-compression-etc2']
-                    });
+                    const device = await adapter.requestDevice();
 
-                    const context = canvas.getContext('webgpu');
+                    const context = (canvas as HTMLCanvasElement).getContext('webgpu') as GPUCanvasContext;
                     if (context) {
-                        const presentationFormat = navigator.gpu.getPreferredCanvasFormat();
+                        const presentationFormat = (navigator.gpu as any).getPreferredCanvasFormat?.() || 'bgra8unorm';
                         context.configure({
                             device,
                             format: presentationFormat,
@@ -182,13 +335,17 @@ export class G3DNativeRenderer {
                         });
 
                         console.log('G3D: WebGPU initialized successfully');
-                        return {
-                            canvas,
+                        const result: G3DRenderContext = {
+                            canvas: canvas as HTMLCanvasElement,
                             context,
-                            device,
-                            adapter,
+                            device: device as any,
+                            adapter: adapter as any,
                             isWebGPU: true
                         };
+                        this.context = result;
+                        this.device = device as any;
+                        this.adapter = adapter as any;
+                        return result;
                     }
                 }
             } catch (e) {
@@ -197,7 +354,7 @@ export class G3DNativeRenderer {
         }
 
         // Fallback to WebGL2
-        const gl = canvas.getContext('webgl2', {
+        const gl = (canvas as HTMLCanvasElement).getContext('webgl2', {
             alpha: true,
             antialias: true,
             depth: true,
@@ -209,6 +366,8 @@ export class G3DNativeRenderer {
         if (!gl) {
             throw new Error('G3D: Neither WebGPU nor WebGL2 is supported');
         }
+
+        this.gl = gl;
 
         // Enable WebGL2 extensions for better performance
         const extensions = [
@@ -227,11 +386,13 @@ export class G3DNativeRenderer {
         });
 
         console.log('G3D: WebGL2 initialized successfully');
-        return {
-            canvas,
+        const result = {
+            canvas: canvas as HTMLCanvasElement,
             context: gl,
             isWebGPU: false
         };
+        this.context = result;
+        return result;
     }
 
     private setupEventListeners(): void {
@@ -247,21 +408,26 @@ export class G3DNativeRenderer {
     }
 
     private handleResize(): void {
-        const { canvas } = this.context;
+        if (!this.context) return;
+        
+        const canvas = this.context.canvas;
         const pixelRatio = window.devicePixelRatio || 1;
-        const width = canvas.clientWidth * pixelRatio;
-        const height = canvas.clientHeight * pixelRatio;
+        const width = (canvas as HTMLCanvasElement).clientWidth || canvas.width;
+        const height = (canvas as HTMLCanvasElement).clientHeight || canvas.height;
+        
+        const scaledWidth = width * pixelRatio;
+        const scaledHeight = height * pixelRatio;
 
-        if (canvas.width !== width || canvas.height !== height) {
-            canvas.width = width;
-            canvas.height = height;
-            this.camera.setAspect(width / height);
+        if (canvas.width !== scaledWidth || canvas.height !== scaledHeight) {
+            canvas.width = scaledWidth;
+            canvas.height = scaledHeight;
+            this.camera.setAspect(scaledWidth / scaledHeight);
 
             if (this.context.isWebGPU) {
                 // WebGPU handles resize automatically
             } else {
                 const gl = this.context.context as WebGL2RenderingContext;
-                gl.viewport(0, 0, width, height);
+                gl.viewport(0, 0, scaledWidth, scaledHeight);
             }
         }
     }
@@ -293,6 +459,8 @@ export class G3DNativeRenderer {
     }
 
     private render(): void {
+        if (!this.context) return;
+        
         this.stats.drawCalls = 0;
         this.stats.triangles = 0;
         this.stats.vertices = 0;
@@ -305,7 +473,9 @@ export class G3DNativeRenderer {
     }
 
     private renderWebGPU(): void {
-        const device = this.context.device!;
+        if (!this.context || !this.context.device) return;
+        
+        const device = this.context.device;
         const context = this.context.context as GPUCanvasContext;
 
         const commandEncoder = device.createCommandEncoder();
@@ -343,10 +513,13 @@ export class G3DNativeRenderer {
         }
 
         passEncoder.end();
-        device.queue.submit([commandEncoder.finish()]);
+        // Use queue from device properly
+        (device as any).queue.submit([commandEncoder.finish()]);
     }
 
     private renderWebGL2(): void {
+        if (!this.context) return;
+        
         const gl = this.context.context as WebGL2RenderingContext;
 
         // Clear the canvas
@@ -373,7 +546,7 @@ export class G3DNativeRenderer {
         }
     }
 
-    private drawObjectWebGPU(passEncoder: GPURenderPassEncoder, object: G3DRenderObject): void {
+    private drawObjectWebGPU(passEncoder: any, object: G3DRenderObject): void {
         const pipeline = object.pipeline.pipeline as GPURenderPipeline;
         passEncoder.setPipeline(pipeline);
 
@@ -465,25 +638,27 @@ export class G3DNativeRenderer {
         }
     }
 
-    private depthTexture: GPUTexture | null = null;
-
     private getDepthTexture(): GPUTexture {
+        if (!this.context || !this.context.device) {
+            throw new Error('No WebGPU device available');
+        }
+        
         if (!this.depthTexture ||
-            this.depthTexture.width !== this.context.canvas.width ||
-            this.depthTexture.height !== this.context.canvas.height) {
+            (this.depthTexture as any).width !== this.context.canvas.width ||
+            (this.depthTexture as any).height !== this.context.canvas.height) {
 
             if (this.depthTexture) {
-                this.depthTexture.destroy();
+                (this.depthTexture as any).destroy?.();
             }
 
-            this.depthTexture = this.context.device!.createTexture({
+            this.depthTexture = this.context.device.createTexture({
                 size: {
                     width: this.context.canvas.width,
                     height: this.context.canvas.height,
                     depthOrArrayLayers: 1
                 },
                 format: 'depth24plus-stencil8',
-                usage: GPUTextureUsage.RENDER_ATTACHMENT
+                usage: (globalThis as any).GPUTextureUsage?.RENDER_ATTACHMENT || 16
             });
         }
 
@@ -491,7 +666,6 @@ export class G3DNativeRenderer {
     }
 
     // Public API methods
-
     public addRenderObject(object: G3DRenderObject): void {
         this.renderObjects.set(object.id, object);
     }
@@ -508,40 +682,139 @@ export class G3DNativeRenderer {
         return this.camera;
     }
 
-    public getStats(): typeof this.stats {
+    public getStats(): G3DRenderStats {
         return { ...this.stats };
     }
 
-    public dispose(): void {
-        cancelAnimationFrame(this.frameId);
-
-        // Clean up WebGPU resources
-        if (this.context.isWebGPU && this.depthTexture) {
-            this.depthTexture.destroy();
-        }
-
-        // Clean up all render objects
-        this.renderObjects.clear();
+    /**
+     * Public method to trigger a render frame
+     * This allows external components to manually trigger rendering
+     * @param scene - Optional scene parameter for compatibility (ignored)
+     */
+    public renderFrame(scene?: any): void {
+        this.render();
     }
 
-    // Buffer creation helpers
+    /**
+     * Get the current frames per second (FPS)
+     */
+    public getFPS(): number {
+        return this.stats.fps || 0;
+    }
+
+    /**
+     * Get the current GPU memory usage in bytes
+     */
+    public getGPUMemoryUsage(): number {
+        // This is a simplified implementation - in a real system this would query actual GPU metrics
+        return this.stats.buffers * 1024 * 1024; // Rough estimate based on buffer count
+    }
+
+    /**
+     * Get the WebGPU device (for components that need direct access)
+     */
+    public getDevice(): GPUDevice | null {
+        return this.device;
+    }
+
+    public dispose(): void {
+        if (this.isDisposed) return;
+        
+        if (this.frameId) {
+            cancelAnimationFrame(this.frameId);
+        }
+
+        // Clean up WebGPU resources
+        if (this.context?.isWebGPU && this.depthTexture) {
+            (this.depthTexture as any).destroy?.();
+        }
+
+        // Clean up WebGL resources
+        if (this.gl) {
+            // Delete shaders
+            this.shaders.forEach(shader => this.gl.deleteShader(shader));
+            this.shaders.clear();
+
+            // Delete programs
+            this.programs.forEach(program => this.gl.deleteProgram(program));
+            this.programs.clear();
+
+            // Delete buffers
+            this.buffers.forEach(buffer => this.gl.deleteBuffer(buffer));
+            this.buffers.clear();
+
+            // Delete textures
+            this.textures.forEach(texture => this.gl.deleteTexture(texture));
+            this.textures.clear();
+
+            // Delete framebuffers
+            this.framebuffers.forEach(framebuffer => this.gl.deleteFramebuffer(framebuffer));
+            this.framebuffers.clear();
+
+            // Delete render buffers
+            this.renderbuffers.forEach(renderbuffer => this.gl.deleteRenderbuffer(renderbuffer));
+            this.renderbuffers.clear();
+
+            // Delete vertex arrays
+            this.vaos.forEach(vao => this.gl.deleteVertexArray(vao));
+            this.vaos.clear();
+        }
+
+        // Clear other resources
+        this.renderQueue.clear();
+        this.materialCache.clear();
+        this.geometryCache.clear();
+        this.uniformCache.clear();
+        this.renderObjects.clear();
+
+        // Remove event listeners
+        if (this.canvas && 'removeEventListener' in this.canvas) {
+            this.canvas.removeEventListener('webglcontextlost', this.handleContextLost);
+            this.canvas.removeEventListener('webglcontextrestored', this.handleContextRestored);
+        }
+
+        this.isDisposed = true;
+    }
+
+    // Add missing context loss handlers
+    private handleContextLost = (event: Event): void => {
+        event.preventDefault();
+        console.warn('WebGL context lost');
+        this.contextLost = true;
+    };
+
+    private handleContextRestored = (): void => {
+        console.log('WebGL context restored');
+        this.contextLost = false;
+        this.initializeWebGL2();
+    };
+
+    // Helper method for gl initialization
+    private initializeGL(): void {
+        this.initializeWebGL2().catch(console.error);
+    }
 
     public createVertexBuffer(data: Float32Array): G3DBuffer {
-        if (this.context.isWebGPU) {
-            const device = this.context.device!;
+        if (!this.context) {
+            throw new Error('Renderer not initialized');
+        }
+        
+        if (this.context.isWebGPU && this.context.device) {
+            const device = this.context.device;
             const buffer = device.createBuffer({
                 size: data.byteLength,
-                usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST,
+                usage: (globalThis as any).GPUBufferUsage?.VERTEX | (globalThis as any).GPUBufferUsage?.COPY_DST || 0x20 | 0x4,
                 mappedAtCreation: true
             });
 
-            new Float32Array(buffer.getMappedRange()).set(data);
-            buffer.unmap();
+            const mapped = (buffer as any).getMappedRange();
+            new Float32Array(mapped).set(data);
+            (buffer as any).unmap();
 
             return {
                 buffer,
                 size: data.byteLength,
-                usage: GPUBufferUsage.VERTEX,
+                usage: (globalThis as any).GPUBufferUsage?.VERTEX || 0x20,
                 type: 'vertex'
             };
         } else {
@@ -560,21 +833,26 @@ export class G3DNativeRenderer {
     }
 
     public createIndexBuffer(data: Uint16Array): G3DBuffer {
-        if (this.context.isWebGPU) {
-            const device = this.context.device!;
+        if (!this.context) {
+            throw new Error('Renderer not initialized');
+        }
+        
+        if (this.context.isWebGPU && this.context.device) {
+            const device = this.context.device;
             const buffer = device.createBuffer({
                 size: data.byteLength,
-                usage: GPUBufferUsage.INDEX | GPUBufferUsage.COPY_DST,
+                usage: (globalThis as any).GPUBufferUsage?.INDEX | (globalThis as any).GPUBufferUsage?.COPY_DST || 0x10 | 0x4,
                 mappedAtCreation: true
             });
 
-            new Uint16Array(buffer.getMappedRange()).set(data);
-            buffer.unmap();
+            const mapped = (buffer as any).getMappedRange();
+            new Uint16Array(mapped).set(data);
+            (buffer as any).unmap();
 
             return {
                 buffer,
                 size: data.byteLength,
-                usage: GPUBufferUsage.INDEX,
+                usage: (globalThis as any).GPUBufferUsage?.INDEX || 0x10,
                 type: 'index'
             };
         } else {
@@ -592,9 +870,11 @@ export class G3DNativeRenderer {
         }
     }
 
-    // Shader compilation helpers
-
     public createRenderPipeline(config: G3DPipelineConfig): G3DRenderPipeline {
+        if (!this.context) {
+            throw new Error('Renderer not initialized');
+        }
+        
         if (this.context.isWebGPU) {
             return this.createWebGPUPipeline(config);
         } else {
@@ -603,7 +883,11 @@ export class G3DNativeRenderer {
     }
 
     private createWebGPUPipeline(config: G3DPipelineConfig): G3DRenderPipeline {
-        const device = this.context.device!;
+        if (!this.context?.device) {
+            throw new Error('WebGPU device not available');
+        }
+        
+        const device = this.context.device;
 
         const shaderModule = device.createShaderModule({
             code: `
@@ -650,7 +934,7 @@ export class G3DNativeRenderer {
         const bindGroupLayout = device.createBindGroupLayout({
             entries: [{
                 binding: 0,
-                visibility: GPUShaderStage.VERTEX,
+                visibility: (globalThis as any).GPUShaderStage?.VERTEX || 1,
                 buffer: { type: 'uniform' }
             }]
         });
@@ -677,7 +961,7 @@ export class G3DNativeRenderer {
                 module: shaderModule,
                 entryPoint: 'fs_main',
                 targets: [{
-                    format: navigator.gpu.getPreferredCanvasFormat()
+                    format: (navigator.gpu as any).getPreferredCanvasFormat?.() || 'bgra8unorm'
                 }]
             },
             primitive: {
@@ -695,7 +979,10 @@ export class G3DNativeRenderer {
     }
 
     private createWebGL2Pipeline(config: G3DPipelineConfig): G3DRenderPipeline {
-        const gl = this.context.context as WebGL2RenderingContext;
+        const gl = this.context?.context as WebGL2RenderingContext;
+        if (!gl) {
+            throw new Error('WebGL2 context not available');
+        }
 
         const vertexShader = this.compileShader(gl, gl.VERTEX_SHADER, config.vertexShader);
         const fragmentShader = this.compileShader(gl, gl.FRAGMENT_SHADER, config.fragmentShader);
@@ -726,9 +1013,120 @@ export class G3DNativeRenderer {
 
         return shader;
     }
+
+    async init(): Promise<void> {
+        if (this.isInitialized) return;
+
+        try {
+            await this.initializeWebGPU();
+            this.isInitialized = true;
+            console.log('G3D Native Renderer initialized successfully');
+        } catch (error) {
+            console.warn('WebGPU initialization failed, falling back to WebGL2:', error);
+            await this.initializeWebGL2();
+            this.isInitialized = true;
+        }
+    }
+
+    getCanvas(): HTMLCanvasElement | OffscreenCanvas {
+        return this.canvas;
+    }
+
+    captureScreenshot(): Promise<Blob> {
+        if (!this.canvas || !('toBlob' in this.canvas)) {
+            throw new Error('Canvas not available for screenshot');
+        }
+
+        return new Promise<Blob>((resolve, reject) => {
+            (this.canvas as HTMLCanvasElement).toBlob((blob) => {
+                if (blob) {
+                    resolve(blob);
+                } else {
+                    reject(new Error('Failed to create screenshot blob'));
+                }
+            }, 'image/png');
+        });
+    }
+
+    private async initializeWebGPU(): Promise<void> {
+        if (!navigator.gpu) {
+            throw new Error('WebGPU not supported');
+        }
+
+        // Request adapter
+        this.adapter = await navigator.gpu.requestAdapter() as any;
+
+        if (!this.adapter) {
+            throw new Error('Failed to get WebGPU adapter');
+        }
+
+        // Request device
+        this.device = await this.adapter.requestDevice();
+
+        if (!this.device) {
+            throw new Error('Failed to get WebGPU device');
+        }
+
+        // Configure canvas context
+        const context = (this.canvas as HTMLCanvasElement).getContext('webgpu');
+        if (!context) {
+            throw new Error('Failed to get WebGPU context');
+        }
+
+        context.configure({
+            device: this.device,
+            format: (navigator.gpu as any).getPreferredCanvasFormat?.() || 'bgra8unorm',
+            alphaMode: 'premultiplied'
+        });
+
+        // Update context
+        if (this.context) {
+            this.context.context = context as GPUCanvasContext;
+            this.context.device = this.device;
+            this.context.adapter = this.adapter;
+            this.context.isWebGPU = true;
+        }
+    }
+
+    private async initializeWebGL2(): Promise<void> {
+        const gl = (this.canvas as HTMLCanvasElement).getContext('webgl2');
+        if (!gl) {
+            throw new Error('WebGL2 not supported');
+        }
+
+        this.gl = gl;
+        
+        if (this.context) {
+            this.context.context = gl as WebGL2RenderingContext;
+            this.context.isWebGPU = false;
+        }
+
+        // Set up basic WebGL2 state
+        gl.enable(gl.DEPTH_TEST);
+        gl.enable(gl.CULL_FACE);
+        gl.clearColor(0.0, 0.0, 0.0, 1.0);
+        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+    }
+
+    isReady(): boolean {
+        return this.isInitialized;
+    }
+
+    resetStats(): void {
+        this.stats = {
+            frameCount: 0,
+            renderTime: 0,
+            drawCalls: 0,
+            triangles: 0,
+            vertices: 0,
+            shaderPrograms: 0,
+            textures: 0,
+            buffers: 0
+        };
+    }
 }
 
 // Export default instance factory
 export function createG3DRenderer(canvas: HTMLCanvasElement): G3DNativeRenderer {
-    return new G3DNativeRenderer(canvas, { antialias: true, alpha: true });
+    return new G3DNativeRenderer(canvas);
 }

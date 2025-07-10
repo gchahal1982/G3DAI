@@ -268,7 +268,6 @@ const logger = winston.createLogger({
 
 // Redis client for caching and rate limiting
 const redis = new Redis(config.redisUrl, {
-    retryDelayOnFailover: 100,
     maxRetriesPerRequest: 3,
     lazyConnect: true
 });
@@ -573,7 +572,7 @@ services.forEach(service => {
     };
 
     // Apply middleware chain for each service
-    const middlewareChain = [createServiceRateLimit(service)];
+    const middlewareChain: any[] = [createServiceRateLimit(service)];
 
     if (service.auth.required) {
         middlewareChain.push(authenticateToken);
@@ -614,9 +613,12 @@ app.use('*', (req: AuthenticatedRequest, res: Response) => {
 const checkServiceHealth = async () => {
     const healthChecks = services.map(async service => {
         try {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 5000);
             const response = await fetch(`${service.target}${service.healthCheck}`, {
-                timeout: 5000
+                signal: controller.signal
             });
+            clearTimeout(timeoutId);
             return {
                 service: service.name,
                 status: response.ok ? 'healthy' : 'unhealthy',

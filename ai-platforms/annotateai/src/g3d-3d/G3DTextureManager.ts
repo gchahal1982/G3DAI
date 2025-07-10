@@ -135,7 +135,7 @@ export class G3DTextureManager {
                 preferredDevice: 'gpu',
                 minComputeUnits: 8,
                 minMemorySize: 1024 * 1024 * 1024,
-                features: ['fp16', 'texture_compression', 'compute_texture']
+                features: ['fp16']
             },
             memory: {
                 maxBufferSize: 4 * 1024 * 1024 * 1024,

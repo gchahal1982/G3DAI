@@ -4,10 +4,11 @@
  * ~3,200 lines of production code
  */
 
-import { G3DComputeShaders, DeviceConfig } from '../../g3d-ai/G3DComputeShaders';
+import { G3DComputeShaders } from '../../g3d-ai/G3DComputeShaders';
 import { G3DModelRunner, G3DPrecision } from '../../g3d-ai/G3DModelRunner';
 import { G3DGPUCompute } from '../../g3d-performance/G3DGPUCompute';
 import { G3DMathLibraries } from '../../g3d-3d/G3DMathLibraries';
+import { G3DModelType } from '../../g3d-ai/G3DModelRunner';
 
 // Core Types
 interface SegmentationResult {
@@ -229,7 +230,7 @@ export class G3DSegmentationModel {
             if (navigator.gpu) {
                 const adapter = await navigator.gpu.requestAdapter();
                 if (adapter) {
-                    this.device = await adapter.requestDevice();
+                    this.device = await adapter.requestDevice() as any;
                 }
             }
 
@@ -258,9 +259,11 @@ export class G3DSegmentationModel {
         const modelId = `${config.architecture}_${config.backbone}`;
 
         await this.modelRunner.loadModel({
+            id: modelId,
             name: modelId,
             version: '1.0.0',
-            id: modelId,
+            type: G3DModelType.CUSTOM,
+            modelPath: `models/${modelId}`,
             architecture: config.architecture,
             backbone: config.backbone,
             weights: config.weights,

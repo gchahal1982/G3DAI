@@ -57,6 +57,57 @@ export interface GlassmorphismTheme {
     };
 }
 
+// Base glassmorphism theme  
+export const baseGlassmorphismTheme: GlassmorphismTheme = {
+    colors: {
+        primary: '#6366f1',
+        secondary: '#8b5cf6',
+        accent: '#10b981',
+        background: '#0f0f23',
+        surface: '#1a1a2e',
+        text: '#ffffff',
+        textSecondary: 'rgba(255, 255, 255, 0.7)',
+        border: 'rgba(255, 255, 255, 0.1)',
+        shadow: 'rgba(0, 0, 0, 0.3)',
+        glass: {
+            primary: 'rgba(99, 102, 241, 0.08)',
+            secondary: 'rgba(139, 92, 246, 0.06)',
+            accent: 'rgba(16, 185, 129, 0.08)',
+            surface: 'rgba(255, 255, 255, 0.02)',
+        },
+    },
+    gradients: {
+        primary: 'linear-gradient(135deg, rgba(99, 102, 241, 0.2) 0%, rgba(139, 92, 246, 0.1) 100%)',
+        secondary: 'linear-gradient(135deg, rgba(139, 92, 246, 0.2) 0%, rgba(236, 72, 153, 0.1) 100%)',
+        accent: 'linear-gradient(135deg, rgba(16, 185, 129, 0.2) 0%, rgba(45, 212, 191, 0.1) 100%)',
+        glass: 'linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.02) 100%)',
+    },
+    blur: {
+        light: 'blur(8px)',
+        medium: 'blur(16px)',
+        heavy: 'blur(24px)',
+    },
+    spacing: {
+        xs: '0.25rem',
+        sm: '0.5rem',
+        md: '1rem',
+        lg: '1.5rem',
+        xl: '2rem',
+    },
+    borderRadius: {
+        sm: '0.375rem',
+        md: '0.5rem',
+        lg: '0.75rem',
+        xl: '1rem',
+    },
+    shadows: {
+        sm: '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
+        md: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+        lg: '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
+        glass: '0 8px 32px 0 rgba(31, 38, 135, 0.37)',
+    },
+};
+
 // Service-specific theme overrides
 export const serviceThemeOverrides: Record<string, Partial<GlassmorphismTheme>> = {
     'vision-pro': {
@@ -118,56 +169,7 @@ export const serviceThemeOverrides: Record<string, Partial<GlassmorphismTheme>> 
     // Add more service themes as needed
 };
 
-// Base glassmorphism theme
-export const baseGlassmorphismTheme: GlassmorphismTheme = {
-    colors: {
-        primary: '#6366f1',
-        secondary: '#8b5cf6',
-        accent: '#10b981',
-        background: '#0f0f23',
-        surface: '#1a1a2e',
-        text: '#ffffff',
-        textSecondary: 'rgba(255, 255, 255, 0.7)',
-        border: 'rgba(255, 255, 255, 0.1)',
-        shadow: 'rgba(0, 0, 0, 0.3)',
-        glass: {
-            primary: 'rgba(99, 102, 241, 0.08)',
-            secondary: 'rgba(139, 92, 246, 0.06)',
-            accent: 'rgba(16, 185, 129, 0.08)',
-            surface: 'rgba(255, 255, 255, 0.02)',
-        },
-    },
-    gradients: {
-        primary: 'linear-gradient(135deg, rgba(99, 102, 241, 0.2) 0%, rgba(139, 92, 246, 0.1) 100%)',
-        secondary: 'linear-gradient(135deg, rgba(139, 92, 246, 0.2) 0%, rgba(236, 72, 153, 0.1) 100%)',
-        accent: 'linear-gradient(135deg, rgba(16, 185, 129, 0.2) 0%, rgba(45, 212, 191, 0.1) 100%)',
-        glass: 'linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.02) 100%)',
-    },
-    blur: {
-        light: 'blur(8px)',
-        medium: 'blur(16px)',
-        heavy: 'blur(24px)',
-    },
-    spacing: {
-        xs: '0.25rem',
-        sm: '0.5rem',
-        md: '1rem',
-        lg: '1.5rem',
-        xl: '2rem',
-    },
-    borderRadius: {
-        sm: '0.375rem',
-        md: '0.5rem',
-        lg: '0.75rem',
-        xl: '1rem',
-    },
-    shadows: {
-        sm: '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
-        md: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-        lg: '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
-        glass: '0 8px 32px 0 rgba(31, 38, 135, 0.37)',
-    },
-};
+
 
 // Animations
 const shimmer = keyframes`
@@ -333,7 +335,11 @@ export interface GlassButtonProps {
     theme?: Partial<GlassmorphismTheme>;
 }
 
-const StyledGlassButton = styled.button<GlassButtonProps>`
+interface StyledGlassButtonProps extends GlassButtonProps {
+    theme: GlassmorphismTheme;
+}
+
+const StyledGlassButton = styled.button<StyledGlassButtonProps>`
   position: relative;
   display: inline-flex;
   align-items: center;
@@ -443,9 +449,11 @@ export const GlassButton: React.FC<GlassButtonProps> = ({
     iconPosition = 'left',
     onClick,
     className,
-    theme = baseGlassmorphismTheme,
+    theme,
     ...props
 }) => {
+    const mergedTheme = { ...baseGlassmorphismTheme, ...theme };
+    
     return (
         <StyledGlassButton
             variant={variant}
@@ -455,7 +463,7 @@ export const GlassButton: React.FC<GlassButtonProps> = ({
             fullWidth={fullWidth}
             onClick={onClick}
             className={className}
-            theme={theme}
+            theme={mergedTheme}
             {...props}
         >
             {icon && iconPosition === 'left' && icon}
@@ -481,7 +489,11 @@ export interface GlassInputProps {
     theme?: Partial<GlassmorphismTheme>;
 }
 
-const StyledGlassInput = styled.input<GlassInputProps>`
+interface StyledGlassInputProps extends Omit<GlassInputProps, 'onChange'> {
+    theme: GlassmorphismTheme;
+}
+
+const StyledGlassInput = styled.input<StyledGlassInputProps>`
   width: 100%;
   padding: ${props => props.theme.spacing.md};
   border: 1px solid ${props => props.theme.colors.border};
@@ -525,7 +537,7 @@ const InputWrapper = styled.div<{ fullWidth?: boolean }>`
   ${props => props.fullWidth && css`width: 100%;`}
 `;
 
-const ErrorMessage = styled.span`
+const ErrorMessage = styled.span<{ theme: GlassmorphismTheme }>`
   display: block;
   margin-top: ${props => props.theme.spacing.xs};
   color: #ef4444;
@@ -544,23 +556,25 @@ export const GlassInput: React.FC<GlassInputProps> = ({
     iconPosition = 'left',
     fullWidth = false,
     className,
-    theme = baseGlassmorphismTheme,
+    theme,
     ...props
 }) => {
+    const mergedTheme = { ...baseGlassmorphismTheme, ...theme };
+    
     return (
         <InputWrapper fullWidth={fullWidth} className={className}>
             <StyledGlassInput
                 type={type}
                 placeholder={placeholder}
                 value={value}
-                onChange={(e) => onChange?.(e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => onChange?.(e.target.value)}
                 disabled={disabled}
                 error={error}
-                theme={theme}
+                theme={mergedTheme}
                 {...props}
             />
             {error && errorMessage && (
-                <ErrorMessage theme={theme}>{errorMessage}</ErrorMessage>
+                <ErrorMessage theme={mergedTheme}>{errorMessage}</ErrorMessage>
             )}
         </InputWrapper>
     );
@@ -596,7 +610,11 @@ const ModalOverlay = styled.div<{ isOpen: boolean }>`
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 `;
 
-const ModalContent = styled.div<GlassModalProps>`
+interface StyledModalContentProps extends GlassModalProps {
+    theme: GlassmorphismTheme;
+}
+
+const ModalContent = styled.div<StyledModalContentProps>`
   background: ${props => props.theme.colors.glass.surface};
   backdrop-filter: ${props => props.theme.blur.heavy};
   -webkit-backdrop-filter: ${props => props.theme.blur.heavy};
@@ -625,11 +643,11 @@ const ModalContent = styled.div<GlassModalProps>`
   `}
 `;
 
-const ModalHeader = styled.div`
+const ModalHeader = styled.div<{ theme: GlassmorphismTheme }>`
   margin-bottom: ${props => props.theme.spacing.lg};
 `;
 
-const ModalTitle = styled.h2`
+const ModalTitle = styled.h2<{ theme: GlassmorphismTheme }>`
   margin: 0;
   color: ${props => props.theme.colors.text};
   font-size: 1.5rem;
@@ -644,9 +662,11 @@ export const GlassModal: React.FC<GlassModalProps> = ({
     size = 'md',
     closeOnOverlayClick = true,
     className,
-    theme = baseGlassmorphismTheme,
+    theme,
     ...props
 }) => {
+    const mergedTheme = { ...baseGlassmorphismTheme, ...theme };
+    
     const handleOverlayClick = (e: React.MouseEvent) => {
         if (e.target === e.currentTarget && closeOnOverlayClick) {
             onClose();
@@ -660,12 +680,12 @@ export const GlassModal: React.FC<GlassModalProps> = ({
                 onClose={onClose}
                 size={size}
                 className={className}
-                theme={theme}
+                theme={mergedTheme}
                 {...props}
             >
                 {title && (
-                    <ModalHeader theme={theme}>
-                        <ModalTitle theme={theme}>{title}</ModalTitle>
+                    <ModalHeader theme={mergedTheme}>
+                        <ModalTitle theme={mergedTheme}>{title}</ModalTitle>
                     </ModalHeader>
                 )}
                 {children}

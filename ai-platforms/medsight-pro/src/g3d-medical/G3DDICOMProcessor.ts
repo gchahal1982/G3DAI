@@ -289,7 +289,7 @@ export class G3DDICOMParser {
         }
     }
 
-    private handleWorkerMessage(event: MessageEvent): void {
+    private handleWorkerMessage(event: { data: { result: string; id: any } }): void {
         // Handle worker processing results
         const { result, id } = event.data;
         // Process the result and resolve the corresponding promise

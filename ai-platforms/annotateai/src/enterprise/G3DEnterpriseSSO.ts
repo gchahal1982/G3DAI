@@ -266,35 +266,20 @@ export class G3DEnterpriseSSO {
           __global const char* password,
           __global const char* salt,
           __global char* hash,
-          const int password_len,
-          const int salt_len,
-          const int iterations
+          const int pass_len,
+          const int salt_len
         ) {
           int idx = get_global_id(0);
           if (idx >= 1) return;
           
-          // Simplified PBKDF2 implementation
-          char temp[64];
-          for (int i = 0; i < password_len && i < 32; i++) {
-            temp[i] = password[i];
-          }
-          for (int i = 0; i < salt_len && i < 32; i++) {
-            temp[32 + i] = salt[i];
-          }
-          
-          // Multiple iterations for security
-          for (int iter = 0; iter < iterations; iter++) {
-            for (int i = 0; i < 64; i++) {
-              temp[i] = (temp[i] + iter) % 256;
+          // Simplified PBKDF2-like operation
+          for (int i = 0; i < 10000; i++) {
+            for (int j = 0; j < pass_len; j++) {
+              hash[j % 32] ^= password[j] + salt[j % salt_len] + i;
             }
           }
-          
-          // Copy result to hash
-          for (int i = 0; i < 32; i++) {
-            hash[i] = temp[i];
-          }
         }
-      `, 'hash_password');
+      `);
 
             // Token validation kernel
             await this.gpuCompute.createKernel(`
@@ -319,7 +304,7 @@ export class G3DEnterpriseSSO {
           
           result[0] = hash % 2; // Simplified validation
         }
-      `, 'validate_token');
+      `);
 
             // Risk scoring kernel
             await this.gpuCompute.createKernel(`
@@ -340,7 +325,7 @@ export class G3DEnterpriseSSO {
           
           risk_score[0] = clamp(score, 0.0f, 1.0f);
         }
-      `, 'calculate_risk_score');
+      `);
 
             console.log('SSO security kernels initialized successfully');
         } catch (error) {

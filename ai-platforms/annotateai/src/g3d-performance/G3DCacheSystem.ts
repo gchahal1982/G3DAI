@@ -165,10 +165,10 @@ export class G3DCacheSystem extends EventEmitter {
      */
     private async initializeGPU(): Promise<void> {
         try {
-            if (navigator.gpu) {
+            if ('gpu' in navigator) {
                 const adapter = await navigator.gpu.requestAdapter();
                 if (adapter) {
-                    this.device = await adapter.requestDevice();
+                    this.device = await adapter.requestDevice() as any;
                 }
             }
         } catch (error) {
@@ -907,7 +907,7 @@ export class G3DCacheSystem extends EventEmitter {
  */
 class DoublyLinkedList<T> {
     private head: ListNode<T> | null = null;
-    private tail: ListNode<T> | null = null;
+    private tailNode: ListNode<T> | null = null;
     private nodeMap: Map<T, ListNode<T>> = new Map();
 
     moveToFront(value: T): void {
@@ -930,7 +930,7 @@ class DoublyLinkedList<T> {
     }
 
     tail(): T | null {
-        return this.tail ? this.tail.value : null;
+        return this.tailNode ? this.tailNode.value : null;
     }
 
     private addToFront(node: ListNode<T>): void {
@@ -942,8 +942,8 @@ class DoublyLinkedList<T> {
         }
         this.head = node;
 
-        if (!this.tail) {
-            this.tail = node;
+        if (!this.tailNode) {
+            this.tailNode = node;
         }
     }
 
@@ -957,7 +957,7 @@ class DoublyLinkedList<T> {
         if (node.next) {
             node.next.prev = node.prev;
         } else {
-            this.tail = node.prev;
+            this.tailNode = node.prev;
         }
     }
 }

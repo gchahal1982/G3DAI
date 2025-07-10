@@ -143,6 +143,7 @@ interface GenerationRequest {
     constraints?: ConstraintConfig;
     quality: 'draft' | 'normal' | 'high' | 'ultra';
     format: 'rgb' | 'rgba' | 'hdr' | 'depth';
+    seed?: number;
 }
 
 interface ConditionData {
@@ -492,7 +493,7 @@ export class G3DGANGenerator {
 
     private async initializeComputeShaders(): Promise<void> {
         // Initialize compute shaders for GAN operations
-        await this.computeShaders.createComputeShader(`
+        await this.computeShaders.createComputeShader('generator_forward', `
       // Generator forward pass shader
       @group(0) @binding(0) var<storage, read> latentInput: array<f32>;
       @group(0) @binding(1) var<storage, read> weights: array<f32>;
@@ -537,7 +538,7 @@ export class G3DGANGenerator {
       }
     `);
 
-        await this.computeShaders.createComputeShader(`
+        await this.computeShaders.createComputeShader('discriminator_forward', `
       // Discriminator forward pass shader
       @group(0) @binding(0) var<storage, read> imageInput: array<f32>;
       @group(0) @binding(1) var<storage, read> weights: array<f32>;
@@ -661,17 +662,18 @@ export class G3DGANGenerator {
         // Create input buffer with latent vectors
         const inputBuffer = await this.createLatentBuffer(batch.latentVectors);
 
-        // Create output buffer for generated images
-        const outputBuffer = await this.computeShaders.createBuffer({
-            size: batchSize * outputSize.width * outputSize.height * outputSize.channels * 4,
-            usage: 'storage'
-        });
+        // Create output buffer
+        const outputBuffer = await this.computeShaders.createBuffer(
+            `output_${Date.now()}`,
+            batchSize * outputSize.width * outputSize.height * outputSize.channels * 4,
+            'storage'
+        );
 
         // Execute generator
-        await this.executeGenerator(inputBuffer, outputBuffer, batchSize);
+        await this.executeGenerator(inputBuffer, outputBuffer as any, batchSize);
 
-        // Read results from GPU
-        const outputData = await this.readGPUBuffer(outputBuffer);
+        // Read output data
+        const outputData = await this.readGPUBuffer(outputBuffer as any);
 
         // Convert to image tensors
         const images = this.convertToImageTensors(
@@ -904,10 +906,11 @@ export class G3DGANGenerator {
     private async createLatentBuffer(latentVectors: Float32Array[]): Promise<GPUBuffer> {
         // Create GPU buffer for latent vectors
         const totalSize = latentVectors.reduce((sum, vec) => sum + vec.length, 0);
-        const buffer = await this.computeShaders.createBuffer({
-            size: totalSize * 4,
-            usage: 'storage'
-        });
+        const buffer = await this.computeShaders.createBuffer(
+            `latent_${Date.now()}`,
+            totalSize * 4,
+            'storage'
+        );
 
         // Copy data to buffer
         const data = new Float32Array(totalSize);
@@ -918,9 +921,9 @@ export class G3DGANGenerator {
         }
 
         // Write to GPU buffer
-        await this.computeShaders.writeBuffer(buffer, data);
+        await this.computeShaders.writeBuffer(buffer.id, data);
 
-        return buffer;
+        return buffer as any;
     }
 
     private async readGPUBuffer(buffer: GPUBuffer): Promise<Float32Array> {

@@ -389,7 +389,7 @@ export class G3DComplianceManager {
           
           risk_scores[idx] = risk * (weight_sum / control_count);
         }
-      `, 'calculate_compliance_risk');
+      `);
 
             console.log('Compliance GPU kernels initialized successfully');
         } catch (error) {

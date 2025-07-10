@@ -167,10 +167,10 @@ export const G3DVideoTracking: React.FC<G3DVideoTrackingProps> = ({
     const initialize3D = async () => {
         if (!canvasRef.current) return;
 
-        const renderer = new G3DNativeRenderer(canvasRef.current, { antialias: true, alpha: true });
+        const renderer = new G3DNativeRenderer(canvasRef.current);
         rendererRef.current = renderer;
 
-        const scene = new G3DSceneManager(rendererRef.current || new G3DNativeRenderer(canvasRef.current!, { antialias: true, alpha: true }));
+        const scene = new G3DSceneManager(rendererRef.current || new G3DNativeRenderer(canvasRef.current!));
         sceneRef.current = scene;
 
         if (config.enableVisualization) {
@@ -679,7 +679,10 @@ export const G3DVideoTracking: React.FC<G3DVideoTrackingProps> = ({
     const setupVisualizationScene = async () => { };
     const startRenderLoop = () => { };
     const cleanup = () => {
-        rendererRef.current?.cleanup();
+        // Fix cleanup method name
+        if (rendererRef.current?.dispose) {
+            rendererRef.current.dispose();
+        }
         modelRunnerRef.current?.cleanup();
     };
 

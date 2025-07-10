@@ -130,15 +130,15 @@ export class G3DHolographicImaging {
 
             // Initialize holographic renderer
             this.holographicRenderer = new G3DHolographicRenderer(this.config);
-            await this.holographicRenderer.init();
+            await this.holographicRenderer.initialize();
 
             // Initialize volume processor
             this.volumeProcessor = new G3DVolumeProcessor(this.config);
-            await this.volumeProcessor.init();
+            await this.volumeProcessor.initialize();
 
             // Initialize collaboration manager
             this.collaborationManager = new G3DHolographicCollaboration(this.config);
-            await this.collaborationManager.init();
+            await this.collaborationManager.initialize();
 
             this.isInitialized = true;
             console.log('G3D Holographic Imaging System initialized successfully');
@@ -268,17 +268,17 @@ export class G3DHolographicImaging {
         }
 
         if (this.holographicRenderer) {
-            this.holographicRenderer.cleanup();
+            this.holographicRenderer.dispose();
             this.holographicRenderer = null;
         }
 
         if (this.volumeProcessor) {
-            this.volumeProcessor.cleanup();
+            this.volumeProcessor.dispose();
             this.volumeProcessor = null;
         }
 
         if (this.collaborationManager) {
-            this.collaborationManager.cleanup();
+            this.collaborationManager.dispose();
             this.collaborationManager = null;
         }
 

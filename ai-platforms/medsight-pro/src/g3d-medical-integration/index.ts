@@ -276,7 +276,7 @@ export class G3DMedicalIntegrationManager {
                 performanceTarget: this.config.global.performanceTarget,
                 enableRealTimeMonitoring: true
             });
-            await this.orchestrator.init();
+            await this.orchestrator.initialize();
             this.status.orchestrator = 'ready';
 
             // Initialize deployment
@@ -292,7 +292,7 @@ export class G3DMedicalIntegrationManager {
                 monitoringLevel: 'comprehensive',
                 securityLevel: 'enhanced'
             });
-            await this.deployment.init();
+            await this.deployment.initialize();
             this.status.deployment = 'ready';
 
             // Initialize API
@@ -312,7 +312,7 @@ export class G3DMedicalIntegrationManager {
                 maxRequestSize: 100, // 100MB
                 requestTimeout: 30
             });
-            await this.api.init();
+            await this.api.initialize();
             this.status.api = 'ready';
 
             // Initialize data pipeline
@@ -330,7 +330,7 @@ export class G3DMedicalIntegrationManager {
                 enableAuditLogging: this.config.global.enableAuditLogging,
                 processingTimeout: 3600
             });
-            await this.dataPipeline.init();
+            await this.dataPipeline.initialize();
             this.status.dataPipeline = 'ready';
 
             // Initialize analytics
@@ -347,7 +347,7 @@ export class G3DMedicalIntegrationManager {
                 enableAnomalyDetection: true,
                 reportingFrequency: 'daily'
             });
-            await this.analytics.init();
+            await this.analytics.initialize();
             this.status.analytics = 'ready';
 
             // Update overall status
@@ -525,27 +525,27 @@ export class G3DMedicalIntegrationManager {
         console.log('Disposing G3D Medical Integration Platform...');
 
         if (this.orchestrator) {
-            this.orchestrator.cleanup();
+            this.orchestrator.dispose();
             this.orchestrator = null;
         }
 
         if (this.deployment) {
-            this.deployment.cleanup();
+            this.deployment.dispose();
             this.deployment = null;
         }
 
         if (this.api) {
-            this.api.cleanup();
+            this.api.dispose();
             this.api = null;
         }
 
         if (this.dataPipeline) {
-            this.dataPipeline.cleanup();
+            this.dataPipeline.dispose();
             this.dataPipeline = null;
         }
 
         if (this.analytics) {
-            this.analytics.cleanup();
+            this.analytics.dispose();
             this.analytics = null;
         }
 

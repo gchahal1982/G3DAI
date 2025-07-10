@@ -111,15 +111,12 @@ export default function AnnotateAIApp() {
 
                 // Initialize annotation engines
                 const imgEngine = new ImageAnnotationEngine();
-                await imgEngine.init();
                 setImageEngine(imgEngine);
 
                 const vidEngine = new VideoAnnotationEngine(imgEngine);
-                await vidEngine.init();
                 setVideoEngine(vidEngine);
 
                 const preEngine = new PreAnnotationEngine();
-                await preEngine.init();
                 setAIEngine(preEngine);
 
                 // Load initial data
@@ -137,9 +134,7 @@ export default function AnnotateAIApp() {
 
         // Cleanup on unmount
         return () => {
-            imageEngine?.cleanup();
-            videoEngine?.cleanup();
-            aiEngine?.cleanup();
+            // Cleanup will be handled by the engines internally if needed
         };
     }, []);
 

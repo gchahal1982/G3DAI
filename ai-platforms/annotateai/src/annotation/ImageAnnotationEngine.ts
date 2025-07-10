@@ -199,7 +199,7 @@ export class ImageAnnotationEngine extends EventEmitter {
             console.log('TensorFlow.js initialized');
 
             // Initialize OpenCV.js
-            if (typeof cv !== 'undefined' && cv.Mat) {
+            if (typeof (globalThis as any).cv !== 'undefined' && (globalThis as any).cv.Mat) {
                 console.log('OpenCV.js initialized');
             } else {
                 throw new Error('OpenCV.js not available');
@@ -209,10 +209,10 @@ export class ImageAnnotationEngine extends EventEmitter {
             await this.loadDefaultModels();
 
             // Initialize quality controller
-            await this.qualityController.init();
+            await this.qualityController.initialize();
 
             // Initialize collaboration manager
-            await this.collaborationManager.init();
+            await this.collaborationManager.initialize();
 
             // Start performance monitoring
             this.performanceMonitor.start();
@@ -631,9 +631,9 @@ export class ImageAnnotationEngine extends EventEmitter {
     // Cleanup resources
     async dispose(): Promise<void> {
         // Dispose TensorFlow models
-        for (const model of this.aiModels.values()) {
-            model.cleanup();
-        }
+        this.aiModels.forEach(model => {
+            model.dispose();
+        });
         this.aiModels.clear();
 
         // Clear canvas contexts

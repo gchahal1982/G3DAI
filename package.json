@@ -37,5 +37,17 @@
     "url": "https://github.com/g3d/g3dai.git"
   },
   "author": "G3D Team",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "@heroicons/react": "^2.2.0",
+    "bcryptjs": "^3.0.2",
+    "express-validator": "^7.2.1",
+    "mongoose": "^8.16.2",
+    "qrcode": "^1.5.4",
+    "react-hotkeys-hook": "^5.1.0",
+    "recharts": "^3.1.0",
+    "speakeasy": "^2.0.0",
+    "stripe": "^18.3.0",
+    "styled-components": "^6.1.19"
+  }
 }

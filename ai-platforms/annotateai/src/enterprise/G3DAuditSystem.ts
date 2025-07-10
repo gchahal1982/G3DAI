@@ -386,7 +386,7 @@ export class G3DAuditSystem {
           
           correlations[event_idx * pattern_count + pattern_idx] = correlation / feature_size;
         }
-      `, 'correlate_events');
+      `);
 
             // Risk scoring kernel
             await this.gpuCompute.createKernel(`
@@ -407,7 +407,7 @@ export class G3DAuditSystem {
           
           risk_scores[idx] = clamp(risk_score, 0.0f, 1.0f);
         }
-      `, 'calculate_risk_scores');
+      `);
 
             // Anomaly detection kernel
             await this.gpuCompute.createKernel(`
@@ -431,7 +431,7 @@ export class G3DAuditSystem {
           deviation = sqrt(deviation / feature_count);
           anomaly_scores[idx] = deviation > threshold ? deviation : 0.0f;
         }
-      `, 'detect_anomalies');
+      `);
 
             console.log('Audit system GPU kernels initialized successfully');
         } catch (error) {
@@ -880,7 +880,7 @@ export class G3DAuditSystem {
 
             // Apply filters
             const passesFilters = destination.filters.every(filter =>
-                this.applyFilter(event, filter)
+                this.applyLogFilter(event, filter)
             );
 
             if (!passesFilters) continue;
@@ -977,6 +977,33 @@ export class G3DAuditSystem {
             default:
                 return true;
         }
+    }
+
+    private applyLogFilter(event: AuditEvent, filter: LogFilter): boolean {
+        const value = this.getFieldValue(event, filter.field);
+        let result = false;
+
+        switch (filter.operator) {
+            case 'equals':
+                result = value === filter.value;
+                break;
+            case 'contains':
+                result = String(value).includes(filter.value);
+                break;
+            case 'regex':
+                result = new RegExp(filter.value).test(String(value));
+                break;
+            case 'range':
+                if (Array.isArray(filter.value) && filter.value.length === 2) {
+                    result = value >= filter.value[0] && value <= filter.value[1];
+                }
+                break;
+            default:
+                result = true;
+        }
+
+        // Apply action (include or exclude)
+        return filter.action === 'include' ? result : !result;
     }
 
     private getFieldValue(event: AuditEvent, field: string): any {

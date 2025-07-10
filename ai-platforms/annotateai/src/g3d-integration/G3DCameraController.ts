@@ -336,7 +336,7 @@ export class G3DCameraController {
         // Calculate pan offset in camera space
         const panOffset = vec3.create();
         const cameraMatrix = mat4.create();
-        mat4.lookAt(cameraMatrix, this.camera.position, this.target, [0, 1, 0]);
+        mat4.lookAt(cameraMatrix, this.camera.getPosition(), this.target, [0, 1, 0]);
 
         // Right vector
         const right = vec3.fromValues(cameraMatrix[0], cameraMatrix[4], cameraMatrix[8]);
@@ -370,7 +370,7 @@ export class G3DCameraController {
 
         // Get camera direction vectors
         const cameraMatrix = mat4.create();
-        mat4.lookAt(cameraMatrix, this.camera.position, this.target, [0, 1, 0]);
+        mat4.lookAt(cameraMatrix, this.camera.getPosition(), this.target, [0, 1, 0]);
 
         const forwardVec = vec3.fromValues(-cameraMatrix[2], -cameraMatrix[6], -cameraMatrix[10]);
         const rightVec = vec3.fromValues(cameraMatrix[0], cameraMatrix[4], cameraMatrix[8]);
@@ -449,7 +449,9 @@ export class G3DCameraController {
         this.offset[2] = sinPhiRadius * Math.cos(this.spherical.theta);
 
         // Update camera position
-        vec3.add(this.camera.position, this.target, this.offset);
+        const newPosition = vec3.create();
+        vec3.add(newPosition, this.target, this.offset);
+        this.camera.setPosition(newPosition[0], newPosition[1], newPosition[2]);
         this.camera.lookAt(this.target[0], this.target[1], this.target[2]);
 
         // Apply damping
@@ -474,11 +476,14 @@ export class G3DCameraController {
         // Update camera orientation
         const forward = vec3.fromValues(0, 0, -1);
         vec3.transformQuat(forward, forward, rotation);
-        vec3.add(this.target, this.camera.position, forward);
+        vec3.add(this.target, this.camera.getPosition(), forward);
         this.camera.lookAt(this.target[0], this.target[1], this.target[2]);
 
         // Apply velocity
-        vec3.add(this.camera.position, this.camera.position, this.velocity);
+        const currentPosition = this.camera.getPosition();
+        const newPosition = vec3.create();
+        vec3.add(newPosition, currentPosition, this.velocity);
+        this.camera.setPosition(newPosition[0], newPosition[1], newPosition[2]);
         vec3.add(this.target, this.target, this.velocity);
 
         // Apply damping
@@ -525,7 +530,7 @@ export class G3DCameraController {
     animateTo(position: vec3, target: vec3, duration: number, easing: G3DEasing = G3DEasing.EASE_IN_OUT): Promise<void> {
         return new Promise((resolve) => {
             this.currentAnimation = {
-                startPosition: vec3.clone(this.camera.position),
+                startPosition: vec3.clone(this.camera.getPosition()),
                 endPosition: vec3.clone(position),
                 startTarget: vec3.clone(this.target),
                 endTarget: vec3.clone(target),
@@ -547,7 +552,8 @@ export class G3DCameraController {
         const t = this.applyEasing(progress, this.currentAnimation.easing);
 
         // Interpolate position
-        vec3.lerp(this.camera.position,
+        const interpolatedPosition = vec3.create();
+        vec3.lerp(interpolatedPosition,
             this.currentAnimation.startPosition,
             this.currentAnimation.endPosition, t);
 
@@ -557,9 +563,9 @@ export class G3DCameraController {
             this.currentAnimation.endTarget, t);
 
         // Update camera
-        this.camera.setPosition(this.camera.position[0],
-            this.camera.position[1],
-            this.camera.position[2]);
+        this.camera.setPosition(interpolatedPosition[0],
+            interpolatedPosition[1],
+            interpolatedPosition[2]);
         this.camera.lookAt(this.target[0], this.target[1], this.target[2]);
 
         // Update spherical coordinates
@@ -596,7 +602,7 @@ export class G3DCameraController {
     // Utility methods
 
     private updateSphericalFromCamera(): void {
-        vec3.subtract(this.offset, this.camera.position, this.target);
+        vec3.subtract(this.offset, this.camera.getPosition(), this.target);
         this.spherical.radius = vec3.length(this.offset);
 
         if (this.spherical.radius === 0) {

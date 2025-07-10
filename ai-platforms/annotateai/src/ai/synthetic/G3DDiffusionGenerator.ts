@@ -5,7 +5,7 @@
  */
 
 import { G3DGPUCompute } from '../../g3d-performance/G3DGPUCompute';
-import { G3DModelRunner } from '../../g3d-ai/G3DModelRunner';
+import { G3DModelRunner, G3DPrecision, G3DModelType } from '../../g3d-ai/G3DModelRunner';
 import { G3DMemoryManager } from '../../g3d-performance/G3DMemoryManager';
 import { G3DProfiler } from '../../g3d-performance/G3DProfiler';
 
@@ -178,6 +178,11 @@ export class G3DDiffusionGenerator {
 
             // Load model with G3D acceleration
             const model = await this.modelRunner.loadModel({
+                id: modelId,
+                name: modelId,
+                version: '1.0.0',
+                type: G3DModelType.CUSTOM,
+                modelPath: `models/${modelId}`,
                 modelId,
                 framework: 'diffusers',
                 device: 'cuda',
@@ -210,6 +215,11 @@ export class G3DDiffusionGenerator {
     private async loadControlNetModel(controlType: string, config: any): Promise<void> {
         try {
             const model = await this.modelRunner.loadModel({
+                id: `controlnet-${controlType}`,
+                name: `controlnet-${controlType}`,
+                version: '1.0.0',
+                type: G3DModelType.CUSTOM,
+                modelPath: `models/controlnet-${controlType}`,
                 modelId: `controlnet-${controlType}`,
                 framework: 'diffusers',
                 device: 'cuda',
@@ -322,6 +332,11 @@ export class G3DDiffusionGenerator {
             process: async (image: ImageData, params: any = {}) => {
                 // Use MiDaS depth estimation with G3D acceleration
                 const depthModel = await this.modelRunner.loadModel({
+                    id: 'midas-depth-estimation',
+                    name: 'midas-depth-estimation',
+                    version: '1.0.0',
+                    type: G3DModelType.CUSTOM,
+                    modelPath: 'models/midas-depth-estimation',
                     modelId: 'midas-depth-estimation',
                     framework: 'pytorch',
                     device: 'cuda',
@@ -347,6 +362,11 @@ export class G3DDiffusionGenerator {
             process: async (image: ImageData, params: any = {}) => {
                 // Use OpenPose with G3D acceleration
                 const poseModel = await this.modelRunner.loadModel({
+                    id: 'openpose-body-25',
+                    name: 'openpose-body-25',
+                    version: '1.0.0',
+                    type: G3DModelType.CUSTOM,
+                    modelPath: 'models/openpose-body-25',
                     modelId: 'openpose-body-25',
                     framework: 'pytorch',
                     device: 'cuda',
@@ -372,6 +392,11 @@ export class G3DDiffusionGenerator {
             process: async (image: ImageData, params: any = {}) => {
                 // Use semantic segmentation with G3D acceleration
                 const segModel = await this.modelRunner.loadModel({
+                    id: 'segformer-b5-ade',
+                    name: 'segformer-b5-ade',
+                    version: '1.0.0',
+                    type: G3DModelType.CUSTOM,
+                    modelPath: 'models/segformer-b5-ade',
                     modelId: 'segformer-b5-ade',
                     framework: 'pytorch',
                     device: 'cuda',
@@ -395,6 +420,9 @@ export class G3DDiffusionGenerator {
     private async loadQualityAssessor(assessorId: string, config: any): Promise<void> {
         try {
             const model = await this.modelRunner.loadModel({
+                id: assessorId,
+                name: config.model,
+                version: '1.0.0',
                 modelId: config.model,
                 framework: 'pytorch',
                 device: 'cuda',
@@ -473,7 +501,7 @@ export class G3DDiffusionGenerator {
             noise[idx + 1] = z1;
           }
         }
-      `, 'sample_noise');
+      `);
 
             // Denoising step kernel
             await this.gpuCompute.createKernel(`
@@ -491,7 +519,7 @@ export class G3DDiffusionGenerator {
           // DDPM denoising step with G3D optimization
           denoised_image[idx] = (noisy_image[idx] - sigma * noise_pred[idx]) / alpha;
         }
-      `, 'denoise_step');
+      `);
 
             // Image blending kernel
             await this.gpuCompute.createKernel(`
@@ -511,7 +539,7 @@ export class G3DDiffusionGenerator {
           
           result[idx] = image1[idx] * (1.0f - blend) + image2[idx] * blend;
         }
-      `, 'blend_images');
+      `);
 
             console.log('GPU kernels for diffusion operations created successfully');
         } catch (error) {
@@ -800,6 +828,9 @@ export class G3DDiffusionGenerator {
         try {
             // Use VAE decoder to convert latents to images
             const vaeDecoder = await this.modelRunner.loadModel({
+                id: 'vae-decoder',
+                name: 'vae-decoder',
+                version: '1.0.0',
                 modelId: 'vae-decoder',
                 framework: 'pytorch',
                 device: 'cuda',
@@ -931,16 +962,21 @@ export class G3DDiffusionGenerator {
      */
     private async encodeText(text: string): Promise<Float32Array> {
         const textEncoder = await this.modelRunner.loadModel({
+            id: 'clip-text-encoder',
+            name: 'clip-text-encoder',
+            version: '1.0.0',
             modelId: 'clip-text-encoder',
             framework: 'pytorch',
             device: 'cuda',
             g3dAcceleration: true
         });
 
-        return await this.modelRunner.runInference('default', textEncoder, {
+        const result = await this.modelRunner.runInference('default', textEncoder, {
             text,
             outputFormat: 'embeddings'
         });
+        
+        return result.data as Float32Array;
     }
 
     /**
@@ -948,16 +984,21 @@ export class G3DDiffusionGenerator {
      */
     private async encodeImage(image: ImageData): Promise<Float32Array> {
         const imageEncoder = await this.modelRunner.loadModel({
+            id: 'clip-image-encoder',
+            name: 'clip-image-encoder',
+            version: '1.0.0',
             modelId: 'clip-image-encoder',
             framework: 'pytorch',
             device: 'cuda',
             g3dAcceleration: true
         });
 
-        return await this.modelRunner.runInference('default', imageEncoder, {
+        const result = await this.modelRunner.runInference('default', imageEncoder, {
             image,
             outputFormat: 'embeddings'
         });
+        
+        return result.data as Float32Array;
     }
 
     /**
@@ -1040,12 +1081,14 @@ export class G3DDiffusionGenerator {
         const assessor = this.qualityAssessors.get('aesthetic-scorer');
         if (!assessor) return 0.5;
 
-        const score = await this.modelRunner.runInference('default', assessor.model, {
+        const scoreResult = await this.modelRunner.runInference('default', assessor.model, {
             image,
             outputFormat: 'score'
         });
 
-        return score;
+        // Extract the score from the result
+        const scoreData = scoreResult.data as Float32Array;
+        return scoreData.length > 0 ? scoreData[0] : 0.5;
     }
 
     /**
@@ -1204,7 +1247,7 @@ export class G3DDiffusionGenerator {
 
             // Cleanup GPU resources
             await this.gpuCompute.cleanup();
-            await this.memoryManager.cleanup();
+            await this.memoryManager.dispose();
 
             console.log('G3D Diffusion Generator cleanup completed');
         } catch (error) {

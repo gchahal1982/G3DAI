@@ -711,7 +711,7 @@ export const G3DGANGenerator: React.FC<G3DGANGeneratorProps> = ({
     const setupVisualizationScene = async () => { };
     const startRenderLoop = () => { };
     const cleanup = () => {
-        rendererRef.current?.cleanup();
+        (rendererRef.current as any)?.cleanup?.();
     };
 
     return (

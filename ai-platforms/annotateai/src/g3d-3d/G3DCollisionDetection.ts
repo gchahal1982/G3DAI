@@ -238,8 +238,8 @@ export class G3DCollisionDetection {
         try {
             console.log('Initializing G3D Collision Detection');
 
-            await this.broadPhase.init();
-            await this.narrowPhase.init();
+            await this.broadPhase.initialize();
+            await this.narrowPhase.initialize();
 
             this.isInitialized = true;
             console.log('G3D Collision Detection initialized successfully');

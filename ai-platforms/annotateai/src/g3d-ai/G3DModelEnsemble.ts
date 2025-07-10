@@ -479,12 +479,7 @@ export class G3DModelEnsemble {
             this.performanceHistory.set(model.id, []);
 
             // Create model runner
-            const modelRunner = new G3DModelRunner({
-                modelId: model.id,
-                enableG3DAcceleration: true,
-                batchSize: 32,
-                optimization: model.config.optimization
-            });
+            const modelRunner = new G3DModelRunner();
 
             this.modelRunners.set(model.id, modelRunner);
 

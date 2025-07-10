@@ -160,7 +160,7 @@ export class G3DLightingSystem {
                 preferredDevice: 'gpu',
                 minComputeUnits: 8,
                 minMemorySize: 1024 * 1024 * 1024,
-                features: ['fp16', 'ray_tracing']
+                features: ['fp16']
             },
             memory: {
                 maxBufferSize: 4 * 1024 * 1024 * 1024,

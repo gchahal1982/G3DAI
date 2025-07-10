@@ -27,40 +27,18 @@ export { Breadcrumb } from './Breadcrumb';
 export { Pagination } from './Pagination';
 
 // Feedback Components
-export { Alert } from './Alert';
-export { Toast } from './Toast';
 export { Progress } from './Progress';
-export { Spinner } from './Spinner';
-export { Skeleton } from './Skeleton';
-
-// Data Display Components
-export { Table } from './Table';
-export { Badge } from './Badge';
-export { Avatar } from './Avatar';
 export { Tooltip } from './Tooltip';
+export { Badge } from './Badge';
 
-// Form Components
-export { Form } from './Form';
-export { FormField } from './FormField';
-export { Label } from './Label';
-
-// Specialized Components
+// Input Components
 export { Slider } from './Slider';
-export { Calendar } from './Calendar';
-export { DatePicker } from './DatePicker';
-export { ColorPicker } from './ColorPicker';
-
-// Utility Components
-export { Separator } from './Separator';
-export { Spacer } from './Spacer';
-export { Container } from './Container';
 
 // Types
 export type { ButtonProps } from './Button';
 export type { InputProps } from './Input';
 export type { ModalProps } from './Modal';
-export type { TabsProps } from './Tabs';
-export type { TooltipProps } from './Tooltip';
-export type { ProgressProps } from './Progress';
-export type { BadgeProps } from './Badge';
 export type { SliderProps } from './Slider';
+export type { TooltipProps } from './Tooltip';
+export type { BadgeProps } from './Badge';
+export type { TabsProps, TabsContentProps, TabsListProps, TabsTriggerProps } from './Tabs';

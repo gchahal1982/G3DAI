@@ -699,28 +699,28 @@ export class G3DEnterpriseManagement {
 
             // Initialize tenant manager
             this.tenantManager = new G3DTenantManager(this.config);
-            await this.tenantManager.init();
+            await this.tenantManager.initialize();
 
             // Initialize user manager
             this.userManager = new G3DUserManager(this.config);
-            await this.userManager.init();
+            await this.userManager.initialize();
 
             // Initialize license manager
             if (this.config.enableLicenseManagement) {
                 this.licenseManager = new G3DLicenseManager(this.config);
-                await this.licenseManager.init();
+                await this.licenseManager.initialize();
             }
 
             // Initialize compliance manager
             if (this.config.enableGovernance) {
                 this.complianceManager = new G3DEnterpriseComplianceManager(this.config);
-                await this.complianceManager.init();
+                await this.complianceManager.initialize();
             }
 
             // Initialize security manager
             if (this.config.enableAdvancedSecurity) {
                 this.securityManager = new G3DEnterpriseSecurityManager(this.config);
-                await this.securityManager.init();
+                await this.securityManager.initialize();
             }
 
             // Set up default enterprise configuration
@@ -1238,27 +1238,27 @@ export class G3DEnterpriseManagement {
 
         // Dispose managers
         if (this.tenantManager) {
-            this.tenantManager.cleanup();
+            this.tenantManager.dispose();
             this.tenantManager = null;
         }
 
         if (this.userManager) {
-            this.userManager.cleanup();
+            this.userManager.dispose();
             this.userManager = null;
         }
 
         if (this.licenseManager) {
-            this.licenseManager.cleanup();
+            this.licenseManager.dispose();
             this.licenseManager = null;
         }
 
         if (this.complianceManager) {
-            this.complianceManager.cleanup();
+            this.complianceManager.dispose();
             this.complianceManager = null;
         }
 
         if (this.securityManager) {
-            this.securityManager.cleanup();
+            this.securityManager.dispose();
             this.securityManager = null;
         }
 

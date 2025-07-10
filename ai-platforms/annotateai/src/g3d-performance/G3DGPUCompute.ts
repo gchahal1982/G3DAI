@@ -461,27 +461,6 @@ export class G3DGPUCompute extends EventEmitter {
     }
 
     /**
-     * Read data from GPU buffer
-     */
-    private async readBuffer(buffer: any): Promise<ArrayBuffer> {
-        const readBuffer = this.device.createBuffer({
-            size: buffer.size,
-            usage: 0x01 | 0x08 // COPY_DST | MAP_READ
-        });
-
-        const commandEncoder = this.device.createCommandEncoder();
-        commandEncoder.copyBufferToBuffer(buffer, 0, readBuffer, 0, buffer.size);
-        this.queue.submit([commandEncoder.finish()]);
-
-        await readBuffer.mapAsync(0x01); // MAP_READ
-        const data = readBuffer.getMappedRange().slice(0);
-        readBuffer.unmap();
-        readBuffer.destroy();
-
-        return data;
-    }
-
-    /**
      * Parse buffer usage flags
      */
     private parseBufferUsage(usage: string[]): number {
@@ -881,6 +860,74 @@ export class G3DGPUCompute extends EventEmitter {
     async createKernel(source: string): Promise<void> {
         // Mock kernel creation
         console.log('Creating kernel from source:', source.substring(0, 100) + '...');
+    }
+
+    /**
+     * Get kernel by name
+     */
+    getKernel(name: string): any {
+        // Mock kernel retrieval
+        return {
+            name,
+            execute: (inputs: any[], params: any) => {
+                // Mock execution
+                return new Float32Array(inputs[0].length);
+            }
+        };
+    }
+
+    /**
+     * Execute kernel with inputs and parameters
+     */
+    async executeKernel(kernel: any, inputs: any[], params: any): Promise<Float32Array> {
+        // Mock kernel execution
+        console.log('Executing kernel:', kernel.name, 'with params:', params);
+        
+        // Return mock result based on expected output size
+        const outputSize = params.num_groups || inputs[0].length;
+        return new Float32Array(outputSize).fill(0.5);
+    }
+
+    /**
+     * Optimize model for GPU execution
+     */
+    async optimizeModel(model: any, options: any): Promise<void> {
+        // Mock model optimization
+        console.log('Optimizing model for GPU execution with options:', options);
+        
+        // In a real implementation, this would:
+        // - Enable TensorRT optimizations
+        // - Apply quantization
+        // - Optimize memory layout
+        // - Enable mixed precision
+    }
+
+    /**
+     * Create GPU buffer
+     */
+    async createBuffer(size: number): Promise<any> {
+        // Mock buffer creation
+        return {
+            size,
+            id: Math.random().toString(36),
+            data: new ArrayBuffer(size)
+        };
+    }
+
+    /**
+     * Update GPU buffer with data
+     */
+    async updateBuffer(buffer: any, data: ArrayBufferView): Promise<void> {
+        // Mock buffer update
+        console.log('Updating buffer:', buffer.id, 'with data size:', data.byteLength);
+    }
+
+    /**
+     * Read data from GPU buffer
+     */
+    async readBuffer(buffer: any): Promise<ArrayBuffer> {
+        // Mock buffer read
+        return buffer.data || new ArrayBuffer(buffer.size || 0);
     }
 }
 

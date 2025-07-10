@@ -663,7 +663,7 @@ export class G3D3DRenderer {
             throw new Error('Failed to get WebGPU adapter');
         }
 
-        this.device = await adapter.requestDevice();
+        this.device = await adapter.requestDevice() as GPUDevice;
         if (!this.device) {
             throw new Error('Failed to get WebGPU device');
         }

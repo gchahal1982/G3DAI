@@ -157,17 +157,17 @@ class Vec3 {
         };
     }
 
-    static length(v: Vector3): number {
+    static magnitude(v: Vector3): number {
         return Math.sqrt(v.x * v.x + v.y * v.y + v.z * v.z);
     }
 
     static normalize(v: Vector3): Vector3 {
-        const len = Vec3.length(v);
+        const len = Vec3.magnitude(v);
         return len > 0 ? Vec3.multiply(v, 1 / len) : Vec3.create(0, 0, 0);
     }
 
     static distance(a: Vector3, b: Vector3): number {
-        return Vec3.length(Vec3.subtract(a, b));
+        return Vec3.magnitude(Vec3.subtract(a, b));
     }
 
     static lerp(a: Vector3, b: Vector3, t: number): Vector3 {
@@ -432,7 +432,7 @@ class ConstraintSolver {
         const posA = Vec3.add(bodyA.transform.position, constraint.anchorA);
         const posB = Vec3.add(bodyB.transform.position, constraint.anchorB);
         const delta = Vec3.subtract(posB, posA);
-        const distance = Vec3.length(delta);
+        const distance = Vec3.magnitude(delta);
         const targetDistance = constraint.limits?.min || 1;
 
         if (distance === 0) return;
@@ -467,7 +467,7 @@ class ConstraintSolver {
         const posA = Vec3.add(bodyA.transform.position, constraint.anchorA);
         const posB = Vec3.add(bodyB.transform.position, constraint.anchorB);
         const delta = Vec3.subtract(posB, posA);
-        const distance = Vec3.length(delta);
+        const distance = Vec3.magnitude(delta);
         const restLength = constraint.limits?.min || 1;
         const stiffness = constraint.stiffness || 100;
         const damping = constraint.damping || 10;
@@ -768,9 +768,9 @@ export class G3DPhysicsIntegration extends EventEmitter {
             body.transform.position = Vec3.add(body.transform.position, Vec3.multiply(body.velocity, deltaTime));
 
             // Angular integration (simplified)
-            if (Vec3.length(body.angularVelocity) > 0) {
+            if (Vec3.magnitude(body.angularVelocity) > 0) {
                 const axis = Vec3.normalize(body.angularVelocity);
-                const angle = Vec3.length(body.angularVelocity) * deltaTime;
+                const angle = Vec3.magnitude(body.angularVelocity) * deltaTime;
                 const deltaRotation = Quat.fromAxisAngle(axis, angle);
                 body.transform.rotation = Quat.normalize(Quat.multiply(body.transform.rotation, deltaRotation));
             }
@@ -894,8 +894,8 @@ export class G3DPhysicsIntegration extends EventEmitter {
         for (const body of this.world.bodies) {
             if (body.type !== 'dynamic') continue;
 
-            const linearVel = Vec3.length(body.velocity);
-            const angularVel = Vec3.length(body.angularVelocity);
+            const linearVel = Vec3.magnitude(body.velocity);
+            const angularVel = Vec3.magnitude(body.angularVelocity);
 
             if (linearVel < this.settings.sleepLinearThreshold && angularVel < this.settings.sleepAngularThreshold) {
                 body.sleepThreshold += deltaTime;
@@ -1028,7 +1028,6 @@ export class G3DPhysicsIntegration extends EventEmitter {
         console.log('G3D Physics Integration disposed');
     }
 
-    
     async initializeWorld(config: any): Promise<any> {
         return { id: 'world-' + Date.now() };
     }
@@ -1037,16 +1036,8 @@ export class G3DPhysicsIntegration extends EventEmitter {
         console.log('Rigid body added');
     }
     
-    async applyForce(body: any, force: Vector3): Promise<void> {
-        console.log('Force applied');
-    }
-    
     async applyForceAtPoint(body: any, force: Vector3, point: Vector3): Promise<void> {
         console.log('Force applied at point');
-    }
-    
-    private async stepSimulation(dt: number): Promise<void> {
-        console.log('Physics simulation stepped');
     }
     
     async getObjectState(body: any): Promise<any> {

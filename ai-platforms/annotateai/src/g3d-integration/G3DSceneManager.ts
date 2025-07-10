@@ -22,6 +22,9 @@ export interface G3DSceneNode {
     userData: any;
     boundingBox?: G3DBoundingBox;
     boundingSphere?: G3DBoundingSphere;
+    
+    // Add method for adding children
+    add?: (child: G3DSceneNode | any) => void;
 }
 
 // Transform component
@@ -115,6 +118,12 @@ export class G3DSceneManager {
     };
     private updateCallbacks: Map<string, (node: G3DSceneNode, deltaTime: number) => void> = new Map();
     private lastUpdateTime: number = 0;
+    
+    // Add missing properties
+    private activeCamera: G3DCamera | null = null;
+    private cameras: Map<string, G3DCamera> = new Map();
+    private lights: Map<string, G3DLight> = new Map();
+    private meshes: Map<string, G3DMesh> = new Map();
 
     constructor(renderer: G3DNativeRenderer) {
         this.renderer = renderer;
@@ -442,6 +451,54 @@ export class G3DSceneManager {
         this.updateCallbacks.delete(nodeId);
     }
 
+    /**
+     * Add animation to a node
+     */
+    addAnimation(nodeId: string, animation: any): void {
+        const node = this.nodes.get(nodeId);
+        if (!node) {
+            console.warn(`Node with id ${nodeId} not found for animation`);
+            return;
+        }
+
+        // Store animation in userData
+        if (!node.userData.animations) {
+            node.userData.animations = [];
+        }
+        node.userData.animations.push(animation);
+
+        // Add update callback for animation
+        this.addUpdateCallback(`${nodeId}_animation_${node.userData.animations.length - 1}`, (node, deltaTime) => {
+            // Basic animation update - would be expanded for different animation types
+            if (animation.type === 'rotation') {
+                const currentRotation = node.transform.rotation;
+                const rotationSpeed = animation.speed || 1;
+                const axis = animation.axis || { x: 0, y: 1, z: 0 };
+                
+                // Apply rotation animation
+                const angle = deltaTime * rotationSpeed;
+                const quaternion = quat.create();
+                quat.setAxisAngle(quaternion, [axis.x, axis.y, axis.z], angle);
+                quat.multiply(currentRotation, currentRotation, quaternion);
+                
+                this.markDirty(node);
+            } else if (animation.type === 'position') {
+                const targetPosition = animation.target || { x: 0, y: 0, z: 0 };
+                const speed = animation.speed || 1;
+                const currentPosition = node.transform.position;
+                
+                // Move towards target
+                const direction = vec3.create();
+                vec3.subtract(direction, [targetPosition.x, targetPosition.y, targetPosition.z], currentPosition);
+                vec3.normalize(direction, direction);
+                vec3.scale(direction, direction, speed * deltaTime);
+                vec3.add(currentPosition, currentPosition, direction);
+                
+                this.markDirty(node);
+            }
+        });
+    }
+
     // LOD management
 
     createLODGroup(name: string, config: G3DLODConfig): G3DSceneNode {
@@ -514,6 +571,9 @@ export class G3DSceneManager {
 
         this.dirtyNodes.clear();
         this.updateCallbacks.clear();
+        this.cameras.clear();
+        this.lights.clear();
+        this.meshes.clear();
     }
 
     // Scene serialization
@@ -559,9 +619,9 @@ export class G3DSceneManager {
         for (const nodeData of data.nodes) {
             const node = this.createNode(nodeData.name, nodeData.type);
             node.id = nodeData.id;
-            node.transform.setPosition(...nodeData.transform.position);
-            node.transform.setRotation(...nodeData.transform.rotation);
-            node.transform.setScale(...nodeData.transform.scale);
+            node.transform.setPosition(nodeData.transform.position[0], nodeData.transform.position[1], nodeData.transform.position[2]);
+            node.transform.setRotation(nodeData.transform.rotation[0], nodeData.transform.rotation[1], nodeData.transform.rotation[2], nodeData.transform.rotation[3] || 0);
+            node.transform.setScale(nodeData.transform.scale[0], nodeData.transform.scale[1], nodeData.transform.scale[2]);
             node.visible = nodeData.visible;
             node.renderOrder = nodeData.renderOrder;
             node.userData = nodeData.userData;
@@ -620,7 +680,381 @@ export class G3DSceneManager {
     async cleanup(): Promise<void> {
         this.clear();
         this.updateCallbacks.clear();
+        // Additional cleanup for compatibility
+        this.cameras.clear();
+        this.lights.clear();
+        this.meshes.clear();
+        this.activeCamera = null;
     }
+
+    /**
+     * Create a camera
+     */
+    createCamera(type: 'perspective' | 'orthographic', params: any): G3DCamera {
+        const camera: G3DCamera = {
+            id: this.generateUniqueId(),
+            type,
+            position: { x: 0, y: 0, z: 0 },
+            rotation: { x: 0, y: 0, z: 0 },
+            fov: params.fov || 75,
+            aspect: params.aspect || 1,
+            near: params.near || 0.1,
+            far: params.far || 1000,
+            projectionMatrix: new Float32Array(16),
+            viewMatrix: new Float32Array(16),
+            set: (x: number, y: number, z: number) => {
+                camera.position.x = x;
+                camera.position.y = y;
+                camera.position.z = z;
+            },
+            lookAt: (x: number, y: number, z: number) => {
+                // Calculate look-at rotation
+                const dx = x - camera.position.x;
+                const dy = y - camera.position.y;
+                const dz = z - camera.position.z;
+                const distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
+                
+                camera.rotation.x = Math.asin(-dy / distance);
+                camera.rotation.y = Math.atan2(dx, dz);
+                camera.rotation.z = 0;
+            }
+        };
+
+        this.cameras.set(camera.id, camera);
+        return camera;
+    }
+
+    /**
+     * Set active camera
+     */
+    setActiveCamera(camera: G3DCamera): void {
+        this.activeCamera = camera;
+    }
+
+    /**
+     * Get active camera
+     */
+    getActiveCamera(): G3DCamera | null {
+        return this.activeCamera;
+    }
+
+    /**
+     * Create a light
+     */
+    createLight(type: 'ambient' | 'directional' | 'point' | 'spot', params: any): G3DLight {
+        const light: G3DLight = {
+            id: this.generateId(),
+            type,
+            color: params.color || { r: 1, g: 1, b: 1, a: 1 },
+            intensity: params.intensity || 1,
+            position: params.position || { x: 0, y: 0, z: 0 },
+            direction: params.direction || { x: 0, y: -1, z: 0 },
+            target: params.target || { x: 0, y: 0, z: 0 },
+            castShadow: params.castShadow || false,
+            shadowMapSize: params.shadowMapSize || 1024,
+            enabled: true
+        };
+
+        this.lights.set(light.id, light);
+        return light;
+    }
+
+    /**
+     * Add object to scene
+     */
+    add(object: G3DSceneNode | G3DCamera | G3DLight | G3DMesh | any): void {
+        if (object.type === 'camera') {
+            this.cameras.set(object.id, object);
+        } else if (object.type === 'light') {
+            this.lights.set(object.id, object);
+        } else if (object.type === 'mesh') {
+            this.meshes.set(object.id, object);
+        } else {
+            // Add as scene node
+            this.root.children.push(object);
+            this.nodes.set(object.id, object);
+        }
+    }
+
+    /**
+     * Create a mesh
+     */
+    createMesh(name: string, geometry: any, material: any): G3DMesh {
+        const mesh: G3DMesh = {
+            id: this.generateId(),
+            name,
+            type: 'mesh',
+            geometry,
+            material,
+            position: { x: 0, y: 0, z: 0 },
+            rotation: { x: 0, y: 0, z: 0 },
+            scale: { x: 1, y: 1, z: 1 },
+            visible: true,
+            userData: {},
+            set: function(x: number, y: number, z: number) {
+                this.position.x = x;
+                this.position.y = y;
+                this.position.z = z;
+            },
+            add: (child: any) => {
+                // Add child to mesh
+                if (!mesh.children) mesh.children = [];
+                mesh.children.push(child);
+            }
+        };
+
+        this.meshes.set(mesh.id, mesh);
+        return mesh;
+    }
+
+    /**
+     * Get mesh by name
+     */
+    getMesh(name: string): G3DMesh | null {
+        for (const mesh of this.meshes.values()) {
+            if (mesh.name === name) return mesh;
+        }
+        return null;
+    }
+
+    /**
+     * Get object by name
+     */
+    getObject(name: string): G3DMesh | G3DLight | G3DCamera | null {
+        // Search in meshes
+        for (const mesh of this.meshes.values()) {
+            if (mesh.name === name) return mesh;
+        }
+
+        // Search in lights
+        for (const light of this.lights.values()) {
+            if (light.id === name) return light;
+        }
+
+        // Search in cameras
+        for (const camera of this.cameras.values()) {
+            if (camera.id === name) return camera;
+        }
+
+        return null;
+    }
+
+    /**
+     * Get object by name (alias for compatibility)
+     */
+    getObjectByName(name: string): G3DMesh | G3DLight | G3DCamera | G3DSceneNode | null {
+        // First check nodes
+        const node = this.findNode(name);
+        if (node) return node;
+        
+        // Then check other objects
+        return this.getObject(name);
+    }
+
+    /**
+     * Remove object from scene
+     */
+    remove(object: G3DSceneNode | G3DCamera | G3DLight | G3DMesh | any): void {
+        if (object.type === 'camera') {
+            this.cameras.delete(object.id);
+        } else if (object.type === 'light') {
+            this.lights.delete(object.id);
+        } else if (object.type === 'mesh') {
+            this.meshes.delete(object.id);
+        } else if (object.id && this.nodes.has(object.id)) {
+            // Remove as scene node
+            this.removeNode(object);
+        } else {
+            // Try to find in root children
+            const index = this.root.children.indexOf(object);
+            if (index !== -1) {
+                this.root.children.splice(index, 1);
+            }
+        }
+    }
+
+    /**
+     * Raycast from screen coordinates
+     */
+    raycast(screenX: number, screenY: number): RaycastResult | null {
+        if (!this.activeCamera) return null;
+
+        // Convert screen coordinates to normalized device coordinates
+        const canvas = this.renderer.getCanvas();
+        const rect = (canvas as HTMLCanvasElement).getBoundingClientRect();
+        const x = ((screenX - rect.left) / rect.width) * 2 - 1;
+        const y = -((screenY - rect.top) / rect.height) * 2 + 1;
+
+        // Create ray from camera through screen point
+        const ray = this.createRayFromCamera(x, y);
+
+        // Test intersections with all meshes
+        let closestIntersection: RaycastResult | null = null;
+        let closestDistance = Infinity;
+
+        for (const mesh of this.meshes.values()) {
+            if (!mesh.visible) continue;
+
+            const intersection = this.testRayMeshIntersection(ray, mesh);
+            if (intersection && intersection.distance < closestDistance) {
+                closestDistance = intersection.distance;
+                closestIntersection = intersection;
+            }
+        }
+
+        return closestIntersection;
+    }
+
+    /**
+     * Convert screen coordinates to world coordinates
+     */
+    screenToWorld(screenX: number, screenY: number, depth: number = 0): Vector3 {
+        if (!this.activeCamera) return { x: 0, y: 0, z: 0 };
+
+        const canvas = this.renderer.getCanvas();
+        const rect = (canvas as HTMLCanvasElement).getBoundingClientRect();
+        const x = ((screenX - rect.left) / rect.width) * 2 - 1;
+        const y = -((screenY - rect.top) / rect.height) * 2 + 1;
+
+        // Unproject screen coordinates to world space
+        const worldPoint = this.unprojectPoint(x, y, depth);
+        return worldPoint;
+    }
+
+    /**
+     * Create a group node
+     */
+    createGroup(name: string): G3DSceneNode {
+        const group: G3DSceneNode = {
+            id: this.generateId(),
+            name,
+            type: 'group',
+            transform: new G3DTransform(),
+            children: [],
+            parent: null,
+            visible: true,
+            userData: {},
+            renderOrder: 0,
+            add: function(child: any) {
+                this.children.push(child);
+                child.parent = this;
+            }
+        };
+
+        this.nodes.set(group.id, group);
+        return group;
+    }
+
+    // Helper methods
+
+    private generateUniqueId(): string {
+        return 'g3d_' + Math.random().toString(36).substr(2, 9);
+    }
+
+    private createRayFromCamera(x: number, y: number): Ray {
+        // Simplified ray creation - in real implementation would use proper matrix math
+        return {
+            origin: { x: this.activeCamera!.position.x, y: this.activeCamera!.position.y, z: this.activeCamera!.position.z },
+            direction: { x: x, y: y, z: -1 }
+        };
+    }
+
+    private testRayMeshIntersection(ray: Ray, mesh: G3DMesh): RaycastResult | null {
+        // Simplified intersection test - in real implementation would test against geometry
+        const distance = Math.sqrt(
+            Math.pow(ray.origin.x - mesh.position.x, 2) +
+            Math.pow(ray.origin.y - mesh.position.y, 2) +
+            Math.pow(ray.origin.z - mesh.position.z, 2)
+        );
+
+        if (distance < 2) { // Simple sphere test
+            return {
+                object: mesh,
+                point: mesh.position,
+                distance: distance,
+                normal: { x: 0, y: 1, z: 0 }
+            };
+        }
+
+        return null;
+    }
+
+    private unprojectPoint(x: number, y: number, depth: number): Vector3 {
+        // Simplified unprojection - in real implementation would use proper matrix math
+        const camera = this.activeCamera!;
+        const worldX = x * (camera.far - camera.near) / 2;
+        const worldY = y * (camera.far - camera.near) / 2;
+        const worldZ = depth;
+
+        return {
+            x: camera.position.x + worldX,
+            y: camera.position.y + worldY,
+            z: camera.position.z + worldZ
+        };
+    }
+}
+
+// Additional interfaces needed
+interface G3DCamera {
+    id: string;
+    type: 'perspective' | 'orthographic';
+    position: Vector3;
+    rotation: Vector3;
+    fov: number;
+    aspect: number;
+    near: number;
+    far: number;
+    projectionMatrix: Float32Array;
+    viewMatrix: Float32Array;
+    set: (x: number, y: number, z: number) => void;
+    lookAt: (x: number, y: number, z: number) => void;
+}
+
+interface G3DLight {
+    id: string;
+    type: 'ambient' | 'directional' | 'point' | 'spot';
+    color: { r: number; g: number; b: number; a: number };
+    intensity: number;
+    position: Vector3;
+    direction: Vector3;
+    target: Vector3;
+    castShadow: boolean;
+    shadowMapSize: number;
+    enabled: boolean;
+}
+
+interface G3DMesh {
+    id: string;
+    name: string;
+    type: 'mesh';
+    geometry: any;
+    material: any;
+    position: Vector3;
+    rotation: Vector3;
+    scale: Vector3;
+    visible: boolean;
+    userData: any;
+    children?: any[];
+    set: (x: number, y: number, z: number) => void;
+    add: (child: any) => void;
+}
+
+interface Vector3 {
+    x: number;
+    y: number;
+    z: number;
+}
+
+interface Ray {
+    origin: Vector3;
+    direction: Vector3;
+}
+
+interface RaycastResult {
+    object: G3DMesh;
+    point: Vector3;
+    distance: number;
+    normal: Vector3;
 }
 
 // Export factory function

@@ -383,7 +383,7 @@ export class G3DAIInferenceEngine {
                 throw new Error('No WebGPU adapter found');
             }
 
-            this.device = await adapter.requestDevice();
+            this.device = await adapter.requestDevice() as any;
             console.log('WebGPU initialized for AI acceleration');
         } catch (error) {
             console.warn('WebGPU initialization failed:', error);
@@ -609,7 +609,7 @@ export class G3DAIInferenceEngine {
 
     private async preprocessInput(inputData: G3DAIInputData, model: G3DAIModel): Promise<Float32Array> {
         // Simplified preprocessing - in real implementation, would handle various data types
-        const config = inputData.preprocessing || {};
+        const config: Partial<G3DAIPreprocessingConfig> = inputData.preprocessing || {};
 
         // Convert input data to Float32Array
         let data: Float32Array;

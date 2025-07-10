@@ -794,7 +794,7 @@ export class G3DEnterpriseAnalytics {
           results[3] = max_val;        // Maximum
           results[4] = sum;            // Sum
         }
-      `, 'compute_statistics');
+      `);
 
             // Correlation matrix kernel
             await this.gpuCompute.createKernel(`
@@ -831,7 +831,7 @@ export class G3DEnterpriseAnalytics {
           
           correlation[0] = denominator > 0.0f ? numerator / denominator : 0.0f;
         }
-      `, 'compute_correlation');
+      `);
 
             console.log('Analytics GPU kernels initialized successfully');
         } catch (error) {

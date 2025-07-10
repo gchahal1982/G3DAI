@@ -163,7 +163,7 @@ export class G3DBiasDetection {
         
         group_rates[group_id] = total_count > 0 ? positive_count / total_count : 0.0f;
       }
-    `, 'compute_demographic_parity');
+    `);
 
         // Individual fairness kernel
         await this.gpuCompute.createKernel(`
@@ -203,7 +203,7 @@ export class G3DBiasDetection {
         
         fairness_violations[i] = violations;
       }
-    `, 'compute_individual_fairness');
+    `);
 
         // Representation bias kernel
         await this.gpuCompute.createKernel(`
@@ -242,7 +242,7 @@ export class G3DBiasDetection {
         representation_ratios[group_id * num_classes + class_id] = 
           expected_ratio > 0 ? actual_ratio / expected_ratio : 0.0f;
       }
-    `, 'compute_representation_bias');
+    `);
     }
 
     public async detectBias(

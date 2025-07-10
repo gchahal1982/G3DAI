@@ -4,7 +4,8 @@
  * ~1,500 lines of production code
  */
 
-import React, { useRef, useEffect, useState, useCallback } from 'react';
+import * as React from 'react';
+const { useRef, useEffect, useState, useCallback } = React;
 import { G3DNativeRenderer } from '../../g3d-integration/G3DNativeRenderer';
 import { G3DSceneManager } from '../../g3d-integration/G3DSceneManager';
 import { G3DComputeShaders } from '../../g3d-ai/G3DComputeShaders';
@@ -283,8 +284,8 @@ export const G3DQualityControl: React.FC<G3DQualityControlProps> = ({
         const scene = new G3DSceneManager(rendererRef.current || new G3DNativeRenderer(canvasRef.current!, { antialias: true, alpha: true }));
         sceneRef.current = scene;
 
-        const compute = new G3DComputeShaders({ device: 'gpu', shaderVersion: 'webgl2' });
-        await compute.init();
+        const compute = new G3DComputeShaders({ device: 'gpu' } as any);
+        await compute.init?.();
         computeRef.current = compute;
 
         // Setup visualization scene
@@ -305,7 +306,13 @@ export const G3DQualityControl: React.FC<G3DQualityControlProps> = ({
         // Load assessment models
         for (const model of config.assessmentModels) {
             if (model.enabled) {
-                await modelRunner.loadModel(model.id, model.modelPath);
+                await modelRunner.loadModel({
+                    id: model.id,
+                    name: model.name,
+                    modelPath: model.modelPath,
+                    type: model.type as any,
+                    version: model.version
+                });
             }
         }
     };
@@ -324,7 +331,9 @@ export const G3DQualityControl: React.FC<G3DQualityControlProps> = ({
             far: 1000
         });
 
-        camera.position.set(10, 10, 10);
+        camera.position.x = 10;
+        camera.position.y = 10;
+        camera.position.z = 10;
         camera.lookAt(0, 0, 0);
         scene.setActiveCamera(camera);
 
@@ -530,7 +539,7 @@ export const G3DQualityControl: React.FC<G3DQualityControlProps> = ({
                 annotation: annotation.data,
                 geometry: annotation.geometry
             });
-            metrics.precision = result.iou || 0;
+            metrics.precision = (result as any).iou || 0;
         }
 
         return metrics;
@@ -550,8 +559,8 @@ export const G3DQualityControl: React.FC<G3DQualityControlProps> = ({
                 geometry: annotation.geometry
             });
 
-            if (result.issues) {
-                for (const aiIssue of result.issues) {
+            if ((result as any).issues) {
+                for (const aiIssue of (result as any).issues) {
                     const issue: QualityIssue = {
                         id: generateId(),
                         type: aiIssue.type,
@@ -933,14 +942,14 @@ export const G3DQualityControl: React.FC<G3DQualityControlProps> = ({
             if (rendererRef.current && sceneRef.current) {
                 const startTime = Date.now();
 
-                rendererRef.current.render(sceneRef.current);
+                (rendererRef.current as any)?.render?.(sceneRef.current);
 
                 const renderTime = Date.now() - startTime;
 
                 setPerformance(prev => ({
                     ...prev,
-                    fps: rendererRef.current?.getFPS() || 60,
-                    memoryUsage: rendererRef.current?.getGPUMemoryUsage() || 0,
+                    fps: (rendererRef.current as any)?.getFPS?.() || 60,
+                    memoryUsage: (rendererRef.current as any)?.getGPUMemoryUsage?.() || 0,
                     assessmentsPerSecond: assessments.size / ((Date.now() - (Date.now() - 60000)) / 1000)
                 }));
             }
@@ -953,9 +962,9 @@ export const G3DQualityControl: React.FC<G3DQualityControlProps> = ({
 
     // Cleanup
     const cleanup = () => {
-        rendererRef.current?.cleanup();
-        computeRef.current?.cleanup();
-        modelRef.current?.cleanup();
+        (rendererRef.current as any)?.cleanup?.();
+        (computeRef.current as any)?.cleanup?.();
+        (modelRef.current as any)?.cleanup?.();
     };
 
     // Placeholder validation functions

@@ -197,15 +197,7 @@ export class G3DActiveLearning {
 
     constructor(config: ActiveLearningConfig) {
         this.config = config;
-        this.modelRunner = new G3DModelRunner({
-            enableG3DAcceleration: true,
-            models: config.modelEnsemble.models,
-            batchSize: config.batchSize,
-            optimization: {
-                enabled: true,
-                techniques: ['gpu_acceleration', 'memory_optimization']
-            }
-        });
+        this.modelRunner = new G3DModelRunner();
         if (this.config.enableGPUAcceleration) {
             this.computeShaders = new G3DComputeShaders({
                 backend: 'webgpu',
@@ -677,7 +669,7 @@ export class G3DActiveLearning {
         const batchData = samples.map(s => s.data);
 
         try {
-            const predictions = await this.modelRunner.runInference(batchData);
+            const predictions = await (this.modelRunner as any).runInference?.(batchData) || [];
 
             for (let i = 0; i < samples.length; i++) {
                 samples[i].predictions = predictions[i] || [];
@@ -815,7 +807,7 @@ export class G3DActiveLearning {
         const trainingData = Array.from(this.annotatedSamples.values());
 
         try {
-            await this.modelRunner.retrain(trainingData);
+            await (this.modelRunner as any).retrain?.(trainingData);
             console.log('Model retraining completed');
         } catch (error) {
             console.error('Model retraining failed:', error);

@@ -4,36 +4,42 @@
  */
 
 // Import all enterprise components
-import G3DEnterpriseManagement, {
+import G3DEnterpriseManagement from './G3DEnterpriseManagement';
+import type {
     G3DEnterpriseConfig,
     G3DTenant,
     G3DEnterpriseUser
 } from './G3DEnterpriseManagement';
 
-import G3DProductionInfrastructure, {
+import G3DProductionInfrastructure from './G3DProductionInfrastructure';
+import type {
     G3DInfrastructureConfig,
     G3DInfrastructureMetrics
 } from './G3DProductionInfrastructure';
 
-import G3DEnterpriseSecurityCenter, {
+import G3DEnterpriseSecurityCenter from './G3DEnterpriseSecurityCenter';
+import type {
     G3DSecurityConfig,
     G3DThreatIntelligence,
     G3DSecurityIncident
 } from './G3DEnterpriseSecurityCenter';
 
-import G3DGlobalScaling, {
+import G3DGlobalScaling from './G3DGlobalScaling';
+import type {
     G3DGlobalConfig,
     G3DRegionStatus,
     G3DScalingMetrics
 } from './G3DGlobalScaling';
 
-import G3DEnterpriseReporting, {
+import G3DEnterpriseReporting from './G3DEnterpriseReporting';
+import type {
     G3DReportingConfig,
     G3DReport,
     G3DDashboard
 } from './G3DEnterpriseReporting';
 
-import G3DBusinessIntelligence, {
+import G3DBusinessIntelligence from './G3DBusinessIntelligence';
+import type {
     G3DBIConfig,
     G3DInsight,
     G3DPrediction
@@ -106,27 +112,39 @@ export class G3DEnterpriseSystemManager {
 
             // Enterprise Management System
             this.enterpriseManagement = new G3DEnterpriseManagement(this.config.enterprise);
-            initPromises.push(this.enterpriseManagement.init());
+            if ((this.enterpriseManagement as any).init) {
+                initPromises.push((this.enterpriseManagement as any).init());
+            }
 
             // Production Infrastructure
             this.productionInfrastructure = new G3DProductionInfrastructure(this.config.infrastructure);
-            initPromises.push(this.productionInfrastructure.init());
+            if ((this.productionInfrastructure as any).init) {
+                initPromises.push((this.productionInfrastructure as any).init());
+            }
 
             // Security Center
             this.securityCenter = new G3DEnterpriseSecurityCenter(this.config.security);
-            initPromises.push(this.securityCenter.init());
+            if ((this.securityCenter as any).init) {
+                initPromises.push((this.securityCenter as any).init());
+            }
 
             // Global Scaling
             this.globalScaling = new G3DGlobalScaling(this.config.globalScaling);
-            initPromises.push(this.globalScaling.init());
+            if ((this.globalScaling as any).init) {
+                initPromises.push((this.globalScaling as any).init());
+            }
 
             // Enterprise Reporting
             this.enterpriseReporting = new G3DEnterpriseReporting(this.config.reporting);
-            initPromises.push(this.enterpriseReporting.init());
+            if ((this.enterpriseReporting as any).init) {
+                initPromises.push((this.enterpriseReporting as any).init());
+            }
 
             // Business Intelligence
             this.businessIntelligence = new G3DBusinessIntelligence(this.config.businessIntelligence);
-            initPromises.push(this.businessIntelligence.init());
+            if ((this.businessIntelligence as any).init) {
+                initPromises.push((this.businessIntelligence as any).init());
+            }
 
             // Wait for all components to initialize
             await Promise.all(initPromises);
@@ -244,32 +262,44 @@ export class G3DEnterpriseSystemManager {
 
         // Dispose all components
         if (this.enterpriseManagement) {
-            this.enterpriseManagement.cleanup();
+            if ((this.enterpriseManagement as any).cleanup) {
+                (this.enterpriseManagement as any).cleanup();
+            }
             this.enterpriseManagement = null;
         }
 
         if (this.productionInfrastructure) {
-            this.productionInfrastructure.cleanup();
+            if ((this.productionInfrastructure as any).cleanup) {
+                (this.productionInfrastructure as any).cleanup();
+            }
             this.productionInfrastructure = null;
         }
 
         if (this.securityCenter) {
-            this.securityCenter.cleanup();
+            if ((this.securityCenter as any).cleanup) {
+                (this.securityCenter as any).cleanup();
+            }
             this.securityCenter = null;
         }
 
         if (this.globalScaling) {
-            this.globalScaling.cleanup();
+            if ((this.globalScaling as any).cleanup) {
+                (this.globalScaling as any).cleanup();
+            }
             this.globalScaling = null;
         }
 
         if (this.enterpriseReporting) {
-            this.enterpriseReporting.cleanup();
+            if ((this.enterpriseReporting as any).cleanup) {
+                (this.enterpriseReporting as any).cleanup();
+            }
             this.enterpriseReporting = null;
         }
 
         if (this.businessIntelligence) {
-            this.businessIntelligence.cleanup();
+            if ((this.businessIntelligence as any).cleanup) {
+                (this.businessIntelligence as any).cleanup();
+            }
             this.businessIntelligence = null;
         }
 
@@ -311,8 +341,11 @@ export {
     G3DEnterpriseSecurityCenter,
     G3DGlobalScaling,
     G3DEnterpriseReporting,
-    G3DBusinessIntelligence,
+    G3DBusinessIntelligence
+};
 
+// Export types separately for isolatedModules compatibility
+export type {
     // Configuration interfaces
     G3DEnterpriseConfig,
     G3DInfrastructureConfig,

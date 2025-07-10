@@ -13,7 +13,7 @@ interface CollaborationConfig {
     sessionId: string;
     maxUsers: number;
     syncInterval: number;
-    conflictResolution: 'last_write_wins' | 'merge' | 'vote' | 'priority';
+    conflictResolution: 'last_write_wins' | 'merge' | 'vote' | 'priority' | 'manual';
     permissions: PermissionConfig;
     realtime: RealtimeConfig;
     vr: VRConfig;
@@ -966,7 +966,7 @@ export class G3DCollaborationEngine {
 
         // Dispose VR manager
         if (this.vrManager) {
-            this.vrManager.cleanup();
+            this.vrManager.dispose();
         }
 
         // Clear event handlers

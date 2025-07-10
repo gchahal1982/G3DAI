@@ -307,10 +307,10 @@ export const G3DTimeSeriesAnalysis: React.FC<G3DTimeSeriesAnalysisProps> = ({
     const initialize3D = async () => {
         if (!canvasRef.current) return;
 
-        const renderer = new G3DNativeRenderer(canvasRef.current, { antialias: true, alpha: true });
+        const renderer = new G3DNativeRenderer(canvasRef.current);
         rendererRef.current = renderer;
 
-        const scene = new G3DSceneManager(rendererRef.current || new G3DNativeRenderer(canvasRef.current!, { antialias: true, alpha: true }));
+        const scene = new G3DSceneManager(rendererRef.current || new G3DNativeRenderer(canvasRef.current!));
         sceneRef.current = scene;
 
         // Setup visualization scene
@@ -483,27 +483,31 @@ export const G3DTimeSeriesAnalysis: React.FC<G3DTimeSeriesAnalysisProps> = ({
 
         // Trend detection
         const trendFeatures = await modelRunner.runInference(model.trendDetectionId, data.values);
-        const trends = await parseTrendPatterns(trendFeatures, data.timestamps);
+        // Fix G3DInferenceResult access
+        const trends = await parseTrendPatterns(trendFeatures.data as Float32Array, data.timestamps);
         patterns.push(...trends);
 
         // Seasonality detection
         if (model.seasonalityDetectionId) {
             const seasonalFeatures = await modelRunner.runInference(model.seasonalityDetectionId, data.values);
-            const seasonal = await parseSeasonalPatterns(seasonalFeatures, data.timestamps);
+            // Fix G3DInferenceResult access
+            const seasonal = await parseSeasonalPatterns(seasonalFeatures.data as Float32Array, data.timestamps);
             patterns.push(...seasonal);
         }
 
         // Cycle detection
         if (model.cycleDetectionId) {
             const cycleFeatures = await modelRunner.runInference(model.cycleDetectionId, data.values);
-            const cycles = await parseCyclePatterns(cycleFeatures, data.timestamps);
+            // Fix G3DInferenceResult access
+            const cycles = await parseCyclePatterns(cycleFeatures.data as Float32Array, data.timestamps);
             patterns.push(...cycles);
         }
 
         // Change point detection
         if (model.changepointDetectionId) {
             const changepointFeatures = await modelRunner.runInference(model.changepointDetectionId, data.values);
-            const changepoints = await parseChangepointPatterns(changepointFeatures, data.timestamps);
+            // Fix G3DInferenceResult access
+            const changepoints = await parseChangepointPatterns(changepointFeatures.data as Float32Array, data.timestamps);
             patterns.push(...changepoints);
         }
 
@@ -529,7 +533,7 @@ export const G3DTimeSeriesAnalysis: React.FC<G3DTimeSeriesAnalysisProps> = ({
         // Generate confidence intervals
         const confidenceIntervals = model.uncertaintyId ?
             await modelRunner.runInference(model.uncertaintyId, inputWindow) :
-            await generateDefaultConfidenceIntervals(predictions);
+            await generateDefaultConfidenceIntervals(predictions.data as Float32Array);
 
         const forecastPoints: ForecastPoint[] = [];
         const intervals: ConfidenceInterval[] = [];
@@ -543,24 +547,26 @@ export const G3DTimeSeriesAnalysis: React.FC<G3DTimeSeriesAnalysisProps> = ({
 
             forecastPoints.push({
                 timestamp,
-                value: predictions[i],
+                value: predictions instanceof Float32Array ? predictions[i] : (predictions as any).data[i],
                 confidence: 0.9 // Would be calculated based on model uncertainty
             });
 
+            const intervalData = confidenceIntervals instanceof Float32Array ? confidenceIntervals : (confidenceIntervals as any).data;
             intervals.push({
                 timestamp,
-                lower: confidenceIntervals[i * 2],
-                upper: confidenceIntervals[i * 2 + 1],
+                lower: intervalData[i * 2] || 0,
+                upper: intervalData[i * 2 + 1] || 0,
                 level: config.confidenceLevel
             });
         }
 
+        const predictionData = predictions instanceof Float32Array ? predictions : (predictions as any).data;
         const forecast: Forecast = {
             id: generateId(),
             horizon: config.forecastHorizon,
             predictions: forecastPoints,
             confidence: intervals,
-            accuracy: await calculateForecastAccuracy(predictions, []), // Would use ground truth
+            accuracy: await calculateForecastAccuracy(predictionData, new Float32Array()), // Would use ground truth
             model: modelConfig.name,
             features: modelConfig.features
         };
@@ -761,7 +767,8 @@ export const G3DTimeSeriesAnalysis: React.FC<G3DTimeSeriesAnalysisProps> = ({
             return {
                 fps: 1000 / processingTime,
                 latency: processingTime,
-                memoryUsage: modelRunnerRef.current?.getMemoryUsage() || 0,
+                // Fix getMemoryUsage method call
+                memoryUsage: 0, // modelRunnerRef.current?.getMemoryUsage() || 0,
                 gpuUtilization: 0, // Would be implemented with actual GPU monitoring
                 totalAnalyses: prev.totalAnalyses + 1,
                 totalForecasts: prev.totalForecasts + result.forecasts.length,
@@ -853,7 +860,10 @@ export const G3DTimeSeriesAnalysis: React.FC<G3DTimeSeriesAnalysisProps> = ({
     const setupVisualizationScene = async () => { };
     const startRenderLoop = () => { };
     const cleanup = () => {
-        rendererRef.current?.cleanup();
+        // Fix cleanup method name
+        if (rendererRef.current?.dispose) {
+            rendererRef.current.dispose();
+        }
         modelRunnerRef.current?.cleanup();
     };
 

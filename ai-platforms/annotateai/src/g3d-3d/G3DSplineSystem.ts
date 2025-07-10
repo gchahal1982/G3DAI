@@ -79,17 +79,17 @@ class Vec3 {
         };
     }
 
-    static length(v: Vector3): number {
+    static magnitude(v: Vector3): number {
         return Math.sqrt(v.x * v.x + v.y * v.y + v.z * v.z);
     }
 
     static normalize(v: Vector3): Vector3 {
-        const len = Vec3.length(v);
+        const len = Vec3.magnitude(v);
         return len > 0 ? Vec3.multiply(v, 1 / len) : Vec3.create(0, 0, 0);
     }
 
     static distance(a: Vector3, b: Vector3): number {
-        return Vec3.length(Vec3.subtract(a, b));
+        return Vec3.magnitude(Vec3.subtract(a, b));
     }
 
     static lerp(a: Vector3, b: Vector3, t: number): Vector3 {
@@ -233,7 +233,7 @@ abstract class BaseSpline {
         const deltaT = t2 - t1;
         const deltaTangent = Vec3.subtract(tangent2, tangent1);
 
-        return Vec3.length(deltaTangent) / deltaT;
+        return Vec3.magnitude(deltaTangent) / deltaT;
     }
 
     public getSplinePoint(t: number): SplinePoint {
@@ -414,7 +414,7 @@ class BezierSpline extends BaseSpline {
 
 // B-Spline
 class BSpline extends BaseSpline {
-    private degree: number;
+    protected degree: number;
     private knots: number[] = [];
 
     constructor(points: Vector3[], config: SplineConfig) {
@@ -479,7 +479,7 @@ class BSpline extends BaseSpline {
         }
     }
 
-    private findSpan(n: number, p: number, u: number): number {
+    protected findSpan(n: number, p: number, u: number): number {
         if (u >= 1) return n;
         if (u <= 0) return p;
 
@@ -499,7 +499,7 @@ class BSpline extends BaseSpline {
         return mid;
     }
 
-    private basisFunctions(i: number, u: number, p: number): number[] {
+    protected basisFunctions(i: number, u: number, p: number): number[] {
         const N = new Array(p + 1);
         const left = new Array(p + 1);
         const right = new Array(p + 1);

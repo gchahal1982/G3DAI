@@ -78,7 +78,7 @@ export interface G3DContrastEnhancement {
 }
 
 export interface G3DNoiseReduction {
-    method: 'gaussian' | 'bilateral' | 'non_local_means' | 'anisotropic_diffusion' | 'wavelet';
+    method: 'none' | 'gaussian' | 'bilateral' | 'non_local_means' | 'anisotropic_diffusion' | 'wavelet';
     strength: number;
     preserveEdges: boolean;
     iterations: number;

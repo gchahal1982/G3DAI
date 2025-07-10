@@ -161,7 +161,7 @@ export class G3DDomainAdaptation {
           
           mmd_loss[idx] = loss;
         }
-      `, 'compute_mmd_loss');
+      `);
 
             // CORAL (Correlation Alignment) kernel
             await this.gpuCompute.createKernel(`
@@ -213,7 +213,7 @@ export class G3DDomainAdaptation {
           
           coral_loss[idx] = cov_diff / (4.0f * feature_dim * feature_dim);
         }
-      `, 'compute_coral_loss');
+      `);
 
             // Adversarial domain loss kernel
             await this.gpuCompute.createKernel(`
@@ -235,7 +235,7 @@ export class G3DDomainAdaptation {
           float loss = -(label * log(pred + 1e-8f) + (1.0f - label) * log(1.0f - pred + 1e-8f));
           domain_loss[idx] = -lambda * loss; // Negative for gradient reversal
         }
-      `, 'compute_domain_adversarial_loss');
+      `);
 
             // Feature alignment kernel
             await this.gpuCompute.createKernel(`
@@ -260,7 +260,7 @@ export class G3DDomainAdaptation {
           
           aligned_features[idx * feature_dim + dim] = aligned_value;
         }
-      `, 'align_features');
+      `);
 
             console.log('Domain adaptation GPU kernels initialized successfully');
         } catch (error) {
@@ -643,7 +643,7 @@ export class G3DDomainAdaptation {
                     domainLoss,
                     learningRate: config.trainingConfig.learningRate,
                     domainWeight: config.trainingConfig.domainLossWeight
-                });
+                }, domainLoss);
 
                 // Track metrics
                 convergenceMetrics.domainLossHistory.push(domainLoss);
@@ -1107,7 +1107,7 @@ export class G3DDomainAdaptation {
 
             // Cleanup GPU resources
             await this.gpuCompute.cleanup();
-            await this.memoryManager.cleanup();
+            await this.memoryManager.dispose();
 
             console.log('G3D Domain Adaptation cleanup completed');
         } catch (error) {

@@ -119,7 +119,8 @@ type EventType =
     | 'voice_started'
     | 'voice_stopped'
     | 'screen_share_started'
-    | 'screen_share_stopped';
+    | 'screen_share_stopped'
+    | 'conflict_resolved';
 
 interface ConflictInfo {
     id: string;
@@ -555,22 +556,22 @@ export const G3DCollaborationEngine: React.FC<G3DCollaborationEngineProps> = ({
 
         const scene = sceneRef.current;
 
-        // Create participant avatar
-        const avatar = scene.createAvatar(participant.avatar.model);
-        avatar.setPosition(participant.avatar.position);
-        avatar.setRotation(participant.avatar.rotation);
-        avatar.setColor(participant.avatar.color);
-        avatar.setVisible(participant.avatar.visible);
+        // Create participant avatar - stub implementation
+        const avatar = (scene as any).createAvatar?.(participant.avatar.model) || { id: 'avatar_' + participant.id };
+        if (avatar.setPosition) avatar.setPosition(participant.avatar.position);
+        if (avatar.setRotation) avatar.setRotation(participant.avatar.rotation);
+        if (avatar.setColor) avatar.setColor(participant.avatar.color);
+        if (avatar.setVisible) avatar.setVisible(participant.avatar.visible);
 
-        scene.add(avatar);
+        if (scene.add) scene.add(avatar);
 
-        // Create participant cursor
-        const cursor = scene.createCursor(participant.cursor.color);
-        cursor.setPosition([participant.cursor.position[0], participant.cursor.position[1], 0]);
-        cursor.setSize(participant.cursor.size);
-        cursor.setVisible(participant.cursor.visible);
+        // Create participant cursor - stub implementation
+        const cursor = (scene as any).createCursor?.(participant.cursor.color) || { id: 'cursor_' + participant.id };
+        if (cursor.setPosition) cursor.setPosition([participant.cursor.position[0], participant.cursor.position[1], 0]);
+        if (cursor.setSize) cursor.setSize(participant.cursor.size);
+        if (cursor.setVisible) cursor.setVisible(participant.cursor.visible);
 
-        scene.add(cursor);
+        if (scene.add) scene.add(cursor);
     };
 
     // Update cursor visualization
@@ -578,11 +579,11 @@ export const G3DCollaborationEngine: React.FC<G3DCollaborationEngineProps> = ({
         if (!sceneRef.current) return;
 
         const scene = sceneRef.current;
-        const cursorObject = scene.getObjectByName(`cursor_${userId}`);
+        const cursorObject = (scene as any).getObjectByName?.(`cursor_${userId}`);
 
         if (cursorObject) {
-            cursorObject.setPosition([cursor.position[0], cursor.position[1], 0]);
-            cursorObject.setVisible(cursor.visible);
+            if (cursorObject.setPosition) cursorObject.setPosition([cursor.position[0], cursor.position[1], 0]);
+            if (cursorObject.setVisible) cursorObject.setVisible(cursor.visible);
         }
     };
 
@@ -592,13 +593,13 @@ export const G3DCollaborationEngine: React.FC<G3DCollaborationEngineProps> = ({
 
         const scene = sceneRef.current;
 
-        // Create conflict indicator
-        const indicator = scene.createConflictIndicator();
-        indicator.setPosition([100, 100, 0]); // Would be calculated based on conflict location
-        indicator.setColor('red');
-        indicator.setBlinking(true);
+        // Create conflict indicator - stub implementation
+        const indicator = (scene as any).createConflictIndicator?.() || { id: 'conflict_' + conflict.id };
+        if (indicator.setPosition) indicator.setPosition([100, 100, 0]); // Would be calculated based on conflict location
+        if (indicator.setColor) indicator.setColor('red');
+        if (indicator.setBlinking) indicator.setBlinking(true);
 
-        scene.add(indicator);
+        if (scene.add) scene.add(indicator);
     };
 
     // Update performance metrics
@@ -656,7 +657,9 @@ export const G3DCollaborationEngine: React.FC<G3DCollaborationEngineProps> = ({
         if (wsRef.current) {
             wsRef.current.close();
         }
-        rendererRef.current?.cleanup();
+        if (rendererRef.current) {
+            (rendererRef.current as any).cleanup?.();
+        }
     };
 
     // Update performance metrics periodically

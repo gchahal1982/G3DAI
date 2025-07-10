@@ -813,11 +813,11 @@ export class G3DPhysicsIntegration {
         this.medicalBodies.clear();
         this.constraints.clear();
 
-        if (this.softBodyEngine) this.softBodyEngine.cleanup();
-        if (this.fluidDynamics) this.fluidDynamics.cleanup();
-        if (this.biomechanics) this.biomechanics.cleanup();
-        if (this.medicalDevices) this.medicalDevices.cleanup();
-        if (this.therapeuticPhysics) this.therapeuticPhysics.cleanup();
+        if (this.softBodyEngine) this.softBodyEngine.dispose();
+        if (this.fluidDynamics) this.fluidDynamics.dispose();
+        if (this.biomechanics) this.biomechanics.dispose();
+        if (this.medicalDevices) this.medicalDevices.dispose();
+        if (this.therapeuticPhysics) this.therapeuticPhysics.dispose();
     }
 }
 

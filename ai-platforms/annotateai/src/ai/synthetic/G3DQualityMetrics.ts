@@ -5,7 +5,7 @@
  */
 
 import { G3DGPUCompute } from '../../g3d-performance/G3DGPUCompute';
-import { G3DModelRunner } from '../../g3d-ai/G3DModelRunner';
+import { G3DModelRunner, G3DModelType } from '../../g3d-ai/G3DModelRunner';
 
 export interface QualityConfig {
     metrics: QualityMetricType[];
@@ -104,7 +104,7 @@ export class G3DQualityMetrics {
         
         ssim_map[idx] = numerator / denominator;
       }
-    `, 'compute_ssim');
+    `);
 
         // Diversity kernel
         await this.gpuCompute.createKernel(`
@@ -127,12 +127,24 @@ export class G3DQualityMetrics {
         
         distances[i * num_samples + j] = sqrt(dist);
       }
-    `, 'compute_pairwise_distance');
+    `);
     }
 
     private async loadModels(): Promise<void> {
-        this.inceptionModel = await this.modelRunner.loadModel('inception_v3');
-        this.lpipsModel = await this.modelRunner.loadModel('lpips_alex');
+        this.inceptionModel = await this.modelRunner.loadModel({
+            id: 'inception_v3',
+            name: 'inception_v3',
+            version: '1.0.0',
+            type: G3DModelType.CUSTOM,
+            modelPath: 'models/inception_v3'
+        });
+        this.lpipsModel = await this.modelRunner.loadModel({
+            id: 'lpips_alex',
+            name: 'lpips_alex',
+            version: '1.0.0',
+            type: G3DModelType.CUSTOM,
+            modelPath: 'models/lpips_alex'
+        });
     }
 
     public async evaluateQuality(

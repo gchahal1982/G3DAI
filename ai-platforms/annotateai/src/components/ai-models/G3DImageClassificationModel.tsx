@@ -159,10 +159,10 @@ export const G3DImageClassification: React.FC<G3DImageClassificationProps> = ({
     const initialize3D = async () => {
         if (!canvasRef.current) return;
 
-        const renderer = new G3DNativeRenderer(canvasRef.current, { antialias: true, alpha: true });
+        const renderer = new G3DNativeRenderer(canvasRef.current);
         rendererRef.current = renderer;
 
-        const scene = new G3DSceneManager(rendererRef.current || new G3DNativeRenderer(canvasRef.current!, { antialias: true, alpha: true }));
+        const scene = new G3DSceneManager(rendererRef.current || new G3DNativeRenderer(canvasRef.current!));
         sceneRef.current = scene;
 
         startRenderLoop();
@@ -317,9 +317,11 @@ export const G3DImageClassification: React.FC<G3DImageClassificationProps> = ({
         if (!modelRunnerRef.current) return [];
 
         const modelRunner = modelRunnerRef.current;
-        const classificationResults = await modelRunner.runInference(model.classificationId, imageData);
+        // Run inference on preprocessed data
+        const rawOutput = await modelRunner.runInference(model.id, imageData);
+        const outputData = (rawOutput as any).data || rawOutput;
 
-        return parseClassificationResults(classificationResults, modelConfig, config.topK);
+        return parseClassificationResults(outputData, modelConfig, config.topK);
     };
 
     // Extract image features
@@ -341,7 +343,7 @@ export const G3DImageClassification: React.FC<G3DImageClassificationProps> = ({
         if (model.spatialFeatureIds) {
             for (const featureId of model.spatialFeatureIds) {
                 const features = await modelRunner.runInference(featureId, imageData);
-                spatialFeatures.push(features);
+                spatialFeatures.push((features as any).data || features);
             }
         }
 
@@ -364,7 +366,7 @@ export const G3DImageClassification: React.FC<G3DImageClassificationProps> = ({
         }
 
         return {
-            globalFeatures,
+            globalFeatures: (globalFeatures as any).data || globalFeatures,
             spatialFeatures,
             attentionMaps,
             gradientMaps
@@ -576,7 +578,7 @@ export const G3DImageClassification: React.FC<G3DImageClassificationProps> = ({
 
     const startRenderLoop = () => { };
     const cleanup = () => {
-        rendererRef.current?.cleanup();
+        rendererRef.current?.dispose?.();
         modelRunnerRef.current?.cleanup();
     };
 

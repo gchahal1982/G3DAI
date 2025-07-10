@@ -273,6 +273,307 @@ export class G3DGeometryProcessor {
         return geometry;
     }
 
+    /**
+     * Create a grid geometry
+     */
+    createGrid(params: { size?: number; divisions?: number; color1?: any; color2?: any } = {}): G3DGeometry {
+        const size = params.size || 10;
+        const divisions = params.divisions || 10;
+        const step = size / divisions;
+        const halfSize = size / 2;
+
+        const positions: number[] = [];
+        const colors: number[] = [];
+
+        const color1 = params.color1 || { r: 0.5, g: 0.5, b: 0.5, a: 1 };
+        const color2 = params.color2 || { r: 0.3, g: 0.3, b: 0.3, a: 1 };
+
+        // Create grid lines
+        for (let i = 0; i <= divisions; i++) {
+            const position = i * step - halfSize;
+            const color = i === Math.floor(divisions / 2) ? color1 : color2;
+
+            // Horizontal lines
+            positions.push(-halfSize, 0, position, halfSize, 0, position);
+            colors.push(color.r, color.g, color.b, color.a, color.r, color.g, color.b, color.a);
+
+            // Vertical lines
+            positions.push(position, 0, -halfSize, position, 0, halfSize);
+            colors.push(color.r, color.g, color.b, color.a, color.r, color.g, color.b, color.a);
+        }
+
+        const geometry = this.createGeometry(
+            new Float32Array(positions),
+            undefined,
+            {
+                position: { name: 'position', size: 3, type: 'float', normalized: false, offset: 0, stride: 0 },
+                color: { name: 'color', size: 4, type: 'float', normalized: false, offset: 0, stride: 0 }
+            }
+        );
+
+        geometry.type = G3DGeometryType.LINES;
+        this.setAttribute(geometry, 'color', new Float32Array(colors));
+
+        return geometry;
+    }
+
+    /**
+     * Create point cloud geometry
+     */
+    createPointCloud(data: { points: Float32Array; colors?: Float32Array; normals?: Float32Array; count: number }): G3DGeometry {
+        const geometry = this.createGeometry(
+            data.points,
+            undefined,
+            {
+                position: { name: 'position', size: 3, type: 'float', normalized: false, offset: 0, stride: 0 }
+            }
+        );
+
+        geometry.type = G3DGeometryType.POINTS;
+
+        if (data.colors) {
+            geometry.attributes.set('color', { name: 'color', size: 4, type: 'float', normalized: false, offset: 0, stride: 0 });
+            this.setAttribute(geometry, 'color', data.colors);
+        }
+
+        if (data.normals) {
+            geometry.attributes.set('normal', { name: 'normal', size: 3, type: 'float', normalized: false, offset: 0, stride: 0 });
+            this.setAttribute(geometry, 'normal', data.normals);
+        }
+
+        // Store point cloud specific data
+        (geometry as any).userData = {
+            pointCount: data.count,
+            isPointCloud: true
+        };
+
+        return geometry;
+    }
+
+    /**
+     * Create tube geometry from curve
+     */
+    createTubeFromCurve(curve: any, params: { radius?: number; segments?: number } = {}): G3DGeometry {
+        const radius = params.radius || 0.1;
+        const segments = params.segments || 8;
+
+        const positions: number[] = [];
+        const indices: number[] = [];
+        const normals: number[] = [];
+        const uvs: number[] = [];
+
+        // Get curve points - simplified curve handling
+        const curvePoints = curve.getPoints ? curve.getPoints(50) : [
+            { x: 0, y: 0, z: 0 },
+            { x: 1, y: 0, z: 0 }
+        ];
+
+        // Generate vertices along curve
+        for (let i = 0; i < curvePoints.length; i++) {
+            const point = curvePoints[i];
+            const t = i / (curvePoints.length - 1);
+            
+            // Create ring of vertices around each point
+            for (let j = 0; j < segments; j++) {
+                const angle = (j / segments) * Math.PI * 2;
+                const x = point.x + Math.cos(angle) * radius;
+                const y = point.y + Math.sin(angle) * radius;
+                const z = point.z;
+
+                positions.push(x, y, z);
+                normals.push(Math.cos(angle), Math.sin(angle), 0);
+                uvs.push(j / segments, t);
+            }
+        }
+
+        // Generate indices
+        for (let i = 0; i < curvePoints.length - 1; i++) {
+            for (let j = 0; j < segments; j++) {
+                const current = i * segments + j;
+                const next = current + segments;
+                const nextJ = (j + 1) % segments;
+
+                indices.push(current, next, current + nextJ);
+                indices.push(next, next + nextJ, current + nextJ);
+            }
+        }
+
+        const geometry = this.createGeometry(
+            new Float32Array(positions),
+            new Uint32Array(indices),
+            {
+                position: { name: 'position', size: 3, type: 'float', normalized: false, offset: 0, stride: 0 },
+                normal: { name: 'normal', size: 3, type: 'float', normalized: false, offset: 0, stride: 0 },
+                uv: { name: 'uv', size: 2, type: 'float', normalized: false, offset: 0, stride: 0 }
+            }
+        );
+
+        this.setAttribute(geometry, 'normal', new Float32Array(normals));
+        this.setAttribute(geometry, 'uv', new Float32Array(uvs));
+
+        return geometry;
+    }
+
+    /**
+     * Create wireframe geometry from existing geometry
+     */
+    createWireframe(geometry: G3DGeometry): G3DGeometry {
+        if (!geometry.indices) {
+            throw new Error('Cannot create wireframe from geometry without indices');
+        }
+
+        const wireframeIndices: number[] = [];
+        const indices = geometry.indices;
+
+        // Convert triangles to lines
+        for (let i = 0; i < indices.length; i += 3) {
+            const a = indices[i];
+            const b = indices[i + 1];
+            const c = indices[i + 2];
+
+            // Add three edges of the triangle
+            wireframeIndices.push(a, b, b, c, c, a);
+        }
+
+        const wireframe = this.createGeometry(
+            geometry.vertices,
+            new Uint32Array(wireframeIndices),
+            {
+                position: { name: 'position', size: 3, type: 'float', normalized: false, offset: 0, stride: 0 }
+            }
+        );
+
+        wireframe.type = G3DGeometryType.LINES;
+
+        // Copy other attributes if they exist
+        const normals = this.getAttribute(geometry, 'normal');
+        if (normals) {
+            wireframe.attributes.set('normal', geometry.attributes.get('normal')!);
+            this.setAttribute(wireframe, 'normal', normals);
+        }
+
+        const uvs = this.getAttribute(geometry, 'uv');
+        if (uvs) {
+            wireframe.attributes.set('uv', geometry.attributes.get('uv')!);
+            this.setAttribute(wireframe, 'uv', uvs);
+        }
+
+        return wireframe;
+    }
+
+    /**
+     * Create line geometry
+     */
+    createLine(start: { x: number; y: number; z: number }, end: { x: number; y: number; z: number }): G3DGeometry {
+        const positions = new Float32Array([
+            start.x, start.y, start.z,
+            end.x, end.y, end.z
+        ]);
+
+        const geometry = this.createGeometry(
+            positions,
+            undefined,
+            {
+                position: { name: 'position', size: 3, type: 'float', normalized: false, offset: 0, stride: 0 }
+            }
+        );
+
+        geometry.type = G3DGeometryType.LINES;
+        return geometry;
+    }
+
+    /**
+     * Create geometry from arrays
+     */
+    createFromArrays(vertices: Float32Array, indices: Uint32Array, normals?: Float32Array, uvs?: Float32Array): G3DGeometry {
+        const attributes: Record<string, G3DVertexAttribute> = {
+            position: { name: 'position', size: 3, type: 'float', normalized: false, offset: 0, stride: 0 }
+        };
+
+        if (normals) {
+            attributes.normal = { name: 'normal', size: 3, type: 'float', normalized: false, offset: 0, stride: 0 };
+        }
+
+        if (uvs) {
+            attributes.uv = { name: 'uv', size: 2, type: 'float', normalized: false, offset: 0, stride: 0 };
+        }
+
+        const geometry = this.createGeometry(vertices, indices, attributes);
+
+        if (normals) {
+            this.setAttribute(geometry, 'normal', normals);
+        }
+
+        if (uvs) {
+            this.setAttribute(geometry, 'uv', uvs);
+        }
+
+        return geometry;
+    }
+
+    /**
+     * Create cube geometry
+     */
+    createCube(size: number = 1): G3DGeometry {
+        return this.createBox(size, size, size);
+    }
+
+    /**
+     * Create cylinder geometry
+     */
+    createCylinder(radius: number = 1, height: number = 2, segments: number = 16): G3DGeometry {
+        const positions: number[] = [];
+        const normals: number[] = [];
+        const uvs: number[] = [];
+        const indices: number[] = [];
+
+        const halfHeight = height / 2;
+
+        // Generate vertices
+        for (let i = 0; i <= segments; i++) {
+            const angle = (i / segments) * Math.PI * 2;
+            const x = Math.cos(angle) * radius;
+            const z = Math.sin(angle) * radius;
+
+            // Bottom vertices
+            positions.push(x, -halfHeight, z);
+            normals.push(x / radius, 0, z / radius);
+            uvs.push(i / segments, 0);
+
+            // Top vertices
+            positions.push(x, halfHeight, z);
+            normals.push(x / radius, 0, z / radius);
+            uvs.push(i / segments, 1);
+        }
+
+        // Generate indices for sides
+        for (let i = 0; i < segments; i++) {
+            const bottomA = i * 2;
+            const bottomB = ((i + 1) % segments) * 2;
+            const topA = bottomA + 1;
+            const topB = bottomB + 1;
+
+            // Side faces
+            indices.push(bottomA, bottomB, topA);
+            indices.push(bottomB, topB, topA);
+        }
+
+        const geometry = this.createGeometry(
+            new Float32Array(positions),
+            new Uint16Array(indices),
+            {
+                position: { name: 'position', size: 3, type: 'float', normalized: false, offset: 0, stride: 0 },
+                normal: { name: 'normal', size: 3, type: 'float', normalized: false, offset: 0, stride: 0 },
+                uv: { name: 'uv', size: 2, type: 'float', normalized: false, offset: 0, stride: 0 }
+            }
+        );
+
+        this.setAttribute(geometry, 'normal', new Float32Array(normals));
+        this.setAttribute(geometry, 'uv', new Float32Array(uvs));
+
+        return geometry;
+    }
+
     // Core geometry creation
 
     createGeometry(vertices: Float32Array, indices: Uint16Array | Uint32Array | undefined, attributes: Record<string, G3DVertexAttribute>): G3DGeometry {

@@ -522,14 +522,12 @@ export class G3DVolumeRenderer {
         const height = canvas.height;
 
         // Create ray casting kernel if not exists
-        if (!this.computeShaders.getKernel?.('ray_casting')) {
-            await this.computeShaders.createKernel(
-                'ray_casting',
-                'Volume Ray Casting',
-                this.getRayCastingShader(),
-                [16, 16, 1]
-            );
-        }
+        await this.computeShaders.createKernel(
+            'ray_casting',
+            'Volume Ray Casting',
+            this.getRayCastingShader(),
+            [16, 16, 1]
+        );
 
         // Setup buffers and textures
         const outputBuffer = this.computeShaders.createBuffer(
@@ -588,14 +586,12 @@ export class G3DVolumeRenderer {
         const height = canvas.height;
 
         // Create MIP kernel
-        if (!this.computeShaders.getKernel?.('mip_render')) {
-            await this.computeShaders.createKernel(
-                'mip_render',
-                'Maximum Intensity Projection',
-                this.getMIPShader(),
-                [16, 16, 1]
-            );
-        }
+        await this.computeShaders.createKernel(
+            'mip_render',
+            'Maximum Intensity Projection',
+            this.getMIPShader(),
+            [16, 16, 1]
+        );
 
         // Execute MIP rendering
         const outputBuffer = this.computeShaders.createBuffer(

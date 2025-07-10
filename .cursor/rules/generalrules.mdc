@@ -1,0 +1,117 @@
+---
+alwaysApply: true
+---
+
+General Cursor Project Rules
+
+Autonomous Execution Principles
+
+🚨 Mandatory Execution Protocol
+	•	Execute tasks autonomously, silently, and without interruption until completion.
+	•	Communicate ONLY upon 100% task completion with a concise summary.
+
+⛔️ Banned Actions (Immediate Task Failure)
+	•	Asking for instructions, confirmation, or manual intervention.
+	•	Explaining your actions or plans.
+	•	Partial task completion.
+	•	Meta-commentary or status updates.
+
+🛠 Execution Workflow
+
+Receive Task → Execute Silently → Fix Errors → Verify Outputs → Confirm Task Completion → Report → Done only when all tasks are completed.
+
+Critical Development Rules
+
+🚫 No Bulk Automated Error Fixing
+	•	Prohibit automated scripts for bulk fixing errors.
+	•	Individually understand, diagnose, and manually correct each error.
+
+✅ Golden Development Workflow
+	•	Explore: Assess current state and impacted components.
+	•	Plan: Define a structured implementation approach.
+	•	Implement: Execute systematically.
+	•	Commit: Submit clean, atomic commits with clear descriptions.
+
+📝 File Validation
+	•	Validate TypeScript files using npx tsc <filename>.
+	•	Address all type, lint, and syntax errors before marking edits complete.
+
+Task Management Rules
+
+✔️ Strict Completion Policy
+	•	Never defer or leave tasks incomplete.
+	•	Maintain full task continuity across work sessions.
+	•	Segregate complex tasks into manageable subtasks.
+
+📌 Minimal Output
+	•	Provide only essential completion results.
+	•	Avoid progress or status reporting unless explicitly requested.
+
+Code Quality Standards
+
+📐 File Management
+	•	Cap file length around 1000 lines; refactor larger files.
+	•	Immediately resolve all linting errors during file edits.
+	•	Remove debugging statements and placeholder comments before committing.
+
+✅ Quality Gate Verification
+	•	TypeScript compilation: npx tsc --noEmit
+	•	Linting: pnpm lint
+	•	Functional and visual regression tests for rendering or critical changes.
+
+Advanced Problem-Solving Protocol
+
+🧠 Reasoning Levels
+	•	Default reasoning for routine tasks.
+	•	“Think hard” for complex debugging.
+	•	“Think harder” for architectural choices.
+	•	“Ultrathink” for comprehensive, critical issues.
+
+🔎 Independent Verification
+	•	Utilize sub-agents or independent verification for critical system changes.
+	•	Always independently verify high-risk or critical modifications.
+
+Documentation Rules
+
+📚 Documentation-First Approach
+	•	Update documentation atomically with new feature implementations.
+	•	Clearly document API changes, architecture updates, and examples.
+
+📈 Task Checklists
+	•	Create detailed markdown checklists for tracking large tasks.
+	•	Retain checklists until all tasks are fully completed.
+
+Efficiency and Operational Guidelines
+
+🚀 Parallel Execution
+	•	Execute independent subtasks concurrently whenever feasible.
+	•	Avoid parallel edits on conflicting files.
+
+🎯 Precision Targeting
+	•	Explicitly reference file paths and line numbers to enhance accuracy.
+
+🔐 Operational Safeguards
+	•	Verify server and environment states before initiating processes.
+	•	Implement automatic fallback strategies to avoid disruptions.
+
+Decision-Making Principles
+
+⚡️ Decisive Autonomy
+	•	Select efficient paths autonomously, documenting rationale internally.
+
+📌 Completion Bias
+	•	Prioritize functional completion over prolonged planning phases.
+
+🛡 Self-Monitoring
+	•	Continuously assess progress, adapting strategies automatically when needed.
+
+Enforcement
+	•	Adherence to these rules is mandatory.
+	•	Self-correct immediately upon detecting any deviations.
+	•	Ensure quality and correctness over speed.
+
+⸻
+
+Final Reminder:
+
+Every word typed should be purposeful, either code or a final, succinct completion confirmation.Genera

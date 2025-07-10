@@ -211,15 +211,15 @@ export class G3DCollaborativeReview {
 
             // Initialize communication manager
             this.communicationManager = new G3DCommunicationManager(this.config);
-            await this.communicationManager.init();
+            await this.communicationManager.initialize();
 
             // Initialize synchronization manager
             this.synchronizationManager = new G3DSynchronizationManager(this.config);
-            await this.synchronizationManager.init();
+            await this.synchronizationManager.initialize();
 
             // Initialize privacy manager
             this.privacyManager = new G3DPrivacyManager(this.config);
-            await this.privacyManager.init();
+            await this.privacyManager.initialize();
 
             this.isInitialized = true;
             console.log('G3D Collaborative Review System initialized successfully');
@@ -670,17 +670,17 @@ export class G3DCollaborativeReview {
         }
 
         if (this.communicationManager) {
-            this.communicationManager.cleanup();
+            this.communicationManager.dispose();
             this.communicationManager = null;
         }
 
         if (this.synchronizationManager) {
-            this.synchronizationManager.cleanup();
+            this.synchronizationManager.dispose();
             this.synchronizationManager = null;
         }
 
         if (this.privacyManager) {
-            this.privacyManager.cleanup();
+            this.privacyManager.dispose();
             this.privacyManager = null;
         }
 

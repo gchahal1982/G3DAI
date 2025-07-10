@@ -337,10 +337,10 @@ export class G3DPhysicsEngine {
         try {
             console.log('Initializing G3D Physics Engine');
 
-            await this.world.broadPhase.init();
-            await this.world.narrowPhase.init();
-            await this.world.solver.init();
-            await this.world.integrator.init();
+            await this.world.broadPhase.initialize();
+            await this.world.narrowPhase.initialize();
+            await this.world.solver.initialize();
+            await this.world.integrator.initialize();
 
             this.isInitialized = true;
             console.log('G3D Physics Engine initialized successfully');

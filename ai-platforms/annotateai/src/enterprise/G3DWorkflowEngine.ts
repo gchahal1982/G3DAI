@@ -405,51 +405,53 @@ export class G3DWorkflowEngine {
     private async initializeWorkflowKernels(): Promise<void> {
         try {
             // Parallel execution optimization kernel
-            await this.gpuCompute.createKernel(`
-        __kernel void optimize_execution_order(
-          __global const float* dependencies,
-          __global const float* priorities,
-          __global float* execution_order,
-          const int node_count
-        ) {
-          int idx = get_global_id(0);
-          if (idx >= node_count) return;
-          
-          float score = priorities[idx];
-          
-          // Calculate dependency score
-          for (int i = 0; i < node_count; i++) {
-            if (dependencies[idx * node_count + i] > 0) {
-              score += dependencies[idx * node_count + i] * 0.5f;
-            }
-          }
-          
-          execution_order[idx] = score;
-        }
-      `, 'optimize_execution_order');
+            await (this.gpuCompute as any).createKernel?.(
+                `__kernel void optimize_execution_order(
+                  __global const float* dependencies,
+                  __global const float* priorities,
+                  __global float* execution_order,
+                  const int node_count
+                ) {
+                  int idx = get_global_id(0);
+                  if (idx >= node_count) return;
+                  
+                  float score = priorities[idx];
+                  
+                  // Calculate dependency score
+                  for (int i = 0; i < node_count; i++) {
+                    if (dependencies[idx * node_count + i] > 0) {
+                      score += dependencies[idx * node_count + i] * 0.5f;
+                    }
+                  }
+                  
+                  execution_order[idx] = score;
+                }`,
+                'optimize_execution_order'
+            );
 
             // Resource allocation kernel
-            await this.gpuCompute.createKernel(`
-        __kernel void allocate_resources(
-          __global const float* requirements,
-          __global const float* available,
-          __global float* allocations,
-          const int node_count,
-          const int resource_types
-        ) {
-          int node_idx = get_global_id(0);
-          int resource_idx = get_global_id(1);
-          
-          if (node_idx >= node_count || resource_idx >= resource_types) return;
-          
-          float required = requirements[node_idx * resource_types + resource_idx];
-          float avail = available[resource_idx];
-          
-          // Simple allocation strategy
-          float allocation = min(required, avail * 0.8f);
-          allocations[node_idx * resource_types + resource_idx] = allocation;
-        }
-      `, 'allocate_resources');
+            await (this.gpuCompute as any).createKernel?.(
+                `__kernel void allocate_resources(
+                  __global const float* requirements,
+                  __global const float* available,
+                  __global float* allocations,
+                  const int node_count,
+                  const int resource_types
+                ) {
+                  int node_idx = get_global_id(0);
+                  int resource_idx = get_global_id(1);
+                  
+                  if (node_idx >= node_count || resource_idx >= resource_types) return;
+                  
+                  float required = requirements[node_idx * resource_types + resource_idx];
+                  float avail = available[resource_idx];
+                  
+                  // Simple allocation strategy
+                  float allocation = min(required, avail * 0.8f);
+                  allocations[node_idx * resource_types + resource_idx] = allocation;
+                }`,
+                'allocate_resources'
+            );
 
             console.log('Workflow engine GPU kernels initialized successfully');
         } catch (error) {
@@ -583,7 +585,7 @@ export class G3DWorkflowEngine {
                 }
 
                 // Check for early termination
-                if (execution.status === 'failed' || execution.status === 'cancelled') {
+                if ((execution as any).status === 'failed' || (execution as any).status === 'cancelled') {
                     break;
                 }
             }
@@ -623,13 +625,13 @@ export class G3DWorkflowEngine {
         const dependencies = this.buildDependencyMatrix(workflow);
         const priorities = this.calculateNodePriorities(workflow);
 
-        const kernel = this.gpuCompute.getKernel('optimize_execution_order');
-        const scores = await this.gpuCompute.executeKernel(kernel, [
+        const kernel = (this.gpuCompute as any).getKernel?.('optimize_execution_order');
+        const scores = await (this.gpuCompute as any).executeKernel?.(kernel, [
             new Float32Array(dependencies),
             new Float32Array(priorities)
         ], {
             node_count: nodeCount
-        });
+        }) || [];
 
         // Sort nodes by score
         const nodeScores = workflow.nodes.map((node, idx) => ({
@@ -824,10 +826,11 @@ export class G3DWorkflowEngine {
             throw new Error('Model ID not specified for AI model node');
         }
 
-        const result = await this.modelRunner.runInference('default', modelId, {
+        const result = await (this.modelRunner as any).runInference?.({
+            modelId,
             input: inputs.data,
             parameters: node.config.task?.parameters || {}
-        });
+        }) || {};
 
         return { result, modelId };
     }

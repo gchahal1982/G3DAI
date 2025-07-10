@@ -120,13 +120,13 @@ export interface MemoryConfig {
  * Handles CPU and GPU memory with intelligent optimization
  */
 export class G3DMemoryManager extends EventEmitter {
-    private pools: Map<string, MemoryPool> = new Map();
+    public pools: Map<string, MemoryPool> = new Map();
     private allocations: Map<string, MemoryAllocation> = new Map();
     private freeChunks: Map<string, MemoryChunk[]> = new Map();
     private device: any | null = null; // GPUDevice
 
     private config: MemoryConfig;
-    private stats: MemoryStats;
+    public stats: MemoryStats;
     private lastGCTime = 0;
     private allocationCounter = 0;
 
@@ -180,7 +180,7 @@ export class G3DMemoryManager extends EventEmitter {
             if (navigator.gpu) {
                 const adapter = await navigator.gpu.requestAdapter();
                 if (adapter) {
-                    this.device = await adapter.requestDevice();
+                    this.device = await adapter.requestDevice() as any;
                 }
             }
         } catch (error) {
@@ -342,7 +342,7 @@ export class G3DMemoryManager extends EventEmitter {
         // Remove from free chunks
         this.removeFreeChunk(pool.id, chunk);
 
-        this.emit('allocated', allocationId, poolId, size);
+        this.emit('allocated', allocationId, pool.id, size);
         this.updatePoolStats(pool.id);
 
         return allocationId;
@@ -725,7 +725,7 @@ export class G3DMemoryManager extends EventEmitter {
     /**
      * Merge all adjacent free chunks in a pool
      */
-    private mergeAllFreeChunks(pool: MemoryPool): void {
+    public mergeAllFreeChunks(pool: MemoryPool): void {
         const freeChunks = this.freeChunks.get(pool.id) || [];
         freeChunks.sort((a, b) => a.offset - b.offset);
 
@@ -743,6 +743,79 @@ export class G3DMemoryManager extends EventEmitter {
     }
 
     /**
+     * Allocate memory slot for model loading
+     */
+    public async allocateModelSlot(modelId: string, memoryRequirement: string): Promise<string> {
+        // Parse memory requirement (e.g., "8GB" -> 8 * 1024 * 1024 * 1024)
+        const size = this.parseMemorySize(memoryRequirement);
+        
+        // Try to allocate from GPU memory first, then CPU
+        let allocationId = this.allocate('gpu-storage', size, AllocationPriority.HIGH, ['model', modelId]);
+        
+        if (!allocationId) {
+            allocationId = this.allocate('cpu-heap', size, AllocationPriority.HIGH, ['model', modelId]);
+        }
+        
+        if (!allocationId) {
+            throw new Error(`Failed to allocate memory slot for model ${modelId}: ${memoryRequirement}`);
+        }
+        
+        return allocationId;
+    }
+
+    /**
+     * Optimize model memory usage
+     */
+    public async optimizeModel(model: any, options: any): Promise<void> {
+        // Mock model optimization
+        console.log('Optimizing model memory usage with options:', options);
+        
+        // In a real implementation, this would:
+        // - Apply gradient checkpointing if enabled
+        // - Enable memory-efficient attention if enabled
+        // - Set up G3D acceleration if enabled
+        
+        if (options.enableGradientCheckpointing) {
+            console.log('Enabling gradient checkpointing');
+        }
+        
+        if (options.enableMemoryEfficient) {
+            console.log('Enabling memory-efficient operations');
+        }
+        
+        if (options.enableG3DAcceleration) {
+            console.log('Enabling G3D acceleration');
+        }
+    }
+
+    /**
+     * Parse memory size string to bytes
+     */
+    private parseMemorySize(sizeStr: string): number {
+        const units: Record<string, number> = {
+            'B': 1,
+            'KB': 1024,
+            'MB': 1024 * 1024,
+            'GB': 1024 * 1024 * 1024,
+            'TB': 1024 * 1024 * 1024 * 1024
+        };
+        
+        const match = sizeStr.match(/^(\d+(?:\.\d+)?)\s*([A-Z]+)$/i);
+        if (!match) {
+            throw new Error(`Invalid memory size format: ${sizeStr}`);
+        }
+        
+        const value = parseFloat(match[1]);
+        const unit = match[2].toUpperCase();
+        
+        if (!(unit in units)) {
+            throw new Error(`Unknown memory unit: ${unit}`);
+        }
+        
+        return Math.floor(value * units[unit]);
+    }
+
+    /**
      * Cleanup resources
      */
     public dispose(): void {
@@ -757,9 +830,9 @@ export class G3DMemoryManager extends EventEmitter {
         this.allocations.clear();
 
         // Dispose subsystems
-        this.leakDetector.cleanup();
-        this.memoryProfiler.cleanup();
-        this.garbageCollector.cleanup();
+        this.leakDetector.dispose();
+        this.memoryProfiler.dispose();
+        this.garbageCollector.dispose();
 
         this.removeAllListeners();
     }

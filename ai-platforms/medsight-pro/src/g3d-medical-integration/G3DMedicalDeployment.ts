@@ -278,19 +278,19 @@ export class G3DMedicalDeployment {
 
             // Initialize infrastructure manager
             this.infrastructureManager = new G3DInfrastructureManager(this.config);
-            await this.infrastructureManager.init();
+            await this.infrastructureManager.initialize();
 
             // Initialize compliance manager
             this.complianceManager = new G3DComplianceManager(this.config);
-            await this.complianceManager.init();
+            await this.complianceManager.initialize();
 
             // Initialize security manager
             this.securityManager = new G3DDeploymentSecurityManager(this.config);
-            await this.securityManager.init();
+            await this.securityManager.initialize();
 
             // Initialize monitoring manager
             this.monitoringManager = new G3DDeploymentMonitoringManager(this.config);
-            await this.monitoringManager.init();
+            await this.monitoringManager.initialize();
 
             // Set up default environments
             await this.createDefaultEnvironments();
@@ -875,22 +875,22 @@ export class G3DMedicalDeployment {
 
         // Dispose managers
         if (this.infrastructureManager) {
-            this.infrastructureManager.cleanup();
+            this.infrastructureManager.dispose();
             this.infrastructureManager = null;
         }
 
         if (this.complianceManager) {
-            this.complianceManager.cleanup();
+            this.complianceManager.dispose();
             this.complianceManager = null;
         }
 
         if (this.securityManager) {
-            this.securityManager.cleanup();
+            this.securityManager.dispose();
             this.securityManager = null;
         }
 
         if (this.monitoringManager) {
-            this.monitoringManager.cleanup();
+            this.monitoringManager.dispose();
             this.monitoringManager = null;
         }
 

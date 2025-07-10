@@ -253,22 +253,22 @@ export class G3DMedicalHaptics {
             // Initialize haptic renderers
             if (this.config.enableForceRendering) {
                 this.forceRenderer = new G3DForceRenderer(this.config);
-                await this.forceRenderer.init();
+                await this.forceRenderer.initialize();
             }
 
             if (this.config.enableTactileRendering) {
                 this.tactileRenderer = new G3DTactileRenderer(this.config);
-                await this.tactileRenderer.init();
+                await this.tactileRenderer.initialize();
             }
 
             if (this.config.enableThermalFeedback) {
                 this.thermalRenderer = new G3DThermalRenderer(this.config);
-                await this.thermalRenderer.init();
+                await this.thermalRenderer.initialize();
             }
 
             // Initialize safety monitor
             this.safetyMonitor = new G3DHapticSafetyMonitor(this.config);
-            await this.safetyMonitor.init();
+            await this.safetyMonitor.initialize();
 
             // Discover and initialize haptic devices
             await this.discoverHapticDevices();
@@ -781,30 +781,33 @@ export class G3DMedicalHaptics {
     public dispose(): void {
         console.log('Disposing G3D Medical Haptics System...');
 
+        // Stop current session
         if (this.currentSession) {
-            this.endHapticSession();
+            this.endHapticSession().catch(console.error);
         }
 
+        // Dispose renderers
         if (this.forceRenderer) {
-            this.forceRenderer.cleanup();
+            this.forceRenderer.dispose();
             this.forceRenderer = null;
         }
 
         if (this.tactileRenderer) {
-            this.tactileRenderer.cleanup();
+            this.tactileRenderer.dispose();
             this.tactileRenderer = null;
         }
 
         if (this.thermalRenderer) {
-            this.thermalRenderer.cleanup();
+            this.thermalRenderer.dispose();
             this.thermalRenderer = null;
         }
 
         if (this.safetyMonitor) {
-            this.safetyMonitor.cleanup();
+            this.safetyMonitor.dispose();
             this.safetyMonitor = null;
         }
 
+        // Clear data
         this.hapticDevices.clear();
         this.hapticObjects.clear();
         this.tissueModels.clear();

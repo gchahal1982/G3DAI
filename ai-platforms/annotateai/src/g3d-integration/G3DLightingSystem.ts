@@ -304,8 +304,8 @@ export class G3DLightingSystem {
         this.stats.activeLights = 0;
 
         // Process each light
-        for (const [id, { light, node }] of this.lights) {
-            if (!light.enabled || !node.visible) continue;
+        this.lights.forEach(({ light, node }, id) => {
+            if (!light.enabled || !node.visible) return;
 
             this.stats.activeLights++;
 
@@ -339,7 +339,7 @@ export class G3DLightingSystem {
             if (light.castShadow) {
                 this.updateShadowMap(id, light, node);
             }
-        }
+        });
 
         this.stats.updateTime = Date.now() - startTime;
     }
@@ -507,7 +507,7 @@ export class G3DLightingSystem {
         mat4.lookAt(shadowMap.viewMatrix, worldDir, target, up);
 
         // Orthographic projection for directional lights
-        const camera = config.camera || {};
+        const camera = config.camera || {} as any;
         mat4.ortho(shadowMap.projectionMatrix,
             camera.left || -50,
             camera.right || 50,
@@ -540,7 +540,7 @@ export class G3DLightingSystem {
         mat4.lookAt(shadowMap.viewMatrix, worldPos, target, up);
 
         // Perspective projection for spot lights
-        const camera = config.camera || {};
+        const camera = config.camera || {} as any;
         mat4.perspective(shadowMap.projectionMatrix,
             camera.fov || light.angle * 2,
             1,  // Aspect ratio
@@ -563,7 +563,7 @@ export class G3DLightingSystem {
         const target = vec3.add(vec3.create(), worldPos, [1, 0, 0]);
         mat4.lookAt(shadowMap.viewMatrix, worldPos, target, [0, -1, 0]);
 
-        const camera = config.camera || {};
+        const camera = config.camera || {} as any;
         mat4.perspective(shadowMap.projectionMatrix,
             Math.PI / 2,  // 90 degree FOV for cube face
             1,

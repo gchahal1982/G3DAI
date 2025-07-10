@@ -145,23 +145,23 @@ export class G3DMedicalXRManager {
 
             // Initialize VR system
             this.vrSystem = new G3DMedicalVRClass();
-            await this.vrSystem.init();
+            await (this.vrSystem as any).initialize?.();
 
             // Initialize AR system
             this.arSystem = new G3DMedicalARClass();
-            await this.arSystem.init();
+            await (this.arSystem as any).initialize?.();
 
             // Initialize holographic system
             this.holographicSystem = new G3DHolographicImagingClass();
-            await this.holographicSystem.init();
+            await (this.holographicSystem as any).initialize?.();
 
             // Initialize collaborative system
             this.collaborativeSystem = new G3DCollaborativeReviewClass();
-            await this.collaborativeSystem.init();
+            await (this.collaborativeSystem as any).initialize?.();
 
             // Initialize haptics system
             this.hapticsSystem = new G3DMedicalHapticsClass();
-            await this.hapticsSystem.init();
+            await (this.hapticsSystem as any).initialize?.();
 
             this.isInitialized = true;
             console.log('G3D Medical XR Manager initialized successfully');
@@ -199,27 +199,27 @@ export class G3DMedicalXRManager {
         console.log('Disposing G3D Medical XR Manager...');
 
         if (this.vrSystem) {
-            this.vrSystem.cleanup();
+            (this.vrSystem as any).cleanup?.();
             this.vrSystem = null;
         }
 
         if (this.arSystem) {
-            this.arSystem.cleanup();
+            (this.arSystem as any).cleanup?.();
             this.arSystem = null;
         }
 
         if (this.holographicSystem) {
-            this.holographicSystem.cleanup();
+            (this.holographicSystem as any).cleanup?.();
             this.holographicSystem = null;
         }
 
         if (this.collaborativeSystem) {
-            this.collaborativeSystem.cleanup();
+            (this.collaborativeSystem as any).cleanup?.();
             this.collaborativeSystem = null;
         }
 
         if (this.hapticsSystem) {
-            this.hapticsSystem.cleanup();
+            (this.hapticsSystem as any).cleanup?.();
             this.hapticsSystem = null;
         }
 

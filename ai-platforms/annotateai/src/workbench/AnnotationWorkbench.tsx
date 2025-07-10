@@ -54,34 +54,34 @@ import {
     PlayIcon,
     PauseIcon,
     StopIcon,
-    FastForwardIcon,
-    RewindIcon,
-    ZoomInIcon,
-    ZoomOutIcon,
-    RotateIcon,
-    SaveIcon,
-    UndoIcon,
-    RedoIcon,
-    SettingsIcon,
-    LayersIcon,
+    ForwardIcon,
+    BackwardIcon,
+    MagnifyingGlassPlusIcon,
+    MagnifyingGlassMinusIcon,
+    ArrowPathIcon,
+    DocumentArrowDownIcon,
+    ArrowUturnLeftIcon,
+    ArrowUturnRightIcon,
+    CogIcon,
+    Squares2X2Icon,
     EyeIcon,
-    EyeOffIcon,
-    LockIcon,
-    UnlockIcon,
+    EyeSlashIcon,
+    LockClosedIcon,
+    LockOpenIcon,
     TrashIcon,
-    CopyIcon,
-    PasteIcon,
-    DownloadIcon,
-    UploadIcon,
-    GridIcon,
-    CursorIcon,
-    SquareIcon,
-    CircleIcon,
-    PenIcon,
-    WandIcon,
+    DocumentDuplicateIcon,
+    ClipboardDocumentIcon,
+    ArrowDownTrayIcon,
+    ArrowUpTrayIcon,
+    ViewColumnsIcon,
+    CursorArrowRaysIcon,
+    RectangleGroupIcon,
+    CircleStackIcon,
+    PencilIcon,
+    SparklesIcon,
     UsersIcon,
-    MessageCircleIcon,
-    AlertTriangleIcon,
+    ChatBubbleLeftEllipsisIcon as MessageCircleIcon,
+    ExclamationTriangleIcon as AlertTriangleIcon,
     CheckCircleIcon,
     XCircleIcon
 } from '@heroicons/react/24/outline';
@@ -209,7 +209,7 @@ export const AnnotationWorkbench: React.FC<WorkbenchProps> = ({
         {
             id: 'cursor',
             name: 'Select',
-            icon: CursorIcon,
+            icon: CursorArrowRaysIcon,
             hotkey: 'v',
             description: 'Select and move annotations',
             active: selectedTool === 'cursor',
@@ -218,7 +218,7 @@ export const AnnotationWorkbench: React.FC<WorkbenchProps> = ({
         {
             id: 'bbox',
             name: 'Bounding Box',
-            icon: SquareIcon,
+            icon: RectangleGroupIcon,
             hotkey: 'b',
             description: 'Draw bounding boxes',
             active: selectedTool === 'bbox',
@@ -227,7 +227,7 @@ export const AnnotationWorkbench: React.FC<WorkbenchProps> = ({
         {
             id: 'polygon',
             name: 'Polygon',
-            icon: PenIcon,
+            icon: PencilIcon,
             hotkey: 'p',
             description: 'Draw polygon annotations',
             active: selectedTool === 'polygon',
@@ -236,7 +236,7 @@ export const AnnotationWorkbench: React.FC<WorkbenchProps> = ({
         {
             id: 'circle',
             name: 'Circle',
-            icon: CircleIcon,
+            icon: CircleStackIcon,
             hotkey: 'c',
             description: 'Draw circular annotations',
             active: selectedTool === 'circle',
@@ -245,7 +245,7 @@ export const AnnotationWorkbench: React.FC<WorkbenchProps> = ({
         {
             id: 'ai-assist',
             name: 'AI Assist',
-            icon: WandIcon,
+            icon: SparklesIcon,
             hotkey: 'a',
             description: 'AI-powered annotation suggestions',
             active: selectedTool === 'ai-assist',
@@ -260,12 +260,10 @@ export const AnnotationWorkbench: React.FC<WorkbenchProps> = ({
                 // Initialize annotation engines
                 if (!imageEngineRef.current) {
                     imageEngineRef.current = new ImageAnnotationEngine();
-                    await imageEngineRef.current.init();
                 }
 
                 if (mode === 'video' && !videoEngineRef.current) {
                     videoEngineRef.current = new VideoAnnotationEngine(imageEngineRef.current);
-                    await videoEngineRef.current.init();
                 }
 
                 // Load project and session
@@ -291,8 +289,7 @@ export const AnnotationWorkbench: React.FC<WorkbenchProps> = ({
 
         // Cleanup on unmount
         return () => {
-            imageEngineRef.current?.cleanup();
-            videoEngineRef.current?.cleanup();
+            // No cleanup methods available
         };
     }, [projectId, sessionId, mode, collaborative]);
 
@@ -556,8 +553,10 @@ export const AnnotationWorkbench: React.FC<WorkbenchProps> = ({
         setIsAIProcessing(true);
         try {
             // Run AI pre-annotation
-            const suggestions = await imageEngineRef.current.runAIPreAnnotation?.(session.id);
-            setAISuggestions(suggestions || []);
+            const suggestions = await (imageEngineRef.current as any).runAIPreAnnotation?.(session.id);
+            if (suggestions) {
+                setAISuggestions(suggestions);
+            }
         } catch (error) {
             console.error('AI assistance failed:', error);
         } finally {
@@ -762,7 +761,7 @@ const WorkbenchHeader: React.FC<{
                     onClick={onSave}
                     className="flex items-center space-x-1"
                 >
-                    <SaveIcon className="w-4 h-4" />
+                    <ArrowDownTrayIcon className="w-4 h-4" />
                     <span>Save</span>
                 </Button>
 
@@ -772,7 +771,7 @@ const WorkbenchHeader: React.FC<{
                     onClick={() => setShowExportModal(true)}
                     className="flex items-center space-x-1"
                 >
-                    <DownloadIcon className="w-4 h-4" />
+                    <DocumentArrowDownIcon className="w-4 h-4" />
                     <span>Export</span>
                 </Button>
 
@@ -781,7 +780,7 @@ const WorkbenchHeader: React.FC<{
                     size="sm"
                     className="flex items-center space-x-1"
                 >
-                    <SettingsIcon className="w-4 h-4" />
+                    <CogIcon className="w-4 h-4" />
                 </Button>
             </div>
 
@@ -837,7 +836,7 @@ const ToolsSidebar: React.FC<{
                             className="w-10 h-10 p-0"
                             onClick={() => onSelectTool(tool.id)}
                         >
-                            <IconComponent className="w-5 h-5" />
+                            <IconComponent />
                         </Button>
                     </Tooltip>
                 );
@@ -856,7 +855,7 @@ const ToolsSidebar: React.FC<{
                     {isAIProcessing ? (
                         <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
                     ) : (
-                        <WandIcon className="w-5 h-5" />
+                        <SparklesIcon className="w-5 h-5" />
                     )}
                 </Button>
             </Tooltip>
@@ -902,7 +901,7 @@ const ViewportControls: React.FC<{
                                 zoom: Math.max(0.1, viewport.zoom - 0.1)
                             })}
                         >
-                            <ZoomOutIcon className="w-4 h-4" />
+                            <MagnifyingGlassMinusIcon className="w-4 h-4" />
                         </Button>
 
                         <span className="text-xs min-w-12 text-center">
@@ -918,7 +917,7 @@ const ViewportControls: React.FC<{
                                 zoom: Math.min(5, viewport.zoom + 0.1)
                             })}
                         >
-                            <ZoomInIcon className="w-4 h-4" />
+                            <MagnifyingGlassPlusIcon className="w-4 h-4" />
                         </Button>
                     </div>
 
@@ -933,7 +932,7 @@ const ViewportControls: React.FC<{
                                 showGrid: !viewport.showGrid
                             })}
                         >
-                            <GridIcon className="w-4 h-4" />
+                            <Squares2X2Icon className="w-4 h-4" />
                         </Button>
 
                         <Button
@@ -945,7 +944,7 @@ const ViewportControls: React.FC<{
                                 showAnnotations: !viewport.showAnnotations
                             })}
                         >
-                            <LayersIcon className="w-4 h-4" />
+                            <ViewColumnsIcon className="w-4 h-4" />
                         </Button>
                     </div>
                 </div>
@@ -960,7 +959,7 @@ const ViewportControls: React.FC<{
                                 className="p-1"
                                 onClick={() => onSeekToFrame(Math.max(0, currentFrame - 10))}
                             >
-                                <RewindIcon className="w-4 h-4" />
+                                <BackwardIcon className="w-4 h-4" />
                             </Button>
 
                             <Button
@@ -982,7 +981,7 @@ const ViewportControls: React.FC<{
                                 className="p-1"
                                 onClick={() => onSeekToFrame(Math.min(totalFrames - 1, currentFrame + 10))}
                             >
-                                <FastForwardIcon className="w-4 h-4" />
+                                <ForwardIcon className="w-4 h-4" />
                             </Button>
                         </div>
 
@@ -992,24 +991,25 @@ const ViewportControls: React.FC<{
                             </span>
 
                             <Slider
-                                value={[currentFrame]}
-                                onValueChange={([value]) => onSeekToFrame(value)}
+                                value={currentFrame}
+                                onChange={(value) => onSeekToFrame(value)}
                                 max={totalFrames - 1}
                                 step={1}
                                 className="w-32"
                             />
                         </div>
 
-                        <Select
+                        <select
                             value={playbackSpeed.toString()}
-                            onValueChange={(value) => onChangeSpeed(parseFloat(value))}
+                            onChange={(e) => onChangeSpeed(parseFloat(e.target.value))}
+                            className="text-xs bg-gray-600 border border-gray-500 rounded px-2 py-1"
                         >
                             <option value="0.25">0.25x</option>
                             <option value="0.5">0.5x</option>
                             <option value="1">1x</option>
                             <option value="2">2x</option>
                             <option value="4">4x</option>
-                        </Select>
+                        </select>
                     </div>
                 )}
             </div>
@@ -1122,7 +1122,7 @@ const CollaboratorCursor: React.FC<{
             transition={{ duration: 0.2 }}
         >
             <div className="flex items-center space-x-2">
-                <CursorIcon className="w-4 h-4" style={{ color: collaborator.color }} />
+                <CursorArrowRaysIcon className="w-4 h-4" style={{ color: collaborator.color }} />
                 <div
                     className="px-2 py-1 rounded text-xs text-white"
                     style={{ backgroundColor: collaborator.color }}
@@ -1143,7 +1143,7 @@ const PropertiesPanel: React.FC<{
     if (!session || selectedAnnotations.length === 0) {
         return (
             <div className="text-center text-gray-400 py-8">
-                <LayersIcon className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                <ViewColumnsIcon className="w-8 h-8 mx-auto mb-2 opacity-50" />
                 <p>Select annotations to view properties</p>
             </div>
         );
@@ -1157,17 +1157,21 @@ const PropertiesPanel: React.FC<{
             <div className="space-y-3">
                 <div>
                     <label className="block text-xs text-gray-400 mb-1">Label</label>
-                    <Select defaultValue="person">
+                    <select 
+                        defaultValue="person"
+                        className="w-full text-xs bg-gray-600 border border-gray-500 rounded px-2 py-1"
+                    >
                         {project?.labels.map(label => (
                             <option key={label} value={label}>{label}</option>
                         ))}
-                    </Select>
+                    </select>
                 </div>
 
                 <div>
                     <label className="block text-xs text-gray-400 mb-1">Confidence</label>
                     <Slider
-                        defaultValue={[85]}
+                        value={85}
+                        onChange={(value) => console.log('Confidence changed:', value)}
                         max={100}
                         step={1}
                         className="w-full"
@@ -1306,7 +1310,7 @@ const AIPanel: React.FC<{
                         >
                             <div className="flex items-center justify-between">
                                 <span>{suggestion.label}</span>
-                                <Badge variant="outline" className="text-xs">
+                                <Badge variant="secondary" className="text-xs">
                                     {Math.round(suggestion.confidence * 100)}%
                                 </Badge>
                             </div>

@@ -159,7 +159,7 @@ export class G3DPrivacyPreservation {
           float z = sqrt(-2.0f * log(u)) * cos(2.0f * M_PI * v);
           noise[idx] = scale * sign(z) * log(1.0f - 2.0f * fabs(z) / sqrt(2.0f * M_PI));
         }
-      `, 'generate_laplace_noise');
+      `);
 
             // Gaussian noise kernel for differential privacy
             await this.gpuCompute.createKernel(`
@@ -185,7 +185,7 @@ export class G3DPrivacyPreservation {
             }
           }
         }
-      `, 'generate_gaussian_noise');
+      `);
 
             // Homomorphic encryption operations kernel
             await this.gpuCompute.createKernel(`
@@ -201,7 +201,7 @@ export class G3DPrivacyPreservation {
           
           result[idx] = (ciphertext1[idx] + ciphertext2[idx]) % modulus;
         }
-      `, 'homomorphic_add');
+      `);
 
             // Secure aggregation kernel
             await this.gpuCompute.createKernel(`
@@ -220,7 +220,7 @@ export class G3DPrivacyPreservation {
           }
           result[idx] = sum;
         }
-      `, 'secure_sum');
+      `);
 
             console.log('Privacy preservation GPU kernels initialized successfully');
         } catch (error) {
@@ -308,7 +308,7 @@ export class G3DPrivacyPreservation {
         // Add noise to data
         const noisyData = flatData.map((value, idx) => value + noise[idx]);
 
-        return this.reconstructData(noisyData, data);
+        return this.reconstructData(Array.from(noisyData), data);
     }
 
     private async applyDPWithCPU(data: any[], config: DifferentialPrivacyConfig): Promise<any[]> {
@@ -474,7 +474,7 @@ export class G3DPrivacyPreservation {
     }
 
     private async secureSum(dataShares: any[][], config: SecureMPCConfig): Promise<any[]> {
-        if (config.enableG3DAcceleration) {
+        if ((config as any).enableG3DAcceleration) {
             return await this.secureSumGPU(dataShares, config);
         } else {
             return this.secureSumCPU(dataShares, config);

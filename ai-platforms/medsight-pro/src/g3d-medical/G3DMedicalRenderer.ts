@@ -11,6 +11,8 @@
  * - Clinical workflow integration
  */
 
+/// <reference path="../../webgpu.d.ts" />
+
 import { vec3, mat4, quat } from 'gl-matrix';
 
 // Core G3D Medical Rendering Types
@@ -538,7 +540,7 @@ export class G3DMedicalTextureManager {
     }
 
     private generateMedicalColorMap(
-        type: 'grayscale' | 'hot' | 'cool' | 'bone',
+        type: 'grayscale' | 'hot' | 'cool' | 'bone' | 'custom',
         resolution: number,
         windowLevel: number,
         windowWidth: number
@@ -571,6 +573,11 @@ export class G3DMedicalTextureManager {
                     g = Math.min(1.0, t);
                     b = Math.min(1.0, t * 9 / 8);
                     a = t;
+                    break;
+                case 'custom':
+                    // Custom color map handling - fallback to grayscale
+                    r = g = b = t;
+                    a = t > 0 ? 1.0 : 0.0;
                     break;
                 default:
                     r = g = b = a = t;

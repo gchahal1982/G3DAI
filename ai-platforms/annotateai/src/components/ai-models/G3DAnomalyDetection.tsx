@@ -238,10 +238,10 @@ export const G3DAnomalyDetection: React.FC<G3DAnomalyDetectionProps> = ({
     const initialize3D = async () => {
         if (!canvasRef.current) return;
 
-        const renderer = new G3DNativeRenderer(canvasRef.current, { antialias: true, alpha: true });
+        const renderer = new G3DNativeRenderer(canvasRef.current);
         rendererRef.current = renderer;
 
-        const scene = new G3DSceneManager(rendererRef.current || new G3DNativeRenderer(canvasRef.current!, { antialias: true, alpha: true }));
+        const scene = new G3DSceneManager(rendererRef.current || new G3DNativeRenderer(canvasRef.current!));
         sceneRef.current = scene;
 
         // Setup visualization scene
@@ -420,7 +420,7 @@ export const G3DAnomalyDetection: React.FC<G3DAnomalyDetectionProps> = ({
         if (modelConfig.type === 'autoencoder' || modelConfig.type === 'vae') {
             // Reconstruction-based anomaly detection
             const reconstructed = await modelRunner.runInference(model.reconstructionId, input);
-            const reconstructionError = calculateReconstructionError(input, reconstructed);
+            const reconstructionError = calculateReconstructionError(input, reconstructed.data as Float32Array);
 
             // Find anomalous regions
             const anomalyRegions = await findAnomalyRegions(reconstructionError, modelConfig.anomalyThreshold);
@@ -446,7 +446,7 @@ export const G3DAnomalyDetection: React.FC<G3DAnomalyDetectionProps> = ({
             const discriminatorScores = await modelRunner.runInference(model.discriminatorId, input);
 
             // Find anomalous regions based on discriminator scores
-            const anomalyRegions = await findGANAnomalies(discriminatorScores, modelConfig.anomalyThreshold);
+            const anomalyRegions = await findGANAnomalies((discriminatorScores as any).data || discriminatorScores, modelConfig.anomalyThreshold);
 
             for (const region of anomalyRegions) {
                 const anomaly: DetectedAnomaly = {
@@ -466,7 +466,7 @@ export const G3DAnomalyDetection: React.FC<G3DAnomalyDetectionProps> = ({
             }
         } else {
             // Feature-based anomaly detection
-            const features = await modelRunner.extractFeatures(model.featureId, input);
+            const features = await modelRunner.runInference(model.featureId, input);
             const anomalyScore = await modelRunner.runInference(model.scoringId, features);
 
             if (anomalyScore[0] > modelConfig.anomalyThreshold) {
@@ -504,24 +504,24 @@ export const G3DAnomalyDetection: React.FC<G3DAnomalyDetectionProps> = ({
             try {
                 // Generate heatmap
                 const heatmap = await modelRunner.runInference(model.heatmapId, input);
-                anomaly.localization.heatmap = heatmap;
+                anomaly.localization.heatmap = (heatmap as any).data || heatmap;
 
                 // Generate GradCAM
                 if (model.gradcamId) {
                     const gradcam = await modelRunner.runInference(model.gradcamId, input);
-                    anomaly.localization.gradcam = gradcam;
+                    anomaly.localization.gradcam = (gradcam as any).data || gradcam;
                 }
 
                 // Generate attention map
                 if (model.attentionId) {
                     const attention = await modelRunner.runInference(model.attentionId, input);
-                    anomaly.localization.attention = attention;
+                    anomaly.localization.attention = (attention as any).data || attention;
                 }
 
                 // Generate saliency map
                 if (model.saliencyId) {
                     const saliency = await modelRunner.runInference(model.saliencyId, input);
-                    anomaly.localization.saliency = saliency;
+                    anomaly.localization.saliency = (saliency as any).data || saliency;
                 }
 
                 // Calculate localization metrics
@@ -552,8 +552,8 @@ export const G3DAnomalyDetection: React.FC<G3DAnomalyDetectionProps> = ({
                 // Classify anomaly type
                 if (model.classificationId) {
                     const classification = await modelRunner.runInference(model.classificationId, anomalyRegion);
-                    anomaly.type = await parseAnomalyType(classification);
-                    anomaly.category = await parseAnomalyCategory(classification);
+                    anomaly.type = await parseAnomalyType((classification as any).data || classification);
+                    anomaly.category = await parseAnomalyCategory((classification as any).data || classification);
                     anomaly.description = await generateAnomalyDescription(anomaly);
                 }
 
@@ -730,7 +730,7 @@ export const G3DAnomalyDetection: React.FC<G3DAnomalyDetectionProps> = ({
             return {
                 fps: 1000 / processingTime,
                 latency: processingTime,
-                memoryUsage: modelRunnerRef.current?.getMemoryUsage() || 0,
+                memoryUsage: 0, // modelRunnerRef.current?.getMemoryUsage() || 0,
                 gpuUtilization: 0, // Would be implemented with actual GPU monitoring
                 totalDetections: prev.totalDetections + 1,
                 totalAnomalies: prev.totalAnomalies + result.anomalies.length,
@@ -848,7 +848,7 @@ export const G3DAnomalyDetection: React.FC<G3DAnomalyDetectionProps> = ({
     const setupVisualizationScene = async () => { };
     const startRenderLoop = () => { };
     const cleanup = () => {
-        rendererRef.current?.cleanup();
+        rendererRef.current?.dispose?.();
         modelRunnerRef.current?.cleanup();
     };
 

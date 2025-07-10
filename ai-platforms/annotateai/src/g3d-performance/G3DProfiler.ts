@@ -314,6 +314,20 @@ export class G3DProfiler extends EventEmitter {
     }
 
     /**
+     * End profiling and return the duration
+     */
+    public endProfiling(name: string): number {
+        const duration = this.endTiming(name);
+        
+        // If this was the only active profiling session, stop the profiler
+        if (this.eventTimings.size === 0) {
+            this.stopProfiling();
+        }
+        
+        return duration;
+    }
+
+    /**
      * Stop profiling
      */
     private stopProfiling(): void {
@@ -854,9 +868,9 @@ export class G3DProfiler extends EventEmitter {
         // Simplified GC observation (would use proper GC hooks in real implementation)
         if (global.gc) {
             const originalGC = global.gc;
-            global.gc = () => {
+            global.gc = async () => {
                 const start = Date.now();
-                originalGC();
+                await originalGC();
                 const duration = Date.now() - start;
                 this.lastGCTime = Date.now();
 

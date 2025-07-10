@@ -183,7 +183,7 @@ export class G3DPhysicsSimulator {
           positions[base + 1] += velocities[base + 1] * dt;
           positions[base + 2] += velocities[base + 2] * dt;
         }
-      `, 'integrate_rigid_bodies');
+      `);
 
             // Collision detection kernel
             await this.gpuCompute.createKernel(`
@@ -209,7 +209,7 @@ export class G3DPhysicsSimulator {
             collisions[collision_idx] = 1;
           }
         }
-      `, 'detect_collisions');
+      `);
 
             // Force computation kernel
             await this.gpuCompute.createKernel(`
@@ -234,7 +234,7 @@ export class G3DPhysicsSimulator {
           // Add other forces (springs, damping, etc.)
           // This would be extended based on simulation needs
         }
-      `, 'compute_forces');
+      `);
 
             console.log('Physics GPU kernels initialized successfully');
         } catch (error) {
@@ -328,12 +328,13 @@ export class G3DPhysicsSimulator {
     ): Promise<void> {
         try {
             const body = await this.physics.createRigidBody({
-                position,
+                position: { x: position[0], y: position[1], z: position[2] },
                 mass: bodyConfig.mass,
-                friction: bodyConfig.friction,
-                restitution: bodyConfig.restitution,
-                shape: bodyConfig.shape,
-                material: bodyConfig.material
+                material: {
+                    friction: bodyConfig.friction,
+                    restitution: bodyConfig.restitution,
+                    ...bodyConfig.material
+                }
             });
 
             this.objects.set(id, body);
@@ -394,9 +395,9 @@ export class G3DPhysicsSimulator {
             }
 
             if (point) {
-                await this.physics.applyForceAtPoint(body, force, point);
+                await this.physics.applyForceAtPoint(body, { x: force[0], y: force[1], z: force[2] }, { x: point[0], y: point[1], z: point[2] });
             } else {
-                await this.physics.applyForce(body, force);
+                await this.physics.applyForce(body, { x: force[0], y: force[1], z: force[2] });
             }
 
         } catch (error) {
@@ -515,7 +516,7 @@ export class G3DPhysicsSimulator {
      */
     private async stepSimulationCPU(config: PhysicsSimulationConfig, dt: number): Promise<void> {
         // Use physics engine's built-in stepping
-        await this.physics.stepSimulation(dt, config.iterations);
+        this.physics.step(dt);
     }
 
     /**

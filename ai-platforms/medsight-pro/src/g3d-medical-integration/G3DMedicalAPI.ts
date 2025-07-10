@@ -180,20 +180,20 @@ export class G3DMedicalAPI {
 
             // Initialize authentication manager
             this.authenticationManager = new G3DAuthenticationManager(this.config);
-            await this.authenticationManager.init();
+            await this.authenticationManager.initialize();
 
             // Initialize validation manager
             this.validationManager = new G3DValidationManager(this.config);
-            await this.validationManager.init();
+            await this.validationManager.initialize();
 
             // Initialize audit manager
             this.auditManager = new G3DAuditManager(this.config);
-            await this.auditManager.init();
+            await this.auditManager.initialize();
 
             // Initialize encryption manager
             if (this.config.enableEncryption) {
                 this.encryptionManager = new G3DEncryptionManager(this.config);
-                await this.encryptionManager.init();
+                await this.encryptionManager.initialize();
             }
 
             // Set up data models
@@ -999,22 +999,22 @@ export class G3DMedicalAPI {
 
         // Dispose managers
         if (this.authenticationManager) {
-            this.authenticationManager.cleanup();
+            this.authenticationManager.dispose();
             this.authenticationManager = null;
         }
 
         if (this.validationManager) {
-            this.validationManager.cleanup();
+            this.validationManager.dispose();
             this.validationManager = null;
         }
 
         if (this.auditManager) {
-            this.auditManager.cleanup();
+            this.auditManager.dispose();
             this.auditManager = null;
         }
 
         if (this.encryptionManager) {
-            this.encryptionManager.cleanup();
+            this.encryptionManager.dispose();
             this.encryptionManager = null;
         }
 

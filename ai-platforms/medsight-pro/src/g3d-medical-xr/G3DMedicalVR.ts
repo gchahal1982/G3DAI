@@ -225,17 +225,17 @@ export class G3DMedicalVR {
 
             // Initialize medical tools
             this.medicalTools = new G3DMedicalVRTools(this.config);
-            await this.medicalTools.init();
+            await this.medicalTools.initialize();
 
             // Initialize collaboration if enabled
             if (this.config.enableCollaboration) {
                 this.collaborationManager = new G3DVRCollaborationManager(this.config);
-                await this.collaborationManager.init();
+                await this.collaborationManager.initialize();
             }
 
             // Initialize session recorder
             this.sessionRecorder = new G3DVRSessionRecorder(this.config);
-            await this.sessionRecorder.init();
+            await this.sessionRecorder.initialize();
 
             this.isInitialized = true;
             console.log('G3D Medical VR System initialized successfully');
@@ -842,17 +842,17 @@ export class G3DMedicalVR {
 
         // Clean up managers
         if (this.sessionRecorder) {
-            this.sessionRecorder.cleanup();
+            this.sessionRecorder.dispose();
             this.sessionRecorder = null;
         }
 
         if (this.collaborationManager) {
-            this.collaborationManager.cleanup();
+            this.collaborationManager.dispose();
             this.collaborationManager = null;
         }
 
         if (this.medicalTools) {
-            this.medicalTools.cleanup();
+            this.medicalTools.dispose();
             this.medicalTools = null;
         }
 

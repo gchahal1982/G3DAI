@@ -196,10 +196,10 @@ export class VideoAnnotationEngine extends EventEmitter {
             await this.initializeTrackingAlgorithms();
 
             // Initialize frame extractor
-            await this.frameExtractor.init();
+            await this.frameExtractor.initialize();
 
             // Initialize tracking manager
-            await this.trackingManager.init();
+            await this.trackingManager.initialize();
 
             this.isInitialized = true;
             this.emit('initialized');
@@ -647,11 +647,11 @@ export class VideoAnnotationEngine extends EventEmitter {
         }
 
         // Interpolate each active track
-        for (const [trackId, track] of session.tracks) {
+        session.tracks.forEach(async (track, trackId) => {
             if (track.status === 'active') {
                 await this.interpolateTrack(session, track, startFrame, endFrame);
             }
-        }
+        });
 
         this.emit('interpolationComplete', { sessionId, startFrame, endFrame });
     }
@@ -787,7 +787,7 @@ export class VideoAnnotationEngine extends EventEmitter {
 
     // Utility methods
     private generateId(): string {
-        return Date.now().toString(36) + Math.random().toString(36).substr(2);
+        return Date.now().toString(36) + Math.random().toString(36).substring(2);
     }
 
     private generateTrackColor(): string {
@@ -810,9 +810,9 @@ export class VideoAnnotationEngine extends EventEmitter {
     // Cleanup resources
     async dispose(): Promise<void> {
         // Dispose video elements
-        for (const video of this.videoElements.values()) {
+        this.videoElements.forEach(video => {
             URL.revokeObjectURL(video.src);
-        }
+        });
         this.videoElements.clear();
 
         // Clear canvases

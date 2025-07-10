@@ -29,6 +29,18 @@ export class G3DSceneManager {
         return null;
     }
     
+    getObjectByName(name: string): any {
+        return null;
+    }
+    
+    remove(object: any): void {
+        // Stub implementation
+    }
+    
+    getMesh(name: string): any {
+        return null;
+    }
+    
     cleanup(): void {
         // Stub implementation
     }

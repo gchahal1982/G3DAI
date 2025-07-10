@@ -293,7 +293,7 @@ export class G3DXRAnnotation extends EventEmitter {
         this.annotationRenderer = new XRAnnotationRenderer();
         this.uiManager = new XRUIManager();
 
-        this.init();
+        this.initialize?.();
     }
 
     /**
@@ -352,23 +352,35 @@ export class G3DXRAnnotation extends EventEmitter {
      */
     private async initializeSubsystems(): Promise<void> {
         if (this.config.enableHandTracking) {
-            await this.handTracker.init();
+            if ((this.handTracker as any).init) {
+                await (this.handTracker as any).init();
+            }
         }
 
         if (this.config.enableVoiceInput) {
-            await this.voiceRecognizer.init();
+            if ((this.voiceRecognizer as any).init) {
+                await (this.voiceRecognizer as any).init();
+            }
         }
 
         if (this.config.enableCollaboration) {
-            await this.collaborationManager.init();
+            if ((this.collaborationManager as any).init) {
+                await (this.collaborationManager as any).init();
+            }
         }
 
         if (this.config.spatialAnchorSupport) {
-            await this.spatialAnchorManager.init();
+            if ((this.spatialAnchorManager as any).init) {
+                await (this.spatialAnchorManager as any).init();
+            }
         }
 
-        await this.annotationRenderer.init();
-        await this.uiManager.init();
+        if ((this.annotationRenderer as any).init) {
+            await (this.annotationRenderer as any).init();
+        }
+        if ((this.uiManager as any).init) {
+            await (this.uiManager as any).init();
+        }
     }
 
     /**
@@ -444,7 +456,31 @@ export class G3DXRAnnotation extends EventEmitter {
             console.error('Error ending XR session:', error);
         }
 
-        this.cleanup();
+        this.cleanup?.();
+    }
+
+    /**
+     * Initialize XR annotation system (alias for compatibility)
+     */
+    async init(): Promise<void> {
+        return this.initialize();
+    }
+
+    /**
+     * Called when XR session starts
+     */
+    onSessionStart(): void {
+        this.emit('sessionStarted', this.currentMode);
+    }
+
+    /**
+     * Called when XR session ends
+     */
+    onSessionEnd(): void {
+        this.isSessionActive = false;
+        this.session = null;
+        this.referenceSpace = null;
+        this.emit('sessionEnded');
     }
 
     /**
@@ -454,7 +490,7 @@ export class G3DXRAnnotation extends EventEmitter {
         if (!this.session) return;
 
         this.session.addEventListener('end', () => {
-            this.cleanup();
+            this.cleanup?.();
             this.emit('sessionEnded');
         });
 
@@ -517,7 +553,7 @@ export class G3DXRAnnotation extends EventEmitter {
             }
 
             // Render frame
-            this.renderFrame(pose, frame);
+            this.renderFrame?.(pose, frame);
 
             this.frameId++;
 
@@ -561,14 +597,14 @@ export class G3DXRAnnotation extends EventEmitter {
      * Update hand tracking
      */
     private updateHandTracking(frame: any): void {
-        for (const [sourceId, inputSource] of this.inputSources) {
+        this.inputSources.forEach((inputSource, sourceId) => {
             if (inputSource.hand) {
                 const handPose = this.handTracker.updateHand(inputSource.hand, frame, this.referenceSpace);
                 if (handPose) {
                     this.emit('handPoseUpdated', inputSource.handedness, handPose);
                 }
             }
-        }
+        });
     }
 
     /**
@@ -598,7 +634,7 @@ export class G3DXRAnnotation extends EventEmitter {
         const viewerPosition = pose.transform.position;
         const viewerRotation = pose.transform.orientation;
 
-        for (const [id, annotation] of this.annotations) {
+        this.annotations.forEach((annotation, id) => {
             // Update visibility based on proximity and context
             this.updateAnnotationVisibility(annotation, viewerPosition);
 
@@ -612,7 +648,7 @@ export class G3DXRAnnotation extends EventEmitter {
                     this.removeAnnotation(id);
                 }
             }
-        }
+        });
     }
 
     /**
@@ -667,7 +703,7 @@ export class G3DXRAnnotation extends EventEmitter {
 
             // Render collaboration avatars
             if (this.config.enableCollaboration) {
-                this.renderCollaborationAvatars(viewMatrix, projectionMatrix);
+                this.renderCollaborationAvatars?.(viewMatrix, projectionMatrix);
             }
         }
     }
@@ -719,7 +755,7 @@ export class G3DXRAnnotation extends EventEmitter {
 
         // Create spatial anchor if supported
         if (this.config.spatialAnchorSupport) {
-            this.createSpatialAnchor(annotation);
+            this.createSpatialAnchor?.(annotation);
         }
 
         this.annotations.set(id, annotation);
@@ -781,12 +817,12 @@ export class G3DXRAnnotation extends EventEmitter {
     public getAnnotationsInArea(center: XRVector3, radius: number): XRAnnotation[] {
         const result: XRAnnotation[] = [];
 
-        for (const annotation of this.annotations.values()) {
-            const distance = this.calculateDistance(center, annotation.position);
+        this.annotations.forEach(annotation => {
+            const distance = this.calculateDistance?.(center, annotation.position);
             if (distance <= radius) {
                 result.push(annotation);
             }
-        }
+        });
 
         return result;
     }
@@ -833,8 +869,8 @@ export class G3DXRAnnotation extends EventEmitter {
             this.selectAnnotation(hitAnnotation.id);
         } else {
             // Create new annotation at target position
-            const targetPosition = this.calculateTargetPosition(pose.transform.position, pose.transform.orientation);
-            this.createAnnotationAtPosition(targetPosition);
+            const targetPosition = this.calculateTargetPosition?.(pose.transform.position, pose.transform.orientation);
+            this.createAnnotationAtPosition?.(targetPosition);
         }
     }
 
@@ -872,7 +908,7 @@ export class G3DXRAnnotation extends EventEmitter {
         const lowerCommand = command.toLowerCase();
 
         if (lowerCommand.includes('create annotation')) {
-            this.createVoiceAnnotation(command);
+            this.createVoiceAnnotation?.(command);
         } else if (lowerCommand.includes('delete annotation')) {
             this.deleteSelectedAnnotation();
         } else if (lowerCommand.includes('show annotations')) {
@@ -899,7 +935,7 @@ export class G3DXRAnnotation extends EventEmitter {
     private updateAnnotationVisibility(annotation: XRAnnotation, viewerPosition: XRVector3): void {
         switch (annotation.metadata.visibility) {
             case XRVisibilityMode.PROXIMITY:
-                const distance = this.calculateDistance(annotation.position, viewerPosition);
+                const distance = this.calculateDistance?.(annotation.position, viewerPosition);
                 annotation.visible = distance < 5.0; // 5 meter proximity
                 break;
             case XRVisibilityMode.CONTEXT_AWARE:
@@ -925,7 +961,7 @@ export class G3DXRAnnotation extends EventEmitter {
     }
 
     private createSpatialAnchor(annotation: XRAnnotation): void {
-        const anchorId = this.spatialAnchorManager.createAnchor(
+        const anchorId = this.spatialAnchorManager.createAnchor?.(
             annotation.position,
             annotation.rotation
         );
@@ -951,15 +987,15 @@ export class G3DXRAnnotation extends EventEmitter {
         let closestAnnotation: XRAnnotation | null = null;
         let closestDistance = Infinity;
 
-        for (const annotation of this.annotations.values()) {
-            if (!annotation.visible) continue;
+        this.annotations.forEach(annotation => {
+            if (!annotation.visible) return;
 
-            const distance = this.calculateDistance(origin, annotation.position);
+            const distance = this.calculateDistance?.(origin, annotation.position);
             if (distance < 0.5 && distance < closestDistance) { // 50cm interaction range
                 closestDistance = distance;
                 closestAnnotation = annotation;
             }
-        }
+        });
 
         return closestAnnotation;
     }
@@ -978,7 +1014,7 @@ export class G3DXRAnnotation extends EventEmitter {
     }
 
     private createAnnotationAtPosition(position: XRVector3): void {
-        const id = this.createAnnotation(
+        const id = this.createAnnotation?.(
             XRAnnotationType.SPATIAL_MARKER,
             position,
             { text: 'New annotation' }
@@ -1006,7 +1042,7 @@ export class G3DXRAnnotation extends EventEmitter {
         const text = command.replace(/create annotation/i, '').trim();
 
         // Create annotation at current gaze position
-        const id = this.createAnnotation(
+        const id = this.createAnnotation?.(
             XRAnnotationType.VOICE_NOTE,
             { x: 0, y: 1.5, z: -2 }, // Default position
             { text, audioUrl: '' } // Would record audio
@@ -1019,26 +1055,26 @@ export class G3DXRAnnotation extends EventEmitter {
     }
 
     private showAllAnnotations(): void {
-        for (const annotation of this.annotations.values()) {
+        this.annotations.forEach(annotation => {
             annotation.visible = true;
-        }
+        });
         this.emit('annotationsShown');
     }
 
     private hideAllAnnotations(): void {
-        for (const annotation of this.annotations.values()) {
+        this.annotations.forEach(annotation => {
             annotation.visible = false;
-        }
+        });
         this.emit('annotationsHidden');
     }
 
     private renderCollaborationAvatars(viewMatrix: Float32Array, projectionMatrix: Float32Array): void {
-        for (const [userId, user] of this.users) {
-            if (userId === 'local' || !user.isPresent) continue;
+        this.users.forEach((user, userId) => {
+            if (userId === 'local' || !user.isPresent) return;
 
             // Render user avatar
-            this.collaborationManager.renderAvatar(user, viewMatrix, projectionMatrix);
-        }
+            this.collaborationManager.renderAvatar?.(user, viewMatrix, projectionMatrix);
+        });
     }
 
     /**
@@ -1088,14 +1124,14 @@ export class G3DXRAnnotation extends EventEmitter {
         this.users.clear();
         this.inputSources.clear();
 
-        this.handTracker.cleanup();
-        this.voiceRecognizer.cleanup();
-        this.gestureRecognizer.cleanup();
-        this.spatialAnchorManager.cleanup();
-        this.collaborationManager.cleanup();
-        this.hapticManager.cleanup();
-        this.annotationRenderer.cleanup();
-        this.uiManager.cleanup();
+        this.handTracker.dispose?.();
+        this.voiceRecognizer.dispose?.();
+        this.gestureRecognizer.dispose?.();
+        this.spatialAnchorManager.dispose?.();
+        this.collaborationManager.dispose?.();
+        this.hapticManager.dispose?.();
+        this.annotationRenderer.dispose?.();
+        this.uiManager.dispose?.();
 
         this.removeAllListeners();
     }

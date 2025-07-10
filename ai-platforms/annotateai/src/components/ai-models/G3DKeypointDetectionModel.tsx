@@ -306,10 +306,10 @@ export const G3DKeypointDetection: React.FC<G3DKeypointDetectionProps> = ({
     const initialize3D = async () => {
         if (!canvasRef.current) return;
 
-        const renderer = new G3DNativeRenderer(canvasRef.current, { antialias: true, alpha: true });
+        const renderer = new G3DNativeRenderer(canvasRef.current);
         rendererRef.current = renderer;
 
-        const scene = new G3DSceneManager(rendererRef.current || new G3DNativeRenderer(canvasRef.current!, { antialias: true, alpha: true }));
+        const scene = new G3DSceneManager(rendererRef.current || new G3DNativeRenderer(canvasRef.current!));
         sceneRef.current = scene;
 
         if (config.enableVisualization) {
@@ -471,7 +471,8 @@ export const G3DKeypointDetection: React.FC<G3DKeypointDetectionProps> = ({
         const poses: DetectedPose[] = [];
 
         // Parse detections based on model output format
-        const numPoses = Math.min(rawDetections.length / (modelConfig.keypointCount * 3 + 5), config.maxPoses);
+        const detectionsData = (rawDetections as any).data || rawDetections;
+        const numPoses = Math.min(detectionsData.length / (modelConfig.keypointCount * 3 + 5), config.maxPoses);
 
         for (let i = 0; i < numPoses; i++) {
             const baseIndex = i * (modelConfig.keypointCount * 3 + 5);
@@ -686,7 +687,7 @@ export const G3DKeypointDetection: React.FC<G3DKeypointDetectionProps> = ({
                     trackId: bestMatch,
                     age: trackHistory.length,
                     velocity,
-                    acceleration,
+                    acceleration: [acceleration[0] || 0, acceleration[1] || 0, acceleration[2] || 0] as [number, number, number],
                     prediction: [0, 0, 0], // Would be calculated
                     confidence: bestSimilarity
                 };
@@ -840,7 +841,7 @@ export const G3DKeypointDetection: React.FC<G3DKeypointDetectionProps> = ({
             return {
                 fps: 1000 / processingTime,
                 latency: processingTime,
-                memoryUsage: modelRunnerRef.current?.getMemoryUsage() || 0,
+                memoryUsage: 0, // modelRunnerRef.current?.getMemoryUsage() || 0,
                 gpuUtilization: 0,
                 totalDetections: prev.totalDetections + result.detectedPoses.length,
                 totalKeypoints: prev.totalKeypoints + totalKeypoints,
@@ -970,7 +971,8 @@ export const G3DKeypointDetection: React.FC<G3DKeypointDetectionProps> = ({
     const setupVisualizationScene = async () => { };
     const startRenderLoop = () => { };
     const cleanup = () => {
-        rendererRef.current?.cleanup();
+        // Use dispose instead of cleanup
+        rendererRef.current?.dispose?.();
         modelRunnerRef.current?.cleanup();
     };
 

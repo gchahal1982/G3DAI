@@ -112,7 +112,7 @@ export class G3DParticleDataGen {
         positions[base + 1] += velocities[base + 1] * dt;
         positions[base + 2] += velocities[base + 2] * dt;
       }
-    `, 'update_particles');
+    `);
     }
 
     public async generateParticleData(config: ParticleConfig, duration: number): Promise<ParticleGenerationResult> {
@@ -453,7 +453,7 @@ export class G3DParticleDataGen {
 
     public async cleanup(): Promise<void> {
         try {
-            await this.particleSystem.cleanup();
+            await this.particleSystem.dispose();
             await this.gpuCompute.cleanup();
 
             console.log('G3D Particle Data Generator cleanup completed');
