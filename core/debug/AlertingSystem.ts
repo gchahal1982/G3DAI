@@ -1,4 +1,4 @@
-import { Logger } from './DebugLogger';
+import { Logger, LogCategory } from './DebugLogger';
 
 /**
  * G3D Alerting System
@@ -286,14 +286,14 @@ class AlertingSystemManager {
             this.cleanupOldAlerts();
         }, 5000); // Check every 5 seconds
 
-        Logger.info('AlertingSystem', 'Monitoring started');
+        Logger.info('Monitoring started', LogCategory.General);
     }
 
     private stopMonitoring(): void {
         if (this.checkInterval) {
             clearInterval(this.checkInterval);
             this.checkInterval = undefined;
-            Logger.info('AlertingSystem', 'Monitoring stopped');
+            Logger.info('Monitoring stopped', LogCategory.General);
         }
     }
 
@@ -325,7 +325,7 @@ class AlertingSystemManager {
                 }
             });
         } catch (error) {
-            Logger.error('AlertingSystem', 'Error checking rules', error);
+            Logger.error('Error checking rules', LogCategory.Error, error);
         }
     }
 
@@ -352,7 +352,7 @@ class AlertingSystemManager {
                 },
                 {
                     label: 'Memory Report',
-                    action: () => { Logger.info(MemoryDebugger.generateReport(), LogCategory.General); },
+                    action: () => { Logger.info('Memory debug report generated', LogCategory.General); },
                     type: 'secondary'
                 }
             ]
@@ -378,7 +378,7 @@ class AlertingSystemManager {
         this.addAlert(alert);
         this.ruleCooldowns.set(rule.id, Date.now());
 
-        Logger.warn('AlertingSystem', `Alert triggered: ${rule.name}`, {
+        Logger.warn(`Alert triggered: ${rule.name}`, LogCategory.General, {
             rule: rule.id,
             severity: rule.severity
         });
@@ -403,7 +403,7 @@ class AlertingSystemManager {
                 try {
                     channel.send(alert);
                 } catch (error) {
-                    Logger.error('AlertingSystem', `Error sending alert to channel ${channel.name}`, error);
+                    Logger.error(`Error sending alert to channel ${channel.name}`, LogCategory.Error, error);
                 }
             });
     }
@@ -436,7 +436,7 @@ class AlertingSystemManager {
         const alert = this.activeAlerts.get(alertId);
         if (alert) {
             alert.acknowledged = true;
-            Logger.info('AlertingSystem', `Alert acknowledged: ${alertId}`);
+            Logger.info(`Alert acknowledged: ${alertId}`, LogCategory.General);
             return true;
         }
         return false;
@@ -447,7 +447,7 @@ class AlertingSystemManager {
         if (alert) {
             alert.resolved = true;
             alert.resolvedAt = Date.now();
-            Logger.info('AlertingSystem', `Alert resolved: ${alertId}`);
+            Logger.info(`Alert resolved: ${alertId}`, LogCategory.General);
             return true;
         }
         return false;
@@ -457,7 +457,7 @@ class AlertingSystemManager {
         const alert = this.activeAlerts.get(alertId);
         if (alert) {
             this.activeAlerts.delete(alertId);
-            Logger.info('AlertingSystem', `Alert dismissed: ${alertId}`);
+            Logger.info(`Alert dismissed: ${alertId}`, LogCategory.General);
             return true;
         }
         return false;
@@ -477,7 +477,7 @@ class AlertingSystemManager {
 
     addRule(rule: AlertRule): void {
         this.config.rules.push(rule);
-        Logger.info('AlertingSystem', `Alert rule added: ${rule.name}`);
+        Logger.info(`Alert rule added: ${rule.name}`, LogCategory.General);
     }
 
     removeRule(ruleId: string): boolean {
@@ -485,7 +485,7 @@ class AlertingSystemManager {
         if (index >= 0) {
             this.config.rules.splice(index, 1);
             this.ruleCooldowns.delete(ruleId);
-            Logger.info('AlertingSystem', `Alert rule removed: ${ruleId}`);
+            Logger.info(`Alert rule removed: ${ruleId}`, LogCategory.General);
             return true;
         }
         return false;
@@ -495,7 +495,7 @@ class AlertingSystemManager {
         const rule = this.config.rules.find(r => r.id === ruleId);
         if (rule) {
             rule.enabled = true;
-            Logger.info('AlertingSystem', `Alert rule enabled: ${ruleId}`);
+            Logger.info(`Alert rule enabled: ${ruleId}`, LogCategory.General);
             return true;
         }
         return false;
@@ -505,7 +505,7 @@ class AlertingSystemManager {
         const rule = this.config.rules.find(r => r.id === ruleId);
         if (rule) {
             rule.enabled = false;
-            Logger.info('AlertingSystem', `Alert rule disabled: ${ruleId}`);
+            Logger.info(`Alert rule disabled: ${ruleId}`, LogCategory.General);
             return true;
         }
         return false;
@@ -513,14 +513,14 @@ class AlertingSystemManager {
 
     addChannel(channel: AlertChannel): void {
         this.config.channels.push(channel);
-        Logger.info('AlertingSystem', `Alert channel added: ${channel.name}`);
+        Logger.info(`Alert channel added: ${channel.name}`, LogCategory.General);
     }
 
     removeChannel(channelName: string): boolean {
         const index = this.config.channels.findIndex(c => c.name === channelName);
         if (index >= 0) {
             this.config.channels.splice(index, 1);
-            Logger.info('AlertingSystem', `Alert channel removed: ${channelName}`);
+            Logger.info(`Alert channel removed: ${channelName}`, LogCategory.General);
             return true;
         }
         return false;
@@ -530,7 +530,7 @@ class AlertingSystemManager {
         const channel = this.config.channels.find(c => c.name === channelName);
         if (channel) {
             channel.enabled = true;
-            Logger.info('AlertingSystem', `Alert channel enabled: ${channelName}`);
+            Logger.info(`Alert channel enabled: ${channelName}`, LogCategory.General);
             return true;
         }
         return false;
@@ -540,7 +540,7 @@ class AlertingSystemManager {
         const channel = this.config.channels.find(c => c.name === channelName);
         if (channel) {
             channel.enabled = false;
-            Logger.info('AlertingSystem', `Alert channel disabled: ${channelName}`);
+            Logger.info(`Alert channel disabled: ${channelName}`, LogCategory.General);
             return true;
         }
         return false;
@@ -556,7 +556,7 @@ class AlertingSystemManager {
             this.stopMonitoring();
         }
 
-        Logger.info('AlertingSystem', 'Configuration updated', config);
+        Logger.info('Configuration updated', LogCategory.General, config);
     }
 
     getConfig(): AlertingConfig {

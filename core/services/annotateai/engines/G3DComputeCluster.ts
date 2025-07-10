@@ -1,7 +1,7 @@
 import { EventEmitter } from 'events';
-import { Logger } from '../../../core/Logger';
-import { Metrics } from '../../../core/Metrics';
-import { Config } from '../../../core/Config';
+import { Logger } from '../../../Logger';
+import { Metrics } from '../../../Metrics';
+import { Config } from '../../../Config';
 
 // Types and Interfaces
 interface ComputeNode {

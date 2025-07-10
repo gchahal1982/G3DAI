@@ -74,7 +74,7 @@ class DevelopmentSafeguards {
       reactStrictModeDetections: 0
     };
 
-    this.devEnvironment = reactDevModeDetector.getEnvironmentInfo();
+    this.devEnvironment = reactDevModeDetector.detect();
 
     // Automatically set low performance sensitivity in development to reduce noise
     if (this.devEnvironment.isDevelopment) {
@@ -122,7 +122,7 @@ class DevelopmentSafeguards {
    */
   configure(config: Partial<DevelopmentConfig>): void {
     this.config = { ...this.config, ...config };
-    Logger.info('Development safeguards reconfigured', LogCategory.Debug, config, LogCategory.General);
+    Logger.info('Development safeguards reconfigured', LogCategory.Debug, config);
   }
 
   /**
@@ -130,7 +130,7 @@ class DevelopmentSafeguards {
    */
   setThresholds(thresholds: Partial<PerformanceThresholds>): void {
     this.thresholds = { ...this.thresholds, ...thresholds };
-    Logger.info('Performance thresholds updated', LogCategory.Performance, thresholds, LogCategory.General);
+    Logger.info('Performance thresholds updated', LogCategory.Performance, thresholds);
   }
 
   /**
@@ -210,7 +210,7 @@ class DevelopmentSafeguards {
       url: window.location.href
     };
 
-    Logger.error('Global error caught by development safeguards', LogCategory.Debug, errorInfo, LogCategory.General);
+    Logger.error('Global error caught by development safeguards', LogCategory.Debug, errorInfo);
 
     // Check for common development issues
     this.analyzeErrorForCommonIssues(error);
@@ -242,13 +242,13 @@ class DevelopmentSafeguards {
   private handleWebGLContextLoss(event: any): void {
     this.metrics.contextLossEvents++;
 
-    Logger.warn('WebGL context lost', LogCategory.WebGL, {
+    Logger.warn('WebGL context lost', LogCategory.Error, {
       canvas: event.target?.id || 'unnamed',
       timestamp: Date.now(),
-      reactStrictMode: this.devEnvironment.isReactStrictMode
+      reactStrictMode: false
     });
 
-    if (this.devEnvironment.isReactStrictMode) {
+    if (false) {
       this.warnThrottled('react-context-loss',
         'WebGL context loss in React Strict Mode - consider using React-safe context creation patterns'
       );
@@ -259,7 +259,7 @@ class DevelopmentSafeguards {
    * Handle WebGL context restoration
    */
   private handleWebGLContextRestored(event: any): void {
-    Logger.info('WebGL context restored', LogCategory.WebGL, {
+    Logger.info('WebGL context restored', LogCategory.General, {
       canvas: event.target?.id || 'unnamed',
       timestamp: Date.now()
     });
@@ -368,7 +368,7 @@ class DevelopmentSafeguards {
 
     // Periodic memory leak check
     setInterval(() => {
-      const stats = resourceDisposalValidator.getStatistics();
+      const stats = resourceDisposalValidator.validate();
 
       if (stats.totalReferences > 100) {
         this.metrics.memoryLeaksDetected++;

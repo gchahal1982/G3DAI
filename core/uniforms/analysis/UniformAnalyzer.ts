@@ -1,4 +1,4 @@
-import { Logger, LogCategory } from '../../debug/Logger';
+import { Logger, LogCategory } from '../../debug/DebugLogger';
 /**
  * G3D Uniform Systems Analyzer
  * 

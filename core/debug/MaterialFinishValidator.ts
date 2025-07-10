@@ -64,7 +64,7 @@ export class MaterialFinishValidator {
      */
     static validateVisualEffects(renderer: any, material: any): ValidationReport {
         console.group('🔬 MATERIAL FINISH VALIDATOR');
-        Logger.info('Running comprehensive HD material validation...', LogCategory.General);
+        console.log('Running comprehensive HD material validation...');
 
         const report: ValidationReport = {
             visualChanges: this.captureBeforeAfterScreenshots(renderer),
@@ -79,21 +79,21 @@ export class MaterialFinishValidator {
 
         // PERFORMANCE GUARDRAILS - catch variant explosion early
         if (report.performance.drawCalls > 50) {
-            Logger.warn('⚠️ Draw calls spiking:', report.performance.drawCalls);
+            console.warn('⚠️ Draw calls spiking:', report.performance.drawCalls);
             report.gaps.push('Draw call explosion detected');
         }
         if (report.performance.shaderPrograms > 20) {
-            Logger.warn('⚠️ Shader variants exploding:', report.performance.shaderPrograms);
+            console.warn('⚠️ Shader variants exploding:', report.performance.shaderPrograms);
             report.gaps.push('Shader variant explosion detected');
         }
 
         // 1,791 UNIFORM INTEGRATION STATUS
-        Logger.info(`📊 HD Uniforms Status: ${report.uniformIntegration.integrated}/${report.uniformIntegration.total} integrated`, LogCategory.General);
+        console.log(`📊 HD Uniforms Status: ${report.uniformIntegration.integrated}/${report.uniformIntegration.total} integrated`);
 
         // Determine overall status
         report.overallStatus = this.determineOverallStatus(report);
 
-        Logger.info(`Overall Status: ${report.overallStatus.toUpperCase()}`, LogCategory.General);
+        console.log(`Overall Status: ${report.overallStatus.toUpperCase()}`);
         console.groupEnd();
 
         return report;
@@ -144,7 +144,7 @@ export class MaterialFinishValidator {
                 }
             });
 
-            Logger.info(`${category}: ${categoryActive}/${categoryIntegrated}/${categoryDeclared} (active/integrated/declared)`, LogCategory.General);
+            console.log(`${category}: ${categoryActive}/${categoryIntegrated}/${categoryDeclared} (active/integrated/declared)`);
         }
 
         // Add estimated uniforms from shader system
@@ -160,7 +160,7 @@ export class MaterialFinishValidator {
             progressPercentage: Math.round((visuallyActive / 1791) * 100)
         };
 
-        Logger.info(`📈 Progress: ${status.progressPercentage}% of 1,791 uniforms visually active`);
+        console.log(`📈 Progress: ${status.progressPercentage}% of 1,791 uniforms visually active`);
         console.groupEnd();
 
         return status;
@@ -191,7 +191,7 @@ export class MaterialFinishValidator {
             this.screenshots.set('previous_frame', imageData);
 
         } catch (error) {
-            Logger.warn('Screenshot capture failed (WebGL security):', LogCategory.General, error);
+            console.warn('Screenshot capture failed (WebGL security):', error);
         }
 
         return {
@@ -336,7 +336,7 @@ Performance: ${report.performance.frameTime.toFixed(1)}ms/frame
 Visual Effects: ${Object.values(report.calculations).filter(Boolean).length}/6 working
         `.trim();
 
-        Logger.info(status, LogCategory.General);
+        console.log(status);
         return status;
     }
 }
