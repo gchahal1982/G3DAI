@@ -1,11 +1,11 @@
-# G3D SpaceTech - Space Technology Platform
+# SpaceTech - Space Technology Platform
 ## MVP Business Transformation Document
 
 ---
 
 ## Executive Summary
 
-**Service**: G3D SpaceTech - Space Technology Platform  
+**Service**: SpaceTech - Space Technology Platform  
 **Current State**: 1,234 lines demo dashboard  
 **MVP Target**: Full G3D-powered space technology AI platform with next-generation capabilities  
 **Market**: Space agencies, aerospace companies, satellite operators, defense contractors  
@@ -218,7 +218,7 @@ src/tools/
 #### **2.1 G3D-Enhanced Space Workflow** (12 weeks, 15 backend developers)
 ```typescript
 // Enhanced space workflow with G3D:
-backend/spacetech-service/src/
+ai-platforms/spacetech/src/
 ├── controllers/
 │   ├── G3DSpaceController.ts     // 8,500 lines - Enhanced space management
 │   ├── G3DSatelliteController.ts // 8,200 lines - Advanced satellite management

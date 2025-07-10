@@ -1,11 +1,11 @@
-# G3D VideoAI - Video Intelligence Platform
+# VideoAI - Video Intelligence Platform
 ## MVP Business Transformation Document
 
 ---
 
 ## Executive Summary
 
-**Service**: G3D VideoAI - Video Intelligence Platform  
+**Service**: VideoAI - Video Intelligence Platform  
 **Current State**: 1,456 lines demo dashboard  
 **MVP Target**: Full G3D-powered video AI platform with next-generation capabilities  
 **Market**: Media companies, content creators, security firms, enterprises  
@@ -219,7 +219,7 @@ src/tools/
 #### **2.1 G3D-Enhanced Video Workflow** (10 weeks, 8 backend developers)
 ```typescript
 // Enhanced video workflow with G3D:
-backend/videoai-service/src/
+ai-platforms/videoai/src/
 ├── controllers/
 │   ├── G3DVideoController.ts    // 4,500 lines - Enhanced video management
 │   ├── G3DAnalysisController.ts // 4,200 lines - Advanced analysis management

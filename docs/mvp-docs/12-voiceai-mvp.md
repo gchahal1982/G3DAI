@@ -1,11 +1,11 @@
-# G3D VoiceAI - Enterprise Voice Intelligence Platform
+# VoiceAI - Enterprise Voice Intelligence Platform
 ## MVP Business Transformation Document
 
 ---
 
 ## Executive Summary
 
-**Service**: G3D VoiceAI - Enterprise Voice Intelligence Platform  
+**Service**: VoiceAI - Enterprise Voice Intelligence Platform  
 **Current State**: 1,234 lines demo dashboard  
 **MVP Target**: Full G3D-powered voice AI platform with next-generation capabilities  
 **Market**: Call centers, enterprises, voice assistants, customer service organizations  
@@ -218,7 +218,7 @@ src/tools/
 #### **2.1 G3D-Enhanced Voice Workflow** (8 weeks, 6 backend developers)
 ```typescript
 // Enhanced voice workflow with G3D:
-backend/voiceai-service/src/
+ai-platforms/voiceai/src/
 ├── controllers/
 │   ├── G3DVoiceController.ts    // 4,200 lines - Enhanced voice management
 │   ├── G3DSpeechController.ts   // 4,000 lines - Advanced speech management

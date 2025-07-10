@@ -611,6 +611,7 @@ export class UniformAnalyzer {
    */
   private buildReport(analysis: AnalysisResult): UniformReport {
     return {
+      title: 'G3D Uniform Analysis Report',
       summary: this.buildSummarySection(analysis),
       systemBreakdown: this.buildSystemBreakdownSection(analysis),
       duplicates: this.buildDuplicatesSection(analysis),
@@ -618,7 +619,12 @@ export class UniformAnalyzer {
       orphans: this.buildOrphansSection(analysis),
       categories: this.buildCategoriesSection(analysis),
       recommendations: this.buildRecommendationsSection(analysis),
-      appendices: this.buildAppendices(analysis)
+      sections: [],
+      appendices: this.buildAppendices(analysis),
+      metadata: {
+        generatedAt: new Date(),
+        totalSections: 6
+      }
     };
   }
 

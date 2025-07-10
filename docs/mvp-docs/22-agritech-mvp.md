@@ -1,11 +1,11 @@
-# G3D AgriTech - Agricultural Technology Platform
+# AgriTech - Agricultural Technology Platform
 ## MVP Business Transformation Document
 
 ---
 
 ## Executive Summary
 
-**Service**: G3D AgriTech - Agricultural Technology Platform  
+**Service**: AgriTech - Agricultural Technology Platform  
 **Current State**: 1,423 lines demo dashboard  
 **MVP Target**: Full G3D-powered agricultural AI platform with next-generation capabilities  
 **Market**: Agricultural companies, farms, agribusiness, food companies, government agencies  
@@ -218,7 +218,7 @@ src/tools/
 #### **2.1 G3D-Enhanced Agricultural Workflow** (10 weeks, 8 backend developers)
 ```typescript
 // Enhanced agricultural workflow with G3D:
-backend/agritech-service/src/
+ai-platforms/agritech/src/
 ├── controllers/
 │   ├── G3DAgriculturalController.ts // 6,000 lines - Enhanced agricultural management
 │   ├── G3DCropController.ts      // 5,800 lines - Advanced crop management

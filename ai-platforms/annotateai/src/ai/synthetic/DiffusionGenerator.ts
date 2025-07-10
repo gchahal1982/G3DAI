@@ -6,7 +6,7 @@
 
 import { GPUCompute } from '../../performance/GPUCompute';
 import { ModelRunner, Precision, ModelType } from '../../ai/ModelRunner';
-import { MemoryManager } from '../../performance/MemoryManager';
+import { AnnotateAIMemoryManager as MemoryManager } from '../../performance/HybridMemoryManager';
 import { Profiler } from '../../performance/Profiler';
 
 export interface DiffusionConfig {

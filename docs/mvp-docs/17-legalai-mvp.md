@@ -1,11 +1,11 @@
-# G3D LegalAI - Legal Assistant Platform
+# LegalAI - Legal Assistant Platform
 ## MVP Business Transformation Document
 
 ---
 
 ## Executive Summary
 
-**Service**: G3D LegalAI - Legal Assistant Platform  
+**Service**: LegalAI - Legal Assistant Platform  
 **Current State**: 1,578 lines demo dashboard  
 **MVP Target**: Full G3D-powered legal AI platform with next-generation capabilities  
 **Market**: Law firms, corporate legal departments, legal tech companies, government agencies  
@@ -218,7 +218,7 @@ src/tools/
 #### **2.1 G3D-Enhanced Legal Workflow** (12 weeks, 10 backend developers)
 ```typescript
 // Enhanced legal workflow with G3D:
-backend/legalai-service/src/
+ai-platforms/legalai/src/
 ├── controllers/
 │   ├── G3DLegalController.ts     // 5,800 lines - Enhanced legal management
 │   ├── G3DCaseController.ts      // 5,500 lines - Advanced case management

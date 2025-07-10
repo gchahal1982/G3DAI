@@ -1,11 +1,11 @@
-# G3D TranslateAI - Neural Translation Platform
+# TranslateAI - Neural Translation Platform
 ## MVP Business Transformation Document
 
 ---
 
 ## Executive Summary
 
-**Service**: G3D TranslateAI - Neural Translation Platform  
+**Service**: TranslateAI - Neural Translation Platform  
 **Current State**: 1,156 lines demo dashboard  
 **MVP Target**: Full G3D-powered translation AI platform with next-generation capabilities  
 **Market**: Global enterprises, localization companies, content creators, government agencies  
@@ -218,7 +218,7 @@ src/tools/
 #### **2.1 G3D-Enhanced Translation Workflow** (8 weeks, 6 backend developers)
 ```typescript
 // Enhanced translation workflow with G3D:
-backend/translateai-service/src/
+ai-platforms/translateai/src/
 ├── controllers/
 │   ├── G3DTranslateController.ts // 4,000 lines - Enhanced translation management
 │   ├── G3DLanguageController.ts  // 3,800 lines - Advanced language management

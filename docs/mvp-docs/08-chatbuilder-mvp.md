@@ -1,11 +1,11 @@
-# G3D ChatBuilder - Conversational AI Platform
+# ChatBuilder - Conversational AI Platform
 ## MVP Business Transformation Document
 
 ---
 
 ## Executive Summary
 
-**Service**: G3D ChatBuilder - Conversational AI Platform  
+**Service**: ChatBuilder - Conversational AI Platform  
 **Current State**: 1,345 lines demo dashboard  
 **MVP Target**: Full G3D-powered conversational AI platform with next-generation capabilities  
 **Market**: Customer service teams, enterprises, chatbot developers, support organizations  
@@ -218,7 +218,7 @@ src/tools/
 #### **2.1 G3D-Enhanced Chat Workflow** (8 weeks, 6 backend developers)
 ```typescript
 // Enhanced chat workflow with G3D:
-backend/chatbuilder-service/src/
+ai-platforms/chatbuilder/src/
 ├── controllers/
 │   ├── G3DChatController.ts     // 3,800 lines - Enhanced chat management
 │   ├── G3DConversationController.ts // 3,500 lines - Advanced conversation management

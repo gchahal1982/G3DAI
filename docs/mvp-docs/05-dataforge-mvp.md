@@ -1,11 +1,11 @@
-# G3D DataForge - Data Intelligence Platform
+# DataForge - Data Intelligence Platform
 ## MVP Business Transformation Document
 
 ---
 
 ## Executive Summary
 
-**Service**: G3D DataForge - Data Intelligence Platform  
+**Service**: DataForge - Data Intelligence Platform  
 **Current State**: 1,089 lines demo dashboard  
 **MVP Target**: Full G3D-powered data intelligence platform with next-generation capabilities  
 **Market**: Enterprise data teams, analytics organizations, business intelligence units  
@@ -185,7 +185,7 @@ src/tools/
 #### **2.1 G3D-Enhanced Data Workflow** (10 weeks, 8 backend developers)
 ```typescript
 // Enhanced data workflow with G3D:
-backend/dataforge-service/src/
+ai-platforms/dataforge/src/
 ├── controllers/
 │   ├── G3DDataController.ts     // 3,500 lines - Enhanced data management
 │   ├── G3DAnalyticsController.ts // 3,200 lines - Advanced analytics management

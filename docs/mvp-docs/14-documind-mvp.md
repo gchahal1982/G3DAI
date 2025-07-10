@@ -1,11 +1,11 @@
-# G3D DocuMind - Document Intelligence Platform
+# DocuMind - Document Intelligence Platform
 ## MVP Business Transformation Document
 
 ---
 
 ## Executive Summary
 
-**Service**: G3D DocuMind - Document Intelligence Platform  
+**Service**: DocuMind - Document Intelligence Platform  
 **Current State**: 1,389 lines demo dashboard  
 **MVP Target**: Full G3D-powered document AI platform with next-generation capabilities  
 **Market**: Enterprises, legal firms, financial institutions, healthcare organizations  
@@ -218,7 +218,7 @@ src/tools/
 #### **2.1 G3D-Enhanced Document Workflow** (10 weeks, 8 backend developers)
 ```typescript
 // Enhanced document workflow with G3D:
-backend/documind-service/src/
+ai-platforms/documind/src/
 ├── controllers/
 │   ├── G3DDocumentController.ts  // 4,800 lines - Enhanced document management
 │   ├── G3DProcessingController.ts // 4,500 lines - Advanced processing management

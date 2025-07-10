@@ -370,10 +370,10 @@ class DevelopmentSafeguards {
     setInterval(() => {
       const stats = resourceDisposalValidator.validate();
 
-      if (stats.totalReferences > 100) {
+      if (stats.total > 100) {
         this.metrics.memoryLeaksDetected++;
         this.warnThrottled('memory-leaks',
-          `High reference count detected: ${stats.totalReferences} active references across ${stats.trackedObjects} objects`
+          `High reference count detected: ${stats.total} total resources with ${stats.undisposed.length} undisposed objects`
         );
       }
     }, 10000);
@@ -444,7 +444,7 @@ class DevelopmentSafeguards {
    * Setup React Strict Mode handling
    */
   private setupReactStrictModeHandling(): void {
-    if (!this.config.enableReactStrictModeHandling || !this.devEnvironment.isReactStrictMode) {
+    if (!this.config.enableReactStrictModeHandling || !this.devEnvironment.isDevelopment) {
       return;
     }
 
@@ -476,8 +476,8 @@ class DevelopmentSafeguards {
 
     // Add development info to console
     Logger.info('🚀 G3D Development Mode Active', LogCategory.Core, LogCategory.General);
-    Logger.info('Environment:', LogCategory.Core, this.devEnvironment, LogCategory.General);
-    Logger.info('Safeguards:', LogCategory.Core, this.config, LogCategory.General);
+    Logger.info('Environment:', LogCategory.Core, this.devEnvironment);
+    Logger.info('Safeguards:', LogCategory.Core, this.config);
 
     // Add helpful shortcuts
     (window as any).G3D_DEBUG = {
@@ -486,7 +486,7 @@ class DevelopmentSafeguards {
       clearWarnings: () => this.clearWarnings(),
       toggleVerbose: () => {
         this.config.verboseLogging = !this.config.verboseLogging;
-        Logger.info('Verbose logging:', LogCategory.Core, this.config.verboseLogging, LogCategory.General);
+        Logger.info('Verbose logging:', LogCategory.Core, this.config.verboseLogging);
       },
       setPerformanceSensitivity: (sensitivity: 'low' | 'medium' | 'high') => {
         this.setPerformanceSensitivity(sensitivity);
@@ -554,7 +554,7 @@ class DevelopmentSafeguards {
     }
 
     // Check for React-specific issues
-    if (this.devEnvironment.isReactStrictMode &&
+    if (this.devEnvironment.isDevelopment &&
       (message.includes('hook') || message.includes('render'))) {
       this.warnThrottled('react-issue',
         'Possible React Strict Mode issue - check for side effects in render'
@@ -642,7 +642,7 @@ class DevelopmentSafeguards {
 
       try {
         if (opts.logCalls && this.config.verboseLogging) {
-          Logger.debug(`Calling ${context}`, LogCategory.Debug, { args }, LogCategory.General);
+          Logger.debug(`Calling ${context}`, LogCategory.Debug, { args });
         }
 
         if (opts.validateArgs) {
@@ -660,7 +660,7 @@ class DevelopmentSafeguards {
 
         return result;
       } catch (error) {
-        Logger.error(`Error in ${context}:`, LogCategory.Debug, error, LogCategory.General);
+        Logger.error(`Error in ${context}:`, LogCategory.Debug, error);
         throw error;
       }
     }) as T;
@@ -717,7 +717,7 @@ class DevelopmentSafeguards {
     if (!this.isDevelopmentMode()) return;
 
     if (this.config.verboseLogging) {
-      Logger.debug(`[DEV] ${message}`, category, data, LogCategory.General);
+      Logger.debug(`[DEV] ${message}`, category, data);
     }
   }
 }

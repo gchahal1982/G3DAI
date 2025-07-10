@@ -579,20 +579,16 @@ export class SecurityManager extends EventEmitter {
         }
 
         const iv = crypto.randomBytes(16);
-        const cipher = crypto.createCipher(key.algorithm, key.key);
-        cipher.setAAD(Buffer.from('G3D-Security'));
+        const cipher = crypto.createCipheriv('aes-256-cbc', key.key, iv);
 
-        let encrypted = cipher.update(data, 'utf8', 'hex');
+        const dataBuffer = typeof data === 'string' ? Buffer.from(data, 'utf8') : data;
+        let encrypted = cipher.update(dataBuffer, undefined, 'hex');
         encrypted += cipher.final('hex');
 
         const result: any = {
             encrypted,
             iv: iv.toString('hex')
         };
-
-        if (key.algorithm.includes('GCM')) {
-            result.tag = cipher.getAuthTag().toString('hex');
-        }
 
         this.metrics.encryptedData++;
         return result;
@@ -608,12 +604,8 @@ export class SecurityManager extends EventEmitter {
             throw new Error(`Decryption key not found: ${keyId}`);
         }
 
-        const decipher = crypto.createDecipher(key.algorithm, key.key);
-        decipher.setAAD(Buffer.from('G3D-Security'));
-
-        if (encryptedData.tag && key.algorithm.includes('GCM')) {
-            decipher.setAuthTag(Buffer.from(encryptedData.tag, 'hex'));
-        }
+        const iv = Buffer.from(encryptedData.iv, 'hex');
+        const decipher = crypto.createDecipheriv('aes-256-cbc', key.key, iv);
 
         let decrypted = decipher.update(encryptedData.encrypted, 'hex', 'utf8');
         decrypted += decipher.final('utf8');
@@ -863,7 +855,7 @@ export class SecurityManager extends EventEmitter {
         return token === '123456';
     }
 
-    private generateEncryptionKey(algorithm: string, usage: string): EncryptionKey {
+    private generateEncryptionKey(algorithm: string, usage: 'encryption' | 'signing' | 'authentication'): EncryptionKey {
         let keySize = 32; // Default 256 bits
 
         if (algorithm.includes('128')) keySize = 16;

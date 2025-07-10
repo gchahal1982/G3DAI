@@ -1,11 +1,11 @@
-# G3D FinanceAI - Financial Analysis Platform
+# FinanceAI - Financial Analysis Platform
 ## MVP Business Transformation Document
 
 ---
 
 ## Executive Summary
 
-**Service**: G3D FinanceAI - Financial Analysis Platform  
+**Service**: FinanceAI - Financial Analysis Platform  
 **Current State**: 1,423 lines demo dashboard  
 **MVP Target**: Full G3D-powered financial AI platform with next-generation capabilities  
 **Market**: Financial institutions, investment firms, fintech companies, trading firms  
@@ -219,7 +219,7 @@ src/tools/
 #### **2.1 G3D-Enhanced Financial Workflow** (10 weeks, 8 backend developers)
 ```typescript
 // Enhanced financial workflow with G3D:
-backend/financeai-service/src/
+ai-platforms/financeai/src/
 ├── controllers/
 │   ├── G3DFinanceController.ts  // 4,800 lines - Enhanced financial management
 │   ├── G3DTradingController.ts  // 4,500 lines - Advanced trading management

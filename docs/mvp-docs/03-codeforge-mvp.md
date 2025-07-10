@@ -1,11 +1,11 @@
-# G3D CodeForge - Enterprise Code Generation Platform
+# CodeForge - Enterprise Code Generation Platform
 ## MVP Business Transformation Document
 
 ---
 
 ## Executive Summary
 
-**Service**: G3D CodeForge - Enterprise Code Generation Platform  
+**Service**: CodeForge - Enterprise Code Generation Platform  
 **Current State**: 1,172 lines demo dashboard  
 **MVP Target**: Full G3D-powered enterprise code generation platform with next-generation capabilities  
 **Market**: Software development teams, enterprises, DevOps organizations  
@@ -185,7 +185,7 @@ src/tools/
 #### **2.1 G3D-Enhanced Enterprise Workflow** (8 weeks, 6 backend developers)
 ```typescript
 // Enhanced enterprise workflow with G3D:
-backend/codeforge-service/src/
+ai-platforms/codeforge/src/
 ├── controllers/
 │   ├── G3DProjectController.ts  // 3,000 lines - Enhanced project management
 │   ├── G3DTeamController.ts     // 2,500 lines - Advanced team management

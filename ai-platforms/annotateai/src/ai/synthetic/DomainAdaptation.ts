@@ -6,7 +6,7 @@
 
 import { GPUCompute } from '../../performance/GPUCompute';
 import { ModelRunner } from '../../ai/ModelRunner';
-import { MemoryManager } from '../../performance/MemoryManager';
+import { AnnotateAIMemoryManager as MemoryManager } from '../../performance/HybridMemoryManager';
 
 export interface DomainConfig {
     sourceDomain: DomainDescription;

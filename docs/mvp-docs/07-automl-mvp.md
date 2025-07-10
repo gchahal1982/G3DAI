@@ -1,11 +1,11 @@
-# G3D AutoML - Machine Learning Automation Platform
+# AutoML - Machine Learning Automation Platform
 ## MVP Business Transformation Document
 
 ---
 
 ## Executive Summary
 
-**Service**: G3D AutoML - Machine Learning Automation Platform  
+**Service**: AutoML - Machine Learning Automation Platform  
 **Current State**: 1,234 lines demo dashboard  
 **MVP Target**: Full G3D-powered AutoML platform with next-generation capabilities  
 **Market**: Data science teams, ML engineers, enterprises, research institutions  
@@ -219,7 +219,7 @@ src/tools/
 #### **2.1 G3D-Enhanced AutoML Workflow** (10 weeks, 8 backend developers)
 ```typescript
 // Enhanced AutoML workflow with G3D:
-backend/automl-service/src/
+ai-platforms/automl/src/
 ├── controllers/
 │   ├── G3DAutoMLController.ts   // 4,200 lines - Enhanced AutoML management
 │   ├── G3DModelController.ts    // 4,000 lines - Advanced model management

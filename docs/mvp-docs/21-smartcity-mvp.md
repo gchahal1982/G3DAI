@@ -1,11 +1,11 @@
-# G3D SmartCity - Smart City Management Platform
+# SmartCity - Smart City Management Platform
 ## MVP Business Transformation Document
 
 ---
 
 ## Executive Summary
 
-**Service**: G3D SmartCity - Smart City Management Platform  
+**Service**: SmartCity - Smart City Management Platform  
 **Current State**: 1,789 lines demo dashboard  
 **MVP Target**: Full G3D-powered smart city AI platform with next-generation capabilities  
 **Market**: Municipal governments, urban planners, smart city vendors, infrastructure companies  
@@ -218,7 +218,7 @@ src/tools/
 #### **2.1 G3D-Enhanced City Workflow** (12 weeks, 12 backend developers)
 ```typescript
 // Enhanced city workflow with G3D:
-backend/smartcity-service/src/
+ai-platforms/smartcity/src/
 ├── controllers/
 │   ├── G3DCityController.ts      // 7,500 lines - Enhanced city management
 │   ├── G3DTrafficController.ts   // 7,200 lines - Advanced traffic management

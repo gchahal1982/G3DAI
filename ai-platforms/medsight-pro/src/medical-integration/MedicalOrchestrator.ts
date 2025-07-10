@@ -22,7 +22,7 @@ import GeometryUtils from '../core/GeometryUtils';
 import SceneGraph from '../core/SceneGraph';
 import ComputeShaders from '../performance/ComputeShaders';
 import PerformanceMonitor from '../performance/PerformanceMonitor';
-import MemoryManager from '../performance/MemoryManager';
+import { MedSightProMemoryManager as MemoryManager } from '../performance/HybridMemoryManager';
 import MedicalXRManager from '../medical-xr';
 
 export interface MedicalOrchestratorConfig {

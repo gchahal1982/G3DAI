@@ -169,7 +169,7 @@ interface BufferManager {
 
 export class StreamProcessor extends EventEmitter {
     private sources: Map<string, StreamSource> = new Map();
-    private processors: Map<string, StreamProcessor> = new Map();
+    private processors: Map<string, StreamProcessorInterface> = new Map();
     private pipelines: Map<string, StreamPipeline> = new Map();
     private sinks: Map<string, StreamSink> = new Map();
     private buffers: Map<string, BufferManager> = new Map();
@@ -266,10 +266,10 @@ export class StreamProcessor extends EventEmitter {
     }
 
     // Processor Management
-    public createProcessor(processorInfo: Partial<StreamProcessor>): string {
+    public createProcessor(processorInfo: Partial<StreamProcessorInterface>): string {
         const processorId = this.generateProcessorId();
 
-        const processor: StreamProcessor = {
+        const processor: StreamProcessorInterface = {
             id: processorId,
             name: processorInfo.name || `Processor-${processorId}`,
             type: processorInfo.type || 'filter',
@@ -605,7 +605,7 @@ export class StreamProcessor extends EventEmitter {
         }
     }
 
-    private async executeProcessor(processor: StreamProcessor, frame: StreamFrame): Promise<any> {
+    private async executeProcessor(processor: StreamProcessorInterface, frame: StreamFrame): Promise<any> {
         // Simulate processing delay
         const processingTime = Math.random() * 50 + 10; // 10-60ms
         await new Promise(resolve => setTimeout(resolve, processingTime));
@@ -654,7 +654,7 @@ export class StreamProcessor extends EventEmitter {
     }
 
     // Processing Methods
-    private applyFilter(processor: StreamProcessor, frame: StreamFrame): any {
+    private applyFilter(processor: StreamProcessorInterface, frame: StreamFrame): any {
         // Simulate filter processing
         return {
             data: frame.data,
@@ -662,7 +662,7 @@ export class StreamProcessor extends EventEmitter {
         };
     }
 
-    private applyTransform(processor: StreamProcessor, frame: StreamFrame): any {
+    private applyTransform(processor: StreamProcessorInterface, frame: StreamFrame): any {
         // Simulate transform processing
         return {
             data: frame.data,
@@ -670,7 +670,7 @@ export class StreamProcessor extends EventEmitter {
         };
     }
 
-    private analyzeFrame(processor: StreamProcessor, frame: StreamFrame): any {
+    private analyzeFrame(processor: StreamProcessorInterface, frame: StreamFrame): any {
         // Simulate analysis
         return {
             data: frame.data,
@@ -682,7 +682,7 @@ export class StreamProcessor extends EventEmitter {
         };
     }
 
-    private encodeFrame(processor: StreamProcessor, frame: StreamFrame): any {
+    private encodeFrame(processor: StreamProcessorInterface, frame: StreamFrame): any {
         // Simulate encoding
         return {
             data: frame.data,
@@ -690,7 +690,7 @@ export class StreamProcessor extends EventEmitter {
         };
     }
 
-    private decodeFrame(processor: StreamProcessor, frame: StreamFrame): any {
+    private decodeFrame(processor: StreamProcessorInterface, frame: StreamFrame): any {
         // Simulate decoding
         return {
             data: frame.data,
@@ -698,7 +698,7 @@ export class StreamProcessor extends EventEmitter {
         };
     }
 
-    private runMLInference(processor: StreamProcessor, frame: StreamFrame): any {
+    private runMLInference(processor: StreamProcessorInterface, frame: StreamFrame): any {
         // Simulate ML inference
         return {
             data: frame.data,
@@ -1023,7 +1023,7 @@ export class StreamProcessor extends EventEmitter {
         return this.sources.get(sourceId) || null;
     }
 
-    public getProcessorDetails(processorId: string): StreamProcessor | null {
+    public getProcessorDetails(processorId: string): StreamProcessorInterface | null {
         return this.processors.get(processorId) || null;
     }
 

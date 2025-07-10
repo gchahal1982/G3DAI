@@ -1,11 +1,11 @@
-# G3D RetailAI - Retail Intelligence Platform
+# RetailAI - Retail Intelligence Platform
 ## MVP Business Transformation Document
 
 ---
 
 ## Executive Summary
 
-**Service**: G3D RetailAI - Retail Intelligence Platform  
+**Service**: RetailAI - Retail Intelligence Platform  
 **Current State**: 1,612 lines demo dashboard  
 **MVP Target**: Full G3D-powered retail AI platform with next-generation capabilities  
 **Market**: Retail chains, e-commerce platforms, consumer brands, shopping centers  
@@ -218,7 +218,7 @@ src/tools/
 #### **2.1 G3D-Enhanced Retail Workflow** (12 weeks, 10 backend developers)
 ```typescript
 // Enhanced retail workflow with G3D:
-backend/retailai-service/src/
+ai-platforms/retailai/src/
 ├── controllers/
 │   ├── G3DRetailController.ts    // 6,500 lines - Enhanced retail management
 │   ├── G3DCustomerController.ts  // 6,200 lines - Advanced customer management

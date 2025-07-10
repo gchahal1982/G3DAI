@@ -1,11 +1,11 @@
-# G3D Creative Studio - AI Content Generation Platform
+# Creative Studio - AI Content Generation Platform
 ## MVP Business Transformation Document
 
 ---
 
 ## Executive Summary
 
-**Service**: G3D Creative Studio - AI Content Generation Platform  
+**Service**: Creative Studio - AI Content Generation Platform  
 **Current State**: 1,247 lines demo dashboard  
 **MVP Target**: Full G3D-powered AI content generation platform with next-generation capabilities  
 **Market**: Creative agencies, marketing teams, content creators, enterprises  
@@ -185,7 +185,7 @@ src/tools/
 #### **2.1 G3D-Enhanced Creative Workflow** (8 weeks, 6 backend developers)
 ```typescript
 // Enhanced creative workflow with G3D:
-backend/creative-studio-service/src/
+ai-platforms/creative-studio/src/
 ├── controllers/
 │   ├── G3DProjectController.ts  // 3,200 lines - Enhanced project management
 │   ├── G3DAssetController.ts    // 2,800 lines - Advanced asset management

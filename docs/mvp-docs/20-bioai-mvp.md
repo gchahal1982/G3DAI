@@ -1,11 +1,11 @@
-# G3D BioAI - Bioinformatics Analysis Platform
+# BioAI - Bioinformatics Analysis Platform
 ## MVP Business Transformation Document
 
 ---
 
 ## Executive Summary
 
-**Service**: G3D BioAI - Bioinformatics Analysis Platform  
+**Service**: BioAI - Bioinformatics Analysis Platform  
 **Current State**: 1,567 lines demo dashboard  
 **MVP Target**: Full G3D-powered bioinformatics AI platform with next-generation capabilities  
 **Market**: Pharmaceutical companies, biotech firms, research institutions, healthcare organizations  
@@ -218,7 +218,7 @@ src/tools/
 #### **2.1 G3D-Enhanced Biological Workflow** (12 weeks, 10 backend developers)
 ```typescript
 // Enhanced biological workflow with G3D:
-backend/bioai-service/src/
+ai-platforms/bioai/src/
 ├── controllers/
 │   ├── G3DBiologicalController.ts // 7,000 lines - Enhanced biological management
 │   ├── G3DGenomicController.ts   // 6,800 lines - Advanced genomic management

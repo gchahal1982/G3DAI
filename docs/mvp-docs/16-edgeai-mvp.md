@@ -1,11 +1,11 @@
-# G3D EdgeAI - Edge Computing Platform
+# EdgeAI - Edge Computing Platform
 ## MVP Business Transformation Document
 
 ---
 
 ## Executive Summary
 
-**Service**: G3D EdgeAI - Edge Computing Platform  
+**Service**: EdgeAI - Edge Computing Platform  
 **Current State**: 1,445 lines demo dashboard  
 **MVP Target**: Full G3D-powered edge AI platform with next-generation capabilities  
 **Market**: IoT companies, telecommunications, manufacturing, smart cities, autonomous systems  
@@ -218,7 +218,7 @@ src/tools/
 #### **2.1 G3D-Enhanced Edge Workflow** (12 weeks, 10 backend developers)
 ```typescript
 // Enhanced edge workflow with G3D:
-backend/edgeai-service/src/
+ai-platforms/edgeai/src/
 ├── controllers/
 │   ├── G3DEdgeController.ts      // 5,200 lines - Enhanced edge management
 │   ├── G3DDeviceController.ts    // 5,000 lines - Advanced device management

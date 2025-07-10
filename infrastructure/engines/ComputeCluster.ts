@@ -1,7 +1,7 @@
 import { EventEmitter } from 'events';
-import { Logger } from '../../../Logger';
-import { Metrics } from '../../../Metrics';
-import { Config } from '../../../Config';
+import { Logger } from '../../core/Logger';
+import { Metrics } from '../../core/Metrics';
+import { Config } from '../../core/Config';
 
 // Types and Interfaces
 interface ComputeNode {
@@ -124,9 +124,9 @@ export class ComputeCluster extends EventEmitter {
     private schedulerInterval: NodeJS.Timeout | null = null;
     private metricsInterval: NodeJS.Timeout | null = null;
 
-    private logger = Logger.getInstance();
-    private metricsCollector = Metrics.getInstance();
-    private config = Config.getInstance();
+    private logger = Logger;
+    private metricsCollector = Metrics;
+    private config = Config;
 
     constructor() {
         super();
@@ -515,9 +515,9 @@ export class ComputeCluster extends EventEmitter {
 
     private handleNodeHealthCheck(node: ComputeNode): void {
         // Update node health metrics
-        this.metricsCollector.gauge('cluster_node_cpu_usage', node.resources.cpuUsage, { nodeId: node.id });
-        this.metricsCollector.gauge('cluster_node_memory_usage', node.resources.memoryUsage, { nodeId: node.id });
-        this.metricsCollector.gauge('cluster_node_gpu_usage', node.resources.gpuUsage, { nodeId: node.id });
+        this.metricsCollector.record('cluster_node_cpu_usage', node.resources.cpuUsage, { nodeId: node.id });
+        this.metricsCollector.record('cluster_node_memory_usage', node.resources.memoryUsage, { nodeId: node.id });
+        this.metricsCollector.record('cluster_node_gpu_usage', node.resources.gpuUsage, { nodeId: node.id });
     }
 
     // Health and Monitoring
@@ -562,12 +562,12 @@ export class ComputeCluster extends EventEmitter {
         };
 
         // Emit metrics
-        this.metricsCollector.gauge('cluster_total_nodes', this.metrics.totalNodes);
-        this.metricsCollector.gauge('cluster_active_nodes', this.metrics.activeNodes);
-        this.metricsCollector.gauge('cluster_running_tasks', this.metrics.runningTasks);
-        this.metricsCollector.gauge('cluster_utilization', this.metrics.clusterUtilization);
-        this.metricsCollector.gauge('cluster_throughput', this.metrics.throughput);
-        this.metricsCollector.gauge('cluster_error_rate', this.metrics.errorRate);
+        this.metricsCollector.record('cluster_total_nodes', this.metrics.totalNodes);
+        this.metricsCollector.record('cluster_active_nodes', this.metrics.activeNodes);
+        this.metricsCollector.record('cluster_running_tasks', this.metrics.runningTasks);
+        this.metricsCollector.record('cluster_utilization', this.metrics.clusterUtilization);
+        this.metricsCollector.record('cluster_throughput', this.metrics.throughput);
+        this.metricsCollector.record('cluster_error_rate', this.metrics.errorRate);
 
         this.emit('metricsUpdated', this.metrics);
     }

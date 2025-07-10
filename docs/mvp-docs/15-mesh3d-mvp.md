@@ -1,11 +1,11 @@
-# G3D Mesh3D - 3D Model Generation Platform
+# Mesh3D - 3D Model Generation Platform
 ## MVP Business Transformation Document
 
 ---
 
 ## Executive Summary
 
-**Service**: G3D Mesh3D - 3D Model Generation Platform  
+**Service**: Mesh3D - 3D Model Generation Platform  
 **Current State**: 1,267 lines demo dashboard  
 **MVP Target**: Full G3D-powered 3D model generation platform with next-generation capabilities  
 **Market**: Game studios, architecture firms, manufacturing, e-commerce, entertainment  
@@ -218,7 +218,7 @@ src/tools/
 #### **2.1 G3D-Enhanced 3D Workflow** (10 weeks, 8 backend developers)
 ```typescript
 // Enhanced 3D workflow with G3D:
-backend/mesh3d-service/src/
+ai-platforms/mesh3d/src/
 ├── controllers/
 │   ├── G3D3DController.ts        // 5,000 lines - Enhanced 3D management
 │   ├── G3DMeshController.ts      // 4,800 lines - Advanced mesh management
