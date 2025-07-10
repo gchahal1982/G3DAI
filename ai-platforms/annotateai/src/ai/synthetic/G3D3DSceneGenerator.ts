@@ -7,7 +7,7 @@
 import { G3DGPUCompute } from '../../g3d-performance/G3DGPUCompute';
 import { G3DModelRunner } from '../../g3d-ai/G3DModelRunner';
 import { G3DSceneManager } from '../../g3d-integration/G3DSceneManager';
-import { G3DPhysicsIntegration } from '../../g3d-3d/G3DPhysicsIntegration';
+import { PhysicsIntegration } from '../../g3d-3d/PhysicsIntegration';
 
 export interface SceneConfig {
     sceneType: 'indoor' | 'outdoor' | 'urban' | 'natural' | 'industrial';
@@ -135,7 +135,7 @@ export class G3D3DSceneGenerator {
     private gpuCompute: G3DGPUCompute;
     private modelRunner: G3DModelRunner;
     private sceneManager: G3DSceneManager;
-    private physics: G3DPhysicsIntegration;
+    private physics: PhysicsIntegration;
     private assetLibrary: Map<string, any>;
     private materialLibrary: Map<string, MaterialConfig>;
     private generationHistory: GeneratedScene[];
@@ -145,7 +145,7 @@ export class G3D3DSceneGenerator {
         this.gpuCompute = new G3DGPUCompute();
         this.modelRunner = new G3DModelRunner();
         this.sceneManager = new G3DSceneManager({ renderer: 'webgl' } as any);
-        this.physics = new G3DPhysicsIntegration();
+        this.physics = new PhysicsIntegration();
         this.assetLibrary = new Map();
         this.materialLibrary = new Map();
         this.generationHistory = [];

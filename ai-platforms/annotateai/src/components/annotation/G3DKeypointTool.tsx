@@ -11,7 +11,7 @@ import { G3DMaterialSystem } from '../../g3d-integration/G3DMaterialSystem';
 import { G3DGeometryProcessor } from '../../g3d-integration/G3DGeometryProcessor';
 import { G3DComputeShaders } from '../../g3d-ai/G3DComputeShaders';
 import { G3DMathLibraries } from '../../g3d-3d/G3DMathLibraries';
-import { G3DPhysicsIntegration } from '../../g3d-3d/G3DPhysicsIntegration';
+import { PhysicsIntegration } from '../../g3d-3d/PhysicsIntegration';
 
 // Types and Interfaces
 interface Point3D {
@@ -273,7 +273,7 @@ export const G3DKeypointTool: React.FC<G3DKeypointToolProps> = ({
     const geometryRef = useRef<G3DGeometryProcessor | null>(null);
     const computeRef = useRef<G3DComputeShaders | null>(null);
     const mathRef = useRef<G3DMathLibraries | null>(null);
-    const physicsRef = useRef<G3DPhysicsIntegration | null>(null);
+    const physicsRef = useRef<PhysicsIntegration | null>(null);
 
     const [keypoints, setKeypoints] = useState<Map<string, Keypoint>>(new Map());
     const [skeletons, setSkeletons] = useState<Map<string, KeypointSkeleton>>(new Map());
@@ -364,7 +364,7 @@ export const G3DKeypointTool: React.FC<G3DKeypointToolProps> = ({
 
                 // Initialize physics if enabled
                 if (settings.enablePhysics) {
-                    const physics = new G3DPhysicsIntegration();
+                    const physics = new PhysicsIntegration();
                     await (physics as any).init?.();
                     physicsRef.current = physics;
                 }

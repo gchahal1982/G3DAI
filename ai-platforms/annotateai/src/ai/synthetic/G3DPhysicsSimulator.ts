@@ -5,7 +5,7 @@
  */
 
 import { G3DGPUCompute } from '../../g3d-performance/G3DGPUCompute';
-import { G3DPhysicsIntegration } from '../../g3d-3d/G3DPhysicsIntegration';
+import { PhysicsIntegration } from '../../g3d-3d/PhysicsIntegration';
 
 export interface PhysicsSimulationConfig {
     simulationType: 'rigid-body' | 'soft-body' | 'fluid' | 'particle' | 'cloth';
@@ -128,7 +128,7 @@ export interface EnergyAnnotation {
 
 export class G3DPhysicsSimulator {
     private gpuCompute: G3DGPUCompute;
-    private physics: G3DPhysicsIntegration;
+    private physics: PhysicsIntegration;
     private world: any;
     private objects: Map<string, any>;
     private constraints: any[];
@@ -137,7 +137,7 @@ export class G3DPhysicsSimulator {
 
     constructor() {
         this.gpuCompute = new G3DGPUCompute();
-        this.physics = new G3DPhysicsIntegration();
+        this.physics = new PhysicsIntegration();
         this.objects = new Map();
         this.constraints = [];
         this.simulationHistory = [];

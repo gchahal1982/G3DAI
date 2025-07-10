@@ -11,7 +11,7 @@ import { G3DMaterialSystem } from '../../g3d-integration/G3DMaterialSystem';
 import { G3DGeometryProcessor } from '../../g3d-integration/G3DGeometryProcessor';
 import { G3DComputeShaders } from '../../g3d-ai/G3DComputeShaders';
 import { G3DMathLibraries } from '../../g3d-3d/G3DMathLibraries';
-import { G3DPhysicsIntegration } from '../../g3d-3d/G3DPhysicsIntegration';
+import { PhysicsIntegration } from '../../g3d-3d/PhysicsIntegration';
 import { G3DPointCloudProcessor } from '../../g3d-3d/G3DPointCloudProcessor';
 
 // Core Types
@@ -424,7 +424,7 @@ export const G3D3DObjectAnnotation: React.FC<G3D3DObjectAnnotationProps> = ({
     const geometryRef = useRef<G3DGeometryProcessor | null>(null);
     const computeRef = useRef<G3DComputeShaders | null>(null);
     const mathRef = useRef<G3DMathLibraries | null>(null);
-    const physicsRef = useRef<G3DPhysicsIntegration | null>(null);
+    const physicsRef = useRef<PhysicsIntegration | null>(null);
     const pointCloudRef = useRef<G3DPointCloudProcessor | null>(null);
 
     const [session, setSession] = useState<AnnotationSession>({
@@ -571,7 +571,7 @@ export const G3D3DObjectAnnotation: React.FC<G3D3DObjectAnnotationProps> = ({
 
                 // Initialize optional systems
                 if (settings.enablePhysics) {
-                    const physics = new G3DPhysicsIntegration();
+                    const physics = new PhysicsIntegration();
                     // Comment out missing init method
                     // await physics.init();
                     physicsRef.current = physics;

@@ -31,10 +31,10 @@ import {
     CubeIcon
 } from '@heroicons/react/24/outline';
 
-import { AnnotationWorkbench } from '../workbench/AnnotationWorkbench';
+import { AnnotationWorkbench } from '../components/AnnotationWorkbench';
 import ImageAnnotationEngine, { AnnotationProject, AnnotationSession } from '../annotation/ImageAnnotationEngine';
 import VideoAnnotationEngine from '../annotation/VideoAnnotationEngine';
-import PreAnnotationEngine from '../ai-assist/PreAnnotationEngine';
+import PreAnnotationEngine from '../PreAnnotationEngine';
 
 // Types
 interface ProjectStats {
