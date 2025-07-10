@@ -1,0 +1,926 @@
+/* MedSight Pro Medical Glassmorphism Effects */
+/* EXACT COMPLIANCE WITH @/docs/UIUX.md SPECIFICATIONS */
+
+/* ========================================
+   MEDICAL GLASSMORPHISM CORE SYSTEM
+   ======================================== */
+
+/* Universal Glass Base */
+.glass-base {
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-radius: var(--medsight-radius-lg);
+  transition: all var(--medsight-transition-normal);
+  position: relative;
+  overflow: hidden;
+}
+
+.glass-base::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: inherit;
+  border-radius: inherit;
+  z-index: -1;
+}
+
+/* ========================================
+   MEDSIGHT PRO PRIMARY GLASS EFFECTS
+   MANDATORY IMPLEMENTATION FROM UIUX.md
+   ======================================== */
+
+/* Primary MedSight Glass - MANDATORY */
+.medsight-glass {
+  background: linear-gradient(135deg, 
+    rgba(14, 165, 233, 0.06) 0%, 
+    rgba(16, 185, 129, 0.04) 100%);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid rgba(14, 165, 233, 0.12);
+  box-shadow: 
+    0 8px 32px rgba(14, 165, 233, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  border-radius: var(--medsight-radius-lg);
+  transition: all var(--medsight-transition-normal);
+  position: relative;
+  will-change: backdrop-filter, transform;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  contain: layout style paint;
+}
+
+.medsight-glass:hover {
+  background: linear-gradient(135deg, 
+    rgba(14, 165, 233, 0.1) 0%, 
+    rgba(16, 185, 129, 0.06) 100%);
+  border: 1px solid rgba(14, 165, 233, 0.2);
+  box-shadow: 
+    0 12px 48px rgba(14, 165, 233, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  transform: translateY(-2px);
+}
+
+.medsight-glass:focus-within {
+  border: 1px solid rgba(14, 165, 233, 0.3);
+  box-shadow: 
+    0 12px 48px rgba(14, 165, 233, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15),
+    0 0 0 3px rgba(14, 165, 233, 0.1);
+}
+
+.medsight-glass:active {
+  transform: translateY(-1px);
+  box-shadow: 
+    0 8px 32px rgba(14, 165, 233, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+/* Medical Viewer Glass - MANDATORY */
+.medsight-viewer-glass {
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(20px) saturate(150%);
+  -webkit-backdrop-filter: blur(20px) saturate(150%);
+  border: 1px solid rgba(14, 165, 233, 0.2);
+  border-radius: var(--medsight-radius-md);
+  box-shadow: 
+    0 16px 64px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(14, 165, 233, 0.1);
+  transition: all var(--medsight-transition-normal);
+  position: relative;
+  will-change: backdrop-filter, transform;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  contain: layout style paint;
+}
+
+.medsight-viewer-glass:hover {
+  border: 1px solid rgba(14, 165, 233, 0.3);
+  box-shadow: 
+    0 20px 80px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(14, 165, 233, 0.15);
+}
+
+.medsight-viewer-glass:focus-within {
+  border: 1px solid rgba(14, 165, 233, 0.4);
+  box-shadow: 
+    0 24px 96px rgba(0, 0, 0, 0.6),
+    inset 0 1px 0 rgba(14, 165, 233, 0.2),
+    0 0 0 2px rgba(14, 165, 233, 0.3);
+}
+
+/* Medical Control Panel Glass - MANDATORY */
+.medsight-control-glass {
+  background: rgba(14, 165, 233, 0.08);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(14, 165, 233, 0.15);
+  border-radius: var(--medsight-radius-md);
+  box-shadow: 
+    0 8px 32px rgba(14, 165, 233, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  transition: all var(--medsight-transition-normal);
+  position: relative;
+  will-change: backdrop-filter, transform;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  contain: layout style paint;
+}
+
+.medsight-control-glass:hover {
+  background: rgba(14, 165, 233, 0.12);
+  border: 1px solid rgba(14, 165, 233, 0.25);
+  box-shadow: 
+    0 12px 48px rgba(14, 165, 233, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  transform: translateY(-1px);
+}
+
+.medsight-control-glass:focus-within {
+  border: 1px solid rgba(14, 165, 233, 0.3);
+  box-shadow: 
+    0 12px 48px rgba(14, 165, 233, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15),
+    0 0 0 2px rgba(14, 165, 233, 0.2);
+}
+
+.medsight-control-glass:active {
+  background: rgba(14, 165, 233, 0.15);
+  transform: translateY(0);
+}
+
+/* AI Diagnostic Glass - MANDATORY */
+.medsight-ai-glass {
+  background: linear-gradient(135deg, 
+    rgba(16, 185, 129, 0.08) 0%, 
+    rgba(14, 165, 233, 0.04) 100%);
+  backdrop-filter: blur(24px) saturate(200%);
+  -webkit-backdrop-filter: blur(24px) saturate(200%);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  box-shadow: 
+    0 12px 40px rgba(16, 185, 129, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  border-radius: var(--medsight-radius-lg);
+  transition: all var(--medsight-transition-normal);
+  position: relative;
+  will-change: backdrop-filter, transform;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  contain: layout style paint;
+}
+
+.medsight-ai-glass:hover {
+  background: linear-gradient(135deg, 
+    rgba(16, 185, 129, 0.12) 0%, 
+    rgba(14, 165, 233, 0.08) 100%);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  box-shadow: 
+    0 16px 56px rgba(16, 185, 129, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  transform: translateY(-2px);
+}
+
+.medsight-ai-glass:focus-within {
+  border: 1px solid rgba(16, 185, 129, 0.4);
+  box-shadow: 
+    0 16px 56px rgba(16, 185, 129, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15),
+    0 0 0 3px rgba(16, 185, 129, 0.15);
+}
+
+/* ========================================
+   MEDICAL STATUS GLASS EFFECTS
+   ======================================== */
+
+/* Medical Status Glass Effects - MANDATORY */
+.medsight-status-normal {
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-radius: var(--medsight-radius-sm);
+  box-shadow: 0 4px 16px rgba(16, 185, 129, 0.1);
+  color: var(--medsight-normal);
+  transition: all var(--medsight-transition-fast);
+  position: relative;
+  will-change: backdrop-filter;
+  transform: translateZ(0);
+}
+
+.medsight-status-normal:hover {
+  background: rgba(16, 185, 129, 0.15);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  box-shadow: 0 8px 24px rgba(16, 185, 129, 0.2);
+  transform: translateY(-1px);
+}
+
+.medsight-status-normal::before {
+  content: '';
+  position: absolute;
+  left: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 8px;
+  height: 8px;
+  background: var(--medsight-normal);
+  border-radius: 50%;
+  box-shadow: 0 0 8px rgba(16, 185, 129, 0.4);
+}
+
+.medsight-status-abnormal {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-radius: var(--medsight-radius-sm);
+  box-shadow: 0 4px 16px rgba(239, 68, 68, 0.1);
+  color: var(--medsight-abnormal);
+  transition: all var(--medsight-transition-fast);
+  position: relative;
+  will-change: backdrop-filter;
+  transform: translateZ(0);
+}
+
+.medsight-status-abnormal:hover {
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  box-shadow: 0 8px 24px rgba(239, 68, 68, 0.2);
+  transform: translateY(-1px);
+}
+
+.medsight-status-abnormal::before {
+  content: '';
+  position: absolute;
+  left: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 8px;
+  height: 8px;
+  background: var(--medsight-abnormal);
+  border-radius: 50%;
+  box-shadow: 0 0 8px rgba(239, 68, 68, 0.4);
+}
+
+.medsight-status-critical {
+  background: rgba(220, 38, 38, 0.1);
+  border: 1px solid rgba(220, 38, 38, 0.3);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-radius: var(--medsight-radius-sm);
+  box-shadow: 
+    0 4px 16px rgba(220, 38, 38, 0.2),
+    0 0 20px rgba(220, 38, 38, 0.1);
+  color: var(--medsight-critical);
+  animation: medsight-critical-pulse 2s infinite;
+  transition: all var(--medsight-transition-fast);
+  position: relative;
+  will-change: backdrop-filter, box-shadow;
+  transform: translateZ(0);
+}
+
+.medsight-status-critical:hover {
+  background: rgba(220, 38, 38, 0.15);
+  border: 1px solid rgba(220, 38, 38, 0.4);
+  box-shadow: 
+    0 8px 24px rgba(220, 38, 38, 0.3),
+    0 0 30px rgba(220, 38, 38, 0.2);
+  animation-duration: 1.5s;
+}
+
+.medsight-status-critical::before {
+  content: '';
+  position: absolute;
+  left: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 8px;
+  height: 8px;
+  background: var(--medsight-critical);
+  border-radius: 50%;
+  box-shadow: 0 0 12px rgba(220, 38, 38, 0.6);
+  animation: medsight-critical-dot-pulse 2s infinite;
+}
+
+.medsight-status-pending {
+  background: rgba(245, 158, 11, 0.1);
+  border: 1px solid rgba(245, 158, 11, 0.2);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-radius: var(--medsight-radius-sm);
+  box-shadow: 0 4px 16px rgba(245, 158, 11, 0.1);
+  color: var(--medsight-pending);
+  transition: all var(--medsight-transition-fast);
+  position: relative;
+  will-change: backdrop-filter;
+  transform: translateZ(0);
+}
+
+.medsight-status-pending:hover {
+  background: rgba(245, 158, 11, 0.15);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  box-shadow: 0 8px 24px rgba(245, 158, 11, 0.2);
+  transform: translateY(-1px);
+}
+
+.medsight-status-pending::before {
+  content: '';
+  position: absolute;
+  left: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 8px;
+  height: 8px;
+  background: var(--medsight-pending);
+  border-radius: 50%;
+  box-shadow: 0 0 8px rgba(245, 158, 11, 0.4);
+  animation: medsight-pending-pulse 3s infinite;
+}
+
+/* ========================================
+   AI CONFIDENCE GLASS EFFECTS
+   ======================================== */
+
+/* AI Confidence Glass - MANDATORY */
+.medsight-confidence-high {
+  background: rgba(5, 150, 105, 0.1);
+  border: 1px solid rgba(5, 150, 105, 0.2);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-radius: var(--medsight-radius-sm);
+  box-shadow: 0 4px 16px rgba(5, 150, 105, 0.1);
+  color: var(--medsight-ai-high);
+  transition: all var(--medsight-transition-fast);
+  position: relative;
+  will-change: backdrop-filter;
+  transform: translateZ(0);
+}
+
+.medsight-confidence-high:hover {
+  background: rgba(5, 150, 105, 0.15);
+  border: 1px solid rgba(5, 150, 105, 0.3);
+  box-shadow: 0 8px 24px rgba(5, 150, 105, 0.2);
+  transform: translateY(-1px);
+}
+
+.medsight-confidence-high::after {
+  content: '●●●';
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--medsight-ai-high);
+  font-size: 0.75rem;
+  letter-spacing: 2px;
+}
+
+.medsight-confidence-medium {
+  background: rgba(217, 119, 6, 0.1);
+  border: 1px solid rgba(217, 119, 6, 0.2);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-radius: var(--medsight-radius-sm);
+  box-shadow: 0 4px 16px rgba(217, 119, 6, 0.1);
+  color: var(--medsight-ai-medium);
+  transition: all var(--medsight-transition-fast);
+  position: relative;
+  will-change: backdrop-filter;
+  transform: translateZ(0);
+}
+
+.medsight-confidence-medium:hover {
+  background: rgba(217, 119, 6, 0.15);
+  border: 1px solid rgba(217, 119, 6, 0.3);
+  box-shadow: 0 8px 24px rgba(217, 119, 6, 0.2);
+  transform: translateY(-1px);
+}
+
+.medsight-confidence-medium::after {
+  content: '●●○';
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--medsight-ai-medium);
+  font-size: 0.75rem;
+  letter-spacing: 2px;
+}
+
+.medsight-confidence-low {
+  background: rgba(220, 38, 38, 0.1);
+  border: 1px solid rgba(220, 38, 38, 0.2);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-radius: var(--medsight-radius-sm);
+  box-shadow: 0 4px 16px rgba(220, 38, 38, 0.1);
+  color: var(--medsight-ai-low);
+  transition: all var(--medsight-transition-fast);
+  position: relative;
+  will-change: backdrop-filter;
+  transform: translateZ(0);
+}
+
+.medsight-confidence-low:hover {
+  background: rgba(220, 38, 38, 0.15);
+  border: 1px solid rgba(220, 38, 38, 0.3);
+  box-shadow: 0 8px 24px rgba(220, 38, 38, 0.2);
+  transform: translateY(-1px);
+}
+
+.medsight-confidence-low::after {
+  content: '●○○';
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--medsight-ai-low);
+  font-size: 0.75rem;
+  letter-spacing: 2px;
+}
+
+/* ========================================
+   MEDICAL COMPONENT GLASS EFFECTS
+   ======================================== */
+
+/* Medical Image Overlay Glass */
+.medsight-overlay-glass {
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(14, 165, 233, 0.3);
+  border-radius: var(--medsight-radius-sm);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  transition: all var(--medsight-transition-normal);
+  position: relative;
+  will-change: backdrop-filter;
+  transform: translateZ(0);
+}
+
+.medsight-overlay-glass:hover {
+  background: rgba(0, 0, 0, 0.7);
+  border: 1px solid rgba(14, 165, 233, 0.4);
+  box-shadow: 0 12px 48px rgba(0, 0, 0, 0.4);
+}
+
+/* DICOM Info Glass */
+.medsight-dicom-glass {
+  background: rgba(14, 165, 233, 0.04);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(14, 165, 233, 0.1);
+  border-radius: var(--medsight-radius-sm);
+  box-shadow: 0 4px 16px rgba(14, 165, 233, 0.05);
+  transition: all var(--medsight-transition-normal);
+  position: relative;
+  will-change: backdrop-filter;
+  transform: translateZ(0);
+}
+
+.medsight-dicom-glass:hover {
+  background: rgba(14, 165, 233, 0.08);
+  border: 1px solid rgba(14, 165, 233, 0.2);
+  box-shadow: 0 8px 24px rgba(14, 165, 233, 0.1);
+  transform: translateY(-1px);
+}
+
+/* Medical Navigation Glass */
+.medsight-nav-glass {
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+  transition: all var(--medsight-transition-normal);
+  position: sticky;
+  top: 0;
+  z-index: var(--medsight-z-navigation);
+  will-change: backdrop-filter;
+  transform: translateZ(0);
+}
+
+/* Medical Modal Glass */
+.medsight-modal-glass {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(40px) saturate(200%);
+  -webkit-backdrop-filter: blur(40px) saturate(200%);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 
+    0 32px 100px rgba(0, 0, 0, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  border-radius: var(--medsight-radius-xl);
+  transition: all var(--medsight-transition-slow);
+  position: relative;
+  will-change: backdrop-filter, transform;
+  transform: translateZ(0);
+  contain: layout style paint;
+}
+
+/* Medical Sidebar Glass */
+.medsight-sidebar-glass {
+  background: linear-gradient(180deg, 
+    rgba(255, 255, 255, 0.08) 0%, 
+    rgba(255, 255, 255, 0.04) 100%);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border-right: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 8px 0 32px rgba(0, 0, 0, 0.1);
+  transition: all var(--medsight-transition-normal);
+  position: relative;
+  will-change: backdrop-filter;
+  transform: translateZ(0);
+}
+
+/* Medical Button Glass */
+.medsight-btn-glass {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 
+    0 4px 16px rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  border-radius: var(--medsight-radius-md);
+  transition: all var(--medsight-transition-fast);
+  position: relative;
+  will-change: backdrop-filter, transform;
+  transform: translateZ(0);
+}
+
+.medsight-btn-glass:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  box-shadow: 
+    0 8px 24px rgba(0, 0, 0, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  transform: translateY(-1px);
+}
+
+.medsight-btn-glass:active {
+  transform: translateY(0);
+  box-shadow: 
+    0 4px 16px rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+
+/* Medical Input Glass */
+.medsight-input-glass {
+  background: rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.05);
+  border-radius: var(--medsight-radius-sm);
+  transition: all var(--medsight-transition-fast);
+  position: relative;
+  will-change: backdrop-filter;
+  transform: translateZ(0);
+}
+
+.medsight-input-glass:focus {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(14, 165, 233, 0.3);
+  box-shadow: 
+    inset 0 2px 8px rgba(0, 0, 0, 0.05),
+    0 0 0 3px rgba(14, 165, 233, 0.1);
+}
+
+/* Medical Tooltip Glass */
+.medsight-tooltip-glass {
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  border-radius: var(--medsight-radius-sm);
+  transition: all var(--medsight-transition-fast);
+  position: relative;
+  will-change: backdrop-filter;
+  transform: translateZ(0);
+}
+
+/* Medical Dropdown Glass */
+.medsight-dropdown-glass {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 
+    0 16px 48px rgba(0, 0, 0, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  border-radius: var(--medsight-radius-md);
+  transition: all var(--medsight-transition-normal);
+  position: relative;
+  will-change: backdrop-filter;
+  transform: translateZ(0);
+}
+
+/* Medical Table Glass */
+.medsight-table-glass {
+  background: rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--medsight-radius-md);
+  overflow: hidden;
+  transition: all var(--medsight-transition-normal);
+  position: relative;
+  will-change: backdrop-filter;
+  transform: translateZ(0);
+}
+
+.medsight-table-header-glass {
+  background: rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: inherit;
+  -webkit-backdrop-filter: inherit;
+}
+
+.medsight-table-row-glass:hover {
+  background: rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+/* Medical Progress Glass */
+.medsight-progress-glass {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: var(--medsight-radius-full);
+  overflow: hidden;
+  transition: all var(--medsight-transition-normal);
+  position: relative;
+  will-change: backdrop-filter;
+  transform: translateZ(0);
+}
+
+.medsight-progress-fill-glass {
+  background: linear-gradient(90deg, 
+    rgba(14, 165, 233, 0.8) 0%, 
+    rgba(14, 165, 233, 1) 100%);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  box-shadow: 0 0 16px rgba(14, 165, 233, 0.4);
+  transition: all var(--medsight-transition-normal);
+}
+
+/* ========================================
+   MEDICAL GLASS ANIMATIONS
+   ======================================== */
+
+/* Critical Alert Pulse */
+@keyframes medsight-critical-pulse {
+  0%, 100% {
+    box-shadow: 
+      0 4px 16px rgba(220, 38, 38, 0.2),
+      0 0 20px rgba(220, 38, 38, 0.1);
+  }
+  50% {
+    box-shadow: 
+      0 4px 16px rgba(220, 38, 38, 0.4),
+      0 0 30px rgba(220, 38, 38, 0.3);
+  }
+}
+
+/* Critical Dot Pulse */
+@keyframes medsight-critical-dot-pulse {
+  0%, 100% {
+    box-shadow: 0 0 12px rgba(220, 38, 38, 0.6);
+    transform: translateY(-50%) scale(1);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(220, 38, 38, 0.8);
+    transform: translateY(-50%) scale(1.2);
+  }
+}
+
+/* Pending Pulse */
+@keyframes medsight-pending-pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: translateY(-50%) scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: translateY(-50%) scale(0.9);
+  }
+}
+
+/* Glass Shimmer Effect */
+@keyframes medsight-glass-shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.medsight-glass-shimmer {
+  position: relative;
+  overflow: hidden;
+}
+
+.medsight-glass-shimmer::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.1),
+    transparent
+  );
+  background-size: 200% 100%;
+  animation: medsight-glass-shimmer 3s infinite;
+}
+
+/* Glass Fade In */
+@keyframes medsight-glass-fade-in {
+  from {
+    opacity: 0;
+    backdrop-filter: blur(0px);
+    -webkit-backdrop-filter: blur(0px);
+    transform: translateY(20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    transform: translateY(0) scale(1);
+  }
+}
+
+.medsight-glass-fade-in {
+  animation: medsight-glass-fade-in 0.5s ease-out forwards;
+}
+
+/* Glass Slide In */
+@keyframes medsight-glass-slide-in {
+  from {
+    transform: translateX(-100%);
+    backdrop-filter: blur(0px);
+    -webkit-backdrop-filter: blur(0px);
+  }
+  to {
+    transform: translateX(0);
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+  }
+}
+
+.medsight-glass-slide-in {
+  animation: medsight-glass-slide-in 0.3s ease-out forwards;
+}
+
+/* ========================================
+   MEDICAL ACCESSIBILITY & RESPONSIVENESS
+   ======================================== */
+
+/* High Contrast Mode */
+@media (prefers-contrast: high) {
+  .medsight-glass,
+  .medsight-viewer-glass,
+  .medsight-control-glass,
+  .medsight-ai-glass {
+    background: rgba(255, 255, 255, 0.15);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
+
+  .medsight-status-normal,
+  .medsight-status-abnormal,
+  .medsight-status-critical,
+  .medsight-status-pending,
+  .medsight-confidence-high,
+  .medsight-confidence-medium,
+  .medsight-confidence-low {
+    border-width: 2px;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  .medsight-glass,
+  .medsight-viewer-glass,
+  .medsight-control-glass,
+  .medsight-ai-glass,
+  .medsight-status-normal,
+  .medsight-status-abnormal,
+  .medsight-status-critical,
+  .medsight-status-pending,
+  .medsight-confidence-high,
+  .medsight-confidence-medium,
+  .medsight-confidence-low {
+    transition: none;
+    animation: none;
+  }
+
+  .medsight-status-critical {
+    animation: none;
+  }
+
+  .medsight-glass-shimmer::after {
+    animation: none;
+  }
+
+  .medsight-glass-fade-in {
+    animation: none;
+  }
+
+  .medsight-glass-slide-in {
+    animation: none;
+  }
+}
+
+/* Mobile Optimization */
+@media (max-width: 768px) {
+  .medsight-glass,
+  .medsight-viewer-glass,
+  .medsight-control-glass,
+  .medsight-ai-glass {
+    border-radius: var(--medsight-radius-md);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+
+  .medsight-modal-glass {
+    border-radius: var(--medsight-radius-lg);
+    backdrop-filter: blur(20px) saturate(150%);
+    -webkit-backdrop-filter: blur(20px) saturate(150%);
+  }
+}
+
+/* Tablet Optimization */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .medsight-glass,
+  .medsight-viewer-glass,
+  .medsight-control-glass,
+  .medsight-ai-glass {
+    backdrop-filter: blur(16px) saturate(160%);
+    -webkit-backdrop-filter: blur(16px) saturate(160%);
+  }
+}
+
+/* Desktop Enhancement */
+@media (min-width: 1024px) {
+  .medsight-glass,
+  .medsight-viewer-glass,
+  .medsight-control-glass,
+  .medsight-ai-glass {
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+  }
+}
+
+/* Large Screen Optimization */
+@media (min-width: 1440px) {
+  .medsight-glass,
+  .medsight-viewer-glass,
+  .medsight-control-glass,
+  .medsight-ai-glass {
+    backdrop-filter: blur(32px) saturate(200%);
+    -webkit-backdrop-filter: blur(32px) saturate(200%);
+  }
+}
+
+/* ========================================
+   BROWSER COMPATIBILITY
+   ======================================== */
+
+/* Progressive Enhancement */
+@supports not (backdrop-filter: blur(10px)) {
+  .medsight-glass,
+  .medsight-viewer-glass,
+  .medsight-control-glass,
+  .medsight-ai-glass,
+  .medsight-status-normal,
+  .medsight-status-abnormal,
+  .medsight-status-critical,
+  .medsight-status-pending,
+  .medsight-confidence-high,
+  .medsight-confidence-medium,
+  .medsight-confidence-low {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+
+  .medsight-viewer-glass {
+    background: rgba(0, 0, 0, 0.9);
+  }
+}
+
+/* Webkit Prefix Support */
+@supports (-webkit-backdrop-filter: blur(10px)) {
+  .medsight-glass,
+  .medsight-viewer-glass,
+  .medsight-control-glass,
+  .medsight-ai-glass {
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+  }
+}
