@@ -1,0 +1,95 @@
+# G3DAI Prometheus Recording Rules
+# Performance optimization and aggregation rules
+
+groups:
+  - name: g3dai_performance_rules
+    interval: 30s
+    rules:
+      - record: annotateai:ml_inference_rate
+        expr: rate(annotateai_ml_inference_total[5m])
+        labels:
+          platform: "annotateai"
+          type: "ml_inference"
+          
+      - record: annotateai:video_processing_rate
+        expr: rate(annotateai_video_frames_processed_total[5m])
+        labels:
+          platform: "annotateai"
+          type: "video_processing"
+          
+      - record: medsight:dicom_processing_rate
+        expr: rate(medsight_dicom_studies_processed_total[5m])
+        labels:
+          platform: "medsight-pro"
+          type: "dicom_processing"
+          
+      - record: medsight:patient_access_rate
+        expr: rate(medsight_patient_accesses_total[5m])
+        labels:
+          platform: "medsight-pro"
+          type: "patient_access"
+
+  - name: g3dai_resource_rules
+    interval: 30s
+    rules:
+      - record: platform:cpu_usage
+        expr: 100 - (avg by (instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100)
+        labels:
+          metric_type: "resource"
+          resource: "cpu"
+          
+      - record: platform:memory_usage
+        expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100
+        labels:
+          metric_type: "resource"
+          resource: "memory"
+          
+      - record: platform:disk_usage
+        expr: 100 - ((node_filesystem_avail_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"}) * 100)
+        labels:
+          metric_type: "resource"
+          resource: "disk"
+
+  - name: g3dai_medical_compliance_rules
+    interval: 60s
+    rules:
+      - record: medsight:hipaa_compliance_score
+        expr: (medsight_hipaa_compliant_operations_total / medsight_total_operations_total) * 100
+        labels:
+          platform: "medsight-pro"
+          compliance: "hipaa"
+          metric_type: "compliance"
+          
+      - record: medsight:audit_trail_completeness
+        expr: (medsight_audit_logged_operations_total / medsight_total_operations_total) * 100
+        labels:
+          platform: "medsight-pro"
+          compliance: "audit"
+          metric_type: "compliance"
+          
+      - record: medsight:encryption_coverage
+        expr: (medsight_encrypted_data_transfers_total / medsight_total_data_transfers_total) * 100
+        labels:
+          platform: "medsight-pro"
+          security: "encryption"
+          metric_type: "compliance"
+
+  - name: g3dai_application_health_rules
+    interval: 15s
+    rules:
+      - record: platform:error_rate
+        expr: rate(http_requests_total{status=~"5.."}[5m]) / rate(http_requests_total[5m]) * 100
+        labels:
+          metric_type: "health"
+          
+      - record: platform:response_time_p95
+        expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m]))
+        labels:
+          metric_type: "performance"
+          quantile: "95"
+          
+      - record: platform:response_time_p99
+        expr: histogram_quantile(0.99, rate(http_request_duration_seconds_bucket[5m]))
+        labels:
+          metric_type: "performance"
+          quantile: "99" 

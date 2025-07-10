@@ -15,11 +15,12 @@ alerting:
         - targets:
           - alertmanager:9093
 
-# Load alerting rules
+# Load alerting and recording rules
 rule_files:
   - "alerts/g3dai-alerts.yml"
   - "alerts/infrastructure-alerts.yml"
   - "alerts/medical-compliance-alerts.yml"
+  - "rules/g3dai-recording-rules.yml"
 
 # Scrape configurations
 scrape_configs:
@@ -259,33 +260,4 @@ remote_write:
       max_shards: 200
       capacity: 20000
 
-# Recording rules for performance optimization
-recording_rules:
-  - name: g3dai_performance_rules
-    rules:
-      - record: annotateai:ml_inference_rate
-        expr: rate(annotateai_ml_inference_total[5m])
-      - record: annotateai:video_processing_rate
-        expr: rate(annotateai_video_frames_processed_total[5m])
-      - record: medsight:dicom_processing_rate
-        expr: rate(medsight_dicom_studies_processed_total[5m])
-      - record: medsight:patient_access_rate
-        expr: rate(medsight_patient_accesses_total[5m])
-
-  - name: g3dai_resource_rules
-    rules:
-      - record: platform:cpu_usage
-        expr: 100 - (avg by (instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100)
-      - record: platform:memory_usage
-        expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100
-      - record: platform:disk_usage
-        expr: 100 - ((node_filesystem_avail_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"}) * 100)
-
-  - name: g3dai_medical_compliance_rules
-    rules:
-      - record: medsight:hipaa_compliance_score
-        expr: (medsight_hipaa_compliant_operations_total / medsight_total_operations_total) * 100
-      - record: medsight:audit_trail_completeness
-        expr: (medsight_audit_logged_operations_total / medsight_total_operations_total) * 100
-      - record: medsight:encryption_coverage
-        expr: (medsight_encrypted_data_transfers_total / medsight_total_data_transfers_total) * 100 
+ 
