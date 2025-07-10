@@ -4,9 +4,9 @@
  * ~2,200 lines of production code
  */
 
-import { NativeRenderer } from '../integration/G3DNativeRenderer';
-import { SceneManager } from '../integration/G3DSceneManager';
-import { PerformanceOptimizer } from '../integration/G3DPerformanceOptimizer';
+import { NativeRenderer } from '../integration/NativeRenderer';
+import { SceneManager } from '../integration/SceneManager';
+import { PerformanceOptimizer } from '../integration/PerformanceOptimizer';
 
 // Types and Interfaces
 interface CollaborationConfig {
@@ -1044,4 +1044,4 @@ interface CollaborationMetrics {
     bandwidth: number;
 }
 
-export default G3DCollaborationEngine;
+export default CollaborationEngine;

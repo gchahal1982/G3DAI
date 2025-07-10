@@ -4,10 +4,10 @@
  * ~2,800 lines of production code
  */
 
-import { ModelRunner } from '../ai/G3DModelRunner';
-import { ComputeShaders } from '../ai/G3DComputeShaders';
-import { PerformanceOptimizer } from '../integration/G3DPerformanceOptimizer';
-import { NativeRenderer } from '../integration/G3DNativeRenderer';
+import { ModelRunner } from '../ai/ModelRunner';
+import { ComputeShaders } from '../ai/ComputeShaders';
+import { PerformanceOptimizer } from '../integration/PerformanceOptimizer';
+import { NativeRenderer } from '../integration/NativeRenderer';
 
 // Types and Interfaces
 interface GANConfig {
@@ -1162,4 +1162,4 @@ interface EditOperation {
     parameters: any;
 }
 
-export default G3DGANGenerator;
+export default GANGenerator;

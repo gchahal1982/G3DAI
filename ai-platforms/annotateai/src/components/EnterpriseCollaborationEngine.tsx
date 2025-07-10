@@ -5,8 +5,8 @@
  */
 
 import React, { useRef, useEffect, useState } from 'react';
-import { NativeRenderer } from '../integration/G3DNativeRenderer';
-import { SceneManager } from '../integration/G3DSceneManager';
+import { NativeRenderer } from '../integration/NativeRenderer';
+import { SceneManager } from '../integration/SceneManager';
 
 // Core Types
 interface CollaborationSession {

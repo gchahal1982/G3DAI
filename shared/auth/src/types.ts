@@ -667,4 +667,4 @@ export interface WebhookPayload {
 }
 
 // Export all types
-export * from './auth.types';
+// All types are defined in this file

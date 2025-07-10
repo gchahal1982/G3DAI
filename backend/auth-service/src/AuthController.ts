@@ -11,8 +11,8 @@ import QRCode from 'qrcode';
 import * as crypto from 'crypto';
 import * as jwt from 'jsonwebtoken';
 import * as bcrypt from 'bcryptjs';
-import { User, IUser } from '../models/User';
-import { Organization, IOrganization } from '../models/Organization';
+import { User, IUser } from './models/User';
+import { Organization, IOrganization } from './models/Organization';
 
 // Types
 interface AuthenticatedRequest extends Request {

@@ -4,11 +4,11 @@
  */
 
 import { vec3, vec4, mat4, quat } from 'gl-matrix';
-import { NativeRenderer, RenderObject } from './G3DNativeRenderer';
-import { SceneManager, SceneNode } from './G3DSceneManager';
-import { Material, MaterialSystem } from './G3DMaterialSystem';
-import { Geometry, GeometryProcessor } from './G3DGeometryProcessor';
-import { Light, LightingSystem } from './G3DLightingSystem';
+import { NativeRenderer, RenderObject } from './NativeRenderer';
+import { SceneManager, SceneNode } from './SceneManager';
+import { Material as G3DMaterial, MaterialSystem } from './MaterialSystem';
+import { Geometry, GeometryProcessor } from './GeometryProcessor';
+import { Light as G3DLight, LightingSystem } from './LightingSystem';
 
 // Three.js-compatible Vector3
 export class Vector3 {
@@ -348,7 +348,7 @@ export class Material {
     side: number = 0;  // FrontSide
 
     // G3D internals
-    _g3dMaterial: Material | null = null;
+    _g3dMaterial: G3DMaterial | null = null;
 }
 
 // Three.js-compatible MeshBasicMaterial
@@ -459,7 +459,7 @@ export class Light extends Object3D {
     intensity: number;
 
     // G3D internals
-    _g3dLight: Light | null = null;
+    _g3dLight: G3DLight | null = null;
 
     constructor(color?: number | string, intensity: number = 1) {
         super();

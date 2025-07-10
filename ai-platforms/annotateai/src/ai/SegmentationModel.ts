@@ -4,11 +4,11 @@
  * ~3,200 lines of production code
  */
 
-import { ComputeShaders } from './G3DComputeShaders';
-import { ModelRunner, Precision } from './G3DModelRunner';
-import { GPUCompute } from '../performance/G3DGPUCompute';
-import { MathLibraries } from '../core/G3DMathLibraries';
-import { ModelType } from './G3DModelRunner';
+import { ComputeShaders } from './ComputeShaders';
+import { ModelRunner, Precision } from './ModelRunner';
+import { GPUCompute } from '../performance/GPUCompute';
+import { MathLibraries } from '../core/MathLibraries';
+import { ModelType } from './ModelRunner';
 
 // Core Types
 interface SegmentationResult {

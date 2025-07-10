@@ -1,5 +1,5 @@
 import Stripe from 'stripe';
-import { User, IUser } from '../../../auth-service/src/models/User';
+import { User, IUser } from '../../auth-service/src/models/User';
 
 // Initialize Stripe
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {

@@ -21,7 +21,7 @@ import {
     AuditLog,
     DeviceInfo,
     GeoLocation
-} from '../types/auth.types';
+} from './types';
 
 export class AuthService {
     private apiUrl: string;
