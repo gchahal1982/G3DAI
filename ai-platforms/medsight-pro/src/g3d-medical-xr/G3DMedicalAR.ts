@@ -11,7 +11,7 @@
  * - Clinical workflow AR integration
  */
 
-export interface G3DMedicalARConfig {
+export interface MedicalARConfig {
     enableMarkerTracking: boolean;
     enableMarkerlessTracking: boolean;
     enablePlaneDetection: boolean;
@@ -25,7 +25,7 @@ export interface G3DMedicalARConfig {
     clinicalAccuracyMode: boolean;
 }
 
-export interface G3DARSession {
+export interface ARSession {
     id: string;
     userId: string;
     patientId?: string;
@@ -33,13 +33,13 @@ export interface G3DARSession {
     sessionType: 'visualization' | 'guidance' | 'training' | 'planning' | 'education';
     startTime: number;
     duration: number;
-    arObjects: G3DARObject[];
-    medicalContext: G3DMedicalARContext;
-    trackingData: G3DARTrackingData;
-    calibrationData: G3DARCalibration;
+    arObjects: ARObject[];
+    medicalContext: MedicalARContext;
+    trackingData: ARTrackingData;
+    calibrationData: ARCalibration;
 }
 
-export interface G3DMedicalARContext {
+export interface MedicalARContext {
     patientData: {
         id: string;
         age: number;
@@ -68,168 +68,168 @@ export interface G3DMedicalARContext {
     };
 }
 
-export interface G3DARObject {
+export interface ARObject {
     id: string;
     type: 'anatomy' | 'pathology' | 'instrument' | 'annotation' | 'guidance' | 'measurement';
-    position: G3DVector3;
-    rotation: G3DQuaternion;
-    scale: G3DVector3;
+    position: Vector3;
+    rotation: Quaternion;
+    scale: Vector3;
     visible: boolean;
     interactive: boolean;
     medicalData: any;
     renderPriority: number;
-    trackingAnchor?: G3DARTrackingAnchor;
+    trackingAnchor?: ARTrackingAnchor;
 }
 
-export interface G3DARTrackingAnchor {
+export interface ARTrackingAnchor {
     id: string;
     type: 'marker' | 'plane' | 'feature' | 'body' | 'instrument';
-    position: G3DVector3;
-    orientation: G3DQuaternion;
+    position: Vector3;
+    orientation: Quaternion;
     confidence: number;
     lastUpdated: number;
     trackingState: 'tracking' | 'limited' | 'lost';
 }
 
-export interface G3DARTrackingData {
-    cameraPosition: G3DVector3;
-    cameraOrientation: G3DQuaternion;
-    lightEstimate: G3DLightEstimate;
-    detectedPlanes: G3DARPlane[];
-    trackedAnchors: G3DARTrackingAnchor[];
+export interface ARTrackingData {
+    cameraPosition: Vector3;
+    cameraOrientation: Quaternion;
+    lightEstimate: LightEstimate;
+    detectedPlanes: ARPlane[];
+    trackedAnchors: ARTrackingAnchor[];
     trackingQuality: number;
 }
 
-export interface G3DLightEstimate {
+export interface LightEstimate {
     ambientIntensity: number;
     ambientColorTemperature: number;
-    mainLightDirection: G3DVector3;
+    mainLightDirection: Vector3;
     mainLightIntensity: number;
 }
 
-export interface G3DARPlane {
+export interface ARPlane {
     id: string;
-    center: G3DVector3;
-    normal: G3DVector3;
-    extent: G3DVector2;
-    polygon: G3DVector3[];
+    center: Vector3;
+    normal: Vector3;
+    extent: Vector2;
+    polygon: Vector3[];
     classification: 'horizontal' | 'vertical' | 'unknown';
     medicalRelevance: 'patient_surface' | 'surgical_table' | 'equipment' | 'none';
 }
 
-export interface G3DARCalibration {
-    cameraIntrinsics: G3DCameraIntrinsics;
-    displayToCamera: G3DMatrix4;
-    patientRegistration?: G3DPatientRegistration;
-    instrumentCalibration?: G3DInstrumentCalibration;
+export interface ARCalibration {
+    cameraIntrinsics: CameraIntrinsics;
+    displayToCamera: Matrix4;
+    patientRegistration?: PatientRegistration;
+    instrumentCalibration?: InstrumentCalibration;
 }
 
-export interface G3DCameraIntrinsics {
-    focalLength: G3DVector2;
-    principalPoint: G3DVector2;
-    imageResolution: G3DVector2;
+export interface CameraIntrinsics {
+    focalLength: Vector2;
+    principalPoint: Vector2;
+    imageResolution: Vector2;
     distortionCoefficients: number[];
 }
 
-export interface G3DPatientRegistration {
-    landmarkPoints: G3DLandmarkPoint[];
-    registrationMatrix: G3DMatrix4;
+export interface PatientRegistration {
+    landmarkPoints: LandmarkPoint[];
+    registrationMatrix: Matrix4;
     accuracy: number;
     timestamp: number;
     method: 'manual' | 'automatic' | 'hybrid';
 }
 
-export interface G3DLandmarkPoint {
+export interface LandmarkPoint {
     id: string;
     anatomicalName: string;
-    position3D: G3DVector3;
-    position2D: G3DVector2;
+    position3D: Vector3;
+    position2D: Vector2;
     confidence: number;
     verified: boolean;
 }
 
-export interface G3DInstrumentCalibration {
+export interface InstrumentCalibration {
     instrumentId: string;
-    tipOffset: G3DVector3;
-    orientation: G3DQuaternion;
+    tipOffset: Vector3;
+    orientation: Quaternion;
     accuracy: number;
     lastCalibrated: number;
 }
 
-export interface G3DVector2 {
+export interface Vector2 {
     x: number;
     y: number;
 }
 
-export interface G3DVector3 {
+export interface Vector3 {
     x: number;
     y: number;
     z: number;
 }
 
-export interface G3DQuaternion {
+export interface Quaternion {
     x: number;
     y: number;
     z: number;
     w: number;
 }
 
-export interface G3DMatrix4 {
+export interface Matrix4 {
     elements: number[]; // 16 elements in column-major order
 }
 
-export interface G3DARGuidanceSystem {
-    currentGuidance: G3DGuidanceInstruction[];
-    navigationPath: G3DNavigationPath;
-    safetyZones: G3DSafetyZone[];
-    criticalStructures: G3DCriticalStructure[];
+export interface ARGuidanceSystem {
+    currentGuidance: GuidanceInstruction[];
+    navigationPath: NavigationPath;
+    safetyZones: SafetyZone[];
+    criticalStructures: CriticalStructure[];
 }
 
-export interface G3DGuidanceInstruction {
+export interface GuidanceInstruction {
     id: string;
     type: 'navigation' | 'warning' | 'information' | 'action';
     priority: 'low' | 'medium' | 'high' | 'critical';
     message: string;
-    position?: G3DVector3;
+    position?: Vector3;
     duration: number;
     medicalContext: string;
 }
 
-export interface G3DNavigationPath {
-    waypoints: G3DWaypoint[];
+export interface NavigationPath {
+    waypoints: Waypoint[];
     currentWaypoint: number;
     totalDistance: number;
     estimatedTime: number;
     safetyLevel: 'safe' | 'caution' | 'danger';
 }
 
-export interface G3DWaypoint {
-    position: G3DVector3;
-    orientation: G3DQuaternion;
+export interface Waypoint {
+    position: Vector3;
+    orientation: Quaternion;
     instruction: string;
     medicalSignificance: string;
     reached: boolean;
 }
 
-export interface G3DSafetyZone {
+export interface SafetyZone {
     id: string;
-    center: G3DVector3;
+    center: Vector3;
     radius: number;
     type: 'safe' | 'caution' | 'danger' | 'no_go';
     medicalStructure: string;
     warningDistance: number;
 }
 
-export interface G3DCriticalStructure {
+export interface CriticalStructure {
     id: string;
     name: string;
     type: 'vessel' | 'nerve' | 'organ' | 'bone' | 'tumor';
-    geometry: G3DVector3[];
+    geometry: Vector3[];
     importance: 'low' | 'medium' | 'high' | 'critical';
-    visualStyle: G3DVisualizationStyle;
+    visualStyle: VisualizationStyle;
 }
 
-export interface G3DVisualizationStyle {
+export interface VisualizationStyle {
     color: string;
     opacity: number;
     wireframe: boolean;
@@ -237,20 +237,20 @@ export interface G3DVisualizationStyle {
     pulsing: boolean;
 }
 
-export class G3DMedicalAR {
-    private config: G3DMedicalARConfig;
+export class MedicalAR {
+    private config: MedicalARConfig;
     private arSession: any = null; // XRSession
-    private currentSession: G3DARSession | null = null;
-    private arObjects: Map<string, G3DARObject> = new Map();
-    private trackingAnchors: Map<string, G3DARTrackingAnchor> = new Map();
+    private currentSession: ARSession | null = null;
+    private arObjects: Map<string, ARObject> = new Map();
+    private trackingAnchors: Map<string, ARTrackingAnchor> = new Map();
     private isInitialized: boolean = false;
 
-    private guidanceSystem: G3DARGuidanceSystem | null = null;
-    private patientRegistration: G3DPatientRegistration | null = null;
-    private medicalRenderer: G3DMedicalARRenderer | null = null;
-    private trackingManager: G3DARTrackingManager | null = null;
+    private guidanceSystem: ARGuidanceSystem | null = null;
+    private patientRegistration: PatientRegistration | null = null;
+    private medicalRenderer: MedicalARRenderer | null = null;
+    private trackingManager: ARTrackingManager | null = null;
 
-    constructor(config: Partial<G3DMedicalARConfig> = {}) {
+    constructor(config: Partial<MedicalARConfig> = {}) {
         this.config = {
             enableMarkerTracking: true,
             enableMarkerlessTracking: true,
@@ -278,11 +278,11 @@ export class G3DMedicalAR {
             await this.initializeARSession();
 
             // Initialize medical renderer
-            this.medicalRenderer = new G3DMedicalARRenderer(this.config);
+            this.medicalRenderer = new MedicalARRenderer(this.config);
             await this.medicalRenderer.initialize();
 
             // Initialize tracking manager
-            this.trackingManager = new G3DARTrackingManager(this.config);
+            this.trackingManager = new ARTrackingManager(this.config);
             await this.trackingManager.initialize();
 
             // Initialize guidance system
@@ -405,7 +405,7 @@ export class G3DMedicalAR {
         }
     }
 
-    private getLightEstimate(frame: any): G3DLightEstimate {
+    private getLightEstimate(frame: any): LightEstimate {
         // Simplified light estimation
         return {
             ambientIntensity: 1.0,
@@ -415,13 +415,13 @@ export class G3DMedicalAR {
         };
     }
 
-    private getDetectedPlanes(frame: any): G3DARPlane[] {
-        const planes: G3DARPlane[] = [];
+    private getDetectedPlanes(frame: any): ARPlane[] {
+        const planes: ARPlane[] = [];
 
         // Process detected planes from WebXR
         if (frame.detectedPlanes) {
             for (const plane of frame.detectedPlanes) {
-                const arPlane: G3DARPlane = {
+                const arPlane: ARPlane = {
                     id: plane.id || `plane_${planes.length}`,
                     center: { x: 0, y: 0, z: 0 },
                     normal: { x: 0, y: 1, z: 0 },
@@ -438,7 +438,7 @@ export class G3DMedicalAR {
         return planes;
     }
 
-    private classifyPlaneForMedical(plane: any): G3DARPlane['medicalRelevance'] {
+    private classifyPlaneForMedical(plane: any): ARPlane['medicalRelevance'] {
         // Classify plane based on medical context
         // This would use ML or heuristics to identify medical surfaces
         return 'none'; // Simplified
@@ -461,7 +461,7 @@ export class G3DMedicalAR {
         this.updateGuidanceVisualization(time, frame);
     }
 
-    private updateARObject(arObject: G3DARObject, time: number, frame: any): void {
+    private updateARObject(arObject: ARObject, time: number, frame: any): void {
         // Update AR object based on tracking and medical data
         if (arObject.trackingAnchor) {
             const anchor = this.trackingAnchors.get(arObject.trackingAnchor.id);
@@ -478,7 +478,7 @@ export class G3DMedicalAR {
         this.updateMedicalObjectProperties(arObject);
     }
 
-    private updateMedicalObjectProperties(arObject: G3DARObject): void {
+    private updateMedicalObjectProperties(arObject: ARObject): void {
         if (!this.currentSession) return;
 
         const context = this.currentSession.medicalContext;
@@ -610,7 +610,7 @@ export class G3DMedicalAR {
         }
     }
 
-    private calculateMinDistanceToStructure(structure: G3DCriticalStructure): number {
+    private calculateMinDistanceToStructure(structure: CriticalStructure): number {
         if (!this.currentSession) return Infinity;
 
         const cameraPos = this.currentSession.trackingData.cameraPosition;
@@ -641,14 +641,14 @@ export class G3DMedicalAR {
         // based on detected landmarks and tracking quality
     }
 
-    private calculateDistance(pos1: G3DVector3, pos2: G3DVector3): number {
+    private calculateDistance(pos1: Vector3, pos2: Vector3): number {
         const dx = pos1.x - pos2.x;
         const dy = pos1.y - pos2.y;
         const dz = pos1.z - pos2.z;
         return Math.sqrt(dx * dx + dy * dy + dz * dz);
     }
 
-    private addGuidanceInstruction(instruction: G3DGuidanceInstruction): void {
+    private addGuidanceInstruction(instruction: GuidanceInstruction): void {
         if (!this.guidanceSystem) return;
 
         // Remove duplicate instructions
@@ -669,8 +669,8 @@ export class G3DMedicalAR {
 
     // Public API
     public async startMedicalARSession(
-        sessionType: G3DARSession['sessionType'],
-        medicalContext: G3DMedicalARContext,
+        sessionType: ARSession['sessionType'],
+        medicalContext: MedicalARContext,
         userId: string
     ): Promise<string> {
         if (!this.isInitialized) {
@@ -679,7 +679,7 @@ export class G3DMedicalAR {
 
         const sessionId = `ar_session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
-        const session: G3DARSession = {
+        const session: ARSession = {
             id: sessionId,
             userId,
             patientId: medicalContext.patientData.id,
@@ -734,7 +734,7 @@ export class G3DMedicalAR {
         return sessionId;
     }
 
-    private async loadMedicalDataForAR(context: G3DMedicalARContext): Promise<void> {
+    private async loadMedicalDataForAR(context: MedicalARContext): Promise<void> {
         console.log(`Loading medical data for AR session: ${context.patientData.id}`);
 
         // Load anatomy models
@@ -751,9 +751,9 @@ export class G3DMedicalAR {
         }
     }
 
-    private async loadAnatomyModels(context: G3DMedicalARContext): Promise<void> {
+    private async loadAnatomyModels(context: MedicalARContext): Promise<void> {
         // Create anatomy AR objects based on body part
-        const anatomyObject: G3DARObject = {
+        const anatomyObject: ARObject = {
             id: `anatomy_${context.patientData.bodyPart}`,
             type: 'anatomy',
             position: { x: 0, y: 0, z: 0 },
@@ -771,11 +771,11 @@ export class G3DMedicalAR {
         this.arObjects.set(anatomyObject.id, anatomyObject);
     }
 
-    private async loadPathologyData(context: G3DMedicalARContext): Promise<void> {
+    private async loadPathologyData(context: MedicalARContext): Promise<void> {
         if (!context.imagingData.pathology) return;
 
         for (const pathology of context.imagingData.pathology) {
-            const pathologyObject: G3DARObject = {
+            const pathologyObject: ARObject = {
                 id: `pathology_${pathology}`,
                 type: 'pathology',
                 position: { x: 0, y: 0, z: 0 },
@@ -794,7 +794,7 @@ export class G3DMedicalAR {
         }
     }
 
-    private async setupGuidanceForProcedure(context: G3DMedicalARContext): Promise<void> {
+    private async setupGuidanceForProcedure(context: MedicalARContext): Promise<void> {
         if (!this.guidanceSystem) return;
 
         // Set up navigation path based on procedure
@@ -830,7 +830,7 @@ export class G3DMedicalAR {
         ];
     }
 
-    private getSafetyZonesForProcedure(procedureType: string): G3DSafetyZone[] {
+    private getSafetyZonesForProcedure(procedureType: string): SafetyZone[] {
         // Return procedure-specific safety zones
         return [
             {
@@ -844,7 +844,7 @@ export class G3DMedicalAR {
         ];
     }
 
-    private getCriticalStructures(bodyPart: string): G3DCriticalStructure[] {
+    private getCriticalStructures(bodyPart: string): CriticalStructure[] {
         // Return body part-specific critical structures
         return [
             {
@@ -868,7 +868,7 @@ export class G3DMedicalAR {
         ];
     }
 
-    private async initializePatientRegistration(context: G3DMedicalARContext): Promise<void> {
+    private async initializePatientRegistration(context: MedicalARContext): Promise<void> {
         // Initialize patient registration for accurate AR overlay
         this.patientRegistration = {
             landmarkPoints: [],
@@ -890,14 +890,14 @@ export class G3DMedicalAR {
 
     public async addLandmarkPoint(
         anatomicalName: string,
-        position3D: G3DVector3,
-        position2D: G3DVector2
+        position3D: Vector3,
+        position2D: Vector2
     ): Promise<void> {
         if (!this.patientRegistration) {
             throw new Error('Patient registration not initialized');
         }
 
-        const landmark: G3DLandmarkPoint = {
+        const landmark: LandmarkPoint = {
             id: `landmark_${Date.now()}`,
             anatomicalName,
             position3D,
@@ -933,19 +933,19 @@ export class G3DMedicalAR {
         return 0.85; // Simplified
     }
 
-    public getCurrentSession(): G3DARSession | null {
+    public getCurrentSession(): ARSession | null {
         return this.currentSession;
     }
 
-    public getARObjects(): G3DARObject[] {
+    public getARObjects(): ARObject[] {
         return Array.from(this.arObjects.values());
     }
 
-    public getGuidanceInstructions(): G3DGuidanceInstruction[] {
+    public getGuidanceInstructions(): GuidanceInstruction[] {
         return this.guidanceSystem?.currentGuidance || [];
     }
 
-    public getPatientRegistration(): G3DPatientRegistration | null {
+    public getPatientRegistration(): PatientRegistration | null {
         return this.patientRegistration;
     }
 
@@ -1006,14 +1006,14 @@ export class G3DMedicalAR {
 }
 
 // Supporting classes (simplified implementations)
-class G3DMedicalARRenderer {
-    constructor(private config: G3DMedicalARConfig) { }
+class MedicalARRenderer {
+    constructor(private config: MedicalARConfig) { }
 
     async initialize(): Promise<void> {
         console.log('Medical AR Renderer initialized');
     }
 
-    render(time: number, frame: any, arObjects: Map<string, G3DARObject>): void {
+    render(time: number, frame: any, arObjects: Map<string, ARObject>): void {
         // Render AR objects with medical-specific styling
         for (const arObject of arObjects.values()) {
             if (arObject.visible) {
@@ -1022,7 +1022,7 @@ class G3DMedicalARRenderer {
         }
     }
 
-    private renderARObject(arObject: G3DARObject): void {
+    private renderARObject(arObject: ARObject): void {
         // Render individual AR object based on medical type
         console.log(`Rendering ${arObject.type}: ${arObject.id}`);
     }
@@ -1032,8 +1032,8 @@ class G3DMedicalARRenderer {
     }
 }
 
-class G3DARTrackingManager {
-    constructor(private config: G3DMedicalARConfig) { }
+class ARTrackingManager {
+    constructor(private config: MedicalARConfig) { }
 
     async initialize(): Promise<void> {
         console.log('AR Tracking Manager initialized');
@@ -1044,4 +1044,4 @@ class G3DARTrackingManager {
     }
 }
 
-export default G3DMedicalAR;
+export default MedicalAR;

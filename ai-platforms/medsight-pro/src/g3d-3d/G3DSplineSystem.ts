@@ -5,7 +5,7 @@
 
 import { vec3, mat4 } from 'gl-matrix';
 
-export interface G3DSplineConfig {
+export interface SplineConfig {
     resolution: number;
     smoothness: number;
     enableAdaptiveResolution: boolean;
@@ -13,14 +13,14 @@ export interface G3DSplineConfig {
     medicalMode: boolean;
 }
 
-export interface G3DControlPoint {
+export interface ControlPoint {
     position: vec3;
     tangent?: vec3;
     weight?: number;
     metadata?: Map<string, any>;
 }
 
-export interface G3DSplinePoint {
+export interface SplinePoint {
     position: vec3;
     tangent: vec3;
     normal: vec3;
@@ -30,7 +30,7 @@ export interface G3DSplinePoint {
     distance: number;
 }
 
-export interface G3DMedicalSplineData {
+export interface MedicalSplineData {
     vesselType: 'artery' | 'vein' | 'capillary' | 'lymphatic';
     diameter: number;
     flow: number;
@@ -39,14 +39,14 @@ export interface G3DMedicalSplineData {
     clinicalRelevance: 'low' | 'medium' | 'high' | 'critical';
 }
 
-export class G3DSplineSystem {
-    private config: G3DSplineConfig;
-    private controlPoints: G3DControlPoint[] = [];
-    private splinePoints: G3DSplinePoint[] = [];
+export class SplineSystem {
+    private config: SplineConfig;
+    private controlPoints: ControlPoint[] = [];
+    private splinePoints: SplinePoint[] = [];
     private totalLength: number = 0;
-    private medicalData: G3DMedicalSplineData | null = null;
+    private medicalData: MedicalSplineData | null = null;
 
-    constructor(config: Partial<G3DSplineConfig> = {}) {
+    constructor(config: Partial<SplineConfig> = {}) {
         this.config = {
             resolution: 100,
             smoothness: 0.5,
@@ -58,7 +58,7 @@ export class G3DSplineSystem {
     }
 
     // Control Point Management
-    public addControlPoint(point: G3DControlPoint): void {
+    public addControlPoint(point: ControlPoint): void {
         this.controlPoints.push(point);
         this.regenerateSpline();
     }
@@ -72,7 +72,7 @@ export class G3DSplineSystem {
         return false;
     }
 
-    public updateControlPoint(index: number, point: G3DControlPoint): boolean {
+    public updateControlPoint(index: number, point: ControlPoint): boolean {
         if (index >= 0 && index < this.controlPoints.length) {
             this.controlPoints[index] = point;
             this.regenerateSpline();
@@ -82,10 +82,10 @@ export class G3DSplineSystem {
     }
 
     // Spline Generation
-    public generateCatmullRomSpline(): G3DSplinePoint[] {
+    public generateCatmullRomSpline(): SplinePoint[] {
         if (this.controlPoints.length < 4) return [];
 
-        const points: G3DSplinePoint[] = [];
+        const points: SplinePoint[] = [];
         const segments = this.config.resolution;
 
         for (let i = 0; i < this.controlPoints.length - 3; i++) {
@@ -99,7 +99,7 @@ export class G3DSplineSystem {
                 const position = this.catmullRomInterpolation(p0, p1, p2, p3, t);
                 const tangent = this.catmullRomTangent(p0, p1, p2, p3, t);
 
-                const splinePoint: G3DSplinePoint = {
+                const splinePoint: SplinePoint = {
                     position,
                     tangent,
                     normal: vec3.create(),
@@ -119,10 +119,10 @@ export class G3DSplineSystem {
         return points;
     }
 
-    public generateBezierSpline(): G3DSplinePoint[] {
+    public generateBezierSpline(): SplinePoint[] {
         if (this.controlPoints.length < 4) return [];
 
-        const points: G3DSplinePoint[] = [];
+        const points: SplinePoint[] = [];
         const segments = this.config.resolution;
 
         for (let i = 0; i < this.controlPoints.length - 3; i += 3) {
@@ -136,7 +136,7 @@ export class G3DSplineSystem {
                 const position = this.bezierInterpolation(p0, p1, p2, p3, t);
                 const tangent = this.bezierTangent(p0, p1, p2, p3, t);
 
-                const splinePoint: G3DSplinePoint = {
+                const splinePoint: SplinePoint = {
                     position,
                     tangent,
                     normal: vec3.create(),
@@ -156,10 +156,10 @@ export class G3DSplineSystem {
         return points;
     }
 
-    public generateBSpline(degree: number = 3): G3DSplinePoint[] {
+    public generateBSpline(degree: number = 3): SplinePoint[] {
         if (this.controlPoints.length < degree + 1) return [];
 
-        const points: G3DSplinePoint[] = [];
+        const points: SplinePoint[] = [];
         const n = this.controlPoints.length;
         const m = n + degree + 1;
 
@@ -181,7 +181,7 @@ export class G3DSplineSystem {
             const position = this.bSplineInterpolation(t, degree, knots);
             const tangent = this.bSplineTangent(t, degree, knots);
 
-            const splinePoint: G3DSplinePoint = {
+            const splinePoint: SplinePoint = {
                 position,
                 tangent,
                 normal: vec3.create(),
@@ -351,7 +351,7 @@ export class G3DSplineSystem {
     }
 
     // Frenet Frame Calculation
-    private calculateFrenetFrame(point: G3DSplinePoint): void {
+    private calculateFrenetFrame(point: SplinePoint): void {
         vec3.normalize(point.tangent, point.tangent);
 
         // Calculate normal (simplified)
@@ -368,7 +368,7 @@ export class G3DSplineSystem {
     }
 
     // Distance Calculation
-    private calculateDistances(points: G3DSplinePoint[]): void {
+    private calculateDistances(points: SplinePoint[]): void {
         let totalDistance = 0;
 
         for (let i = 0; i < points.length; i++) {
@@ -384,7 +384,7 @@ export class G3DSplineSystem {
     }
 
     // Spline Evaluation
-    public getPointAtParameter(t: number): G3DSplinePoint | null {
+    public getPointAtParameter(t: number): SplinePoint | null {
         if (this.splinePoints.length === 0) return null;
 
         const index = Math.floor(t * (this.splinePoints.length - 1));
@@ -393,7 +393,7 @@ export class G3DSplineSystem {
         return this.splinePoints[clampedIndex];
     }
 
-    public getPointAtDistance(distance: number): G3DSplinePoint | null {
+    public getPointAtDistance(distance: number): SplinePoint | null {
         if (this.splinePoints.length === 0 || this.totalLength === 0) return null;
 
         const t = distance / this.totalLength;
@@ -401,7 +401,7 @@ export class G3DSplineSystem {
     }
 
     // Medical-specific methods
-    public setMedicalData(data: G3DMedicalSplineData): void {
+    public setMedicalData(data: MedicalSplineData): void {
         this.medicalData = data;
         this.config.medicalMode = true;
     }
@@ -500,11 +500,11 @@ export class G3DSplineSystem {
         }
     }
 
-    public getControlPoints(): G3DControlPoint[] {
+    public getControlPoints(): ControlPoint[] {
         return [...this.controlPoints];
     }
 
-    public getSplinePoints(): G3DSplinePoint[] {
+    public getSplinePoints(): SplinePoint[] {
         return [...this.splinePoints];
     }
 
@@ -525,4 +525,4 @@ export class G3DSplineSystem {
     }
 }
 
-export default G3DSplineSystem;
+export default SplineSystem;

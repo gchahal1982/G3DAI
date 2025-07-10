@@ -11,7 +11,7 @@
  * - Real-time shader hot-reloading
  */
 
-export interface G3DShaderConfig {
+export interface ShaderConfig {
     enableHotReload: boolean;
     enableOptimization: boolean;
     enableMedicalShaders: boolean;
@@ -20,26 +20,26 @@ export interface G3DShaderConfig {
     enableDebugging: boolean;
 }
 
-export interface G3DShader {
+export interface Shader {
     id: string;
     name: string;
     type: 'vertex' | 'fragment' | 'compute' | 'geometry' | 'tessellation';
     source: string;
     compiled: boolean;
     medicalSpecific: boolean;
-    uniforms: G3DShaderUniform[];
-    attributes: G3DShaderAttribute[];
-    varyings: G3DShaderVarying[];
+    uniforms: ShaderUniform[];
+    attributes: ShaderAttribute[];
+    varyings: ShaderVarying[];
     defines: Map<string, string>;
     includes: string[];
 }
 
-export interface G3DShaderProgram {
+export interface ShaderProgram {
     id: string;
     name: string;
-    vertexShader: G3DShader;
-    fragmentShader: G3DShader;
-    computeShader?: G3DShader;
+    vertexShader: Shader;
+    fragmentShader: Shader;
+    computeShader?: Shader;
     program: WebGLProgram | null;
     uniforms: Map<string, WebGLUniformLocation>;
     attributes: Map<string, number>;
@@ -47,7 +47,7 @@ export interface G3DShaderProgram {
     linked: boolean;
 }
 
-export interface G3DShaderUniform {
+export interface ShaderUniform {
     name: string;
     type: 'float' | 'vec2' | 'vec3' | 'vec4' | 'mat3' | 'mat4' | 'sampler2D' | 'samplerCube' | 'sampler3D';
     location?: WebGLUniformLocation;
@@ -55,23 +55,23 @@ export interface G3DShaderUniform {
     medicalContext?: string;
 }
 
-export interface G3DShaderAttribute {
+export interface ShaderAttribute {
     name: string;
     type: 'float' | 'vec2' | 'vec3' | 'vec4' | 'mat3' | 'mat4';
     location?: number;
     medicalData?: boolean;
 }
 
-export interface G3DShaderVarying {
+export interface ShaderVarying {
     name: string;
     type: 'float' | 'vec2' | 'vec3' | 'vec4';
     interpolation: 'smooth' | 'flat' | 'noperspective';
 }
 
-export class G3DAdvancedShaders {
-    private config: G3DShaderConfig;
-    private shaders: Map<string, G3DShader> = new Map();
-    private programs: Map<string, G3DShaderProgram> = new Map();
+export class AdvancedShaders {
+    private config: ShaderConfig;
+    private shaders: Map<string, Shader> = new Map();
+    private programs: Map<string, ShaderProgram> = new Map();
     private shaderCache: Map<string, string> = new Map();
     private gl: WebGL2RenderingContext | null = null;
     private isInitialized: boolean = false;
@@ -280,7 +280,7 @@ export class G3DAdvancedShaders {
             }`
     };
 
-    constructor(config: Partial<G3DShaderConfig> = {}) {
+    constructor(config: Partial<ShaderConfig> = {}) {
         this.config = {
             enableHotReload: false,
             enableOptimization: true,
@@ -374,8 +374,8 @@ export class G3DAdvancedShaders {
         console.log('Default shader programs created');
     }
 
-    public createShader(shaderData: Partial<G3DShader>): G3DShader {
-        const shader: G3DShader = {
+    public createShader(shaderData: Partial<Shader>): Shader {
+        const shader: Shader = {
             id: shaderData.id || `shader_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
             name: shaderData.name || 'Unnamed Shader',
             type: shaderData.type || 'fragment',
@@ -400,8 +400,8 @@ export class G3DAdvancedShaders {
         vertexShaderId: string;
         fragmentShaderId: string;
         computeShaderId?: string;
-        medicalPurpose?: G3DShaderProgram['medicalPurpose'];
-    }): G3DShaderProgram | null {
+        medicalPurpose?: ShaderProgram['medicalPurpose'];
+    }): ShaderProgram | null {
         if (!this.gl) {
             console.error('WebGL context not available');
             return null;
@@ -415,7 +415,7 @@ export class G3DAdvancedShaders {
             return null;
         }
 
-        const program: G3DShaderProgram = {
+        const program: ShaderProgram = {
             id: programData.id || `program_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
             name: programData.name || 'Unnamed Program',
             vertexShader,
@@ -437,7 +437,7 @@ export class G3DAdvancedShaders {
         return null;
     }
 
-    private compileAndLinkProgram(program: G3DShaderProgram): boolean {
+    private compileAndLinkProgram(program: ShaderProgram): boolean {
         if (!this.gl) return false;
 
         const gl = this.gl;
@@ -489,7 +489,7 @@ export class G3DAdvancedShaders {
         return true;
     }
 
-    private compileShader(shader: G3DShader, type: number): WebGLShader | null {
+    private compileShader(shader: Shader, type: number): WebGLShader | null {
         if (!this.gl) return null;
 
         const gl = this.gl;
@@ -514,7 +514,7 @@ export class G3DAdvancedShaders {
         return shaderGL;
     }
 
-    private processShaderSource(shader: G3DShader): string {
+    private processShaderSource(shader: Shader): string {
         let source = shader.source;
 
         // Add defines
@@ -541,7 +541,7 @@ export class G3DAdvancedShaders {
         return source;
     }
 
-    private extractUniforms(program: G3DShaderProgram): void {
+    private extractUniforms(program: ShaderProgram): void {
         if (!this.gl || !program.program) return;
 
         const gl = this.gl;
@@ -558,7 +558,7 @@ export class G3DAdvancedShaders {
         }
     }
 
-    private extractAttributes(program: G3DShaderProgram): void {
+    private extractAttributes(program: ShaderProgram): void {
         if (!this.gl || !program.program) return;
 
         const gl = this.gl;
@@ -575,23 +575,23 @@ export class G3DAdvancedShaders {
         }
     }
 
-    public getShader(shaderId: string): G3DShader | null {
+    public getShader(shaderId: string): Shader | null {
         return this.shaders.get(shaderId) || null;
     }
 
-    public getProgram(programId: string): G3DShaderProgram | null {
+    public getProgram(programId: string): ShaderProgram | null {
         return this.programs.get(programId) || null;
     }
 
-    public getAllShaders(): G3DShader[] {
+    public getAllShaders(): Shader[] {
         return Array.from(this.shaders.values());
     }
 
-    public getAllPrograms(): G3DShaderProgram[] {
+    public getAllPrograms(): ShaderProgram[] {
         return Array.from(this.programs.values());
     }
 
-    public getMedicalPrograms(): G3DShaderProgram[] {
+    public getMedicalPrograms(): ShaderProgram[] {
         return Array.from(this.programs.values()).filter(p =>
             p.medicalPurpose !== 'general'
         );
@@ -721,4 +721,4 @@ export class G3DAdvancedShaders {
     }
 }
 
-export default G3DAdvancedShaders;
+export default AdvancedShaders;

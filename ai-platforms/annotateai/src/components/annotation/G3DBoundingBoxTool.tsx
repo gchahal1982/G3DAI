@@ -5,11 +5,11 @@
  */
 
 import React, { useRef, useEffect, useState, useCallback } from 'react';
-import { G3DNativeRenderer } from '../../g3d-integration/G3DNativeRenderer';
-import { G3DSceneManager } from '../../g3d-integration/G3DSceneManager';
-import { G3DMaterialSystem } from '../../g3d-integration/G3DMaterialSystem';
-import { G3DGeometryProcessor } from '../../g3d-integration/G3DGeometryProcessor';
-import { G3DPerformanceOptimizer } from '../../g3d-integration/G3DPerformanceOptimizer';
+import { NativeRenderer } from '../../integration/G3DNativeRenderer';
+import { SceneManager } from '../../integration/G3DSceneManager';
+import { MaterialSystem } from '../../integration/G3DMaterialSystem';
+import { GeometryProcessor } from '../../integration/G3DGeometryProcessor';
+import { PerformanceOptimizer } from '../../integration/G3DPerformanceOptimizer';
 
 // Types and Interfaces
 interface BoundingBox3D {
@@ -70,7 +70,7 @@ interface InteractionState {
     resizeHandle: string | null;
 }
 
-interface G3DBoundingBoxToolProps {
+interface BoundingBoxToolProps {
     imageData: ImageData;
     pointCloudData?: PointCloudData;
     onBoxCreate: (box: BoundingBox3D) => void;
@@ -117,7 +117,7 @@ interface ImageData {
 }
 
 // Main Component
-export const G3DBoundingBoxTool: React.FC<G3DBoundingBoxToolProps> = ({
+export const G3DBoundingBoxTool: React.FC<BoundingBoxToolProps> = ({
     imageData,
     pointCloudData,
     onBoxCreate,
@@ -129,11 +129,11 @@ export const G3DBoundingBoxTool: React.FC<G3DBoundingBoxToolProps> = ({
     aiAssistance
 }) => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
-    const rendererRef = useRef<G3DNativeRenderer | null>(null);
-    const sceneRef = useRef<G3DSceneManager | null>(null);
-    const materialsRef = useRef<G3DMaterialSystem | null>(null);
-    const geometryRef = useRef<G3DGeometryProcessor | null>(null);
-    const optimizerRef = useRef<G3DPerformanceOptimizer | null>(null);
+    const rendererRef = useRef<NativeRenderer | null>(null);
+    const sceneRef = useRef<SceneManager | null>(null);
+    const materialsRef = useRef<MaterialSystem | null>(null);
+    const geometryRef = useRef<GeometryProcessor | null>(null);
+    const optimizerRef = useRef<PerformanceOptimizer | null>(null);
 
     const [boxes, setBoxes] = useState<Map<string, BoundingBox3D>>(new Map());
     const [annotationState, setAnnotationState] = useState<AnnotationState>({
@@ -170,24 +170,24 @@ export const G3DBoundingBoxTool: React.FC<G3DBoundingBoxToolProps> = ({
         const initializeG3D = async () => {
             try {
                 // Initialize renderer with WebGPU/WebGL2
-                const renderer = new G3DNativeRenderer(canvasRef.current!);
+                const renderer = new NativeRenderer(canvasRef.current!);
                 await renderer.init();
                 rendererRef.current = renderer;
 
                 // Initialize scene manager
-                const scene = new G3DSceneManager(renderer);
+                const scene = new SceneManager(renderer);
                 sceneRef.current = scene;
 
                 // Initialize materials system
-                const materials = new G3DMaterialSystem();
+                const materials = new MaterialSystem();
                 materialsRef.current = materials;
 
                 // Initialize geometry processor
-                const geometry = new G3DGeometryProcessor();
+                const geometry = new GeometryProcessor();
                 geometryRef.current = geometry;
 
                 // Initialize performance optimizer
-                const optimizer = new G3DPerformanceOptimizer();
+                const optimizer = new PerformanceOptimizer();
                 optimizerRef.current = optimizer;
 
                 // Set up scene

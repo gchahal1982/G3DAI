@@ -3,7 +3,7 @@
  * Advanced memory management and optimization for medical 3D applications
  */
 
-export interface G3DMemoryConfig {
+export interface MemoryConfig {
     maxTotalMemory: number;
     maxTextureMemory: number;
     maxBufferMemory: number;
@@ -15,7 +15,7 @@ export interface G3DMemoryConfig {
     poolSizes: number[];
 }
 
-export interface G3DMemoryBlock {
+export interface MemoryBlock {
     id: string;
     type: 'texture' | 'buffer' | 'medical' | 'geometry' | 'shader' | 'other';
     size: number;
@@ -23,12 +23,12 @@ export interface G3DMemoryBlock {
     refCount: number;
     lastAccessed: number;
     priority: 'low' | 'medium' | 'high' | 'critical';
-    medicalContext?: G3DMedicalMemoryContext;
+    medicalContext?: MedicalMemoryContext;
     pooled: boolean;
     allocated: boolean;
 }
 
-export interface G3DMedicalMemoryContext {
+export interface MedicalMemoryContext {
     modality: string;
     studyId: string;
     seriesId: string;
@@ -38,15 +38,15 @@ export interface G3DMedicalMemoryContext {
     compressionLevel: number;
 }
 
-export interface G3DMemoryPool {
+export interface MemoryPool {
     blockSize: number;
     maxBlocks: number;
-    freeBlocks: G3DMemoryBlock[];
-    usedBlocks: G3DMemoryBlock[];
+    freeBlocks: MemoryBlock[];
+    usedBlocks: MemoryBlock[];
     totalAllocated: number;
 }
 
-export interface G3DMemoryStats {
+export interface MemoryStats {
     totalAllocated: number;
     totalUsed: number;
     totalFree: number;
@@ -58,10 +58,10 @@ export interface G3DMemoryStats {
     poolHitRatio: number;
 }
 
-export class G3DMemoryManager {
-    private config: G3DMemoryConfig;
-    private memoryBlocks: Map<string, G3DMemoryBlock> = new Map();
-    private memoryPools: Map<number, G3DMemoryPool> = new Map();
+export class MemoryManager {
+    private config: MemoryConfig;
+    private memoryBlocks: Map<string, MemoryBlock> = new Map();
+    private memoryPools: Map<number, MemoryPool> = new Map();
     private totalAllocated: number = 0;
     private gcCount: number = 0;
     private accessCounter: number = 0;
@@ -69,7 +69,7 @@ export class G3DMemoryManager {
     private compressionWorker: Worker | null = null;
     private isInitialized: boolean = false;
 
-    constructor(config: Partial<G3DMemoryConfig> = {}) {
+    constructor(config: Partial<MemoryConfig> = {}) {
         this.config = {
             maxTotalMemory: 2 * 1024 * 1024 * 1024, // 2GB
             maxTextureMemory: 1024 * 1024 * 1024, // 1GB
@@ -116,7 +116,7 @@ export class G3DMemoryManager {
 
     private initializeMemoryPools(): void {
         for (const size of this.config.poolSizes) {
-            const pool: G3DMemoryPool = {
+            const pool: MemoryPool = {
                 blockSize: size,
                 maxBlocks: Math.floor(this.config.maxTotalMemory / (size * 10)), // 10% of max memory per pool
                 freeBlocks: [],
@@ -177,9 +177,9 @@ export class G3DMemoryManager {
     // Memory Allocation
     public allocate(
         size: number,
-        type: G3DMemoryBlock['type'],
-        priority: G3DMemoryBlock['priority'] = 'medium',
-        medicalContext?: G3DMedicalMemoryContext
+        type: MemoryBlock['type'],
+        priority: MemoryBlock['priority'] = 'medium',
+        medicalContext?: MedicalMemoryContext
     ): string | null {
         if (!this.isInitialized) {
             throw new Error('Memory manager not initialized');
@@ -217,7 +217,7 @@ export class G3DMemoryManager {
 
         // Allocate new block
         const blockId = this.generateBlockId();
-        const block: G3DMemoryBlock = {
+        const block: MemoryBlock = {
             id: blockId,
             type,
             size,
@@ -242,9 +242,9 @@ export class G3DMemoryManager {
 
     private allocateFromPool(
         size: number,
-        type: G3DMemoryBlock['type'],
-        priority: G3DMemoryBlock['priority'],
-        medicalContext?: G3DMedicalMemoryContext
+        type: MemoryBlock['type'],
+        priority: MemoryBlock['priority'],
+        medicalContext?: MedicalMemoryContext
     ): string | null {
         // Find the smallest pool that can accommodate the size
         const suitablePoolSize = this.config.poolSizes.find(poolSize => poolSize >= size);
@@ -257,7 +257,7 @@ export class G3DMemoryManager {
             // Try to create new block in pool
             if (pool && pool.totalAllocated + suitablePoolSize <= pool.maxBlocks * suitablePoolSize) {
                 const blockId = this.generateBlockId();
-                const block: G3DMemoryBlock = {
+                const block: MemoryBlock = {
                     id: blockId,
                     type,
                     size: suitablePoolSize,
@@ -295,7 +295,7 @@ export class G3DMemoryManager {
         return block.id;
     }
 
-    private checkTypeSpecificLimits(size: number, type: G3DMemoryBlock['type']): boolean {
+    private checkTypeSpecificLimits(size: number, type: MemoryBlock['type']): boolean {
         const currentTypeMemory = this.getMemoryUsageByType(type);
 
         switch (type) {
@@ -310,7 +310,7 @@ export class G3DMemoryManager {
         }
     }
 
-    private getMemoryUsageByType(type: G3DMemoryBlock['type']): number {
+    private getMemoryUsageByType(type: MemoryBlock['type']): number {
         let usage = 0;
         for (const block of this.memoryBlocks.values()) {
             if (block.type === type && block.allocated) {
@@ -345,7 +345,7 @@ export class G3DMemoryManager {
         return true;
     }
 
-    private returnToPool(block: G3DMemoryBlock): void {
+    private returnToPool(block: MemoryBlock): void {
         const pool = this.memoryPools.get(block.size);
         if (!pool) return;
 
@@ -365,7 +365,7 @@ export class G3DMemoryManager {
     }
 
     // Memory Access
-    public getBlock(blockId: string): G3DMemoryBlock | null {
+    public getBlock(blockId: string): MemoryBlock | null {
         const block = this.memoryBlocks.get(blockId);
         if (block && block.allocated) {
             block.lastAccessed = this.accessCounter++;
@@ -503,8 +503,8 @@ export class G3DMemoryManager {
     }
 
     // Memory Statistics
-    public getMemoryStats(): G3DMemoryStats {
-        const stats: G3DMemoryStats = {
+    public getMemoryStats(): MemoryStats {
+        const stats: MemoryStats = {
             totalAllocated: this.totalAllocated,
             totalUsed: 0,
             totalFree: this.config.maxTotalMemory - this.totalAllocated,
@@ -563,15 +563,15 @@ export class G3DMemoryManager {
     public allocateMedicalVolume(
         dimensions: [number, number, number],
         bytesPerVoxel: number,
-        medicalContext: G3DMedicalMemoryContext
+        medicalContext: MedicalMemoryContext
     ): string | null {
         const size = dimensions[0] * dimensions[1] * dimensions[2] * bytesPerVoxel;
 
         return this.allocate(size, 'medical', 'high', medicalContext);
     }
 
-    public getMedicalDataByStudy(studyId: string): G3DMemoryBlock[] {
-        const blocks: G3DMemoryBlock[] = [];
+    public getMedicalDataByStudy(studyId: string): MemoryBlock[] {
+        const blocks: MemoryBlock[] = [];
 
         for (const block of this.memoryBlocks.values()) {
             if (block.allocated &&
@@ -666,4 +666,4 @@ export class G3DMemoryManager {
     }
 }
 
-export default G3DMemoryManager;
+export default MemoryManager;

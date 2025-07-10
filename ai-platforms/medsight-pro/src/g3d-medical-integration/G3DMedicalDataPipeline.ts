@@ -11,7 +11,7 @@
  * - Data quality monitoring and reporting
  */
 
-export interface G3DMedicalDataPipelineConfig {
+export interface MedicalDataPipelineConfig {
     enableRealTimeProcessing: boolean;
     enableBatchProcessing: boolean;
     enableDataValidation: boolean;
@@ -25,7 +25,7 @@ export interface G3DMedicalDataPipelineConfig {
     processingTimeout: number; // seconds
 }
 
-export interface G3DDataPipelineJob {
+export interface DataPipelineJob {
     id: string;
     name: string;
     type: 'extract' | 'transform' | 'load' | 'validate' | 'process';
@@ -33,25 +33,25 @@ export interface G3DDataPipelineJob {
     priority: 'low' | 'normal' | 'high' | 'critical';
     sourceType: 'dicom' | 'hl7' | 'fhir' | 'database' | 'file' | 'api';
     targetType: 'database' | 'file' | 'api' | 'storage' | 'queue';
-    configuration: G3DJobConfiguration;
-    medicalContext: G3DMedicalContext;
+    configuration: JobConfiguration;
+    medicalContext: MedicalContext;
     createdAt: number;
     startedAt?: number;
     completedAt?: number;
     progress: number;
     logs: string[];
-    metrics: G3DJobMetrics;
+    metrics: JobMetrics;
 }
 
-export interface G3DJobConfiguration {
-    sourceConfig: G3DSourceConfig;
-    transformConfig: G3DTransformConfig;
-    targetConfig: G3DTargetConfig;
-    validationConfig: G3DValidationConfig;
-    retryConfig: G3DRetryConfig;
+export interface JobConfiguration {
+    sourceConfig: SourceConfig;
+    transformConfig: TransformConfig;
+    targetConfig: TargetConfig;
+    validationConfig: ValidationConfig;
+    retryConfig: RetryConfig;
 }
 
-export interface G3DSourceConfig {
+export interface SourceConfig {
     type: string;
     connection: any;
     query?: string;
@@ -60,15 +60,15 @@ export interface G3DSourceConfig {
     medicalDataTypes?: string[];
 }
 
-export interface G3DTransformConfig {
+export interface TransformConfig {
     enabled: boolean;
-    transformations: G3DTransformation[];
+    transformations: Transformation[];
     medicalStandardization: boolean;
     dataEnrichment: boolean;
     qualityChecks: boolean;
 }
 
-export interface G3DTransformation {
+export interface Transformation {
     id: string;
     type: 'map' | 'filter' | 'aggregate' | 'join' | 'convert' | 'validate' | 'enrich';
     configuration: any;
@@ -76,7 +76,7 @@ export interface G3DTransformation {
     required: boolean;
 }
 
-export interface G3DTargetConfig {
+export interface TargetConfig {
     type: string;
     connection: any;
     format?: string;
@@ -85,15 +85,15 @@ export interface G3DTargetConfig {
     medicalCompliance?: boolean;
 }
 
-export interface G3DValidationConfig {
+export interface ValidationConfig {
     enabled: boolean;
-    rules: G3DValidationRule[];
+    rules: ValidationRule[];
     medicalStandards: string[];
     strictMode: boolean;
     failOnError: boolean;
 }
 
-export interface G3DValidationRule {
+export interface ValidationRule {
     id: string;
     type: 'required' | 'format' | 'range' | 'pattern' | 'medical' | 'custom';
     field: string;
@@ -102,7 +102,7 @@ export interface G3DValidationRule {
     severity: 'warning' | 'error' | 'critical';
 }
 
-export interface G3DRetryConfig {
+export interface RetryConfig {
     enabled: boolean;
     maxRetries: number;
     retryDelay: number; // seconds
@@ -110,7 +110,7 @@ export interface G3DRetryConfig {
     retryOnErrors: string[];
 }
 
-export interface G3DMedicalContext {
+export interface MedicalContext {
     facilityId: string;
     departmentId: string;
     modalityType?: string;
@@ -121,7 +121,7 @@ export interface G3DMedicalContext {
     complianceRequirements: string[];
 }
 
-export interface G3DJobMetrics {
+export interface JobMetrics {
     recordsProcessed: number;
     recordsSucceeded: number;
     recordsFailed: number;
@@ -133,7 +133,7 @@ export interface G3DJobMetrics {
     dataQualityScore: number;
 }
 
-export interface G3DDataQualityReport {
+export interface DataQualityReport {
     jobId: string;
     timestamp: number;
     overallScore: number;
@@ -142,11 +142,11 @@ export interface G3DDataQualityReport {
     consistency: number;
     timeliness: number;
     validity: number;
-    issues: G3DDataQualityIssue[];
+    issues: DataQualityIssue[];
     recommendations: string[];
 }
 
-export interface G3DDataQualityIssue {
+export interface DataQualityIssue {
     type: 'missing_data' | 'invalid_format' | 'inconsistent_data' | 'duplicate_data' | 'outdated_data';
     severity: 'low' | 'medium' | 'high' | 'critical';
     field: string;
@@ -156,7 +156,7 @@ export interface G3DDataQualityIssue {
     suggestedFix: string;
 }
 
-export interface G3DDICOMProcessingConfig {
+export interface DICOMProcessingConfig {
     enableMetadataExtraction: boolean;
     enableImageProcessing: boolean;
     enableAnonymization: boolean;
@@ -166,7 +166,7 @@ export interface G3DDICOMProcessingConfig {
     anonymizationLevel: 'basic' | 'full' | 'custom';
 }
 
-export interface G3DHL7ProcessingConfig {
+export interface HL7ProcessingConfig {
     version: 'v2' | 'v3' | 'FHIR';
     messageTypes: string[];
     enableValidation: boolean;
@@ -174,22 +174,22 @@ export interface G3DHL7ProcessingConfig {
     outputFormat: 'hl7' | 'fhir' | 'json' | 'xml';
 }
 
-export class G3DMedicalDataPipeline {
-    private config: G3DMedicalDataPipelineConfig;
-    private activeJobs: Map<string, G3DDataPipelineJob> = new Map();
-    private jobQueue: G3DDataPipelineJob[] = [];
-    private jobHistory: Map<string, G3DDataPipelineJob> = new Map();
-    private dataQualityReports: Map<string, G3DDataQualityReport> = new Map();
+export class MedicalDataPipeline {
+    private config: MedicalDataPipelineConfig;
+    private activeJobs: Map<string, DataPipelineJob> = new Map();
+    private jobQueue: DataPipelineJob[] = [];
+    private jobHistory: Map<string, DataPipelineJob> = new Map();
+    private dataQualityReports: Map<string, DataQualityReport> = new Map();
     private isInitialized: boolean = false;
     private isProcessing: boolean = false;
 
-    private extractionEngine: G3DExtractionEngine | null = null;
-    private transformationEngine: G3DTransformationEngine | null = null;
-    private loadingEngine: G3DLoadingEngine | null = null;
-    private validationEngine: G3DValidationEngine | null = null;
-    private qualityEngine: G3DQualityEngine | null = null;
+    private extractionEngine: ExtractionEngine | null = null;
+    private transformationEngine: TransformationEngine | null = null;
+    private loadingEngine: LoadingEngine | null = null;
+    private validationEngine: ValidationEngine | null = null;
+    private qualityEngine: QualityEngine | null = null;
 
-    constructor(config: Partial<G3DMedicalDataPipelineConfig> = {}) {
+    constructor(config: Partial<MedicalDataPipelineConfig> = {}) {
         this.config = {
             enableRealTimeProcessing: true,
             enableBatchProcessing: true,
@@ -211,26 +211,26 @@ export class G3DMedicalDataPipeline {
             console.log('Initializing G3D Medical Data Pipeline...');
 
             // Initialize extraction engine
-            this.extractionEngine = new G3DExtractionEngine(this.config);
+            this.extractionEngine = new ExtractionEngine(this.config);
             await this.extractionEngine.initialize();
 
             // Initialize transformation engine
-            this.transformationEngine = new G3DTransformationEngine(this.config);
+            this.transformationEngine = new TransformationEngine(this.config);
             await this.transformationEngine.initialize();
 
             // Initialize loading engine
-            this.loadingEngine = new G3DLoadingEngine(this.config);
+            this.loadingEngine = new LoadingEngine(this.config);
             await this.loadingEngine.initialize();
 
             // Initialize validation engine
             if (this.config.enableDataValidation) {
-                this.validationEngine = new G3DValidationEngine(this.config);
+                this.validationEngine = new ValidationEngine(this.config);
                 await this.validationEngine.initialize();
             }
 
             // Initialize quality engine
             if (this.config.enableDataQualityMonitoring) {
-                this.qualityEngine = new G3DQualityEngine(this.config);
+                this.qualityEngine = new QualityEngine(this.config);
                 await this.qualityEngine.initialize();
             }
 
@@ -298,7 +298,7 @@ export class G3DMedicalDataPipeline {
         }
     }
 
-    private getNextJobFromQueue(): G3DDataPipelineJob | null {
+    private getNextJobFromQueue(): DataPipelineJob | null {
         if (this.jobQueue.length === 0) {
             return null;
         }
@@ -319,7 +319,7 @@ export class G3DMedicalDataPipeline {
         return this.jobQueue.shift() || null;
     }
 
-    private async executeJob(job: G3DDataPipelineJob): Promise<void> {
+    private async executeJob(job: DataPipelineJob): Promise<void> {
         job.logs.push(`Starting job execution: ${job.name}`);
 
         switch (job.type) {
@@ -351,7 +351,7 @@ export class G3DMedicalDataPipeline {
         job.logs.push(`Job execution completed: ${job.name}`);
     }
 
-    private async executeExtractionJob(job: G3DDataPipelineJob): Promise<void> {
+    private async executeExtractionJob(job: DataPipelineJob): Promise<void> {
         if (!this.extractionEngine) {
             throw new Error('Extraction engine not initialized');
         }
@@ -370,7 +370,7 @@ export class G3DMedicalDataPipeline {
         job.logs.push('Data extraction completed');
     }
 
-    private async executeTransformationJob(job: G3DDataPipelineJob): Promise<void> {
+    private async executeTransformationJob(job: DataPipelineJob): Promise<void> {
         if (!this.transformationEngine) {
             throw new Error('Transformation engine not initialized');
         }
@@ -393,7 +393,7 @@ export class G3DMedicalDataPipeline {
         job.logs.push('Data transformation completed');
     }
 
-    private async executeLoadingJob(job: G3DDataPipelineJob): Promise<void> {
+    private async executeLoadingJob(job: DataPipelineJob): Promise<void> {
         if (!this.loadingEngine) {
             throw new Error('Loading engine not initialized');
         }
@@ -415,7 +415,7 @@ export class G3DMedicalDataPipeline {
         job.logs.push('Data loading completed');
     }
 
-    private async executeValidationJob(job: G3DDataPipelineJob): Promise<void> {
+    private async executeValidationJob(job: DataPipelineJob): Promise<void> {
         if (!this.validationEngine) {
             throw new Error('Validation engine not initialized');
         }
@@ -442,7 +442,7 @@ export class G3DMedicalDataPipeline {
         job.logs.push('Data validation completed');
     }
 
-    private async executeFullPipelineJob(job: G3DDataPipelineJob): Promise<void> {
+    private async executeFullPipelineJob(job: DataPipelineJob): Promise<void> {
         job.logs.push('Starting full pipeline execution...');
 
         // Extract
@@ -468,12 +468,12 @@ export class G3DMedicalDataPipeline {
     }
 
     // Public API
-    public async submitJob(jobConfig: Partial<G3DDataPipelineJob>): Promise<string> {
+    public async submitJob(jobConfig: Partial<DataPipelineJob>): Promise<string> {
         if (!this.isInitialized) {
             throw new Error('Pipeline not initialized');
         }
 
-        const job: G3DDataPipelineJob = {
+        const job: DataPipelineJob = {
             id: `job_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
             name: jobConfig.name || 'Unnamed Job',
             type: jobConfig.type || 'process',
@@ -505,7 +505,7 @@ export class G3DMedicalDataPipeline {
         return job.id;
     }
 
-    private getDefaultJobConfiguration(): G3DJobConfiguration {
+    private getDefaultJobConfiguration(): JobConfiguration {
         return {
             sourceConfig: {
                 type: 'database',
@@ -542,7 +542,7 @@ export class G3DMedicalDataPipeline {
         };
     }
 
-    private getDefaultMedicalContext(): G3DMedicalContext {
+    private getDefaultMedicalContext(): MedicalContext {
         return {
             facilityId: 'default_facility',
             departmentId: 'default_department',
@@ -553,10 +553,10 @@ export class G3DMedicalDataPipeline {
     }
 
     public async processDICOMData(
-        dicomConfig: G3DDICOMProcessingConfig,
-        medicalContext: G3DMedicalContext
+        dicomConfig: DICOMProcessingConfig,
+        medicalContext: MedicalContext
     ): Promise<string> {
-        const jobConfig: Partial<G3DDataPipelineJob> = {
+        const jobConfig: Partial<DataPipelineJob> = {
             name: 'DICOM Processing Job',
             type: 'process',
             priority: 'high',
@@ -577,10 +577,10 @@ export class G3DMedicalDataPipeline {
     }
 
     public async processHL7Data(
-        hl7Config: G3DHL7ProcessingConfig,
-        medicalContext: G3DMedicalContext
+        hl7Config: HL7ProcessingConfig,
+        medicalContext: MedicalContext
     ): Promise<string> {
-        const jobConfig: Partial<G3DDataPipelineJob> = {
+        const jobConfig: Partial<DataPipelineJob> = {
             name: 'HL7 Processing Job',
             type: 'process',
             priority: 'normal',
@@ -600,21 +600,21 @@ export class G3DMedicalDataPipeline {
         return await this.submitJob(jobConfig);
     }
 
-    public getJobStatus(jobId: string): G3DDataPipelineJob | null {
+    public getJobStatus(jobId: string): DataPipelineJob | null {
         return this.activeJobs.get(jobId) || this.jobHistory.get(jobId) || null;
     }
 
-    public getActiveJobs(): G3DDataPipelineJob[] {
+    public getActiveJobs(): DataPipelineJob[] {
         return Array.from(this.activeJobs.values());
     }
 
-    public getJobHistory(limit: number = 100): G3DDataPipelineJob[] {
+    public getJobHistory(limit: number = 100): DataPipelineJob[] {
         return Array.from(this.jobHistory.values())
             .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0))
             .slice(0, limit);
     }
 
-    public getDataQualityReport(jobId: string): G3DDataQualityReport | null {
+    public getDataQualityReport(jobId: string): DataQualityReport | null {
         return this.dataQualityReports.get(jobId) || null;
     }
 
@@ -630,7 +630,7 @@ export class G3DMedicalDataPipeline {
         return false;
     }
 
-    public getPipelineMetrics(): G3DPipelineMetrics {
+    public getPipelineMetrics(): PipelineMetrics {
         const activeJobsCount = this.activeJobs.size;
         const queuedJobsCount = this.jobQueue.length;
         const completedJobs = Array.from(this.jobHistory.values()).filter(job => job.status === 'completed');
@@ -702,7 +702,7 @@ export class G3DMedicalDataPipeline {
 }
 
 // Supporting interfaces
-interface G3DPipelineMetrics {
+interface PipelineMetrics {
     activeJobs: number;
     queuedJobs: number;
     completedJobs: number;
@@ -714,14 +714,14 @@ interface G3DPipelineMetrics {
 }
 
 // Supporting classes (simplified implementations)
-class G3DExtractionEngine {
-    constructor(private config: G3DMedicalDataPipelineConfig) { }
+class ExtractionEngine {
+    constructor(private config: MedicalDataPipelineConfig) { }
 
     async initialize(): Promise<void> {
         console.log('Extraction Engine initialized');
     }
 
-    async extract(sourceConfig: G3DSourceConfig, medicalContext: G3DMedicalContext): Promise<{ recordCount: number }> {
+    async extract(sourceConfig: SourceConfig, medicalContext: MedicalContext): Promise<{ recordCount: number }> {
         console.log(`Extracting data from ${sourceConfig.type}`);
         // Simulate extraction
         await new Promise(resolve => setTimeout(resolve, 1000));
@@ -733,14 +733,14 @@ class G3DExtractionEngine {
     }
 }
 
-class G3DTransformationEngine {
-    constructor(private config: G3DMedicalDataPipelineConfig) { }
+class TransformationEngine {
+    constructor(private config: MedicalDataPipelineConfig) { }
 
     async initialize(): Promise<void> {
         console.log('Transformation Engine initialized');
     }
 
-    async transform(transformConfig: G3DTransformConfig, medicalContext: G3DMedicalContext): Promise<{
+    async transform(transformConfig: TransformConfig, medicalContext: MedicalContext): Promise<{
         recordsProcessed: number;
         recordsSucceeded: number;
         recordsFailed: number;
@@ -762,14 +762,14 @@ class G3DTransformationEngine {
     }
 }
 
-class G3DLoadingEngine {
-    constructor(private config: G3DMedicalDataPipelineConfig) { }
+class LoadingEngine {
+    constructor(private config: MedicalDataPipelineConfig) { }
 
     async initialize(): Promise<void> {
         console.log('Loading Engine initialized');
     }
 
-    async load(targetConfig: G3DTargetConfig, medicalContext: G3DMedicalContext): Promise<{
+    async load(targetConfig: TargetConfig, medicalContext: MedicalContext): Promise<{
         recordsProcessed: number;
         recordsSucceeded: number;
     }> {
@@ -788,14 +788,14 @@ class G3DLoadingEngine {
     }
 }
 
-class G3DValidationEngine {
-    constructor(private config: G3DMedicalDataPipelineConfig) { }
+class ValidationEngine {
+    constructor(private config: MedicalDataPipelineConfig) { }
 
     async initialize(): Promise<void> {
         console.log('Validation Engine initialized');
     }
 
-    async validate(validationConfig: G3DValidationConfig, medicalContext: G3DMedicalContext): Promise<{
+    async validate(validationConfig: ValidationConfig, medicalContext: MedicalContext): Promise<{
         recordsProcessed: number;
         validRecords: number;
         invalidRecords: number;
@@ -817,14 +817,14 @@ class G3DValidationEngine {
     }
 }
 
-class G3DQualityEngine {
-    constructor(private config: G3DMedicalDataPipelineConfig) { }
+class QualityEngine {
+    constructor(private config: MedicalDataPipelineConfig) { }
 
     async initialize(): Promise<void> {
         console.log('Quality Engine initialized');
     }
 
-    async generateReport(job: G3DDataPipelineJob): Promise<G3DDataQualityReport> {
+    async generateReport(job: DataPipelineJob): Promise<DataQualityReport> {
         console.log(`Generating data quality report for job: ${job.id}`);
 
         return {
@@ -859,4 +859,4 @@ class G3DQualityEngine {
     }
 }
 
-export default G3DMedicalDataPipeline;
+export default MedicalDataPipeline;

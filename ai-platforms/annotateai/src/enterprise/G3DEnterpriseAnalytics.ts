@@ -4,7 +4,7 @@
  * Real-time data processing and predictive analytics
  */
 
-import { G3DGPUCompute } from '../g3d-performance/G3DGPUCompute';
+import { GPUCompute } from '../performance/G3DGPUCompute';
 
 export interface AnalyticsConfig {
     dataSources: DataSource[];
@@ -737,8 +737,8 @@ export interface RealTimeMetrics {
     streamHealth: number;
 }
 
-export class G3DEnterpriseAnalytics {
-    private gpuCompute: G3DGPUCompute;
+export class EnterpriseAnalytics {
+    private gpuCompute: GPUCompute;
     private config: AnalyticsConfig;
     private dataSources: Map<string, DataSource>;
     private dashboards: Map<string, Dashboard>;
@@ -746,7 +746,7 @@ export class G3DEnterpriseAnalytics {
     private metrics: AnalyticsMetrics;
 
     constructor(config: AnalyticsConfig) {
-        this.gpuCompute = new G3DGPUCompute();
+        this.gpuCompute = new GPUCompute();
         this.config = config;
         this.dataSources = new Map();
         this.dashboards = new Map();
@@ -1294,4 +1294,4 @@ interface AnalyticsReport {
     recommendations: string[];
 }
 
-export default G3DEnterpriseAnalytics;
+export default EnterpriseAnalytics;

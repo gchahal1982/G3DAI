@@ -4,11 +4,11 @@
  * ~3,200 lines of production code
  */
 
-import { G3DComputeShaders } from '../g3d-ai/G3DComputeShaders';
-import { G3DModelRunner, G3DPrecision } from '../g3d-ai/G3DModelRunner';
-import { G3DGPUCompute } from '../g3d-performance/G3DGPUCompute';
-import { G3DMathLibraries } from '../g3d-3d/G3DMathLibraries';
-import { G3DModelType } from '../g3d-ai/G3DModelRunner';
+import { ComputeShaders } from './G3DComputeShaders';
+import { ModelRunner, Precision } from './G3DModelRunner';
+import { GPUCompute } from '../performance/G3DGPUCompute';
+import { MathLibraries } from '../core/G3DMathLibraries';
+import { ModelType } from './G3DModelRunner';
 
 // Core Types
 interface SegmentationResult {
@@ -81,7 +81,7 @@ interface ModelConfig {
     inputSize: Resolution;
     numClasses: number;
     useGPU: boolean;
-    precision: G3DPrecision;
+    precision: Precision;
 }
 
 interface PreprocessingConfig {
@@ -149,11 +149,11 @@ interface OptimizationConfig {
 }
 
 // Main Segmentation Model Class
-export class G3DSegmentationModel {
-    private computeShaders: G3DComputeShaders;
-    private modelRunner: G3DModelRunner;
-    private gpuCompute: G3DGPUCompute;
-    private mathLibraries: G3DMathLibraries;
+export class SegmentationModel {
+    private computeShaders: ComputeShaders;
+    private modelRunner: ModelRunner;
+    private gpuCompute: GPUCompute;
+    private mathLibraries: MathLibraries;
 
     private models: Map<string, LoadedModel> = new Map();
     private config: SegmentationConfig;
@@ -176,7 +176,7 @@ export class G3DSegmentationModel {
     async initialize(): Promise<void> {
         try {
             // Initialize G3D systems
-            this.computeShaders = new G3DComputeShaders({ 
+            this.computeShaders = new ComputeShaders({ 
                 backend: 'webgpu',
                 device: {
                     preferredDevice: 'gpu',
@@ -218,13 +218,13 @@ export class G3DSegmentationModel {
             });
             await this.computeShaders.init();
 
-            this.modelRunner = new G3DModelRunner();
+            this.modelRunner = new ModelRunner();
             await this.modelRunner.init();
 
-            this.gpuCompute = new G3DGPUCompute();
+            this.gpuCompute = new GPUCompute();
             await this.gpuCompute.init();
 
-            this.mathLibraries = new G3DMathLibraries();
+            this.mathLibraries = new MathLibraries();
 
             // Get GPU device from WebGPU API
             if (navigator.gpu) {
@@ -262,7 +262,7 @@ export class G3DSegmentationModel {
             id: modelId,
             name: modelId,
             version: '1.0.0',
-            type: G3DModelType.CUSTOM,
+            type: ModelType.CUSTOM,
             modelPath: `models/${modelId}`,
             architecture: config.architecture,
             backbone: config.backbone,
@@ -976,4 +976,4 @@ interface ImageData {
     channels: number;
 }
 
-export default G3DSegmentationModel;
+export default SegmentationModel;

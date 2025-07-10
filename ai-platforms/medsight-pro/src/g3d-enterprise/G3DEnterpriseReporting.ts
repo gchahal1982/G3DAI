@@ -3,7 +3,7 @@
  * Comprehensive enterprise reporting, analytics, and business intelligence
  */
 
-export interface G3DReportingConfig {
+export interface ReportingConfig {
     enableRealTimeReporting: boolean;
     enableScheduledReports: boolean;
     enableCustomDashboards: boolean;
@@ -16,14 +16,14 @@ export interface G3DReportingConfig {
     deliveryMethods: string[];
 }
 
-export interface G3DReport {
+export interface Report {
     id: string;
     name: string;
     type: 'executive' | 'operational' | 'compliance' | 'medical' | 'financial' | 'technical';
     category: string;
     description: string;
     parameters: Record<string, any>;
-    schedule?: G3DReportSchedule;
+    schedule?: ReportSchedule;
     recipients: string[];
     format: 'pdf' | 'excel' | 'csv' | 'json' | 'html';
     lastGenerated?: number;
@@ -33,7 +33,7 @@ export interface G3DReport {
     complianceRequired: boolean;
 }
 
-export interface G3DReportSchedule {
+export interface ReportSchedule {
     frequency: 'daily' | 'weekly' | 'monthly' | 'quarterly' | 'annual' | 'custom';
     time: string; // HH:MM format
     timezone: string;
@@ -42,7 +42,7 @@ export interface G3DReportSchedule {
     customCron?: string;
 }
 
-export interface G3DReportData {
+export interface ReportData {
     reportId: string;
     generatedAt: number;
     data: any;
@@ -56,33 +56,33 @@ export interface G3DReportData {
     size: number;
 }
 
-export interface G3DDashboard {
+export interface Dashboard {
     id: string;
     name: string;
     description: string;
     owner: string;
     visibility: 'private' | 'shared' | 'public';
-    widgets: G3DWidget[];
-    layout: G3DLayoutConfig;
-    filters: G3DFilterConfig[];
+    widgets: Widget[];
+    layout: LayoutConfig;
+    filters: FilterConfig[];
     refreshInterval: number;
     medicalContext: boolean;
     complianceLevel: string;
 }
 
-export interface G3DWidget {
+export interface Widget {
     id: string;
     type: 'chart' | 'table' | 'metric' | 'gauge' | 'map' | 'text';
     title: string;
     dataSource: string;
     query: string;
-    visualization: G3DVisualizationConfig;
+    visualization: VisualizationConfig;
     position: { x: number; y: number; width: number; height: number };
     refreshInterval: number;
     medicalData: boolean;
 }
 
-export interface G3DLayoutConfig {
+export interface LayoutConfig {
     columns: number;
     rows: number;
     gridSize: number;
@@ -90,7 +90,7 @@ export interface G3DLayoutConfig {
     theme: string;
 }
 
-export interface G3DFilterConfig {
+export interface FilterConfig {
     id: string;
     name: string;
     type: 'date' | 'select' | 'multi-select' | 'text' | 'number' | 'boolean';
@@ -100,7 +100,7 @@ export interface G3DFilterConfig {
     medicalContext: boolean;
 }
 
-export interface G3DVisualizationConfig {
+export interface VisualizationConfig {
     chartType?: 'line' | 'bar' | 'pie' | 'scatter' | 'area' | 'heatmap';
     xAxis?: string;
     yAxis?: string;
@@ -111,7 +111,7 @@ export interface G3DVisualizationConfig {
     showTooltip?: boolean;
 }
 
-export interface G3DReportingMetrics {
+export interface ReportingMetrics {
     totalReports: number;
     activeReports: number;
     scheduledReports: number;
@@ -123,15 +123,15 @@ export interface G3DReportingMetrics {
     lastUpdated: number;
 }
 
-export class G3DEnterpriseReporting {
-    private config: G3DReportingConfig;
+export class EnterpriseReporting {
+    private config: ReportingConfig;
     private isInitialized: boolean = false;
-    private reports: Map<string, G3DReport> = new Map();
-    private dashboards: Map<string, G3DDashboard> = new Map();
-    private reportData: Map<string, G3DReportData[]> = new Map();
-    private metrics: G3DReportingMetrics;
+    private reports: Map<string, Report> = new Map();
+    private dashboards: Map<string, Dashboard> = new Map();
+    private reportData: Map<string, ReportData[]> = new Map();
+    private metrics: ReportingMetrics;
 
-    constructor(config: Partial<G3DReportingConfig> = {}) {
+    constructor(config: Partial<ReportingConfig> = {}) {
         this.config = {
             enableRealTimeReporting: true,
             enableScheduledReports: true,
@@ -195,7 +195,7 @@ export class G3DEnterpriseReporting {
 
     private async createDefaultReports(): Promise<void> {
         // Executive Dashboard Report
-        const executiveReport: G3DReport = {
+        const executiveReport: Report = {
             id: 'executive_dashboard',
             name: 'Executive Dashboard Report',
             type: 'executive',
@@ -220,7 +220,7 @@ export class G3DEnterpriseReporting {
         };
 
         // Medical Quality Report
-        const medicalQualityReport: G3DReport = {
+        const medicalQualityReport: Report = {
             id: 'medical_quality',
             name: 'Medical Quality Assurance Report',
             type: 'medical',
@@ -245,7 +245,7 @@ export class G3DEnterpriseReporting {
         };
 
         // Compliance Audit Report
-        const complianceReport: G3DReport = {
+        const complianceReport: Report = {
             id: 'compliance_audit',
             name: 'Compliance Audit Report',
             type: 'compliance',
@@ -276,10 +276,10 @@ export class G3DEnterpriseReporting {
         this.metrics.activeReports = Array.from(this.reports.values()).filter(r => r.status === 'active').length;
     }
 
-    public async createReport(reportData: Partial<G3DReport>): Promise<string> {
+    public async createReport(reportData: Partial<Report>): Promise<string> {
         const reportId = `report_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
-        const report: G3DReport = {
+        const report: Report = {
             id: reportId,
             name: reportData.name || `Report ${reportId}`,
             type: reportData.type || 'operational',
@@ -304,7 +304,7 @@ export class G3DEnterpriseReporting {
         return reportId;
     }
 
-    public async generateReport(reportId: string): Promise<G3DReportData> {
+    public async generateReport(reportId: string): Promise<ReportData> {
         const report = this.reports.get(reportId);
         if (!report) {
             throw new Error('Report not found');
@@ -313,7 +313,7 @@ export class G3DEnterpriseReporting {
         const startTime = Date.now();
 
         // Simulate report generation
-        const reportData: G3DReportData = {
+        const reportData: ReportData = {
             reportId,
             generatedAt: Date.now(),
             data: this.generateMockData(report),
@@ -344,7 +344,7 @@ export class G3DEnterpriseReporting {
         return reportData;
     }
 
-    private generateMockData(report: G3DReport): any {
+    private generateMockData(report: Report): any {
         // Generate mock data based on report type
         switch (report.type) {
             case 'executive':
@@ -389,10 +389,10 @@ export class G3DEnterpriseReporting {
         }
     }
 
-    public async createDashboard(dashboardData: Partial<G3DDashboard>): Promise<string> {
+    public async createDashboard(dashboardData: Partial<Dashboard>): Promise<string> {
         const dashboardId = `dashboard_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
-        const dashboard: G3DDashboard = {
+        const dashboard: Dashboard = {
             id: dashboardId,
             name: dashboardData.name || `Dashboard ${dashboardId}`,
             description: dashboardData.description || '',
@@ -417,15 +417,15 @@ export class G3DEnterpriseReporting {
         return dashboardId;
     }
 
-    public getReports(): G3DReport[] {
+    public getReports(): Report[] {
         return Array.from(this.reports.values());
     }
 
-    public getDashboards(): G3DDashboard[] {
+    public getDashboards(): Dashboard[] {
         return Array.from(this.dashboards.values());
     }
 
-    public getReportingMetrics(): G3DReportingMetrics {
+    public getReportingMetrics(): ReportingMetrics {
         this.metrics.lastUpdated = Date.now();
         return { ...this.metrics };
     }
@@ -452,4 +452,4 @@ export class G3DEnterpriseReporting {
     }
 }
 
-export default G3DEnterpriseReporting;
+export default EnterpriseReporting;

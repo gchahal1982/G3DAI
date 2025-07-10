@@ -13,7 +13,7 @@
 
 import { vec3, mat4 } from 'gl-matrix';
 
-export interface G3DLightingConfig {
+export interface LightingConfig {
     enableShadows: boolean;
     enableGlobalIllumination: boolean;
     enableVolumetricLighting: boolean;
@@ -24,7 +24,7 @@ export interface G3DLightingConfig {
     enableHDR: boolean;
 }
 
-export interface G3DLight {
+export interface Light {
     id: string;
     type: 'directional' | 'point' | 'spot' | 'area' | 'medical' | 'surgical';
     position: vec3;
@@ -35,11 +35,11 @@ export interface G3DLight {
     innerCone: number;
     outerCone: number;
     castShadows: boolean;
-    medicalProperties: G3DMedicalLightProperties;
+    medicalProperties: MedicalLightProperties;
     enabled: boolean;
 }
 
-export interface G3DMedicalLightProperties {
+export interface MedicalLightProperties {
     colorTemperature: number; // Kelvin
     cri: number; // Color Rendering Index
     medicalGrade: boolean;
@@ -49,7 +49,7 @@ export interface G3DMedicalLightProperties {
     contrastEnhancement: number;
 }
 
-export interface G3DShadowMap {
+export interface ShadowMap {
     lightId: string;
     resolution: number;
     texture: WebGLTexture | null;
@@ -60,7 +60,7 @@ export interface G3DShadowMap {
     pcfRadius: number;
 }
 
-export interface G3DVolumetricLight {
+export interface VolumetricLight {
     lightId: string;
     density: number;
     scattering: number;
@@ -70,7 +70,7 @@ export interface G3DVolumetricLight {
     medicalVolume: boolean;
 }
 
-export interface G3DSubsurfaceScattering {
+export interface SubsurfaceScattering {
     enabled: boolean;
     thickness: number;
     distortion: number;
@@ -80,7 +80,7 @@ export interface G3DSubsurfaceScattering {
     tissueType: 'skin' | 'muscle' | 'bone' | 'organ' | 'vessel' | 'tumor';
 }
 
-export interface G3DGlobalIllumination {
+export interface GlobalIllumination {
     enabled: boolean;
     bounces: number;
     samples: number;
@@ -89,7 +89,7 @@ export interface G3DGlobalIllumination {
     realTime: boolean;
 }
 
-export interface G3DLightingEnvironment {
+export interface LightingEnvironment {
     ambientColor: vec3;
     ambientIntensity: number;
     environmentMap: WebGLTexture | null;
@@ -98,13 +98,13 @@ export interface G3DLightingEnvironment {
     lightingStandard: 'ies' | 'medical' | 'surgical' | 'custom';
 }
 
-export class G3DAdvancedLighting {
-    private config: G3DLightingConfig;
-    private lights: Map<string, G3DLight> = new Map();
-    private shadowMaps: Map<string, G3DShadowMap> = new Map();
-    private volumetricLights: Map<string, G3DVolumetricLight> = new Map();
-    private environment: G3DLightingEnvironment;
-    private globalIllumination: G3DGlobalIllumination;
+export class AdvancedLighting {
+    private config: LightingConfig;
+    private lights: Map<string, Light> = new Map();
+    private shadowMaps: Map<string, ShadowMap> = new Map();
+    private volumetricLights: Map<string, VolumetricLight> = new Map();
+    private environment: LightingEnvironment;
+    private globalIllumination: GlobalIllumination;
     private isInitialized: boolean = false;
 
     // Medical lighting presets
@@ -129,7 +129,7 @@ export class G3DAdvancedLighting {
         }
     };
 
-    constructor(config: Partial<G3DLightingConfig> = {}) {
+    constructor(config: Partial<LightingConfig> = {}) {
         this.config = {
             enableShadows: true,
             enableGlobalIllumination: false,
@@ -259,7 +259,7 @@ export class G3DAdvancedLighting {
         });
     }
 
-    public addLight(light: G3DLight): void {
+    public addLight(light: Light): void {
         this.lights.set(light.id, light);
 
         // Create shadow map if needed
@@ -291,16 +291,16 @@ export class G3DAdvancedLighting {
         return removed;
     }
 
-    public getLight(lightId: string): G3DLight | null {
+    public getLight(lightId: string): Light | null {
         return this.lights.get(lightId) || null;
     }
 
-    public getAllLights(): G3DLight[] {
+    public getAllLights(): Light[] {
         return Array.from(this.lights.values());
     }
 
     private createShadowMap(lightId: string): void {
-        const shadowMap: G3DShadowMap = {
+        const shadowMap: ShadowMap = {
             lightId,
             resolution: this.config.shadowMapResolution,
             texture: null,
@@ -323,7 +323,7 @@ export class G3DAdvancedLighting {
     }
 
     private setupVolumetricLight(lightId: string): void {
-        const volumetricLight: G3DVolumetricLight = {
+        const volumetricLight: VolumetricLight = {
             lightId,
             density: 0.1,
             scattering: 0.8,
@@ -336,7 +336,7 @@ export class G3DAdvancedLighting {
         this.volumetricLights.set(lightId, volumetricLight);
     }
 
-    public setMedicalLightingMode(mode: G3DLightingConfig['medicalLightingMode']): void {
+    public setMedicalLightingMode(mode: LightingConfig['medicalLightingMode']): void {
         this.config.medicalLightingMode = mode;
         this.updateMedicalLighting();
     }
@@ -355,7 +355,7 @@ export class G3DAdvancedLighting {
         }
     }
 
-    public setEnvironment(environment: Partial<G3DLightingEnvironment>): void {
+    public setEnvironment(environment: Partial<LightingEnvironment>): void {
         Object.assign(this.environment, environment);
         this.updateEnvironmentLighting();
     }
@@ -386,7 +386,7 @@ export class G3DAdvancedLighting {
         }
     }
 
-    public enableSubsurfaceScattering(material: any, settings: G3DSubsurfaceScattering): void {
+    public enableSubsurfaceScattering(material: any, settings: SubsurfaceScattering): void {
         if (!this.config.enableSubsurfaceScattering) return;
 
         // Apply tissue-specific subsurface scattering
@@ -399,8 +399,8 @@ export class G3DAdvancedLighting {
         };
     }
 
-    private getTissueProperties(tissueType: G3DSubsurfaceScattering['tissueType']): Partial<G3DSubsurfaceScattering> {
-        const properties: Record<string, Partial<G3DSubsurfaceScattering>> = {
+    private getTissueProperties(tissueType: SubsurfaceScattering['tissueType']): Partial<SubsurfaceScattering> {
+        const properties: Record<string, Partial<SubsurfaceScattering>> = {
             skin: { thickness: 0.8, distortion: 0.3, power: 2.0, scale: 1.0 },
             muscle: { thickness: 0.6, distortion: 0.2, power: 1.5, scale: 0.8 },
             bone: { thickness: 0.1, distortion: 0.1, power: 0.5, scale: 0.3 },
@@ -469,7 +469,7 @@ export class G3DAdvancedLighting {
         }
     }
 
-    private updateShadowMapMatrices(light: G3DLight, shadowMap: G3DShadowMap, camera: any): void {
+    private updateShadowMapMatrices(light: Light, shadowMap: ShadowMap, camera: any): void {
         // Calculate light view matrix
         const target = vec3.create();
         vec3.add(target, light.position, light.direction);
@@ -555,7 +555,7 @@ export class G3DAdvancedLighting {
         return uniforms;
     }
 
-    private getLightTypeIndex(type: G3DLight['type']): number {
+    private getLightTypeIndex(type: Light['type']): number {
         const types = ['directional', 'point', 'spot', 'area', 'medical', 'surgical'];
         return types.indexOf(type);
     }
@@ -610,4 +610,4 @@ export class G3DAdvancedLighting {
     }
 }
 
-export default G3DAdvancedLighting;
+export default AdvancedLighting;

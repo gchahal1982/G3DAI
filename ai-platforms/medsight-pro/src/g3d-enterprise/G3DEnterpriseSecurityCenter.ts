@@ -3,7 +3,7 @@
  * Comprehensive enterprise security management and threat protection
  */
 
-export interface G3DSecurityConfig {
+export interface SecurityConfig {
     enableThreatDetection: boolean;
     enableVulnerabilityScanning: boolean;
     enableIntrusionPrevention: boolean;
@@ -16,7 +16,7 @@ export interface G3DSecurityConfig {
     medicalDataProtection: boolean;
 }
 
-export interface G3DThreatIntelligence {
+export interface ThreatIntelligence {
     threatLevel: 'low' | 'medium' | 'high' | 'critical';
     activeThreat: boolean;
     threatType: string;
@@ -26,7 +26,7 @@ export interface G3DThreatIntelligence {
     lastUpdated: number;
 }
 
-export interface G3DSecurityIncident {
+export interface SecurityIncident {
     id: string;
     type: 'malware' | 'phishing' | 'data_breach' | 'unauthorized_access' | 'system_compromise';
     severity: 'low' | 'medium' | 'high' | 'critical';
@@ -39,13 +39,13 @@ export interface G3DSecurityIncident {
     medicalDataInvolved: boolean;
 }
 
-export class G3DEnterpriseSecurityCenter {
-    private config: G3DSecurityConfig;
+export class EnterpriseSecurityCenter {
+    private config: SecurityConfig;
     private isInitialized: boolean = false;
-    private threatIntelligence: G3DThreatIntelligence;
-    private incidents: Map<string, G3DSecurityIncident> = new Map();
+    private threatIntelligence: ThreatIntelligence;
+    private incidents: Map<string, SecurityIncident> = new Map();
 
-    constructor(config: Partial<G3DSecurityConfig> = {}) {
+    constructor(config: Partial<SecurityConfig> = {}) {
         this.config = {
             enableThreatDetection: true,
             enableVulnerabilityScanning: true,
@@ -110,10 +110,10 @@ export class G3DEnterpriseSecurityCenter {
         // Incident response setup
     }
 
-    public async createIncident(incidentData: Partial<G3DSecurityIncident>): Promise<string> {
+    public async createIncident(incidentData: Partial<SecurityIncident>): Promise<string> {
         const incidentId = `incident_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
-        const incident: G3DSecurityIncident = {
+        const incident: SecurityIncident = {
             id: incidentId,
             type: incidentData.type || 'unauthorized_access',
             severity: incidentData.severity || 'medium',
@@ -130,11 +130,11 @@ export class G3DEnterpriseSecurityCenter {
         return incidentId;
     }
 
-    public getThreatIntelligence(): G3DThreatIntelligence {
+    public getThreatIntelligence(): ThreatIntelligence {
         return { ...this.threatIntelligence };
     }
 
-    public getIncidents(): G3DSecurityIncident[] {
+    public getIncidents(): SecurityIncident[] {
         return Array.from(this.incidents.values());
     }
 
@@ -145,4 +145,4 @@ export class G3DEnterpriseSecurityCenter {
     }
 }
 
-export default G3DEnterpriseSecurityCenter;
+export default EnterpriseSecurityCenter;

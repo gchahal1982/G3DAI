@@ -5,8 +5,8 @@
  */
 
 import React, { useRef, useEffect, useState } from 'react';
-import { G3DNativeRenderer } from '../g3d-integration/G3DNativeRenderer';
-import { G3DSceneManager } from '../g3d-integration/G3DSceneManager';
+import { NativeRenderer } from '../integration/G3DNativeRenderer';
+import { SceneManager } from '../integration/G3DSceneManager';
 
 // Core Types
 interface CollaborationSession {
@@ -142,7 +142,7 @@ interface ConflictChange {
 }
 
 // Props Interface
-interface G3DCollaborationEngineProps {
+interface CollaborationEngineProps {
     sessionId: string;
     userId: string;
     onSessionUpdate: (session: CollaborationSession) => void;
@@ -163,7 +163,7 @@ interface CollaborationConfig {
 }
 
 // Main Component
-export const G3DCollaborationEngine: React.FC<G3DCollaborationEngineProps> = ({
+export const G3DCollaborationEngine: React.FC<CollaborationEngineProps> = ({
     sessionId,
     userId,
     onSessionUpdate,
@@ -173,8 +173,8 @@ export const G3DCollaborationEngine: React.FC<G3DCollaborationEngineProps> = ({
     config
 }) => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
-    const rendererRef = useRef<G3DNativeRenderer | null>(null);
-    const sceneRef = useRef<G3DSceneManager | null>(null);
+    const rendererRef = useRef<NativeRenderer | null>(null);
+    const sceneRef = useRef<SceneManager | null>(null);
     const wsRef = useRef<WebSocket | null>(null);
 
     const [session, setSession] = useState<CollaborationSession | null>(null);
@@ -216,10 +216,10 @@ export const G3DCollaborationEngine: React.FC<G3DCollaborationEngineProps> = ({
     const initialize3D = async () => {
         if (!canvasRef.current) return;
 
-        const renderer = new G3DNativeRenderer(canvasRef.current, { antialias: true, alpha: true });
+        const renderer = new NativeRenderer(canvasRef.current, { antialias: true, alpha: true });
         rendererRef.current = renderer;
 
-        const scene = new G3DSceneManager(rendererRef.current || new G3DNativeRenderer(canvasRef.current!, { antialias: true, alpha: true }));
+        const scene = new SceneManager(rendererRef.current || new NativeRenderer(canvasRef.current!, { antialias: true, alpha: true }));
         sceneRef.current = scene;
 
         await setupCollaborationScene();

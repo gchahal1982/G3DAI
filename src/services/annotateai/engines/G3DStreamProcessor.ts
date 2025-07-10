@@ -167,7 +167,7 @@ interface BufferManager {
     underflow: number;
 }
 
-export class G3DStreamProcessor extends EventEmitter {
+export class StreamProcessor extends EventEmitter {
     private sources: Map<string, StreamSource> = new Map();
     private processors: Map<string, StreamProcessor> = new Map();
     private pipelines: Map<string, StreamPipeline> = new Map();

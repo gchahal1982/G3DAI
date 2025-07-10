@@ -14,7 +14,7 @@
 import { vec3, mat4 } from 'gl-matrix';
 
 // Clinical Workflow Types
-export interface G3DClinicalWorkflowConfig {
+export interface ClinicalWorkflowConfig {
     workflowType: 'diagnostic' | 'interventional' | 'educational' | 'research';
     clinicalSpecialty: 'radiology' | 'cardiology' | 'orthopedics' | 'neurology' | 'oncology' | 'surgery';
     complianceLevel: 'FDA' | 'CE' | 'HIPAA' | 'GDPR' | 'research';
@@ -22,19 +22,19 @@ export interface G3DClinicalWorkflowConfig {
     auditTrail: boolean;
 }
 
-export interface G3DDICOMData {
+export interface DICOMData {
     studyInstanceUID: string;
     seriesInstanceUID: string;
     sopInstanceUID: string;
-    patientInfo: G3DPatientInfo;
-    studyInfo: G3DStudyInfo;
-    imageInfo: G3DImageInfo;
+    patientInfo: PatientInfo;
+    studyInfo: StudyInfo;
+    imageInfo: ImageInfo;
     metadata: Map<string, any>;
     pixelData: ArrayBuffer;
-    annotations: G3DDICOMAnnotation[];
+    annotations: DICOMAnnotation[];
 }
 
-export interface G3DPatientInfo {
+export interface PatientInfo {
     patientID: string;
     patientName: string;
     patientBirthDate: Date;
@@ -47,7 +47,7 @@ export interface G3DPatientInfo {
     medications?: string[];
 }
 
-export interface G3DStudyInfo {
+export interface StudyInfo {
     studyDate: Date;
     studyTime: string;
     studyDescription: string;
@@ -60,7 +60,7 @@ export interface G3DStudyInfo {
     stationName?: string;
 }
 
-export interface G3DImageInfo {
+export interface ImageInfo {
     imageType: string;
     samplesPerPixel: number;
     photometricInterpretation: string;
@@ -81,18 +81,18 @@ export interface G3DImageInfo {
     windowWidth?: number;
 }
 
-export interface G3DDICOMAnnotation {
+export interface DICOMAnnotation {
     id: string;
     type: 'measurement' | 'roi' | 'text' | 'arrow' | 'ellipse' | 'polyline';
     coordinates: number[];
     text?: string;
-    measurements?: G3DMeasurement[];
+    measurements?: Measurement[];
     creator: string;
     creationDate: Date;
     modifiedDate?: Date;
 }
 
-export interface G3DMeasurement {
+export interface Measurement {
     type: 'length' | 'area' | 'volume' | 'angle' | 'density';
     value: number;
     unit: string;
@@ -100,34 +100,34 @@ export interface G3DMeasurement {
     method: string;
 }
 
-export interface G3DClinicalReport {
+export interface ClinicalReport {
     reportId: string;
     studyInstanceUID: string;
     reportType: 'preliminary' | 'final' | 'amended' | 'addendum';
     status: 'draft' | 'verified' | 'finalized' | 'signed';
-    findings: G3DClinicalFinding[];
+    findings: ClinicalFinding[];
     impression: string;
     recommendations: string[];
-    radiologist: G3DClinicianInfo;
+    radiologist: ClinicianInfo;
     reportDate: Date;
     templateUsed?: string;
     structuredData?: object;
 }
 
-export interface G3DClinicalFinding {
+export interface ClinicalFinding {
     id: string;
     category: 'normal' | 'abnormal' | 'incidental' | 'artifact';
     severity: 'mild' | 'moderate' | 'severe' | 'critical';
     description: string;
     location: string;
-    measurements?: G3DMeasurement[];
+    measurements?: Measurement[];
     confidence: number;
     differentialDiagnosis?: string[];
     followUpRequired: boolean;
     urgency: 'routine' | 'urgent' | 'stat';
 }
 
-export interface G3DClinicianInfo {
+export interface ClinicianInfo {
     id: string;
     name: string;
     title: string;
@@ -137,16 +137,16 @@ export interface G3DClinicianInfo {
     digitalSignature?: string;
 }
 
-export interface G3DQualityAssurance {
+export interface QualityAssurance {
     protocolId: string;
     protocolName: string;
-    checks: G3DQACheck[];
+    checks: QACheck[];
     compliance: boolean;
     lastValidation: Date;
     validatedBy: string;
 }
 
-export interface G3DQACheck {
+export interface QACheck {
     checkId: string;
     checkName: string;
     checkType: 'technical' | 'clinical' | 'safety' | 'regulatory';
@@ -157,31 +157,31 @@ export interface G3DQACheck {
     timestamp: Date;
 }
 
-export interface G3DClinicalDecisionSupport {
+export interface ClinicalDecisionSupport {
     ruleId: string;
     ruleName: string;
     category: 'diagnostic_aid' | 'protocol_suggestion' | 'safety_alert' | 'quality_check';
-    trigger: G3DCDSTrigger;
-    action: G3DCDSAction;
+    trigger: CDSTrigger;
+    action: CDSAction;
     confidence: number;
     evidence: string[];
     isActive: boolean;
 }
 
-export interface G3DCDSTrigger {
+export interface CDSTrigger {
     type: 'finding' | 'measurement' | 'pattern' | 'temporal' | 'comparative';
-    conditions: G3DCDSConditions;
+    conditions: CDSConditions;
     threshold?: number;
 }
 
-export interface G3DCDSConditions {
+export interface CDSConditions {
     severity?: 'mild' | 'moderate' | 'severe' | 'critical';
     modality?: 'CT' | 'MRI' | 'PET' | 'US' | 'XR' | 'MG' | 'NM' | 'RF';
     bodyPart?: string;
     [key: string]: any; // Allow additional properties
 }
 
-export interface G3DCDSAction {
+export interface CDSAction {
     type: 'alert' | 'suggestion' | 'protocol' | 'measurement' | 'followup';
     message: string;
     priority: 'low' | 'medium' | 'high' | 'critical';
@@ -189,16 +189,16 @@ export interface G3DCDSAction {
 }
 
 // DICOM Processing Engine
-export class G3DDICOMProcessor {
-    private config: G3DClinicalWorkflowConfig;
-    private dicomData: Map<string, G3DDICOMData> = new Map();
-    private parsedStudies: Map<string, G3DDICOMData[]> = new Map();
+export class DICOMProcessor {
+    private config: ClinicalWorkflowConfig;
+    private dicomData: Map<string, DICOMData> = new Map();
+    private parsedStudies: Map<string, DICOMData[]> = new Map();
 
-    constructor(config: G3DClinicalWorkflowConfig) {
+    constructor(config: ClinicalWorkflowConfig) {
         this.config = config;
     }
 
-    async parseDICOMFile(file: ArrayBuffer): Promise<G3DDICOMData> {
+    async parseDICOMFile(file: ArrayBuffer): Promise<DICOMData> {
         try {
             // Simplified DICOM parsing - in real implementation, use proper DICOM library
             const dicomData = await this.extractDICOMData(file);
@@ -224,7 +224,7 @@ export class G3DDICOMProcessor {
         }
     }
 
-    private async extractDICOMData(buffer: ArrayBuffer): Promise<G3DDICOMData> {
+    private async extractDICOMData(buffer: ArrayBuffer): Promise<DICOMData> {
         // Simplified DICOM parsing - real implementation would use dcmjs or similar
         const view = new DataView(buffer);
 
@@ -236,7 +236,7 @@ export class G3DDICOMProcessor {
         }
 
         // Extract basic DICOM data (simplified)
-        const dicomData: G3DDICOMData = {
+        const dicomData: DICOMData = {
             studyInstanceUID: this.generateUID(),
             seriesInstanceUID: this.generateUID(),
             sopInstanceUID: this.generateUID(),
@@ -283,7 +283,7 @@ export class G3DDICOMProcessor {
         return dicomData;
     }
 
-    private validateDICOMData(dicomData: G3DDICOMData): void {
+    private validateDICOMData(dicomData: DICOMData): void {
         // Validate required DICOM fields
         if (!dicomData.studyInstanceUID || !dicomData.seriesInstanceUID || !dicomData.sopInstanceUID) {
             throw new Error('Missing required DICOM UIDs');
@@ -301,7 +301,7 @@ export class G3DDICOMProcessor {
         this.validateModalitySpecific(dicomData);
     }
 
-    private validateModalitySpecific(dicomData: G3DDICOMData): void {
+    private validateModalitySpecific(dicomData: DICOMData): void {
         const modality = dicomData.studyInfo.modality;
 
         switch (modality) {
@@ -328,11 +328,11 @@ export class G3DDICOMProcessor {
         return `1.2.3.4.5.${Date.now()}.${Math.floor(Math.random() * 1000000)}`;
     }
 
-    getDICOMData(sopInstanceUID: string): G3DDICOMData | undefined {
+    getDICOMData(sopInstanceUID: string): DICOMData | undefined {
         return this.dicomData.get(sopInstanceUID);
     }
 
-    getStudyData(studyInstanceUID: string): G3DDICOMData[] | undefined {
+    getStudyData(studyInstanceUID: string): DICOMData[] | undefined {
         return this.parsedStudies.get(studyInstanceUID);
     }
 
@@ -352,24 +352,24 @@ export class G3DDICOMProcessor {
 }
 
 // Clinical Workflow Manager
-export class G3DClinicalWorkflowManager {
-    private config: G3DClinicalWorkflowConfig;
-    private dicomProcessor: G3DDICOMProcessor;
-    private reports: Map<string, G3DClinicalReport> = new Map();
-    private qaProtocols: Map<string, G3DQualityAssurance> = new Map();
-    private cdsRules: Map<string, G3DClinicalDecisionSupport> = new Map();
-    private auditLog: G3DAuditEntry[] = [];
+export class ClinicalWorkflowManager {
+    private config: ClinicalWorkflowConfig;
+    private dicomProcessor: DICOMProcessor;
+    private reports: Map<string, ClinicalReport> = new Map();
+    private qaProtocols: Map<string, QualityAssurance> = new Map();
+    private cdsRules: Map<string, ClinicalDecisionSupport> = new Map();
+    private auditLog: AuditEntry[] = [];
 
-    constructor(config: G3DClinicalWorkflowConfig) {
+    constructor(config: ClinicalWorkflowConfig) {
         this.config = config;
-        this.dicomProcessor = new G3DDICOMProcessor(config);
+        this.dicomProcessor = new DICOMProcessor(config);
         this.initializeQAProtocols();
         this.initializeCDSRules();
     }
 
     private initializeQAProtocols(): void {
         // Image Quality Protocol
-        const imageQA: G3DQualityAssurance = {
+        const imageQA: QualityAssurance = {
             protocolId: 'IQ_001',
             protocolName: 'Image Quality Assessment',
             checks: [
@@ -400,7 +400,7 @@ export class G3DClinicalWorkflowManager {
         this.qaProtocols.set(imageQA.protocolId, imageQA);
 
         // Safety Protocol
-        const safetyQA: G3DQualityAssurance = {
+        const safetyQA: QualityAssurance = {
             protocolId: 'SF_001',
             protocolName: 'Patient Safety Protocol',
             checks: [
@@ -432,7 +432,7 @@ export class G3DClinicalWorkflowManager {
 
     private initializeCDSRules(): void {
         // Critical Finding Alert
-        const criticalFindingRule: G3DClinicalDecisionSupport = {
+        const criticalFindingRule: ClinicalDecisionSupport = {
             ruleId: 'CDS_001',
             ruleName: 'Critical Finding Alert',
             category: 'safety_alert',
@@ -454,7 +454,7 @@ export class G3DClinicalWorkflowManager {
         this.cdsRules.set(criticalFindingRule.ruleId, criticalFindingRule);
 
         // Protocol Optimization
-        const protocolRule: G3DClinicalDecisionSupport = {
+        const protocolRule: ClinicalDecisionSupport = {
             ruleId: 'CDS_002',
             ruleName: 'Imaging Protocol Optimization',
             category: 'protocol_suggestion',
@@ -519,7 +519,7 @@ export class G3DClinicalWorkflowManager {
         }
     }
 
-    private async executeQAProtocol(protocol: G3DQualityAssurance, studyData: G3DDICOMData[]): Promise<void> {
+    private async executeQAProtocol(protocol: QualityAssurance, studyData: DICOMData[]): Promise<void> {
         for (const check of protocol.checks) {
             switch (check.checkId) {
                 case 'IQ_001_01': // Image Resolution Check
@@ -569,7 +569,7 @@ export class G3DClinicalWorkflowManager {
         }
     }
 
-    private evaluateCDSTrigger(trigger: G3DCDSTrigger, studyData: G3DDICOMData[]): boolean {
+    private evaluateCDSTrigger(trigger: CDSTrigger, studyData: DICOMData[]): boolean {
         // Simplified trigger evaluation
         switch (trigger.type) {
             case 'finding':
@@ -587,7 +587,7 @@ export class G3DClinicalWorkflowManager {
         }
     }
 
-    private async executeCDSAction(action: G3DCDSAction, studyUID: string): Promise<void> {
+    private async executeCDSAction(action: CDSAction, studyUID: string): Promise<void> {
         switch (action.type) {
             case 'alert':
                 console.warn(`CDS Alert [${action.priority}]: ${action.message}`);
@@ -613,10 +613,10 @@ export class G3DClinicalWorkflowManager {
         });
     }
 
-    createReport(studyUID: string, findings: G3DClinicalFinding[], radiologist: G3DClinicianInfo): string {
+    createReport(studyUID: string, findings: ClinicalFinding[], radiologist: ClinicianInfo): string {
         const reportId = this.generateReportUID();
 
-        const report: G3DClinicalReport = {
+        const report: ClinicalReport = {
             reportId,
             studyInstanceUID: studyUID,
             reportType: 'preliminary',
@@ -642,7 +642,7 @@ export class G3DClinicalWorkflowManager {
         return reportId;
     }
 
-    private generateImpression(findings: G3DClinicalFinding[]): string {
+    private generateImpression(findings: ClinicalFinding[]): string {
         const criticalFindings = findings.filter(f => f.severity === 'critical');
         const abnormalFindings = findings.filter(f => f.category === 'abnormal');
 
@@ -655,7 +655,7 @@ export class G3DClinicalWorkflowManager {
         }
     }
 
-    private generateRecommendations(findings: G3DClinicalFinding[]): string[] {
+    private generateRecommendations(findings: ClinicalFinding[]): string[] {
         const recommendations: string[] = [];
 
         findings.forEach(finding => {
@@ -708,8 +708,8 @@ export class G3DClinicalWorkflowManager {
         return `RPT_${Date.now()}_${Math.floor(Math.random() * 1000000)}`;
     }
 
-    private logAuditEntry(entry: Omit<G3DAuditEntry, 'id'>): void {
-        const auditEntry: G3DAuditEntry = {
+    private logAuditEntry(entry: Omit<AuditEntry, 'id'>): void {
+        const auditEntry: AuditEntry = {
             id: `AUDIT_${Date.now()}_${Math.floor(Math.random() * 1000000)}`,
             ...entry
         };
@@ -722,11 +722,11 @@ export class G3DClinicalWorkflowManager {
         }
     }
 
-    getReport(reportId: string): G3DClinicalReport | undefined {
+    getReport(reportId: string): ClinicalReport | undefined {
         return this.reports.get(reportId);
     }
 
-    getQAResults(protocolId?: string): G3DQualityAssurance[] {
+    getQAResults(protocolId?: string): QualityAssurance[] {
         if (protocolId) {
             const protocol = this.qaProtocols.get(protocolId);
             return protocol ? [protocol] : [];
@@ -734,7 +734,7 @@ export class G3DClinicalWorkflowManager {
         return Array.from(this.qaProtocols.values());
     }
 
-    getAuditLog(startDate?: Date, endDate?: Date): G3DAuditEntry[] {
+    getAuditLog(startDate?: Date, endDate?: Date): AuditEntry[] {
         let filteredLog = [...this.auditLog];
 
         if (startDate) {
@@ -771,7 +771,7 @@ export class G3DClinicalWorkflowManager {
 }
 
 // Audit Entry Interface
-interface G3DAuditEntry {
+interface AuditEntry {
     id: string;
     action: string;
     studyUID: string;
@@ -780,4 +780,4 @@ interface G3DAuditEntry {
     details: string;
 }
 
-export default G3DClinicalWorkflowManager;
+export default ClinicalWorkflowManager;

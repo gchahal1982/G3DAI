@@ -5,12 +5,12 @@
  */
 
 import React, { useRef, useEffect, useState, useCallback } from 'react';
-import { G3DNativeRenderer } from '../../g3d-integration/G3DNativeRenderer';
-import { G3DSceneManager } from '../../g3d-integration/G3DSceneManager';
-import { G3DMaterialSystem } from '../../g3d-integration/G3DMaterialSystem';
-import { G3DPointCloudProcessor } from '../../g3d-3d/G3DPointCloudProcessor';
-import { G3DComputeShaders } from '../../g3d-ai/G3DComputeShaders';
-import { G3DMathLibraries } from '../../g3d-3d/G3DMathLibraries';
+import { NativeRenderer } from '../../integration/G3DNativeRenderer';
+import { SceneManager } from '../../integration/G3DSceneManager';
+import { MaterialSystem } from '../../integration/G3DMaterialSystem';
+import { PointCloudProcessor } from '../../core/G3DPointCloudProcessor';
+import { ComputeShaders } from '../../ai/G3DComputeShaders';
+import { MathLibraries } from '../../core/G3DMathLibraries';
 
 // Core Types
 interface PointCloudData {
@@ -183,7 +183,7 @@ interface FilterConfig {
 }
 
 // Props Interface
-interface G3DPointCloudAnnotationProps {
+interface PointCloudAnnotationProps {
     pointCloudData: PointCloudData;
     onAnnotationCreate: (annotation: PointAnnotation) => void;
     onAnnotationUpdate: (annotation: PointAnnotation) => void;
@@ -204,7 +204,7 @@ interface PointCloudSettings {
 }
 
 // Main Component
-export const G3DPointCloudAnnotation: React.FC<G3DPointCloudAnnotationProps> = ({
+export const G3DPointCloudAnnotation: React.FC<PointCloudAnnotationProps> = ({
     pointCloudData,
     onAnnotationCreate,
     onAnnotationUpdate,
@@ -213,12 +213,12 @@ export const G3DPointCloudAnnotation: React.FC<G3DPointCloudAnnotationProps> = (
     settings
 }) => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
-    const rendererRef = useRef<G3DNativeRenderer | null>(null);
-    const sceneRef = useRef<G3DSceneManager | null>(null);
-    const materialsRef = useRef<G3DMaterialSystem | null>(null);
-    const pointCloudRef = useRef<G3DPointCloudProcessor | null>(null);
-    const computeRef = useRef<G3DComputeShaders | null>(null);
-    const mathRef = useRef<G3DMathLibraries | null>(null);
+    const rendererRef = useRef<NativeRenderer | null>(null);
+    const sceneRef = useRef<SceneManager | null>(null);
+    const materialsRef = useRef<MaterialSystem | null>(null);
+    const pointCloudRef = useRef<PointCloudProcessor | null>(null);
+    const computeRef = useRef<ComputeShaders | null>(null);
+    const mathRef = useRef<MathLibraries | null>(null);
 
     const [annotations, setAnnotations] = useState<Map<string, PointAnnotation>>(new Map());
     const [visualization, setVisualization] = useState<PointCloudVisualization>({
@@ -310,16 +310,16 @@ export const G3DPointCloudAnnotation: React.FC<G3DPointCloudAnnotationProps> = (
         const initializeG3D = async () => {
             try {
                 // Initialize core systems
-                const renderer = new G3DNativeRenderer(canvasRef.current!, { antialias: true, alpha: true });
+                const renderer = new NativeRenderer(canvasRef.current!, { antialias: true, alpha: true });
                 rendererRef.current = renderer;
 
-                const scene = new G3DSceneManager(rendererRef.current || new G3DNativeRenderer(canvasRef.current!, { antialias: true, alpha: true }));
+                const scene = new SceneManager(rendererRef.current || new NativeRenderer(canvasRef.current!, { antialias: true, alpha: true }));
                 sceneRef.current = scene;
 
-                const materials = new G3DMaterialSystem();
+                const materials = new MaterialSystem();
                 materialsRef.current = materials;
 
-                const pointCloud = new G3DPointCloudProcessor({
+                const pointCloud = new PointCloudProcessor({
                     processing: { maxPoints: 1000000 } as any,
                     filtering: { enabled: true } as any,
                     segmentation: { enabled: true } as any,
@@ -329,11 +329,11 @@ export const G3DPointCloudAnnotation: React.FC<G3DPointCloudAnnotationProps> = (
                 await (pointCloud as any).init?.();
                 pointCloudRef.current = pointCloud;
 
-                const compute = new G3DComputeShaders({ device: 'gpu' } as any);
+                const compute = new ComputeShaders({ device: 'gpu' } as any);
                 await (compute as any).init?.();
                 computeRef.current = compute;
 
-                const math = new G3DMathLibraries();
+                const math = new MathLibraries();
                 mathRef.current = math;
 
                 // Setup scene

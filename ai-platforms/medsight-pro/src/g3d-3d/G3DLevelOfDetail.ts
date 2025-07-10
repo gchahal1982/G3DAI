@@ -13,7 +13,7 @@
 
 import { vec3, mat4 } from 'gl-matrix';
 
-export interface G3DLODConfig {
+export interface LODConfig {
     enableAdaptiveLOD: boolean;
     enableMedicalAwareness: boolean;
     maxLODLevels: number;
@@ -23,7 +23,7 @@ export interface G3DLODConfig {
     medicalImportanceWeight: number;
 }
 
-export interface G3DLODLevel {
+export interface LODLevel {
     level: number;
     distance: number;
     quality: number;
@@ -38,19 +38,19 @@ export interface G3DLODLevel {
     medicalImportance: number;
 }
 
-export interface G3DLODMesh {
+export interface LODMesh {
     id: string;
     name: string;
-    originalMesh: G3DMeshData;
-    lodLevels: G3DLODLevel[];
+    originalMesh: MeshData;
+    lodLevels: LODLevel[];
     currentLevel: number;
     medicalType: 'anatomy' | 'pathology' | 'implant' | 'measurement' | 'annotation';
     clinicalPriority: 'low' | 'medium' | 'high' | 'critical';
-    bounds: G3DBounds;
+    bounds: Bounds;
     lastUpdateTime: number;
 }
 
-export interface G3DMeshData {
+export interface MeshData {
     vertices: Float32Array;
     normals: Float32Array;
     indices: Uint32Array;
@@ -61,7 +61,7 @@ export interface G3DMeshData {
     triangleCount: number;
 }
 
-export interface G3DBounds {
+export interface Bounds {
     min: vec3;
     max: vec3;
     center: vec3;
@@ -69,7 +69,7 @@ export interface G3DBounds {
     size: vec3;
 }
 
-export interface G3DLODCamera {
+export interface LODCamera {
     position: vec3;
     direction: vec3;
     fov: number;
@@ -79,7 +79,7 @@ export interface G3DLODCamera {
     projectionMatrix: mat4;
 }
 
-export interface G3DLODMetrics {
+export interface LODMetrics {
     totalMeshes: number;
     activeLODLevels: Map<string, number>;
     memoryUsage: number;
@@ -89,10 +89,10 @@ export interface G3DLODMetrics {
     frameRate: number;
 }
 
-export class G3DLevelOfDetail {
-    private config: G3DLODConfig;
-    private lodMeshes: Map<string, G3DLODMesh> = new Map();
-    private lodCache: Map<string, G3DLODLevel[]> = new Map();
+export class LevelOfDetail {
+    private config: LODConfig;
+    private lodMeshes: Map<string, LODMesh> = new Map();
+    private lodCache: Map<string, LODLevel[]> = new Map();
     private isInitialized: boolean = false;
     private lastFrameTime: number = 0;
     private frameCount: number = 0;
@@ -116,7 +116,7 @@ export class G3DLevelOfDetail {
         annotation: 0.5
     };
 
-    constructor(config: Partial<G3DLODConfig> = {}) {
+    constructor(config: Partial<LODConfig> = {}) {
         this.config = {
             enableAdaptiveLOD: true,
             enableMedicalAwareness: true,
@@ -150,15 +150,15 @@ export class G3DLevelOfDetail {
     }
 
     public createLODMesh(
-        meshData: G3DMeshData,
+        meshData: MeshData,
         meshId: string,
         meshName: string,
-        medicalType: G3DLODMesh['medicalType'] = 'anatomy',
-        clinicalPriority: G3DLODMesh['clinicalPriority'] = 'medium'
-    ): G3DLODMesh {
+        medicalType: LODMesh['medicalType'] = 'anatomy',
+        clinicalPriority: LODMesh['clinicalPriority'] = 'medium'
+    ): LODMesh {
         console.log(`Creating LOD mesh: ${meshId} (${medicalType})`);
 
-        const lodMesh: G3DLODMesh = {
+        const lodMesh: LODMesh = {
             id: meshId,
             name: meshName,
             originalMesh: meshData,
@@ -177,7 +177,7 @@ export class G3DLevelOfDetail {
         return lodMesh;
     }
 
-    private generateLODLevels(lodMesh: G3DLODMesh): void {
+    private generateLODLevels(lodMesh: LODMesh): void {
         const originalMesh = lodMesh.originalMesh;
         const maxLevels = this.config.maxLODLevels;
 
@@ -203,7 +203,7 @@ export class G3DLevelOfDetail {
         console.log(`Generated ${lodMesh.lodLevels.length} LOD levels for ${lodMesh.id}`);
     }
 
-    private calculateMedicalImportance(lodMesh: G3DLODMesh): number {
+    private calculateMedicalImportance(lodMesh: LODMesh): number {
         let importance = 0.5; // Base importance
 
         // Adjust based on medical type
@@ -261,12 +261,12 @@ export class G3DLevelOfDetail {
     }
 
     private generateLODLevel(
-        originalMesh: G3DMeshData,
+        originalMesh: MeshData,
         level: number,
         qualityFactor: number,
         distance: number,
         medicalImportance: number
-    ): G3DLODLevel {
+    ): LODLevel {
         if (level === 0) {
             // Level 0 is the original mesh
             return {
@@ -305,10 +305,10 @@ export class G3DLevelOfDetail {
     }
 
     private simplifyMesh(
-        originalMesh: G3DMeshData,
+        originalMesh: MeshData,
         qualityFactor: number,
         medicalImportance: number
-    ): G3DMeshData {
+    ): MeshData {
         // Simple mesh simplification algorithm
         const targetVertices = Math.floor(originalMesh.vertexCount * qualityFactor);
         const targetTriangles = Math.floor(originalMesh.triangleCount * qualityFactor);
@@ -360,7 +360,7 @@ export class G3DLevelOfDetail {
         };
     }
 
-    private calculateClinicalAccuracy(simplifiedMesh: G3DMeshData, originalMesh: G3DMeshData): number {
+    private calculateClinicalAccuracy(simplifiedMesh: MeshData, originalMesh: MeshData): number {
         // Simple accuracy calculation based on vertex count ratio
         const vertexRatio = simplifiedMesh.vertexCount / originalMesh.vertexCount;
         const triangleRatio = simplifiedMesh.triangleCount / originalMesh.triangleCount;
@@ -368,7 +368,7 @@ export class G3DLevelOfDetail {
         return (vertexRatio + triangleRatio) / 2;
     }
 
-    public updateLOD(camera: G3DLODCamera, deltaTime: number): void {
+    public updateLOD(camera: LODCamera, deltaTime: number): void {
         if (!this.isInitialized) return;
 
         this.frameCount++;
@@ -386,7 +386,7 @@ export class G3DLevelOfDetail {
         this.lastFrameTime = currentTime;
     }
 
-    private calculateOptimalLODLevel(lodMesh: G3DLODMesh, camera: G3DLODCamera): number {
+    private calculateOptimalLODLevel(lodMesh: LODMesh, camera: LODCamera): number {
         // Calculate distance from camera to mesh
         const distance = vec3.distance(camera.position, lodMesh.bounds.center);
 
@@ -405,7 +405,7 @@ export class G3DLevelOfDetail {
         return 0; // Highest quality
     }
 
-    public getCurrentLODLevel(meshId: string): G3DLODLevel | null {
+    public getCurrentLODLevel(meshId: string): LODLevel | null {
         const lodMesh = this.lodMeshes.get(meshId);
         if (!lodMesh) return null;
 
@@ -423,7 +423,7 @@ export class G3DLevelOfDetail {
         return true;
     }
 
-    public getMedicalPriorityLOD(clinicalPriority: G3DLODMesh['clinicalPriority']): G3DLODMesh[] {
+    public getMedicalPriorityLOD(clinicalPriority: LODMesh['clinicalPriority']): LODMesh[] {
         return Array.from(this.lodMeshes.values()).filter(
             mesh => mesh.clinicalPriority === clinicalPriority
         );
@@ -467,7 +467,7 @@ export class G3DLevelOfDetail {
         }
     }
 
-    private calculateBounds(vertices: Float32Array): G3DBounds {
+    private calculateBounds(vertices: Float32Array): Bounds {
         if (vertices.length === 0) {
             return {
                 min: vec3.create(),
@@ -509,7 +509,7 @@ export class G3DLevelOfDetail {
         };
     }
 
-    private calculateMemoryUsage(meshData: G3DMeshData): number {
+    private calculateMemoryUsage(meshData: MeshData): number {
         let usage = 0;
         usage += meshData.vertices.byteLength;
         usage += meshData.normals.byteLength;
@@ -520,11 +520,11 @@ export class G3DLevelOfDetail {
         return usage;
     }
 
-    public getLODMesh(meshId: string): G3DLODMesh | null {
+    public getLODMesh(meshId: string): LODMesh | null {
         return this.lodMeshes.get(meshId) || null;
     }
 
-    public getAllLODMeshes(): G3DLODMesh[] {
+    public getAllLODMeshes(): LODMesh[] {
         return Array.from(this.lodMeshes.values());
     }
 
@@ -532,7 +532,7 @@ export class G3DLevelOfDetail {
         return this.lodMeshes.delete(meshId);
     }
 
-    public getMetrics(): G3DLODMetrics {
+    public getMetrics(): LODMetrics {
         const activeLODLevels = new Map<string, number>();
         let totalMemoryUsage = 0;
         let totalQuality = 0;
@@ -620,4 +620,4 @@ export class G3DLevelOfDetail {
     }
 }
 
-export default G3DLevelOfDetail;
+export default LevelOfDetail;

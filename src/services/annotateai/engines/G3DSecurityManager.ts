@@ -117,7 +117,7 @@ interface AccessCondition {
     value: any;
 }
 
-export class G3DSecurityManager extends EventEmitter {
+export class SecurityManager extends EventEmitter {
     private users: Map<string, User> = new Map();
     private sessions: Map<string, Session> = new Map();
     private policies: Map<string, SecurityPolicy> = new Map();

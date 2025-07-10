@@ -4,7 +4,7 @@
  * Automated compliance monitoring and reporting
  */
 
-import { G3DGPUCompute } from '../g3d-performance/G3DGPUCompute';
+import { GPUCompute } from '../performance/G3DGPUCompute';
 
 export interface ComplianceConfig {
     standards: ComplianceStandard[];
@@ -343,8 +343,8 @@ export interface ComplianceRecommendation {
     impact: 'low' | 'medium' | 'high';
 }
 
-export class G3DComplianceManager {
-    private gpuCompute: G3DGPUCompute;
+export class ComplianceManager {
+    private gpuCompute: GPUCompute;
     private config: ComplianceConfig;
     private rules: Map<string, ComplianceRule>;
     private assessments: Map<string, ComplianceAssessment>;
@@ -352,7 +352,7 @@ export class G3DComplianceManager {
     private alerts: ComplianceAlert[];
 
     constructor(config: ComplianceConfig) {
-        this.gpuCompute = new G3DGPUCompute();
+        this.gpuCompute = new GPUCompute();
         this.config = config;
         this.rules = new Map();
         this.assessments = new Map();
@@ -1109,4 +1109,4 @@ interface ComplianceEvent {
     timestamp: Date;
 }
 
-export default G3DComplianceManager;
+export default ComplianceManager;

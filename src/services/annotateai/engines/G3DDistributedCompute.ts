@@ -217,7 +217,7 @@ interface JobMetrics {
     cost: number;
 }
 
-export class G3DDistributedCompute extends EventEmitter {
+export class DistributedCompute extends EventEmitter {
     private nodes: Map<string, ComputeNode> = new Map();
     private tasks: Map<string, ComputeTask> = new Map();
     private jobs: Map<string, DistributedJob> = new Map();

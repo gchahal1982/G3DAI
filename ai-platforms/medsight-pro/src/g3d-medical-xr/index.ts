@@ -8,130 +8,130 @@
  */
 
 // Import classes for internal use
-import G3DMedicalVRClass from './G3DMedicalVR';
-import G3DMedicalARClass from './G3DMedicalAR';
-import G3DHolographicImagingClass from './G3DHolographicImaging';
-import G3DCollaborativeReviewClass from './G3DCollaborativeReview';
-import G3DMedicalHapticsClass from './G3DMedicalHaptics';
+import MedicalVRClass from './MedicalVR';
+import MedicalARClass from './MedicalAR';
+import HolographicImagingClass from './HolographicImaging';
+import CollaborativeReviewClass from './CollaborativeReview';
+import MedicalHapticsClass from './MedicalHaptics';
 
 // Virtual Reality System
-export { default as G3DMedicalVR } from './G3DMedicalVR';
+export { default as MedicalVR } from './MedicalVR';
 export type {
-    G3DMedicalVRConfig,
-    G3DVRSession,
-    G3DVRParticipant,
-    G3DMedicalVRContext,
-    G3DVRPermissions,
-    G3DVRAvatar,
-    G3DVRTool,
-    G3DVRRecording,
-    G3DVRAnnotation,
-    G3DVRKeyframe,
-    G3DVRControllerInput,
-    G3DVRHandTracking,
-    G3DFingerData,
-    G3DPalmData,
-    G3DGesture
-} from './G3DMedicalVR';
+    MedicalVRConfig,
+    VRSession,
+    VRParticipant,
+    MedicalVRContext,
+    VRPermissions,
+    VRAvatar,
+    VRTool,
+    VRRecording,
+    VRAnnotation,
+    VRKeyframe,
+    VRControllerInput,
+    VRHandTracking,
+    FingerData,
+    PalmData,
+    Gesture
+} from './MedicalVR';
 
 // Augmented Reality System
-export { default as G3DMedicalAR } from './G3DMedicalAR';
+export { default as MedicalAR } from './MedicalAR';
 export type {
-    G3DMedicalARConfig,
-    G3DARSession,
-    G3DMedicalARContext,
-    G3DARObject,
-    G3DARTrackingAnchor,
-    G3DARTrackingData,
-    G3DLightEstimate,
-    G3DARPlane,
-    G3DARCalibration,
-    G3DCameraIntrinsics,
-    G3DPatientRegistration,
-    G3DLandmarkPoint,
-    G3DInstrumentCalibration,
-    G3DARGuidanceSystem,
-    G3DGuidanceInstruction,
-    G3DNavigationPath,
-    G3DWaypoint,
-    G3DSafetyZone,
-    G3DCriticalStructure,
-    G3DVisualizationStyle
-} from './G3DMedicalAR';
+    MedicalARConfig,
+    ARSession,
+    MedicalARContext,
+    ARObject,
+    ARTrackingAnchor,
+    ARTrackingData,
+    LightEstimate,
+    ARPlane,
+    ARCalibration,
+    CameraIntrinsics,
+    PatientRegistration,
+    LandmarkPoint,
+    InstrumentCalibration,
+    ARGuidanceSystem,
+    GuidanceInstruction,
+    NavigationPath,
+    Waypoint,
+    SafetyZone,
+    CriticalStructure,
+    VisualizationStyle
+} from './MedicalAR';
 
 // Holographic Imaging System
-export { default as G3DHolographicImaging } from './G3DHolographicImaging';
+export { default as HolographicImaging } from './HolographicImaging';
 export type {
-    G3DHolographicConfig,
-    G3DHolographicSession,
-    G3DMedicalHolographicContext,
-    G3DHolographicObject,
-    G3DHolographicProperties,
-    G3DHolographicViewer,
-    G3DViewerPermissions
-} from './G3DHolographicImaging';
+    HolographicConfig,
+    HolographicSession,
+    MedicalHolographicContext,
+    HolographicObject,
+    HolographicProperties,
+    HolographicViewer,
+    ViewerPermissions
+} from './HolographicImaging';
 
 // Collaborative Review System
-export { default as G3DCollaborativeReview } from './G3DCollaborativeReview';
+export { default as CollaborativeReview } from './CollaborativeReview';
 export type {
-    G3DCollaborativeConfig,
-    G3DCollaborativeSession,
-    G3DMedicalCollaborativeContext,
-    G3DParticipant,
-    G3DMedicalCredentials,
-    G3DParticipantPermissions,
-    G3DAvatar,
-    G3DSharedObject,
-    G3DCollaborativeAnnotation,
-    G3DAnnotationReply,
-    G3DSessionState,
-    G3DViewState,
-    G3DConsensusItem,
-    G3DVote
-} from './G3DCollaborativeReview';
+    CollaborativeConfig,
+    CollaborativeSession,
+    MedicalCollaborativeContext,
+    Participant,
+    MedicalCredentials,
+    ParticipantPermissions,
+    Avatar,
+    SharedObject,
+    CollaborativeAnnotation,
+    AnnotationReply,
+    SessionState,
+    ViewState,
+    ConsensusItem,
+    Vote
+} from './CollaborativeReview';
 
 // Medical Haptics System
-export { default as G3DMedicalHaptics } from './G3DMedicalHaptics';
+export { default as MedicalHaptics } from './MedicalHaptics';
 export type {
-    G3DMedicalHapticsConfig,
-    G3DHapticSafetyLimits,
-    G3DHapticSession,
-    G3DMedicalHapticContext,
-    G3DTissueType,
-    G3DTissueProperties,
-    G3DHapticModel,
-    G3DVisualModel,
-    G3DMedicalInstrument,
-    G3DInstrumentProperties,
-    G3DHapticMapping,
-    G3DHapticDevice,
-    G3DHapticCapabilities,
-    G3DHapticCalibration,
-    G3DHapticObject,
-    G3DHapticObjectProperties,
-    G3DMedicalObjectProperties,
-    G3DInteractionState,
-    G3DHapticPerformanceMetrics
-} from './G3DMedicalHaptics';
+    MedicalHapticsConfig,
+    HapticSafetyLimits,
+    HapticSession,
+    MedicalHapticContext,
+    TissueType,
+    TissueProperties,
+    HapticModel,
+    VisualModel,
+    MedicalInstrument,
+    InstrumentProperties,
+    HapticMapping,
+    HapticDevice,
+    HapticCapabilities,
+    HapticCalibration,
+    HapticObject,
+    HapticObjectProperties,
+    MedicalObjectProperties,
+    InteractionState,
+    HapticPerformanceMetrics
+} from './MedicalHaptics';
 
 // Common XR Types
 export type {
-    G3DVector2,
-    G3DVector3,
-    G3DQuaternion,
-    G3DMatrix4
-} from './G3DMedicalAR';
+    Vector2,
+    Vector3,
+    Quaternion,
+    Matrix4
+} from './MedicalAR';
 
 /**
  * G3D Medical XR Integration Manager
  * Orchestrates all XR systems for comprehensive medical applications
  */
-export class G3DMedicalXRManager {
-    private vrSystem: G3DMedicalVRClass | null = null;
-    private arSystem: G3DMedicalARClass | null = null;
-    private holographicSystem: G3DHolographicImagingClass | null = null;
-    private collaborativeSystem: G3DCollaborativeReviewClass | null = null;
-    private hapticsSystem: G3DMedicalHapticsClass | null = null;
+export class MedicalXRManager {
+    private vrSystem: MedicalVRClass | null = null;
+    private arSystem: MedicalARClass | null = null;
+    private holographicSystem: HolographicImagingClass | null = null;
+    private collaborativeSystem: CollaborativeReviewClass | null = null;
+    private hapticsSystem: MedicalHapticsClass | null = null;
 
     private isInitialized: boolean = false;
 
@@ -144,23 +144,23 @@ export class G3DMedicalXRManager {
             console.log('Initializing G3D Medical XR Manager...');
 
             // Initialize VR system
-            this.vrSystem = new G3DMedicalVRClass();
+            this.vrSystem = new MedicalVRClass();
             await (this.vrSystem as any).initialize?.();
 
             // Initialize AR system
-            this.arSystem = new G3DMedicalARClass();
+            this.arSystem = new MedicalARClass();
             await (this.arSystem as any).initialize?.();
 
             // Initialize holographic system
-            this.holographicSystem = new G3DHolographicImagingClass();
+            this.holographicSystem = new HolographicImagingClass();
             await (this.holographicSystem as any).initialize?.();
 
             // Initialize collaborative system
-            this.collaborativeSystem = new G3DCollaborativeReviewClass();
+            this.collaborativeSystem = new CollaborativeReviewClass();
             await (this.collaborativeSystem as any).initialize?.();
 
             // Initialize haptics system
-            this.hapticsSystem = new G3DMedicalHapticsClass();
+            this.hapticsSystem = new MedicalHapticsClass();
             await (this.hapticsSystem as any).initialize?.();
 
             this.isInitialized = true;
@@ -171,23 +171,23 @@ export class G3DMedicalXRManager {
         }
     }
 
-    getVRSystem(): G3DMedicalVRClass | null {
+    getVRSystem(): MedicalVRClass | null {
         return this.vrSystem;
     }
 
-    getARSystem(): G3DMedicalARClass | null {
+    getARSystem(): MedicalARClass | null {
         return this.arSystem;
     }
 
-    getHolographicSystem(): G3DHolographicImagingClass | null {
+    getHolographicSystem(): HolographicImagingClass | null {
         return this.holographicSystem;
     }
 
-    getCollaborativeSystem(): G3DCollaborativeReviewClass | null {
+    getCollaborativeSystem(): CollaborativeReviewClass | null {
         return this.collaborativeSystem;
     }
 
-    getHapticsSystem(): G3DMedicalHapticsClass | null {
+    getHapticsSystem(): MedicalHapticsClass | null {
         return this.hapticsSystem;
     }
 
@@ -228,4 +228,4 @@ export class G3DMedicalXRManager {
     }
 }
 
-export default G3DMedicalXRManager;
+export default MedicalXRManager;

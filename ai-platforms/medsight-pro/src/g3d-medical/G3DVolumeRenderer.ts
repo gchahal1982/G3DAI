@@ -14,7 +14,7 @@
 import { vec3, mat4, quat } from 'gl-matrix';
 
 // Volume Rendering Types
-export interface G3DVolumeRenderingConfig {
+export interface VolumeRenderingConfig {
     renderingTechnique: 'raycasting' | 'slicing' | 'splatting' | 'hybrid';
     samplingRate: number;
     qualityLevel: 'draft' | 'standard' | 'high' | 'ultra';
@@ -24,7 +24,7 @@ export interface G3DVolumeRenderingConfig {
     gpuAcceleration: boolean;
 }
 
-export interface G3DVolumeData {
+export interface VolumeData {
     id: string;
     dimensions: vec3;
     spacing: vec3;
@@ -36,10 +36,10 @@ export interface G3DVolumeData {
     windowWidth: number;
     rescaleSlope: number;
     rescaleIntercept: number;
-    metadata: G3DVolumeMetadata;
+    metadata: VolumeMetadata;
 }
 
-export interface G3DVolumeMetadata {
+export interface VolumeMetadata {
     patientInfo: {
         id: string;
         name?: string;
@@ -64,25 +64,25 @@ export interface G3DVolumeMetadata {
     };
 }
 
-export interface G3DTransferFunction {
+export interface TransferFunction {
     id: string;
     name: string;
-    colorPoints: G3DColorPoint[];
-    opacityPoints: G3DOpacityPoint[];
+    colorPoints: ColorPoint[];
+    opacityPoints: OpacityPoint[];
     medicalPreset?: 'bone' | 'soft_tissue' | 'lung' | 'vessel' | 'brain' | 'custom';
 }
 
-export interface G3DColorPoint {
+export interface ColorPoint {
     value: number;
     color: vec3;
 }
 
-export interface G3DOpacityPoint {
+export interface OpacityPoint {
     value: number;
     opacity: number;
 }
 
-export interface G3DVolumeRenderingState {
+export interface VolumeRenderingState {
     viewMatrix: mat4;
     projectionMatrix: mat4;
     volumeMatrix: mat4;
@@ -93,17 +93,17 @@ export interface G3DVolumeRenderingState {
     maxSteps: number;
     isoValue: number;
     enableClipping: boolean;
-    clippingPlanes: G3DClippingPlane[];
+    clippingPlanes: ClippingPlane[];
 }
 
-export interface G3DClippingPlane {
+export interface ClippingPlane {
     normal: vec3;
     distance: number;
     enabled: boolean;
 }
 
 // Advanced Volume Rendering Shaders
-export class G3DVolumeShaderManager {
+export class VolumeShaderManager {
     private static readonly VOLUME_VERTEX_SHADER = `#version 300 es
     precision highp float;
     
@@ -362,8 +362,8 @@ export class G3DVolumeShaderManager {
     constructor(private gl: WebGL2RenderingContext) { }
 
     createVolumeProgram(): WebGLProgram {
-        const vertexShader = this.compileShader(G3DVolumeShaderManager.VOLUME_VERTEX_SHADER, this.gl.VERTEX_SHADER);
-        const fragmentShader = this.compileShader(G3DVolumeShaderManager.VOLUME_FRAGMENT_SHADER, this.gl.FRAGMENT_SHADER);
+        const vertexShader = this.compileShader(VolumeShaderManager.VOLUME_VERTEX_SHADER, this.gl.VERTEX_SHADER);
+        const fragmentShader = this.compileShader(VolumeShaderManager.VOLUME_FRAGMENT_SHADER, this.gl.FRAGMENT_SHADER);
 
         const program = this.gl.createProgram()!;
         this.gl.attachShader(program, vertexShader);
@@ -391,19 +391,19 @@ export class G3DVolumeShaderManager {
 }
 
 // Main Volume Renderer Class
-export class G3DVolumeRenderer {
-    private config: G3DVolumeRenderingConfig;
+export class VolumeRenderer {
+    private config: VolumeRenderingConfig;
     private gl: WebGL2RenderingContext;
-    private shaderManager: G3DVolumeShaderManager;
+    private shaderManager: VolumeShaderManager;
     private volumeProgram: WebGLProgram | null = null;
     private volumeTextures: Map<string, WebGLTexture> = new Map();
     private transferFunctions: Map<string, WebGLTexture> = new Map();
     private gradientTextures: Map<string, WebGLTexture> = new Map();
     private volumeGeometry: WebGLVertexArrayObject | null = null;
-    private renderingState: G3DVolumeRenderingState;
+    private renderingState: VolumeRenderingState;
     private isInitialized: boolean = false;
 
-    constructor(gl: WebGL2RenderingContext, config: Partial<G3DVolumeRenderingConfig> = {}) {
+    constructor(gl: WebGL2RenderingContext, config: Partial<VolumeRenderingConfig> = {}) {
         this.gl = gl;
         this.config = {
             renderingTechnique: 'raycasting',
@@ -416,7 +416,7 @@ export class G3DVolumeRenderer {
             ...config
         };
 
-        this.shaderManager = new G3DVolumeShaderManager(gl);
+        this.shaderManager = new VolumeShaderManager(gl);
         this.renderingState = {
             viewMatrix: mat4.create(),
             projectionMatrix: mat4.create(),
@@ -518,7 +518,7 @@ export class G3DVolumeRenderer {
         this.gl.bindVertexArray(null);
     }
 
-    async loadVolumeData(volumeData: G3DVolumeData): Promise<string> {
+    async loadVolumeData(volumeData: VolumeData): Promise<string> {
         if (!this.isInitialized) {
             throw new Error('Volume renderer not initialized');
         }
@@ -536,7 +536,7 @@ export class G3DVolumeRenderer {
         return volumeData.id;
     }
 
-    private createVolumeTexture(volumeData: G3DVolumeData): WebGLTexture {
+    private createVolumeTexture(volumeData: VolumeData): WebGLTexture {
         const texture = this.gl.createTexture()!;
         this.gl.bindTexture(this.gl.TEXTURE_3D, texture);
 
@@ -595,7 +595,7 @@ export class G3DVolumeRenderer {
         return texture;
     }
 
-    private generateGradientTexture(volumeData: G3DVolumeData): WebGLTexture {
+    private generateGradientTexture(volumeData: VolumeData): WebGLTexture {
         // Generate gradient texture for enhanced lighting
         const dims = volumeData.dimensions;
         const gradientData = new Float32Array(dims[0] * dims[1] * dims[2] * 3);
@@ -657,7 +657,7 @@ export class G3DVolumeRenderer {
         return texture;
     }
 
-    createTransferFunction(transferFunc: G3DTransferFunction): string {
+    createTransferFunction(transferFunc: TransferFunction): string {
         const resolution = 256;
         const data = new Float32Array(resolution * 4); // RGBA
 
@@ -833,7 +833,7 @@ export class G3DVolumeRenderer {
         this.gl.uniform1i(this.gl.getUniformLocation(program, 'u_enableAdaptiveSampling'), this.config.enableAdaptiveSampling ? 1 : 0);
     }
 
-    updateRenderingState(state: Partial<G3DVolumeRenderingState>): void {
+    updateRenderingState(state: Partial<VolumeRenderingState>): void {
         Object.assign(this.renderingState, state);
     }
 
@@ -893,4 +893,4 @@ export class G3DVolumeRenderer {
     }
 }
 
-export default G3DVolumeRenderer;
+export default VolumeRenderer;

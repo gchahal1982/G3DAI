@@ -11,7 +11,7 @@
  * - Clinical decision support analytics
  */
 
-export interface G3DMedicalAnalyticsConfig {
+export interface MedicalAnalyticsConfig {
     enableRealTimeAnalytics: boolean;
     enablePerformanceMonitoring: boolean;
     enableMedicalInsights: boolean;
@@ -24,7 +24,7 @@ export interface G3DMedicalAnalyticsConfig {
     reportingFrequency: 'real_time' | 'hourly' | 'daily' | 'weekly' | 'monthly';
 }
 
-export interface G3DAnalyticsMetric {
+export interface AnalyticsMetric {
     id: string;
     name: string;
     type: 'counter' | 'gauge' | 'histogram' | 'summary' | 'medical_specific';
@@ -33,10 +33,10 @@ export interface G3DAnalyticsMetric {
     unit: string;
     timestamp: number;
     metadata: Record<string, any>;
-    medicalContext?: G3DMedicalAnalyticsContext;
+    medicalContext?: MedicalAnalyticsContext;
 }
 
-export interface G3DMedicalAnalyticsContext {
+export interface MedicalAnalyticsContext {
     facilityId: string;
     departmentId: string;
     modalityType?: string;
@@ -46,58 +46,58 @@ export interface G3DMedicalAnalyticsContext {
     timeOfDay?: 'morning' | 'afternoon' | 'evening' | 'night';
 }
 
-export interface G3DAnalyticsDashboard {
+export interface AnalyticsDashboard {
     id: string;
     name: string;
     description: string;
     type: 'executive' | 'clinical' | 'operational' | 'technical' | 'custom';
-    widgets: G3DAnalyticsWidget[];
-    layout: G3DDashboardLayout;
-    permissions: G3DDashboardPermissions;
+    widgets: AnalyticsWidget[];
+    layout: DashboardLayout;
+    permissions: DashboardPermissions;
     refreshInterval: number; // seconds
     medicalFocus: string[];
     createdAt: number;
     updatedAt: number;
 }
 
-export interface G3DAnalyticsWidget {
+export interface AnalyticsWidget {
     id: string;
     type: 'chart' | 'table' | 'metric' | 'alert' | 'medical_insight' | 'custom';
     title: string;
     description: string;
-    dataSource: G3DDataSource;
-    visualization: G3DVisualizationConfig;
-    position: G3DWidgetPosition;
-    size: G3DWidgetSize;
+    dataSource: DataSource;
+    visualization: VisualizationConfig;
+    position: WidgetPosition;
+    size: WidgetSize;
     refreshInterval: number;
     medicalRelevance: 'high' | 'medium' | 'low';
 }
 
-export interface G3DDataSource {
+export interface DataSource {
     type: 'metric' | 'query' | 'api' | 'medical_data' | 'real_time';
     configuration: any;
     filters: Record<string, any>;
-    aggregation?: G3DAggregationConfig;
+    aggregation?: AggregationConfig;
     medicalStandards?: string[];
 }
 
-export interface G3DAggregationConfig {
+export interface AggregationConfig {
     function: 'sum' | 'avg' | 'min' | 'max' | 'count' | 'percentile' | 'medical_score';
     groupBy: string[];
     timeWindow: string;
     medicalNormalization?: boolean;
 }
 
-export interface G3DVisualizationConfig {
+export interface VisualizationConfig {
     chartType: 'line' | 'bar' | 'pie' | 'scatter' | 'heatmap' | 'gauge' | 'medical_chart';
-    xAxis?: G3DAxisConfig;
-    yAxis?: G3DAxisConfig;
+    xAxis?: AxisConfig;
+    yAxis?: AxisConfig;
     colors?: string[];
-    medicalThresholds?: G3DMedicalThreshold[];
-    annotations?: G3DAnnotation[];
+    medicalThresholds?: MedicalThreshold[];
+    annotations?: Annotation[];
 }
 
-export interface G3DAxisConfig {
+export interface AxisConfig {
     label: string;
     scale: 'linear' | 'logarithmic' | 'medical_scale';
     min?: number;
@@ -105,7 +105,7 @@ export interface G3DAxisConfig {
     medicalUnits?: string;
 }
 
-export interface G3DMedicalThreshold {
+export interface MedicalThreshold {
     value: number;
     label: string;
     color: string;
@@ -113,45 +113,45 @@ export interface G3DMedicalThreshold {
     medicalSignificance: string;
 }
 
-export interface G3DAnnotation {
+export interface Annotation {
     timestamp: number;
     text: string;
     type: 'event' | 'alert' | 'medical_finding' | 'system_change';
     severity: 'info' | 'warning' | 'error' | 'critical';
 }
 
-export interface G3DDashboardLayout {
+export interface DashboardLayout {
     columns: number;
     rows: number;
     responsive: boolean;
     medicalWorkflowOptimized: boolean;
 }
 
-export interface G3DWidgetPosition {
+export interface WidgetPosition {
     x: number;
     y: number;
 }
 
-export interface G3DWidgetSize {
+export interface WidgetSize {
     width: number;
     height: number;
 }
 
-export interface G3DDashboardPermissions {
+export interface DashboardPermissions {
     viewRoles: string[];
     editRoles: string[];
     medicalDataAccess: boolean;
     exportPermissions: boolean;
 }
 
-export interface G3DMedicalReport {
+export interface MedicalReport {
     id: string;
     name: string;
     type: 'performance' | 'clinical' | 'quality' | 'compliance' | 'custom';
     description: string;
-    schedule: G3DReportSchedule;
-    sections: G3DReportSection[];
-    recipients: G3DReportRecipient[];
+    schedule: ReportSchedule;
+    sections: ReportSection[];
+    recipients: ReportRecipient[];
     format: 'pdf' | 'html' | 'excel' | 'json';
     medicalStandards: string[];
     complianceLevel: 'basic' | 'enhanced' | 'full';
@@ -159,7 +159,7 @@ export interface G3DMedicalReport {
     lastGenerated?: number;
 }
 
-export interface G3DReportSchedule {
+export interface ReportSchedule {
     frequency: 'manual' | 'real_time' | 'hourly' | 'daily' | 'weekly' | 'monthly' | 'quarterly';
     time?: string; // HH:MM format
     dayOfWeek?: number; // 0-6, Sunday = 0
@@ -168,25 +168,25 @@ export interface G3DReportSchedule {
     medicalUrgencyTrigger?: boolean;
 }
 
-export interface G3DReportSection {
+export interface ReportSection {
     id: string;
     title: string;
     type: 'summary' | 'chart' | 'table' | 'medical_analysis' | 'recommendations';
-    dataSource: G3DDataSource;
-    visualization?: G3DVisualizationConfig;
+    dataSource: DataSource;
+    visualization?: VisualizationConfig;
     medicalContext: boolean;
     order: number;
 }
 
-export interface G3DReportRecipient {
+export interface ReportRecipient {
     email: string;
     role: string;
     medicalLicense?: string;
     facilityAccess: string[];
-    notificationPreferences: G3DNotificationPreferences;
+    notificationPreferences: NotificationPreferences;
 }
 
-export interface G3DNotificationPreferences {
+export interface NotificationPreferences {
     email: boolean;
     sms: boolean;
     inApp: boolean;
@@ -194,7 +194,7 @@ export interface G3DNotificationPreferences {
     urgencyLevels: string[];
 }
 
-export interface G3DMedicalInsight {
+export interface MedicalInsight {
     id: string;
     type: 'trend' | 'anomaly' | 'correlation' | 'prediction' | 'recommendation';
     title: string;
@@ -203,20 +203,20 @@ export interface G3DMedicalInsight {
     confidence: number; // 0-1
     medicalRelevance: 'high' | 'medium' | 'low';
     affectedMetrics: string[];
-    timeRange: G3DTimeRange;
+    timeRange: TimeRange;
     recommendations: string[];
-    medicalEvidence: G3DMedicalEvidence[];
+    medicalEvidence: MedicalEvidence[];
     createdAt: number;
     acknowledged: boolean;
 }
 
-export interface G3DTimeRange {
+export interface TimeRange {
     start: number;
     end: number;
     duration: string;
 }
 
-export interface G3DMedicalEvidence {
+export interface MedicalEvidence {
     type: 'data_point' | 'trend' | 'correlation' | 'external_study';
     description: string;
     source: string;
@@ -224,23 +224,23 @@ export interface G3DMedicalEvidence {
     medicalStandard?: string;
 }
 
-export interface G3DPerformanceMetrics {
-    systemPerformance: G3DSystemPerformanceMetrics;
-    medicalWorkflow: G3DMedicalWorkflowMetrics;
-    userEngagement: G3DUserEngagementMetrics;
-    dataQuality: G3DDataQualityMetrics;
-    complianceMetrics: G3DComplianceMetrics;
+export interface PerformanceMetrics {
+    systemPerformance: SystemPerformanceMetrics;
+    medicalWorkflow: MedicalWorkflowMetrics;
+    userEngagement: UserEngagementMetrics;
+    dataQuality: DataQualityMetrics;
+    complianceMetrics: ComplianceMetrics;
 }
 
-export interface G3DSystemPerformanceMetrics {
+export interface SystemPerformanceMetrics {
     responseTime: number;
     throughput: number;
     errorRate: number;
     availability: number;
-    resourceUtilization: G3DResourceUtilization;
+    resourceUtilization: ResourceUtilization;
 }
 
-export interface G3DResourceUtilization {
+export interface ResourceUtilization {
     cpu: number;
     memory: number;
     storage: number;
@@ -248,15 +248,15 @@ export interface G3DResourceUtilization {
     gpu?: number;
 }
 
-export interface G3DMedicalWorkflowMetrics {
+export interface MedicalWorkflowMetrics {
     averageStudyProcessingTime: number;
     diagnosticAccuracy: number;
     workflowEfficiency: number;
     patientThroughput: number;
-    clinicalDecisionSupport: G3DClinicalMetrics;
+    clinicalDecisionSupport: ClinicalMetrics;
 }
 
-export interface G3DClinicalMetrics {
+export interface ClinicalMetrics {
     aiAssistanceUsage: number;
     diagnosticConfidence: number;
     timeToReport: number;
@@ -264,7 +264,7 @@ export interface G3DClinicalMetrics {
     clinicalOutcomes: number;
 }
 
-export interface G3DUserEngagementMetrics {
+export interface UserEngagementMetrics {
     activeUsers: number;
     sessionDuration: number;
     featureUsage: Record<string, number>;
@@ -272,7 +272,7 @@ export interface G3DUserEngagementMetrics {
     medicalProfessionalAdoption: number;
 }
 
-export interface G3DDataQualityMetrics {
+export interface DataQualityMetrics {
     completeness: number;
     accuracy: number;
     consistency: number;
@@ -280,7 +280,7 @@ export interface G3DDataQualityMetrics {
     medicalStandardCompliance: number;
 }
 
-export interface G3DComplianceMetrics {
+export interface ComplianceMetrics {
     hipaaCompliance: number;
     auditTrailCompleteness: number;
     dataEncryptionCoverage: number;
@@ -288,20 +288,20 @@ export interface G3DComplianceMetrics {
     medicalDataProtection: number;
 }
 
-export class G3DMedicalAnalytics {
-    private config: G3DMedicalAnalyticsConfig;
-    private metrics: Map<string, G3DAnalyticsMetric[]> = new Map();
-    private dashboards: Map<string, G3DAnalyticsDashboard> = new Map();
-    private reports: Map<string, G3DMedicalReport> = new Map();
-    private insights: Map<string, G3DMedicalInsight> = new Map();
+export class MedicalAnalytics {
+    private config: MedicalAnalyticsConfig;
+    private metrics: Map<string, AnalyticsMetric[]> = new Map();
+    private dashboards: Map<string, AnalyticsDashboard> = new Map();
+    private reports: Map<string, MedicalReport> = new Map();
+    private insights: Map<string, MedicalInsight> = new Map();
     private isInitialized: boolean = false;
 
-    private metricsCollector: G3DMetricsCollector | null = null;
-    private insightEngine: G3DMedicalInsightEngine | null = null;
-    private reportGenerator: G3DReportGenerator | null = null;
-    private alertManager: G3DAlertManager | null = null;
+    private metricsCollector: MetricsCollector | null = null;
+    private insightEngine: MedicalInsightEngine | null = null;
+    private reportGenerator: ReportGenerator | null = null;
+    private alertManager: AlertManager | null = null;
 
-    constructor(config: Partial<G3DMedicalAnalyticsConfig> = {}) {
+    constructor(config: Partial<MedicalAnalyticsConfig> = {}) {
         this.config = {
             enableRealTimeAnalytics: true,
             enablePerformanceMonitoring: true,
@@ -322,23 +322,23 @@ export class G3DMedicalAnalytics {
             console.log('Initializing G3D Medical Analytics Engine...');
 
             // Initialize metrics collector
-            this.metricsCollector = new G3DMetricsCollector(this.config);
+            this.metricsCollector = new MetricsCollector(this.config);
             await this.metricsCollector.initialize();
 
             // Initialize insight engine
             if (this.config.enableMedicalInsights) {
-                this.insightEngine = new G3DMedicalInsightEngine(this.config);
+                this.insightEngine = new MedicalInsightEngine(this.config);
                 await this.insightEngine.initialize();
             }
 
             // Initialize report generator
             if (this.config.enableAutomatedReporting) {
-                this.reportGenerator = new G3DReportGenerator(this.config);
+                this.reportGenerator = new ReportGenerator(this.config);
                 await this.reportGenerator.initialize();
             }
 
             // Initialize alert manager
-            this.alertManager = new G3DAlertManager(this.config);
+            this.alertManager = new AlertManager(this.config);
             await this.alertManager.initialize();
 
             // Set up default dashboards
@@ -361,7 +361,7 @@ export class G3DMedicalAnalytics {
     }
 
     private async createDefaultDashboards(): Promise<void> {
-        const dashboards: G3DAnalyticsDashboard[] = [
+        const dashboards: AnalyticsDashboard[] = [
             {
                 id: 'executive_overview',
                 name: 'Executive Overview',
@@ -492,7 +492,7 @@ export class G3DMedicalAnalytics {
     }
 
     private async createDefaultReports(): Promise<void> {
-        const reports: G3DMedicalReport[] = [
+        const reports: MedicalReport[] = [
             {
                 id: 'daily_performance_report',
                 name: 'Daily Performance Report',
@@ -661,7 +661,7 @@ export class G3DMedicalAnalytics {
         }
     }
 
-    private shouldGenerateReport(report: G3DMedicalReport): boolean {
+    private shouldGenerateReport(report: MedicalReport): boolean {
         if (!report.schedule.enabled) {
             return false;
         }
@@ -682,12 +682,12 @@ export class G3DMedicalAnalytics {
     }
 
     // Public API
-    public async recordMetric(metric: Partial<G3DAnalyticsMetric>): Promise<void> {
+    public async recordMetric(metric: Partial<AnalyticsMetric>): Promise<void> {
         if (!this.isInitialized) {
             throw new Error('Analytics engine not initialized');
         }
 
-        const fullMetric: G3DAnalyticsMetric = {
+        const fullMetric: AnalyticsMetric = {
             id: `metric_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
             name: metric.name || 'unnamed_metric',
             type: metric.type || 'gauge',
@@ -709,8 +709,8 @@ export class G3DMedicalAnalytics {
         }
     }
 
-    public async createDashboard(dashboard: Partial<G3DAnalyticsDashboard>): Promise<string> {
-        const fullDashboard: G3DAnalyticsDashboard = {
+    public async createDashboard(dashboard: Partial<AnalyticsDashboard>): Promise<string> {
+        const fullDashboard: AnalyticsDashboard = {
             id: `dashboard_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
             name: dashboard.name || 'Custom Dashboard',
             description: dashboard.description || '',
@@ -733,8 +733,8 @@ export class G3DMedicalAnalytics {
         return fullDashboard.id;
     }
 
-    public async createReport(report: Partial<G3DMedicalReport>): Promise<string> {
-        const fullReport: G3DMedicalReport = {
+    public async createReport(report: Partial<MedicalReport>): Promise<string> {
+        const fullReport: MedicalReport = {
             id: `report_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
             name: report.name || 'Custom Report',
             type: report.type || 'custom',
@@ -756,7 +756,7 @@ export class G3DMedicalAnalytics {
         return fullReport.id;
     }
 
-    public getPerformanceMetrics(): G3DPerformanceMetrics {
+    public getPerformanceMetrics(): PerformanceMetrics {
         // Calculate performance metrics from collected data
         return {
             systemPerformance: {
@@ -814,7 +814,7 @@ export class G3DMedicalAnalytics {
     }
 
     private calculateAverageMetric(metricName: string): number | null {
-        const allMetrics: G3DAnalyticsMetric[] = [];
+        const allMetrics: AnalyticsMetric[] = [];
         for (const categoryMetrics of this.metrics.values()) {
             allMetrics.push(...categoryMetrics.filter(m => m.name === metricName));
         }
@@ -827,19 +827,19 @@ export class G3DMedicalAnalytics {
         return sum / allMetrics.length;
     }
 
-    public getDashboards(): G3DAnalyticsDashboard[] {
+    public getDashboards(): AnalyticsDashboard[] {
         return Array.from(this.dashboards.values());
     }
 
-    public getDashboard(dashboardId: string): G3DAnalyticsDashboard | null {
+    public getDashboard(dashboardId: string): AnalyticsDashboard | null {
         return this.dashboards.get(dashboardId) || null;
     }
 
-    public getReports(): G3DMedicalReport[] {
+    public getReports(): MedicalReport[] {
         return Array.from(this.reports.values());
     }
 
-    public getMedicalInsights(): G3DMedicalInsight[] {
+    public getMedicalInsights(): MedicalInsight[] {
         return Array.from(this.insights.values())
             .sort((a, b) => b.createdAt - a.createdAt);
     }
@@ -896,8 +896,8 @@ export class G3DMedicalAnalytics {
 }
 
 // Supporting classes (simplified implementations)
-class G3DMetricsCollector {
-    constructor(private config: G3DMedicalAnalyticsConfig) { }
+class MetricsCollector {
+    constructor(private config: MedicalAnalyticsConfig) { }
 
     async initialize(): Promise<void> {
         console.log('Metrics Collector initialized');
@@ -907,7 +907,7 @@ class G3DMetricsCollector {
         // Collect system and medical metrics
     }
 
-    async processMetric(metric: G3DAnalyticsMetric): Promise<void> {
+    async processMetric(metric: AnalyticsMetric): Promise<void> {
         console.log(`Processing metric: ${metric.name} = ${metric.value}`);
     }
 
@@ -916,14 +916,14 @@ class G3DMetricsCollector {
     }
 }
 
-class G3DMedicalInsightEngine {
-    constructor(private config: G3DMedicalAnalyticsConfig) { }
+class MedicalInsightEngine {
+    constructor(private config: MedicalAnalyticsConfig) { }
 
     async initialize(): Promise<void> {
         console.log('Medical Insight Engine initialized');
     }
 
-    async generateInsights(): Promise<G3DMedicalInsight[]> {
+    async generateInsights(): Promise<MedicalInsight[]> {
         // Generate medical insights based on data analysis
         return [
             {
@@ -960,14 +960,14 @@ class G3DMedicalInsightEngine {
     }
 }
 
-class G3DReportGenerator {
-    constructor(private config: G3DMedicalAnalyticsConfig) { }
+class ReportGenerator {
+    constructor(private config: MedicalAnalyticsConfig) { }
 
     async initialize(): Promise<void> {
         console.log('Report Generator initialized');
     }
 
-    async generateReport(report: G3DMedicalReport): Promise<void> {
+    async generateReport(report: MedicalReport): Promise<void> {
         console.log(`Generating report: ${report.name}`);
         // Generate and distribute report
     }
@@ -977,14 +977,14 @@ class G3DReportGenerator {
     }
 }
 
-class G3DAlertManager {
-    constructor(private config: G3DMedicalAnalyticsConfig) { }
+class AlertManager {
+    constructor(private config: MedicalAnalyticsConfig) { }
 
     async initialize(): Promise<void> {
         console.log('Alert Manager initialized');
     }
 
-    async sendAlert(insight: G3DMedicalInsight): Promise<void> {
+    async sendAlert(insight: MedicalInsight): Promise<void> {
         console.log(`Sending alert for insight: ${insight.title}`);
     }
 
@@ -993,4 +993,4 @@ class G3DAlertManager {
     }
 }
 
-export default G3DMedicalAnalytics;
+export default MedicalAnalytics;

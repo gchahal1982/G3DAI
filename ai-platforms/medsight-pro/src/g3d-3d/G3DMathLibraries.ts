@@ -5,16 +5,16 @@
 
 import { vec3, mat4, quat } from 'gl-matrix';
 
-export interface G3DMathConfig {
+export interface MathConfig {
     precision: 'single' | 'double';
     enableGPUAcceleration: boolean;
     enableVectorization: boolean;
 }
 
-export class G3DMathLibraries {
-    private config: G3DMathConfig;
+export class MathLibraries {
+    private config: MathConfig;
 
-    constructor(config: Partial<G3DMathConfig> = {}) {
+    constructor(config: Partial<MathConfig> = {}) {
         this.config = {
             precision: 'single',
             enableGPUAcceleration: true,
@@ -377,4 +377,4 @@ export class G3DMathLibraries {
     }
 }
 
-export default G3DMathLibraries;
+export default MathLibraries;

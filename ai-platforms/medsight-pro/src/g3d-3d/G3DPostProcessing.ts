@@ -11,7 +11,7 @@
  * - Medical imaging artifacts correction
  */
 
-export interface G3DPostProcessingConfig {
+export interface PostProcessingConfig {
     enablePostProcessing: boolean;
     enableMedicalEffects: boolean;
     renderTargetSize: [number, number];
@@ -22,7 +22,7 @@ export interface G3DPostProcessingConfig {
     medicalEnhancement: boolean;
 }
 
-export interface G3DPostProcessingEffect {
+export interface PostProcessingEffect {
     id: string;
     name: string;
     type: 'filter' | 'enhancement' | 'correction' | 'medical' | 'diagnostic';
@@ -34,7 +34,7 @@ export interface G3DPostProcessingEffect {
     renderTarget?: WebGLFramebuffer;
 }
 
-export interface G3DMedicalFilter {
+export interface MedicalFilter {
     id: string;
     name: string;
     category: 'enhancement' | 'segmentation' | 'measurement' | 'diagnosis';
@@ -44,7 +44,7 @@ export interface G3DMedicalFilter {
     enabled: boolean;
 }
 
-export interface G3DRenderTarget {
+export interface RenderTarget {
     id: string;
     framebuffer: WebGLFramebuffer;
     colorTexture: WebGLTexture;
@@ -54,11 +54,11 @@ export interface G3DRenderTarget {
     format: 'RGBA8' | 'RGBA16F' | 'RGBA32F' | 'RGB8' | 'RGB16F';
 }
 
-export class G3DPostProcessing {
-    private config: G3DPostProcessingConfig;
-    private effects: Map<string, G3DPostProcessingEffect> = new Map();
-    private medicalFilters: Map<string, G3DMedicalFilter> = new Map();
-    private renderTargets: Map<string, G3DRenderTarget> = new Map();
+export class PostProcessing {
+    private config: PostProcessingConfig;
+    private effects: Map<string, PostProcessingEffect> = new Map();
+    private medicalFilters: Map<string, MedicalFilter> = new Map();
+    private renderTargets: Map<string, RenderTarget> = new Map();
     private gl: WebGL2RenderingContext | null = null;
     private isInitialized: boolean = false;
     private quadVAO: WebGLVertexArrayObject | null = null;
@@ -256,7 +256,7 @@ export class G3DPostProcessing {
             }`
     };
 
-    constructor(config: Partial<G3DPostProcessingConfig> = {}) {
+    constructor(config: Partial<PostProcessingConfig> = {}) {
         this.config = {
             enablePostProcessing: true,
             enableMedicalEffects: true,
@@ -322,8 +322,8 @@ export class G3DPostProcessing {
         id: string,
         width: number,
         height: number,
-        format: G3DRenderTarget['format']
-    ): G3DRenderTarget | null {
+        format: RenderTarget['format']
+    ): RenderTarget | null {
         if (!this.gl) return null;
 
         const gl = this.gl;
@@ -396,7 +396,7 @@ export class G3DPostProcessing {
 
         gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 
-        const renderTarget: G3DRenderTarget = {
+        const renderTarget: RenderTarget = {
             id,
             framebuffer,
             colorTexture,
@@ -512,8 +512,8 @@ export class G3DPostProcessing {
         console.log('Standard effects loaded');
     }
 
-    public createEffect(effectData: Partial<G3DPostProcessingEffect>): G3DPostProcessingEffect {
-        const effect: G3DPostProcessingEffect = {
+    public createEffect(effectData: Partial<PostProcessingEffect>): PostProcessingEffect {
+        const effect: PostProcessingEffect = {
             id: effectData.id || `effect_${Date.now()}`,
             name: effectData.name || 'Unnamed Effect',
             type: effectData.type || 'filter',
@@ -568,9 +568,9 @@ export class G3DPostProcessing {
     }
 
     private applyEffect(
-        effect: G3DPostProcessingEffect,
+        effect: PostProcessingEffect,
         inputTexture: WebGLTexture,
-        outputTarget: G3DRenderTarget | null
+        outputTarget: RenderTarget | null
     ): WebGLTexture | null {
         if (!this.gl || !this.quadVAO) return null;
 
@@ -653,15 +653,15 @@ export class G3DPostProcessing {
         this.setEffectParameter('noise_reduction', 'u_noiseReduction', strength);
     }
 
-    public getEffect(effectId: string): G3DPostProcessingEffect | null {
+    public getEffect(effectId: string): PostProcessingEffect | null {
         return this.effects.get(effectId) || null;
     }
 
-    public getAllEffects(): G3DPostProcessingEffect[] {
+    public getAllEffects(): PostProcessingEffect[] {
         return Array.from(this.effects.values());
     }
 
-    public getMedicalEffects(): G3DPostProcessingEffect[] {
+    public getMedicalEffects(): PostProcessingEffect[] {
         return Array.from(this.effects.values()).filter(effect => effect.type === 'medical');
     }
 
@@ -674,7 +674,7 @@ export class G3DPostProcessing {
         }
     }
 
-    private recreateRenderTarget(renderTarget: G3DRenderTarget, width: number, height: number): void {
+    private recreateRenderTarget(renderTarget: RenderTarget, width: number, height: number): void {
         if (!this.gl) return;
 
         const gl = this.gl;
@@ -768,4 +768,4 @@ export class G3DPostProcessing {
     }
 }
 
-export default G3DPostProcessing;
+export default PostProcessing;

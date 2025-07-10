@@ -14,7 +14,7 @@
 import { vec3, mat4, quat } from 'gl-matrix';
 
 // Scene Graph Types
-export interface G3DSceneGraphConfig {
+export interface SceneGraphConfig {
     enableFrustumCulling: boolean;
     enableOcclusionCulling: boolean;
     enableLOD: boolean;
@@ -26,7 +26,7 @@ export interface G3DSceneGraphConfig {
     maxBatchSize: number;
 }
 
-export interface G3DTransform {
+export interface Transform {
     position: vec3;
     rotation: quat;
     scale: vec3;
@@ -35,7 +35,7 @@ export interface G3DTransform {
     isDirty: boolean;
 }
 
-export interface G3DBounds {
+export interface Bounds {
     min: vec3;
     max: vec3;
     center: vec3;
@@ -43,7 +43,7 @@ export interface G3DBounds {
     volume: number;
 }
 
-export interface G3DRenderState {
+export interface RenderState {
     visible: boolean;
     castShadows: boolean;
     receiveShadows: boolean;
@@ -54,7 +54,7 @@ export interface G3DRenderState {
     uniforms?: Map<string, any>;
 }
 
-export interface G3DLevelOfDetail {
+export interface LevelOfDetail {
     distances: number[];
     meshes: any[];
     currentLevel: number;
@@ -62,7 +62,7 @@ export interface G3DLevelOfDetail {
     enabled: boolean;
 }
 
-export interface G3DMedicalNodeData {
+export interface MedicalNodeData {
     medicalType: 'anatomy' | 'pathology' | 'annotation' | 'measurement' | 'implant';
     organSystem: string;
     tissueType: string;
@@ -82,43 +82,43 @@ export interface G3DMedicalNodeData {
     metadata: Map<string, any>;
 }
 
-export interface G3DAnimation {
+export interface Animation {
     id: string;
     type: 'transform' | 'material' | 'visibility' | 'medical';
     duration: number;
     loop: boolean;
     autoplay: boolean;
-    keyframes: G3DKeyframe[];
+    keyframes: Keyframe[];
     currentTime: number;
     isPlaying: boolean;
     speed: number;
 }
 
-export interface G3DKeyframe {
+export interface Keyframe {
     time: number;
     value: any;
     interpolation: 'linear' | 'cubic' | 'step';
     easing?: string;
 }
 
-export interface G3DCullingResult {
-    visibleNodes: G3DSceneNode[];
-    culledNodes: G3DSceneNode[];
-    renderBatches: G3DRenderBatch[];
-    statistics: G3DCullingStatistics;
+export interface CullingResult {
+    visibleNodes: SceneNode[];
+    culledNodes: SceneNode[];
+    renderBatches: RenderBatch[];
+    statistics: CullingStatistics;
 }
 
-export interface G3DRenderBatch {
+export interface RenderBatch {
     id: string;
-    nodes: G3DSceneNode[];
+    nodes: SceneNode[];
     material: any;
     shader: string;
     instanceCount: number;
     transformMatrices: Float32Array;
-    boundingBox: G3DBounds;
+    boundingBox: Bounds;
 }
 
-export interface G3DCullingStatistics {
+export interface CullingStatistics {
     totalNodes: number;
     visibleNodes: number;
     frustumCulled: number;
@@ -129,7 +129,7 @@ export interface G3DCullingStatistics {
     cullingTime: number;
 }
 
-export interface G3DCamera {
+export interface Camera {
     position: vec3;
     target: vec3;
     up: vec3;
@@ -140,10 +140,10 @@ export interface G3DCamera {
     viewMatrix: mat4;
     projectionMatrix: mat4;
     viewProjectionMatrix: mat4;
-    frustum: G3DFrustum;
+    frustum: Frustum;
 }
 
-export interface G3DFrustum {
+export interface Frustum {
     planes: vec4[];
     corners: vec3[];
     nearPlane: number;
@@ -151,19 +151,19 @@ export interface G3DFrustum {
 }
 
 // Scene Node Implementation
-export class G3DSceneNode {
+export class SceneNode {
     public id: string;
     public name: string;
     public type: 'group' | 'mesh' | 'light' | 'camera' | 'medical' | 'annotation';
-    public transform: G3DTransform;
-    public bounds: G3DBounds;
-    public renderState: G3DRenderState;
-    public lod: G3DLevelOfDetail | null = null;
-    public medicalData: G3DMedicalNodeData | null = null;
-    public animations: G3DAnimation[] = [];
+    public transform: Transform;
+    public bounds: Bounds;
+    public renderState: RenderState;
+    public lod: LevelOfDetail | null = null;
+    public medicalData: MedicalNodeData | null = null;
+    public animations: Animation[] = [];
 
-    public parent: G3DSceneNode | null = null;
-    public children: G3DSceneNode[] = [];
+    public parent: SceneNode | null = null;
+    public children: SceneNode[] = [];
 
     public userData: Map<string, any> = new Map();
     public lastUpdateFrame: number = 0;
@@ -205,7 +205,7 @@ export class G3DSceneNode {
     }
 
     // Hierarchy Management
-    public addChild(child: G3DSceneNode): void {
+    public addChild(child: SceneNode): void {
         if (child.parent) {
             child.parent.removeChild(child);
         }
@@ -216,7 +216,7 @@ export class G3DSceneNode {
         child.invalidateWorldMatrix();
     }
 
-    public removeChild(child: G3DSceneNode): boolean {
+    public removeChild(child: SceneNode): boolean {
         const index = this.children.indexOf(child);
         if (index !== -1) {
             this.children.splice(index, 1);
@@ -233,7 +233,7 @@ export class G3DSceneNode {
         }
     }
 
-    public getChild(id: string): G3DSceneNode | null {
+    public getChild(id: string): SceneNode | null {
         for (const child of this.children) {
             if (child.id === id) {
                 return child;
@@ -246,7 +246,7 @@ export class G3DSceneNode {
         return null;
     }
 
-    public getChildByName(name: string): G3DSceneNode | null {
+    public getChildByName(name: string): SceneNode | null {
         for (const child of this.children) {
             if (child.name === name) {
                 return child;
@@ -259,8 +259,8 @@ export class G3DSceneNode {
         return null;
     }
 
-    public getChildrenByType(type: string): G3DSceneNode[] {
-        const result: G3DSceneNode[] = [];
+    public getChildrenByType(type: string): SceneNode[] {
+        const result: SceneNode[] = [];
 
         for (const child of this.children) {
             if (child.type === type) {
@@ -422,7 +422,7 @@ export class G3DSceneNode {
         }
     }
 
-    private transformBounds(bounds: G3DBounds, matrix: mat4): G3DBounds {
+    private transformBounds(bounds: Bounds, matrix: mat4): Bounds {
         const corners = [
             vec3.fromValues(bounds.min[0], bounds.min[1], bounds.min[2]),
             vec3.fromValues(bounds.max[0], bounds.min[1], bounds.min[2]),
@@ -434,7 +434,7 @@ export class G3DSceneNode {
             vec3.fromValues(bounds.max[0], bounds.max[1], bounds.max[2])
         ];
 
-        const transformedBounds: G3DBounds = {
+        const transformedBounds: Bounds = {
             min: vec3.fromValues(Infinity, Infinity, Infinity),
             max: vec3.fromValues(-Infinity, -Infinity, -Infinity),
             center: vec3.create(),
@@ -503,7 +503,7 @@ export class G3DSceneNode {
     }
 
     // Animation System
-    public addAnimation(animation: G3DAnimation): void {
+    public addAnimation(animation: Animation): void {
         this.animations.push(animation);
     }
 
@@ -550,12 +550,12 @@ export class G3DSceneNode {
         }
     }
 
-    private applyAnimation(animation: G3DAnimation): void {
+    private applyAnimation(animation: Animation): void {
         const time = animation.currentTime;
 
         // Find keyframes
-        let keyframe1: G3DKeyframe | null = null;
-        let keyframe2: G3DKeyframe | null = null;
+        let keyframe1: Keyframe | null = null;
+        let keyframe2: Keyframe | null = null;
 
         for (let i = 0; i < animation.keyframes.length - 1; i++) {
             if (time >= animation.keyframes[i].time && time <= animation.keyframes[i + 1].time) {
@@ -585,7 +585,7 @@ export class G3DSceneNode {
         }
     }
 
-    private interpolateKeyframes(kf1: G3DKeyframe, kf2: G3DKeyframe, t: number): any {
+    private interpolateKeyframes(kf1: Keyframe, kf2: Keyframe, t: number): any {
         switch (kf2.interpolation) {
             case 'step':
                 return kf1.value;
@@ -635,7 +635,7 @@ export class G3DSceneNode {
     }
 
     // Medical-specific methods
-    public setMedicalData(data: Partial<G3DMedicalNodeData>): void {
+    public setMedicalData(data: Partial<MedicalNodeData>): void {
         this.medicalData = {
             medicalType: 'anatomy',
             organSystem: 'unknown',
@@ -658,7 +658,7 @@ export class G3DSceneNode {
         };
     }
 
-    public setVisibilityForRole(role: keyof G3DMedicalNodeData['visibility'], visible: boolean): void {
+    public setVisibilityForRole(role: keyof MedicalNodeData['visibility'], visible: boolean): void {
         if (this.medicalData) {
             this.medicalData.visibility[role] = visible;
             // Update actual visibility based on current role
@@ -667,14 +667,14 @@ export class G3DSceneNode {
     }
 
     // Utility Methods
-    public traverse(callback: (node: G3DSceneNode) => void): void {
+    public traverse(callback: (node: SceneNode) => void): void {
         callback(this);
         for (const child of this.children) {
             child.traverse(callback);
         }
     }
 
-    public traverseVisible(callback: (node: G3DSceneNode) => void): void {
+    public traverseVisible(callback: (node: SceneNode) => void): void {
         if (this.renderState.visible) {
             callback(this);
             for (const child of this.children) {
@@ -690,14 +690,14 @@ export class G3DSceneNode {
         return worldPos;
     }
 
-    public getWorldBounds(): G3DBounds {
+    public getWorldBounds(): Bounds {
         this.updateBounds();
         this.updateWorldMatrix();
         return this.transformBounds(this.bounds, this.transform.worldMatrix);
     }
 
-    public clone(): G3DSceneNode {
-        const cloned = new G3DSceneNode(`${this.id}_clone`, `${this.name}_clone`, this.type);
+    public clone(): SceneNode {
+        const cloned = new SceneNode(`${this.id}_clone`, `${this.name}_clone`, this.type);
 
         // Copy transform
         vec3.copy(cloned.transform.position, this.transform.position);
@@ -755,14 +755,14 @@ export class G3DSceneNode {
 }
 
 // Scene Graph Manager
-export class G3DSceneGraph {
-    private config: G3DSceneGraphConfig;
-    private rootNode: G3DSceneNode;
-    private nodeRegistry: Map<string, G3DSceneNode> = new Map();
+export class SceneGraph {
+    private config: SceneGraphConfig;
+    private rootNode: SceneNode;
+    private nodeRegistry: Map<string, SceneNode> = new Map();
     private frameNumber: number = 0;
-    private lastCullingResult: G3DCullingResult | null = null;
+    private lastCullingResult: CullingResult | null = null;
 
-    constructor(config: Partial<G3DSceneGraphConfig> = {}) {
+    constructor(config: Partial<SceneGraphConfig> = {}) {
         this.config = {
             enableFrustumCulling: true,
             enableOcclusionCulling: false,
@@ -776,21 +776,21 @@ export class G3DSceneGraph {
             ...config
         };
 
-        this.rootNode = new G3DSceneNode('root', 'Scene Root', 'group');
+        this.rootNode = new SceneNode('root', 'Scene Root', 'group');
         this.registerNode(this.rootNode);
     }
 
     // Node Management
-    public getRootNode(): G3DSceneNode {
+    public getRootNode(): SceneNode {
         return this.rootNode;
     }
 
-    public addNode(node: G3DSceneNode, parent: G3DSceneNode = this.rootNode): void {
+    public addNode(node: SceneNode, parent: SceneNode = this.rootNode): void {
         parent.addChild(node);
         this.registerNode(node);
     }
 
-    public removeNode(node: G3DSceneNode): boolean {
+    public removeNode(node: SceneNode): boolean {
         if (node === this.rootNode) return false;
 
         node.removeFromParent();
@@ -798,15 +798,15 @@ export class G3DSceneGraph {
         return true;
     }
 
-    public getNode(id: string): G3DSceneNode | null {
+    public getNode(id: string): SceneNode | null {
         return this.nodeRegistry.get(id) || null;
     }
 
-    public getNodesByType(type: string): G3DSceneNode[] {
+    public getNodesByType(type: string): SceneNode[] {
         return this.rootNode.getChildrenByType(type);
     }
 
-    private registerNode(node: G3DSceneNode): void {
+    private registerNode(node: SceneNode): void {
         this.nodeRegistry.set(node.id, node);
 
         // Register children recursively
@@ -815,7 +815,7 @@ export class G3DSceneGraph {
         }
     }
 
-    private unregisterNode(node: G3DSceneNode): void {
+    private unregisterNode(node: SceneNode): void {
         this.nodeRegistry.delete(node.id);
 
         // Unregister children recursively
@@ -840,10 +840,10 @@ export class G3DSceneGraph {
     }
 
     // Culling System
-    public cull(camera: G3DCamera): G3DCullingResult {
+    public cull(camera: Camera): CullingResult {
         const startTime = Date.now();
 
-        const result: G3DCullingResult = {
+        const result: CullingResult = {
             visibleNodes: [],
             culledNodes: [],
             renderBatches: [],
@@ -876,7 +876,7 @@ export class G3DSceneGraph {
         return result;
     }
 
-    private cullNode(node: G3DSceneNode, camera: G3DCamera, result: G3DCullingResult): void {
+    private cullNode(node: SceneNode, camera: Camera, result: CullingResult): void {
         result.statistics.totalNodes++;
 
         // Skip if not visible
@@ -938,7 +938,7 @@ export class G3DSceneGraph {
         }
     }
 
-    private updateCameraFrustum(camera: G3DCamera): void {
+    private updateCameraFrustum(camera: Camera): void {
         // Update view and projection matrices
         mat4.lookAt(camera.viewMatrix, camera.position, camera.target, camera.up);
         mat4.perspective(camera.projectionMatrix, camera.fov, camera.aspect, camera.near, camera.far);
@@ -948,7 +948,7 @@ export class G3DSceneGraph {
         camera.frustum = this.extractFrustumPlanes(camera.viewProjectionMatrix);
     }
 
-    private extractFrustumPlanes(viewProjectionMatrix: mat4): G3DFrustum {
+    private extractFrustumPlanes(viewProjectionMatrix: mat4): Frustum {
         const planes: vec4[] = [];
         const m = viewProjectionMatrix;
 
@@ -980,7 +980,7 @@ export class G3DSceneGraph {
         };
     }
 
-    private isInFrustum(bounds: G3DBounds, frustum: G3DFrustum): boolean {
+    private isInFrustum(bounds: Bounds, frustum: Frustum): boolean {
         for (const plane of frustum.planes) {
             const distance = plane[0] * bounds.center[0] +
                 plane[1] * bounds.center[1] +
@@ -994,13 +994,13 @@ export class G3DSceneGraph {
         return true;
     }
 
-    private isOccluded(node: G3DSceneNode, camera: G3DCamera): boolean {
+    private isOccluded(node: SceneNode, camera: Camera): boolean {
         // Simplified occlusion culling - would use occlusion queries in real implementation
         return false;
     }
 
-    private createRenderBatches(result: G3DCullingResult): void {
-        const batches = new Map<string, G3DSceneNode[]>();
+    private createRenderBatches(result: CullingResult): void {
+        const batches = new Map<string, SceneNode[]>();
 
         // Group nodes by material/shader
         for (const node of result.visibleNodes) {
@@ -1099,8 +1099,8 @@ export class G3DSceneGraph {
         medicalType?: string;
         organSystem?: string;
         clinicalRelevance?: string;
-    }): G3DSceneNode[] {
-        const results: G3DSceneNode[] = [];
+    }): SceneNode[] {
+        const results: SceneNode[] = [];
 
         this.rootNode.traverse(node => {
             if (!node.medicalData) return;
@@ -1179,4 +1179,4 @@ const vec4 = {
     }
 };
 
-export default G3DSceneGraph;
+export default SceneGraph;

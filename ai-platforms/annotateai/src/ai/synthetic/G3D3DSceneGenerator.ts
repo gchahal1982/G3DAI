@@ -4,10 +4,10 @@
  * with G3D advanced rendering and physics simulation
  */
 
-import { G3DGPUCompute } from '../../g3d-performance/G3DGPUCompute';
-import { G3DModelRunner } from '../../g3d-ai/G3DModelRunner';
-import { G3DSceneManager } from '../../g3d-integration/G3DSceneManager';
-import { PhysicsIntegration } from '../../g3d-3d/PhysicsIntegration';
+import { GPUCompute } from '../../performance/G3DGPUCompute';
+import { ModelRunner } from '../../ai/G3DModelRunner';
+import { SceneManager } from '../../integration/G3DSceneManager';
+import { PhysicsIntegration } from '../../core/PhysicsIntegration';
 
 export interface SceneConfig {
     sceneType: 'indoor' | 'outdoor' | 'urban' | 'natural' | 'industrial';
@@ -131,10 +131,10 @@ export interface RenderTarget {
     height: number;
 }
 
-export class G3D3DSceneGenerator {
-    private gpuCompute: G3DGPUCompute;
-    private modelRunner: G3DModelRunner;
-    private sceneManager: G3DSceneManager;
+export class ThreeDSceneGenerator {
+    private gpuCompute: GPUCompute;
+    private modelRunner: ModelRunner;
+    private sceneManager: SceneManager;
     private physics: PhysicsIntegration;
     private assetLibrary: Map<string, any>;
     private materialLibrary: Map<string, MaterialConfig>;
@@ -142,9 +142,9 @@ export class G3D3DSceneGenerator {
     private performanceMetrics: Map<string, number>;
 
     constructor() {
-        this.gpuCompute = new G3DGPUCompute();
-        this.modelRunner = new G3DModelRunner();
-        this.sceneManager = new G3DSceneManager({ renderer: 'webgl' } as any);
+        this.gpuCompute = new GPUCompute();
+        this.modelRunner = new ModelRunner();
+        this.sceneManager = new SceneManager({ renderer: 'webgl' } as any);
         this.physics = new PhysicsIntegration();
         this.assetLibrary = new Map();
         this.materialLibrary = new Map();
@@ -916,4 +916,4 @@ export class G3D3DSceneGenerator {
     }
 }
 
-export default G3D3DSceneGenerator;
+export default ThreeDSceneGenerator;

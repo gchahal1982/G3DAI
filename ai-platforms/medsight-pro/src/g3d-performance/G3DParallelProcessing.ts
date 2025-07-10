@@ -3,7 +3,7 @@
  * Advanced parallel processing for medical 3D applications
  */
 
-export interface G3DParallelConfig {
+export interface ParallelConfig {
     maxWorkers: number;
     enableGPUCompute: boolean;
     enableWebWorkers: boolean;
@@ -14,12 +14,12 @@ export interface G3DParallelConfig {
     enableTaskPrioritization: boolean;
 }
 
-export interface G3DParallelTask {
+export interface ParallelTask {
     id: string;
     type: 'medical-analysis' | 'image-processing' | 'volume-rendering' | 'segmentation' | 'registration' | 'computation';
     priority: 'low' | 'medium' | 'high' | 'critical';
     data: any;
-    medicalContext?: G3DMedicalTaskContext;
+    medicalContext?: MedicalTaskContext;
     estimatedDuration: number;
     dependencies: string[];
     callback?: (result: any) => void;
@@ -27,7 +27,7 @@ export interface G3DParallelTask {
     onError?: (error: Error) => void;
 }
 
-export interface G3DMedicalTaskContext {
+export interface MedicalTaskContext {
     patientId: string;
     studyId: string;
     modality: string;
@@ -38,7 +38,7 @@ export interface G3DMedicalTaskContext {
     complexity: 'low' | 'medium' | 'high' | 'critical';
 }
 
-export interface G3DWorkerInfo {
+export interface WorkerInfo {
     id: string;
     worker: Worker;
     busy: boolean;
@@ -48,7 +48,7 @@ export interface G3DWorkerInfo {
     capabilities: string[];
 }
 
-export interface G3DTaskResult {
+export interface TaskResult {
     taskId: string;
     success: boolean;
     result: any;
@@ -57,7 +57,7 @@ export interface G3DTaskResult {
     workerId: string;
 }
 
-export interface G3DParallelStats {
+export interface ParallelStats {
     totalTasks: number;
     completedTasks: number;
     failedTasks: number;
@@ -68,16 +68,16 @@ export interface G3DParallelStats {
     throughput: number; // tasks per second
 }
 
-export class G3DParallelProcessing {
-    private config: G3DParallelConfig;
-    private workers: Map<string, G3DWorkerInfo> = new Map();
-    private taskQueue: G3DParallelTask[] = [];
-    private activeTasks: Map<string, G3DParallelTask> = new Map();
-    private completedTasks: Map<string, G3DTaskResult> = new Map();
+export class ParallelProcessing {
+    private config: ParallelConfig;
+    private workers: Map<string, WorkerInfo> = new Map();
+    private taskQueue: ParallelTask[] = [];
+    private activeTasks: Map<string, ParallelTask> = new Map();
+    private completedTasks: Map<string, TaskResult> = new Map();
     private taskDependencies: Map<string, Set<string>> = new Map();
 
     private isInitialized: boolean = false;
-    private stats: G3DParallelStats = {
+    private stats: ParallelStats = {
         totalTasks: 0,
         completedTasks: 0,
         failedTasks: 0,
@@ -88,7 +88,7 @@ export class G3DParallelProcessing {
         throughput: 0
     };
 
-    constructor(config: Partial<G3DParallelConfig> = {}) {
+    constructor(config: Partial<ParallelConfig> = {}) {
         this.config = {
             maxWorkers: navigator.hardwareConcurrency || 4,
             enableGPUCompute: true,
@@ -127,7 +127,7 @@ export class G3DParallelProcessing {
             const workerId = `worker_${i}`;
             const worker = new Worker(workerUrl);
 
-            const workerInfo: G3DWorkerInfo = {
+            const workerInfo: WorkerInfo = {
                 id: workerId,
                 worker,
                 busy: false,
@@ -464,7 +464,7 @@ export class G3DParallelProcessing {
         workerInfo.totalProcessingTime += processingTime;
 
         // Create task result
-        const taskResult: G3DTaskResult = {
+        const taskResult: TaskResult = {
             taskId,
             success,
             result,
@@ -494,7 +494,7 @@ export class G3DParallelProcessing {
         this.scheduleNextTask();
     }
 
-    private updateStats(taskResult: G3DTaskResult): void {
+    private updateStats(taskResult: TaskResult): void {
         if (taskResult.success) {
             this.stats.completedTasks++;
         } else {
@@ -543,13 +543,13 @@ export class G3DParallelProcessing {
     }
 
     // Public API
-    public submitTask(task: Omit<G3DParallelTask, 'id'>): string {
+    public submitTask(task: Omit<ParallelTask, 'id'>): string {
         if (!this.isInitialized) {
             throw new Error('Parallel processing system not initialized');
         }
 
         const taskId = this.generateTaskId();
-        const fullTask: G3DParallelTask = {
+        const fullTask: ParallelTask = {
             id: taskId,
             ...task
         };
@@ -624,10 +624,10 @@ export class G3DParallelProcessing {
         this.executeTask(availableWorker, task);
     }
 
-    private findAvailableWorker(): G3DWorkerInfo | null {
+    private findAvailableWorker(): WorkerInfo | null {
         if (this.config.enableLoadBalancing) {
             // Find worker with least load
-            let bestWorker: G3DWorkerInfo | null = null;
+            let bestWorker: WorkerInfo | null = null;
             let minLoad = Infinity;
 
             for (const worker of this.workers.values()) {
@@ -653,7 +653,7 @@ export class G3DParallelProcessing {
         return null;
     }
 
-    private executeTask(worker: G3DWorkerInfo, task: G3DParallelTask): void {
+    private executeTask(worker: WorkerInfo, task: ParallelTask): void {
         worker.busy = true;
         worker.currentTask = task.id;
 
@@ -676,8 +676,8 @@ export class G3DParallelProcessing {
     public submitMedicalAnalysisTask(
         imageData: ArrayBuffer,
         analysisType: string,
-        medicalContext: G3DMedicalTaskContext,
-        priority: G3DParallelTask['priority'] = 'medium'
+        medicalContext: MedicalTaskContext,
+        priority: ParallelTask['priority'] = 'medium'
     ): string {
         return this.submitTask({
             type: 'medical-analysis',
@@ -692,7 +692,7 @@ export class G3DParallelProcessing {
     public submitVolumeRenderingTask(
         volumeData: ArrayBuffer,
         renderParams: any,
-        priority: G3DParallelTask['priority'] = 'high'
+        priority: ParallelTask['priority'] = 'high'
     ): string {
         return this.submitTask({
             type: 'volume-rendering',
@@ -707,7 +707,7 @@ export class G3DParallelProcessing {
         imageData: ArrayBuffer,
         segmentationType: string,
         parameters: any,
-        medicalContext?: G3DMedicalTaskContext
+        medicalContext?: MedicalTaskContext
     ): string {
         return this.submitTask({
             type: 'segmentation',
@@ -751,15 +751,15 @@ export class G3DParallelProcessing {
     }
 
     // Utility methods
-    public getTaskResult(taskId: string): G3DTaskResult | null {
+    public getTaskResult(taskId: string): TaskResult | null {
         return this.completedTasks.get(taskId) || null;
     }
 
-    public getStats(): G3DParallelStats {
+    public getStats(): ParallelStats {
         return { ...this.stats };
     }
 
-    public getWorkerInfo(): G3DWorkerInfo[] {
+    public getWorkerInfo(): WorkerInfo[] {
         return Array.from(this.workers.values());
     }
 
@@ -803,4 +803,4 @@ export class G3DParallelProcessing {
     }
 }
 
-export default G3DParallelProcessing;
+export default ParallelProcessing;

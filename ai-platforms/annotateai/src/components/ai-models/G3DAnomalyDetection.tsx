@@ -5,9 +5,9 @@
  */
 
 import React, { useRef, useEffect, useState, useCallback } from 'react';
-import { G3DNativeRenderer } from '../../g3d-integration/G3DNativeRenderer';
-import { G3DSceneManager } from '../../g3d-integration/G3DSceneManager';
-import { G3DModelRunner } from '../../g3d-ai/G3DModelRunner';
+import { NativeRenderer } from '../../integration/G3DNativeRenderer';
+import { SceneManager } from '../../integration/G3DSceneManager';
+import { ModelRunner } from '../../ai/G3DModelRunner';
 
 // Core Types
 interface AnomalyDetectionModel {
@@ -149,7 +149,7 @@ interface AnomalyTrack {
 }
 
 // Props Interface
-interface G3DAnomalyDetectionProps {
+interface AnomalyDetectionProps {
     models: AnomalyDetectionModel[];
     onAnomalyDetection: (result: AnomalyDetectionResult) => void;
     onAnomalyAlert: (anomalies: DetectedAnomaly[]) => void;
@@ -171,7 +171,7 @@ interface AnomalyConfig {
 }
 
 // Main Component
-export const G3DAnomalyDetection: React.FC<G3DAnomalyDetectionProps> = ({
+export const G3DAnomalyDetection: React.FC<AnomalyDetectionProps> = ({
     models,
     onAnomalyDetection,
     onAnomalyAlert,
@@ -180,9 +180,9 @@ export const G3DAnomalyDetection: React.FC<G3DAnomalyDetectionProps> = ({
     tracker
 }) => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
-    const rendererRef = useRef<G3DNativeRenderer | null>(null);
-    const sceneRef = useRef<G3DSceneManager | null>(null);
-    const modelRunnerRef = useRef<G3DModelRunner | null>(null);
+    const rendererRef = useRef<NativeRenderer | null>(null);
+    const sceneRef = useRef<SceneManager | null>(null);
+    const modelRunnerRef = useRef<ModelRunner | null>(null);
 
     const [loadedModels, setLoadedModels] = useState<Map<string, any>>(new Map());
     const [activeModel, setActiveModel] = useState<string | null>(null);
@@ -238,10 +238,10 @@ export const G3DAnomalyDetection: React.FC<G3DAnomalyDetectionProps> = ({
     const initialize3D = async () => {
         if (!canvasRef.current) return;
 
-        const renderer = new G3DNativeRenderer(canvasRef.current);
+        const renderer = new NativeRenderer(canvasRef.current);
         rendererRef.current = renderer;
 
-        const scene = new G3DSceneManager(rendererRef.current || new G3DNativeRenderer(canvasRef.current!));
+        const scene = new SceneManager(rendererRef.current || new NativeRenderer(canvasRef.current!));
         sceneRef.current = scene;
 
         // Setup visualization scene
@@ -255,7 +255,7 @@ export const G3DAnomalyDetection: React.FC<G3DAnomalyDetectionProps> = ({
 
     // Initialize AI systems
     const initializeAI = async () => {
-        const modelRunner = new G3DModelRunner();
+        const modelRunner = new ModelRunner();
         modelRunnerRef.current = modelRunner;
     };
 

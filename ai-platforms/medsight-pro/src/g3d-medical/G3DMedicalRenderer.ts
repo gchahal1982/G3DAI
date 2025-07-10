@@ -16,7 +16,7 @@
 import { vec3, mat4, quat } from 'gl-matrix';
 
 // Core G3D Medical Rendering Types
-export interface G3DMedicalRenderingConfig {
+export interface MedicalRenderingConfig {
     renderMode: 'webgl' | 'webgpu' | 'hybrid';
     medicalVisualizationMode: 'diagnostic' | 'surgical' | 'educational' | 'research';
     qualityLevel: 'draft' | 'standard' | 'high' | 'ultra';
@@ -29,7 +29,7 @@ export interface G3DMedicalRenderingConfig {
     };
 }
 
-export interface G3DMedicalViewport {
+export interface MedicalViewport {
     id: string;
     type: 'axial' | 'sagittal' | 'coronal' | '3d' | 'mpr' | 'oblique';
     dimensions: { width: number; height: number };
@@ -42,11 +42,11 @@ export interface G3DMedicalViewport {
         thickness: number;
         spacing: vec3;
     };
-    annotations: G3DMedicalAnnotation[];
-    measurements: G3DMedicalMeasurement[];
+    annotations: MedicalAnnotation[];
+    measurements: MedicalMeasurement[];
 }
 
-export interface G3DMedicalAnnotation {
+export interface MedicalAnnotation {
     id: string;
     type: 'arrow' | 'circle' | 'rectangle' | 'freehand' | 'text' | 'ruler' | 'angle';
     position: vec3;
@@ -59,17 +59,17 @@ export interface G3DMedicalAnnotation {
     };
 }
 
-export interface G3DMedicalMeasurement {
+export interface MedicalMeasurement {
     id: string;
     type: 'distance' | 'area' | 'volume' | 'angle' | 'density' | 'flow';
     points: vec3[];
     value: number;
     unit: string;
     accuracy: number;
-    calibration: G3DMedicalCalibration;
+    calibration: MedicalCalibration;
 }
 
-export interface G3DMedicalCalibration {
+export interface MedicalCalibration {
     pixelSpacing: vec3;
     sliceThickness: number;
     rescaleSlope: number;
@@ -77,7 +77,7 @@ export interface G3DMedicalCalibration {
     units: string;
 }
 
-export interface G3DMedicalRenderingContext {
+export interface MedicalRenderingContext {
     canvas: HTMLCanvasElement;
     gl?: WebGL2RenderingContext;
     gpu?: GPUDevice;
@@ -87,7 +87,7 @@ export interface G3DMedicalRenderingContext {
 }
 
 // Advanced Medical Rendering Shaders
-export class G3DMedicalShaderManager {
+export class MedicalShaderManager {
     private shaders: Map<string, WebGLShader | GPUShaderModule> = new Map();
     private programs: Map<string, WebGLProgram | GPURenderPipeline> = new Map();
 
@@ -239,7 +239,7 @@ export class G3DMedicalShaderManager {
     }
   `;
 
-    constructor(private context: G3DMedicalRenderingContext) { }
+    constructor(private context: MedicalRenderingContext) { }
 
     async initializeMedicalShaders(): Promise<void> {
         if (this.context.gl) {
@@ -254,8 +254,8 @@ export class G3DMedicalShaderManager {
         const gl = this.context.gl!;
 
         // Compile vertex shader
-        const vertexShader = this.compileShader(gl, G3DMedicalShaderManager.MEDICAL_VERTEX_SHADER, gl.VERTEX_SHADER);
-        const fragmentShader = this.compileShader(gl, G3DMedicalShaderManager.MEDICAL_FRAGMENT_SHADER, gl.FRAGMENT_SHADER);
+        const vertexShader = this.compileShader(gl, MedicalShaderManager.MEDICAL_VERTEX_SHADER, gl.VERTEX_SHADER);
+        const fragmentShader = this.compileShader(gl, MedicalShaderManager.MEDICAL_FRAGMENT_SHADER, gl.FRAGMENT_SHADER);
 
         // Create and link program
         const program = gl.createProgram()!;
@@ -366,12 +366,12 @@ export class G3DMedicalShaderManager {
 }
 
 // Advanced Medical Texture Manager
-export class G3DMedicalTextureManager {
+export class MedicalTextureManager {
     private textures: Map<string, WebGLTexture | GPUTexture> = new Map();
     private transferFunctions: Map<string, WebGLTexture | GPUTexture> = new Map();
     private medicalLUTs: Map<string, WebGLTexture | GPUTexture> = new Map();
 
-    constructor(private context: G3DMedicalRenderingContext) { }
+    constructor(private context: MedicalRenderingContext) { }
 
     async createVolumeTexture(
         data: ArrayBuffer,
@@ -652,16 +652,16 @@ export class G3DMedicalTextureManager {
 }
 
 // Main G3D Medical Renderer Class
-export class G3DMedicalRenderer {
-    private config: G3DMedicalRenderingConfig;
-    private context: G3DMedicalRenderingContext;
-    private shaderManager: G3DMedicalShaderManager;
-    private textureManager: G3DMedicalTextureManager;
-    private viewports: Map<string, G3DMedicalViewport> = new Map();
+export class MedicalRenderer {
+    private config: MedicalRenderingConfig;
+    private context: MedicalRenderingContext;
+    private shaderManager: MedicalShaderManager;
+    private textureManager: MedicalTextureManager;
+    private viewports: Map<string, MedicalViewport> = new Map();
     private renderTargets: Map<string, WebGLFramebuffer | GPUTexture> = new Map();
     private isInitialized: boolean = false;
 
-    constructor(canvas: HTMLCanvasElement, config: Partial<G3DMedicalRenderingConfig> = {}) {
+    constructor(canvas: HTMLCanvasElement, config: Partial<MedicalRenderingConfig> = {}) {
         this.config = {
             renderMode: 'hybrid',
             medicalVisualizationMode: 'diagnostic',
@@ -677,8 +677,8 @@ export class G3DMedicalRenderer {
         };
 
         this.context = { canvas };
-        this.shaderManager = new G3DMedicalShaderManager(this.context);
-        this.textureManager = new G3DMedicalTextureManager(this.context);
+        this.shaderManager = new MedicalShaderManager(this.context);
+        this.textureManager = new MedicalTextureManager(this.context);
     }
 
     async initialize(): Promise<void> {
@@ -768,7 +768,7 @@ export class G3DMedicalRenderer {
         ];
 
         viewportConfigs.forEach(config => {
-            const viewport: G3DMedicalViewport = {
+            const viewport: MedicalViewport = {
                 id: config.id,
                 type: config.type,
                 dimensions: { width: 512, height: 512 },
@@ -793,7 +793,7 @@ export class G3DMedicalRenderer {
         data: ArrayBuffer,
         dimensions: vec3,
         spacing: vec3,
-        calibration: G3DMedicalCalibration,
+        calibration: MedicalCalibration,
         format: 'uint8' | 'uint16' | 'float32' = 'uint16'
     ): Promise<string> {
         if (!this.isInitialized) {
@@ -819,14 +819,14 @@ export class G3DMedicalRenderer {
         }
     }
 
-    addMedicalAnnotation(viewportId: string, annotation: Omit<G3DMedicalAnnotation, 'id'>): string {
+    addMedicalAnnotation(viewportId: string, annotation: Omit<MedicalAnnotation, 'id'>): string {
         const viewport = this.viewports.get(viewportId);
         if (!viewport) {
             throw new Error(`Viewport ${viewportId} not found`);
         }
 
         const annotationId = `annotation_${Date.now()}_${Math.random()}`;
-        const fullAnnotation: G3DMedicalAnnotation = {
+        const fullAnnotation: MedicalAnnotation = {
             id: annotationId,
             ...annotation
         };
@@ -835,14 +835,14 @@ export class G3DMedicalRenderer {
         return annotationId;
     }
 
-    addMedicalMeasurement(viewportId: string, measurement: Omit<G3DMedicalMeasurement, 'id'>): string {
+    addMedicalMeasurement(viewportId: string, measurement: Omit<MedicalMeasurement, 'id'>): string {
         const viewport = this.viewports.get(viewportId);
         if (!viewport) {
             throw new Error(`Viewport ${viewportId} not found`);
         }
 
         const measurementId = `measurement_${Date.now()}_${Math.random()}`;
-        const fullMeasurement: G3DMedicalMeasurement = {
+        const fullMeasurement: MedicalMeasurement = {
             id: measurementId,
             ...measurement
         };
@@ -881,7 +881,7 @@ export class G3DMedicalRenderer {
         }
     }
 
-    private renderWebGL(viewport: G3DMedicalViewport): void {
+    private renderWebGL(viewport: MedicalViewport): void {
         const gl = this.context.gl!;
         const program = this.shaderManager.getProgram('medical') as WebGLProgram;
 
@@ -930,7 +930,7 @@ export class G3DMedicalRenderer {
         this.renderMeasurements(gl, viewport);
     }
 
-    private renderWebGPU(viewport: G3DMedicalViewport): void {
+    private renderWebGPU(viewport: MedicalViewport): void {
         // WebGPU rendering implementation
         const device = this.context.gpu!;
 
@@ -938,7 +938,7 @@ export class G3DMedicalRenderer {
         console.log(`WebGPU rendering for viewport ${viewport.id} not yet implemented`);
     }
 
-    private renderMPRSlice(gl: WebGL2RenderingContext, program: WebGLProgram, viewport: G3DMedicalViewport): void {
+    private renderMPRSlice(gl: WebGL2RenderingContext, program: WebGLProgram, viewport: MedicalViewport): void {
         // Multi-planar reconstruction slice rendering
         const renderModeLoc = gl.getUniformLocation(program, 'u_renderingMode');
         if (renderModeLoc) {
@@ -949,7 +949,7 @@ export class G3DMedicalRenderer {
         // Implementation details would depend on the specific medical data structure
     }
 
-    private renderVolumeRendering(gl: WebGL2RenderingContext, program: WebGLProgram, viewport: G3DMedicalViewport): void {
+    private renderVolumeRendering(gl: WebGL2RenderingContext, program: WebGLProgram, viewport: MedicalViewport): void {
         // Volume rendering implementation
         const renderModeLoc = gl.getUniformLocation(program, 'u_renderingMode');
         if (renderModeLoc) {
@@ -960,19 +960,19 @@ export class G3DMedicalRenderer {
         // Implementation would include ray casting or texture slicing
     }
 
-    private renderMultiPlanarReconstruction(gl: WebGL2RenderingContext, program: WebGLProgram, viewport: G3DMedicalViewport): void {
+    private renderMultiPlanarReconstruction(gl: WebGL2RenderingContext, program: WebGLProgram, viewport: MedicalViewport): void {
         // Advanced MPR rendering with arbitrary plane orientations
         // Implementation for oblique slices and curved reformations
     }
 
-    private renderAnnotations(gl: WebGL2RenderingContext, viewport: G3DMedicalViewport): void {
+    private renderAnnotations(gl: WebGL2RenderingContext, viewport: MedicalViewport): void {
         // Render medical annotations (arrows, circles, text, etc.)
         viewport.annotations.forEach(annotation => {
             // Render each annotation type
         });
     }
 
-    private renderMeasurements(gl: WebGL2RenderingContext, viewport: G3DMedicalViewport): void {
+    private renderMeasurements(gl: WebGL2RenderingContext, viewport: MedicalViewport): void {
         // Render medical measurements (distances, areas, volumes, etc.)
         viewport.measurements.forEach(measurement => {
             // Render each measurement type
@@ -1008,4 +1008,4 @@ export class G3DMedicalRenderer {
     }
 }
 
-export default G3DMedicalRenderer;
+export default MedicalRenderer;

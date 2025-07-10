@@ -12,67 +12,67 @@
  */
 
 // Core integration components
-import G3DMedicalOrchestratorClass from './G3DMedicalOrchestrator';
-import G3DMedicalDeploymentClass from './G3DMedicalDeployment';
-import G3DMedicalAPIClass from './G3DMedicalAPI';
-import G3DMedicalDataPipelineClass from './G3DMedicalDataPipeline';
-import G3DMedicalAnalyticsClass from './G3DMedicalAnalytics';
+import MedicalOrchestratorClass from './MedicalOrchestrator';
+import MedicalDeploymentClass from './MedicalDeployment';
+import MedicalAPIClass from './MedicalAPI';
+import MedicalDataPipelineClass from './MedicalDataPipeline';
+import MedicalAnalyticsClass from './MedicalAnalytics';
 
-export { default as G3DMedicalOrchestrator } from './G3DMedicalOrchestrator';
-export { default as G3DMedicalDeployment } from './G3DMedicalDeployment';
-export { default as G3DMedicalAPI } from './G3DMedicalAPI';
-export { default as G3DMedicalDataPipeline } from './G3DMedicalDataPipeline';
-export { default as G3DMedicalAnalytics } from './G3DMedicalAnalytics';
+export { default as MedicalOrchestrator } from './MedicalOrchestrator';
+export { default as MedicalDeployment } from './MedicalDeployment';
+export { default as MedicalAPI } from './MedicalAPI';
+export { default as MedicalDataPipeline } from './MedicalDataPipeline';
+export { default as MedicalAnalytics } from './MedicalAnalytics';
 
 // Type exports
 export type {
-    G3DMedicalOrchestratorConfig,
-    G3DMedicalWorkflow,
-    G3DWorkflowStep,
-    G3DPatientContext,
-    G3DSystemStatus,
-    G3DMedicalSession
-} from './G3DMedicalOrchestrator';
+    MedicalOrchestratorConfig,
+    MedicalWorkflow,
+    WorkflowStep,
+    PatientContext,
+    SystemStatus,
+    MedicalSession
+} from './MedicalOrchestrator';
 
 export type {
-    G3DMedicalDeploymentConfig,
-    G3DDeploymentEnvironment,
-    G3DInfrastructure,
-    G3DDeploymentPipeline,
-    G3DDeploymentMetrics
-} from './G3DMedicalDeployment';
+    MedicalDeploymentConfig,
+    DeploymentEnvironment,
+    Infrastructure,
+    DeploymentPipeline,
+    DeploymentMetrics
+} from './MedicalDeployment';
 
 export type {
-    G3DMedicalAPIConfig,
-    G3DAPIEndpoint,
-    G3DMedicalDataModel,
-    G3DAPIRequest,
-    G3DAPIResponse,
-    G3DMedicalContext
-} from './G3DMedicalAPI';
+    MedicalAPIConfig,
+    APIEndpoint,
+    MedicalDataModel,
+    APIRequest,
+    APIResponse,
+    MedicalContext
+} from './MedicalAPI';
 
 export type {
-    G3DMedicalDataPipelineConfig,
-    G3DDataPipelineJob,
-    G3DJobConfiguration,
-    G3DDataQualityReport,
-    G3DDICOMProcessingConfig,
-    G3DHL7ProcessingConfig
-} from './G3DMedicalDataPipeline';
+    MedicalDataPipelineConfig,
+    DataPipelineJob,
+    JobConfiguration,
+    DataQualityReport,
+    DICOMProcessingConfig,
+    HL7ProcessingConfig
+} from './MedicalDataPipeline';
 
 export type {
-    G3DMedicalAnalyticsConfig,
-    G3DAnalyticsMetric,
-    G3DAnalyticsDashboard,
-    G3DMedicalReport,
-    G3DMedicalInsight,
-    G3DPerformanceMetrics
-} from './G3DMedicalAnalytics';
+    MedicalAnalyticsConfig,
+    AnalyticsMetric,
+    AnalyticsDashboard,
+    MedicalReport,
+    MedicalInsight,
+    PerformanceMetrics
+} from './MedicalAnalytics';
 
 /**
  * Unified configuration for the entire G3D Medical Integration system
  */
-export interface G3DMedicalIntegrationConfig {
+export interface MedicalIntegrationConfig {
     // Orchestrator configuration
     orchestrator: {
         enableMedicalRendering: boolean;
@@ -134,7 +134,7 @@ export interface G3DMedicalIntegrationConfig {
 /**
  * Integration status for the entire medical platform
  */
-export interface G3DMedicalIntegrationStatus {
+export interface MedicalIntegrationStatus {
     orchestrator: 'initializing' | 'ready' | 'busy' | 'error' | 'disabled';
     deployment: 'initializing' | 'ready' | 'busy' | 'error' | 'disabled';
     api: 'initializing' | 'ready' | 'busy' | 'error' | 'disabled';
@@ -147,7 +147,7 @@ export interface G3DMedicalIntegrationStatus {
 /**
  * Comprehensive metrics for the entire medical integration platform
  */
-export interface G3DMedicalIntegrationMetrics {
+export interface MedicalIntegrationMetrics {
     systemHealth: {
         availability: number;
         responseTime: number;
@@ -178,19 +178,19 @@ export interface G3DMedicalIntegrationMetrics {
  * Central manager for all G3D Medical Integration components
  * Provides unified initialization, coordination, and monitoring
  */
-export class G3DMedicalIntegrationManager {
-    private config: G3DMedicalIntegrationConfig;
+export class MedicalIntegrationManager {
+    private config: MedicalIntegrationConfig;
     private isInitialized: boolean = false;
-    private status: G3DMedicalIntegrationStatus;
+    private status: MedicalIntegrationStatus;
 
     // Component instances
-    private orchestrator: G3DMedicalOrchestratorClass | null = null;
-    private deployment: G3DMedicalDeploymentClass | null = null;
-    private api: G3DMedicalAPIClass | null = null;
-    private dataPipeline: G3DMedicalDataPipelineClass | null = null;
-    private analytics: G3DMedicalAnalyticsClass | null = null;
+    private orchestrator: MedicalOrchestratorClass | null = null;
+    private deployment: MedicalDeploymentClass | null = null;
+    private api: MedicalAPIClass | null = null;
+    private dataPipeline: MedicalDataPipelineClass | null = null;
+    private analytics: MedicalAnalyticsClass | null = null;
 
-    constructor(config: Partial<G3DMedicalIntegrationConfig> = {}) {
+    constructor(config: Partial<MedicalIntegrationConfig> = {}) {
         this.config = {
             orchestrator: {
                 enableMedicalRendering: true,
@@ -265,7 +265,7 @@ export class G3DMedicalIntegrationManager {
 
             // Initialize orchestrator
             this.status.orchestrator = 'initializing';
-            this.orchestrator = new G3DMedicalOrchestratorClass({
+            this.orchestrator = new MedicalOrchestratorClass({
                 enableMedicalRendering: this.config.orchestrator.enableMedicalRendering,
                 enableAIProcessing: this.config.orchestrator.enableAIProcessing,
                 enable3DProcessing: this.config.orchestrator.enable3DProcessing,
@@ -281,7 +281,7 @@ export class G3DMedicalIntegrationManager {
 
             // Initialize deployment
             this.status.deployment = 'initializing';
-            this.deployment = new G3DMedicalDeploymentClass({
+            this.deployment = new MedicalDeploymentClass({
                 deploymentTarget: this.config.deployment.deploymentTarget,
                 scalingMode: this.config.deployment.scalingMode,
                 enableLoadBalancing: this.config.deployment.enableLoadBalancing,
@@ -297,7 +297,7 @@ export class G3DMedicalIntegrationManager {
 
             // Initialize API
             this.status.api = 'initializing';
-            this.api = new G3DMedicalAPIClass({
+            this.api = new MedicalAPIClass({
                 port: this.config.api.port,
                 enableREST: this.config.api.enableREST,
                 enableGraphQL: this.config.api.enableGraphQL,
@@ -317,7 +317,7 @@ export class G3DMedicalIntegrationManager {
 
             // Initialize data pipeline
             this.status.dataPipeline = 'initializing';
-            this.dataPipeline = new G3DMedicalDataPipelineClass({
+            this.dataPipeline = new MedicalDataPipelineClass({
                 enableRealTimeProcessing: this.config.dataPipeline.enableRealTimeProcessing,
                 enableBatchProcessing: this.config.dataPipeline.enableBatchProcessing,
                 enableDataValidation: this.config.dataPipeline.enableDataValidation,
@@ -335,7 +335,7 @@ export class G3DMedicalIntegrationManager {
 
             // Initialize analytics
             this.status.analytics = 'initializing';
-            this.analytics = new G3DMedicalAnalyticsClass({
+            this.analytics = new MedicalAnalyticsClass({
                 enableRealTimeAnalytics: this.config.analytics.enableRealTimeAnalytics,
                 enablePerformanceMonitoring: this.config.analytics.enablePerformanceMonitoring,
                 enableMedicalInsights: this.config.analytics.enableMedicalInsights,
@@ -390,7 +390,7 @@ export class G3DMedicalIntegrationManager {
     /**
      * Get the current status of all integration components
      */
-    public getStatus(): G3DMedicalIntegrationStatus {
+    public getStatus(): MedicalIntegrationStatus {
         this.updateOverallStatus();
         return { ...this.status };
     }
@@ -398,7 +398,7 @@ export class G3DMedicalIntegrationManager {
     /**
      * Get comprehensive metrics for the entire platform
      */
-    public getMetrics(): G3DMedicalIntegrationMetrics {
+    public getMetrics(): MedicalIntegrationMetrics {
         const performanceMetrics = this.analytics?.getPerformanceMetrics();
 
         return {
@@ -565,4 +565,4 @@ export class G3DMedicalIntegrationManager {
 }
 
 // Default export
-export default G3DMedicalIntegrationManager;
+export default MedicalIntegrationManager;

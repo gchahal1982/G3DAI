@@ -1,7 +1,7 @@
 import { EventEmitter } from 'events';
-import { G3DLogger } from '../../../core/G3DLogger';
-import { G3DMetrics } from '../../../core/G3DMetrics';
-import { G3DConfig } from '../../../core/G3DConfig';
+import { Logger } from '../../../core/Logger';
+import { Metrics } from '../../../core/Metrics';
+import { Config } from '../../../core/Config';
 
 // Types and Interfaces
 interface ComputeNode {
@@ -107,7 +107,7 @@ interface SchedulingPolicy {
     prioritize(tasks: ComputeTask[]): ComputeTask[];
 }
 
-export class G3DComputeCluster extends EventEmitter {
+export class ComputeCluster extends EventEmitter {
     private nodes: Map<string, ComputeNode> = new Map();
     private tasks: Map<string, ComputeTask> = new Map();
     private taskQueue: ComputeTask[] = [];
@@ -124,9 +124,9 @@ export class G3DComputeCluster extends EventEmitter {
     private schedulerInterval: NodeJS.Timeout | null = null;
     private metricsInterval: NodeJS.Timeout | null = null;
 
-    private logger = G3DLogger.getInstance();
-    private metricsCollector = G3DMetrics.getInstance();
-    private config = G3DConfig.getInstance();
+    private logger = Logger.getInstance();
+    private metricsCollector = Metrics.getInstance();
+    private config = Config.getInstance();
 
     constructor() {
         super();

@@ -6,10 +6,10 @@
 
 import * as React from 'react';
 const { useRef, useEffect, useState, useCallback } = React;
-import { G3DNativeRenderer } from '../../g3d-integration/G3DNativeRenderer';
-import { G3DSceneManager } from '../../g3d-integration/G3DSceneManager';
-import { G3DComputeShaders } from '../../g3d-ai/G3DComputeShaders';
-import { G3DModelRunner } from '../../g3d-ai/G3DModelRunner';
+import { NativeRenderer } from '../../integration/G3DNativeRenderer';
+import { SceneManager } from '../../integration/G3DSceneManager';
+import { ComputeShaders } from '../../ai/G3DComputeShaders';
+import { ModelRunner } from '../../ai/G3DModelRunner';
 
 // Core Types
 interface QualityAssessment {
@@ -165,7 +165,7 @@ interface QualityTrend {
 }
 
 // Props Interface
-interface G3DQualityControlProps {
+interface QualityControlProps {
     annotations: Annotation[];
     onQualityAssessment: (assessment: QualityAssessment) => void;
     onIssueDetected: (issue: QualityIssue) => void;
@@ -194,7 +194,7 @@ interface QualityControlSettings {
 }
 
 // Main Component
-export const G3DQualityControl: React.FC<G3DQualityControlProps> = ({
+export const G3DQualityControl: React.FC<QualityControlProps> = ({
     annotations,
     onQualityAssessment,
     onIssueDetected,
@@ -203,10 +203,10 @@ export const G3DQualityControl: React.FC<G3DQualityControlProps> = ({
     settings
 }) => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
-    const rendererRef = useRef<G3DNativeRenderer | null>(null);
-    const sceneRef = useRef<G3DSceneManager | null>(null);
-    const computeRef = useRef<G3DComputeShaders | null>(null);
-    const modelRef = useRef<G3DModelRunner | null>(null);
+    const rendererRef = useRef<NativeRenderer | null>(null);
+    const sceneRef = useRef<SceneManager | null>(null);
+    const computeRef = useRef<ComputeShaders | null>(null);
+    const modelRef = useRef<ModelRunner | null>(null);
 
     const [assessments, setAssessments] = useState<Map<string, QualityAssessment>>(new Map());
     const [issues, setIssues] = useState<Map<string, QualityIssue>>(new Map());
@@ -278,13 +278,13 @@ export const G3DQualityControl: React.FC<G3DQualityControlProps> = ({
     const initialize3D = async () => {
         if (!canvasRef.current) return;
 
-        const renderer = new G3DNativeRenderer(canvasRef.current, { antialias: true, alpha: true });
+        const renderer = new NativeRenderer(canvasRef.current, { antialias: true, alpha: true });
         rendererRef.current = renderer;
 
-        const scene = new G3DSceneManager(rendererRef.current || new G3DNativeRenderer(canvasRef.current!, { antialias: true, alpha: true }));
+        const scene = new SceneManager(rendererRef.current || new NativeRenderer(canvasRef.current!, { antialias: true, alpha: true }));
         sceneRef.current = scene;
 
-        const compute = new G3DComputeShaders({ device: 'gpu' } as any);
+        const compute = new ComputeShaders({ device: 'gpu' } as any);
         await compute.init?.();
         computeRef.current = compute;
 
@@ -299,7 +299,7 @@ export const G3DQualityControl: React.FC<G3DQualityControlProps> = ({
     const initializeAIModels = async () => {
         if (!config.enableAIAssessment) return;
 
-        const modelRunner = new G3DModelRunner();
+        const modelRunner = new ModelRunner();
         await modelRunner.init();
         modelRef.current = modelRunner;
 

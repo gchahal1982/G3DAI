@@ -82,7 +82,7 @@ export interface CellularConfig extends MedicalParticleConfig {
     adhesion: number;
 }
 
-export class G3DParticleSystem {
+export class ParticleSystem {
     private particles: Float32Array;
     private velocities: Float32Array;
     private lifetimes: Float32Array;
@@ -849,7 +849,7 @@ export class MedicalParticleFactory {
             ...config
         };
 
-        return new G3DParticleSystem(defaultConfig);
+        return new ParticleSystem(defaultConfig);
     }
 
     static createDrugDiffusion(config: Partial<DrugDiffusionConfig>): G3DParticleSystem {
@@ -880,7 +880,7 @@ export class MedicalParticleFactory {
             ...config
         };
 
-        return new G3DParticleSystem(defaultConfig);
+        return new ParticleSystem(defaultConfig);
     }
 
     static createCellularVisualization(config: Partial<CellularConfig>): G3DParticleSystem {
@@ -906,8 +906,8 @@ export class MedicalParticleFactory {
             ...config
         };
 
-        return new G3DParticleSystem(defaultConfig);
+        return new ParticleSystem(defaultConfig);
     }
 }
 
-export default G3DParticleSystem;
+export default ParticleSystem;

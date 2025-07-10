@@ -3,7 +3,7 @@
  * Comprehensive performance tracking and optimization for medical applications
  */
 
-export interface G3DPerformanceConfig {
+export interface PerformanceConfig {
     enableGPUProfiling: boolean;
     enableCPUProfiling: boolean;
     enableMemoryTracking: boolean;
@@ -11,10 +11,10 @@ export interface G3DPerformanceConfig {
     samplingInterval: number;
     maxHistorySize: number;
     enableAutoOptimization: boolean;
-    performanceTargets: G3DPerformanceTargets;
+    performanceTargets: PerformanceTargets;
 }
 
-export interface G3DPerformanceTargets {
+export interface PerformanceTargets {
     targetFPS: number;
     maxFrameTime: number;
     maxMemoryUsage: number;
@@ -22,7 +22,7 @@ export interface G3DPerformanceTargets {
     maxCPUUtilization: number;
 }
 
-export interface G3DPerformanceMetrics {
+export interface PerformanceMetrics {
     timestamp: number;
     frameRate: number;
     frameTime: number;
@@ -35,7 +35,7 @@ export interface G3DPerformanceMetrics {
     medicalOperationTime: number;
 }
 
-export interface G3DMedicalPerformanceContext {
+export interface MedicalPerformanceContext {
     operationType: 'rendering' | 'segmentation' | 'registration' | 'measurement' | 'analysis';
     modality: string;
     dataSize: number;
@@ -44,19 +44,19 @@ export interface G3DMedicalPerformanceContext {
     clinicalRelevance: 'low' | 'medium' | 'high' | 'critical';
 }
 
-export interface G3DPerformanceAlert {
+export interface PerformanceAlert {
     id: string;
     type: 'warning' | 'error' | 'critical';
     message: string;
-    metric: keyof G3DPerformanceMetrics;
+    metric: keyof PerformanceMetrics;
     threshold: number;
     currentValue: number;
     timestamp: number;
-    medicalContext?: G3DMedicalPerformanceContext;
+    medicalContext?: MedicalPerformanceContext;
     suggestions: string[];
 }
 
-export interface G3DOptimizationRecommendation {
+export interface OptimizationRecommendation {
     id: string;
     category: 'rendering' | 'compute' | 'memory' | 'network' | 'medical';
     priority: 'low' | 'medium' | 'high' | 'critical';
@@ -66,21 +66,21 @@ export interface G3DOptimizationRecommendation {
     estimatedImprovement: number;
 }
 
-export class G3DPerformanceMonitor {
-    private config: G3DPerformanceConfig;
+export class PerformanceMonitor {
+    private config: PerformanceConfig;
     private isRunning: boolean = false;
-    private metricsHistory: G3DPerformanceMetrics[] = [];
-    private currentMetrics: G3DPerformanceMetrics;
-    private alerts: G3DPerformanceAlert[] = [];
-    private recommendations: G3DOptimizationRecommendation[] = [];
+    private metricsHistory: PerformanceMetrics[] = [];
+    private currentMetrics: PerformanceMetrics;
+    private alerts: PerformanceAlert[] = [];
+    private recommendations: OptimizationRecommendation[] = [];
 
     private performanceObserver: PerformanceObserver | null = null;
     private intervalId: number | null = null;
     private frameCount: number = 0;
     private lastFrameTime: number = 0;
-    private medicalOperationStack: G3DMedicalPerformanceContext[] = [];
+    private medicalOperationStack: MedicalPerformanceContext[] = [];
 
-    constructor(config: Partial<G3DPerformanceConfig> = {}) {
+    constructor(config: Partial<PerformanceConfig> = {}) {
         this.config = {
             enableGPUProfiling: true,
             enableCPUProfiling: true,
@@ -363,12 +363,12 @@ export class G3DPerformanceMonitor {
     private createAlert(
         type: 'warning' | 'error' | 'critical',
         message: string,
-        metric: keyof G3DPerformanceMetrics,
+        metric: keyof PerformanceMetrics,
         threshold: number,
         currentValue: number,
         suggestions: string[]
     ): void {
-        const alert: G3DPerformanceAlert = {
+        const alert: PerformanceAlert = {
             id: `alert_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
             type,
             message,
@@ -459,7 +459,7 @@ export class G3DPerformanceMonitor {
     }
 
     // Medical Operation Tracking
-    public startMedicalOperation(context: G3DMedicalPerformanceContext): string {
+    public startMedicalOperation(context: MedicalPerformanceContext): string {
         const operationId = `medical_op_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
         this.medicalOperationStack.push(context);
@@ -485,11 +485,11 @@ export class G3DPerformanceMonitor {
     }
 
     // Public API
-    public getCurrentMetrics(): G3DPerformanceMetrics {
+    public getCurrentMetrics(): PerformanceMetrics {
         return { ...this.currentMetrics };
     }
 
-    public getMetricsHistory(duration?: number): G3DPerformanceMetrics[] {
+    public getMetricsHistory(duration?: number): PerformanceMetrics[] {
         if (!duration) {
             return [...this.metricsHistory];
         }
@@ -498,7 +498,7 @@ export class G3DPerformanceMonitor {
         return this.metricsHistory.filter(metric => metric.timestamp >= cutoff);
     }
 
-    public getAlerts(severity?: 'warning' | 'error' | 'critical'): G3DPerformanceAlert[] {
+    public getAlerts(severity?: 'warning' | 'error' | 'critical'): PerformanceAlert[] {
         if (!severity) {
             return [...this.alerts];
         }
@@ -506,7 +506,7 @@ export class G3DPerformanceMonitor {
         return this.alerts.filter(alert => alert.type === severity);
     }
 
-    public getRecommendations(category?: string): G3DOptimizationRecommendation[] {
+    public getRecommendations(category?: string): OptimizationRecommendation[] {
         if (!category) {
             return [...this.recommendations];
         }
@@ -565,7 +565,7 @@ export class G3DPerformanceMonitor {
         }, null, 2);
     }
 
-    private createEmptyMetrics(): G3DPerformanceMetrics {
+    private createEmptyMetrics(): PerformanceMetrics {
         return {
             timestamp: 0,
             frameRate: 0,
@@ -597,4 +597,4 @@ export class G3DPerformanceMonitor {
     }
 }
 
-export default G3DPerformanceMonitor;
+export default PerformanceMonitor;

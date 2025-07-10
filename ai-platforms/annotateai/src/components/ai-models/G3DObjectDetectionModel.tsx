@@ -5,11 +5,11 @@
  */
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { G3DModelRunner, G3DModelType } from '../../g3d-ai/G3DModelRunner';
-import { G3DComputeShaders } from '../../g3d-ai/G3DComputeShaders';
-import { G3DGPUCompute } from '../../g3d-performance/G3DGPUCompute';
-import { G3DNativeRenderer } from '../../g3d-integration/G3DNativeRenderer';
-import { G3DSceneManager } from '../../g3d-integration/G3DSceneManager';
+import { ModelRunner, ModelType } from '../../ai/G3DModelRunner';
+import { ComputeShaders } from '../../ai/G3DComputeShaders';
+import { GPUCompute } from '../../performance/G3DGPUCompute';
+import { NativeRenderer } from '../../integration/G3DNativeRenderer';
+import { SceneManager } from '../../integration/G3DSceneManager';
 
 // Core Types
 interface DetectionModel {
@@ -263,7 +263,7 @@ interface CallbackConfig {
 }
 
 // Props Interface
-interface G3DObjectDetectionModelProps {
+interface ObjectDetectionModelProps {
     models: DetectionModel[];
     onDetection: (detections: Detection[]) => void;
     onTrainingComplete: (modelId: string, metrics: any) => void;
@@ -292,7 +292,7 @@ interface DetectionSettings {
 }
 
 // Main Component
-export const G3DObjectDetectionModel: React.FC<G3DObjectDetectionModelProps> = ({
+export const G3DObjectDetectionModel: React.FC<ObjectDetectionModelProps> = ({
     models,
     onDetection,
     onTrainingComplete,
@@ -301,11 +301,11 @@ export const G3DObjectDetectionModel: React.FC<G3DObjectDetectionModelProps> = (
     settings
 }) => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
-    const rendererRef = useRef<G3DNativeRenderer | null>(null);
-    const sceneRef = useRef<G3DSceneManager | null>(null);
-    const modelRunnerRef = useRef<G3DModelRunner | null>(null);
-    const computeRef = useRef<G3DComputeShaders | null>(null);
-    const gpuComputeRef = useRef<G3DGPUCompute | null>(null);
+    const rendererRef = useRef<NativeRenderer | null>(null);
+    const sceneRef = useRef<SceneManager | null>(null);
+    const modelRunnerRef = useRef<ModelRunner | null>(null);
+    const computeRef = useRef<ComputeShaders | null>(null);
+    const gpuComputeRef = useRef<GPUCompute | null>(null);
 
     const [loadedModels, setLoadedModels] = useState<Map<string, any>>(new Map());
     const [activeModel, setActiveModel] = useState<string | null>(null);
@@ -383,10 +383,10 @@ export const G3DObjectDetectionModel: React.FC<G3DObjectDetectionModelProps> = (
     const initialize3D = async () => {
         if (!canvasRef.current) return;
 
-        const renderer = new G3DNativeRenderer(canvasRef.current);
+        const renderer = new NativeRenderer(canvasRef.current);
         rendererRef.current = renderer;
 
-        const scene = new G3DSceneManager(rendererRef.current || new G3DNativeRenderer(canvasRef.current!));
+        const scene = new SceneManager(rendererRef.current || new NativeRenderer(canvasRef.current!));
         sceneRef.current = scene;
 
         // Setup visualization scene
@@ -400,17 +400,17 @@ export const G3DObjectDetectionModel: React.FC<G3DObjectDetectionModelProps> = (
 
     // Initialize AI systems
     const initializeAI = async () => {
-        const modelRunner = new G3DModelRunner();
+        const modelRunner = new ModelRunner();
         await modelRunner.init();
         modelRunnerRef.current = modelRunner;
 
-        // Comment out problematic G3DComputeShaders initialization
-        // const compute = new G3DComputeShaders({});
+        // Comment out problematic ComputeShaders initialization
+        // const compute = new ComputeShaders({});
         // await compute.init();
         // computeRef.current = compute;
 
         if (config.enableGPUAcceleration) {
-            const gpuCompute = new G3DGPUCompute();
+            const gpuCompute = new GPUCompute();
             await gpuCompute.init();
             gpuComputeRef.current = gpuCompute;
         }
@@ -474,7 +474,7 @@ export const G3DObjectDetectionModel: React.FC<G3DObjectDetectionModelProps> = (
                 id: model.id,
                 name: model.id,
                 version: '1.0',
-                type: G3DModelType.CUSTOM,
+                type: ModelType.CUSTOM,
                 modelPath: model.modelPath
             });
 
@@ -500,7 +500,7 @@ export const G3DObjectDetectionModel: React.FC<G3DObjectDetectionModelProps> = (
                 id: model.id,
                 name: model.id,
                 version: '1.0',
-                type: G3DModelType.CUSTOM,
+                type: ModelType.CUSTOM,
                 modelPath: model.modelPath
             });
 

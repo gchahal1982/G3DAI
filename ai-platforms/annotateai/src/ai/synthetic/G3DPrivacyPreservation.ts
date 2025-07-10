@@ -4,8 +4,8 @@
  * secure multi-party computation, and G3D-accelerated privacy algorithms
  */
 
-import { G3DGPUCompute } from '../../g3d-performance/G3DGPUCompute';
-import { G3DModelRunner } from '../../g3d-ai/G3DModelRunner';
+import { GPUCompute } from '../../performance/G3DGPUCompute';
+import { ModelRunner } from '../../ai/G3DModelRunner';
 
 export interface PrivacyConfig {
     privacyMechanisms: PrivacyMechanism[];
@@ -117,16 +117,16 @@ export interface PrivacyRecommendation {
     expectedBenefit: string;
 }
 
-export class G3DPrivacyPreservation {
-    private gpuCompute: G3DGPUCompute;
-    private modelRunner: G3DModelRunner;
+export class PrivacyPreservation {
+    private gpuCompute: GPUCompute;
+    private modelRunner: ModelRunner;
     private privacyBudget: PrivacyBudget;
     private encryptionKeys: Map<string, any>;
     private noiseGenerators: Map<string, any>;
 
     constructor() {
-        this.gpuCompute = new G3DGPUCompute();
-        this.modelRunner = new G3DModelRunner();
+        this.gpuCompute = new GPUCompute();
+        this.modelRunner = new ModelRunner();
         this.encryptionKeys = new Map();
         this.noiseGenerators = new Map();
         this.privacyBudget = {
@@ -951,4 +951,4 @@ export class G3DPrivacyPreservation {
     }
 }
 
-export default G3DPrivacyPreservation;
+export default PrivacyPreservation;

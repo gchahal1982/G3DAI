@@ -4,9 +4,9 @@
  * for high-quality synthetic training data generation
  */
 
-import { G3DGPUCompute } from '../../g3d-performance/G3DGPUCompute';
-import { G3DModelRunner } from '../../g3d-ai/G3DModelRunner';
-import { G3DMemoryManager } from '../../g3d-performance/G3DMemoryManager';
+import { GPUCompute } from '../../performance/G3DGPUCompute';
+import { ModelRunner } from '../../ai/G3DModelRunner';
+import { MemoryManager } from '../../performance/G3DMemoryManager';
 
 export interface GANConfig {
     modelType: 'dcgan' | 'stylegan' | 'cyclegan' | 'pix2pix' | 'biggan' | 'progressive';
@@ -72,18 +72,18 @@ export interface GANModel {
     };
 }
 
-export class G3DGANGenerator {
-    private gpuCompute: G3DGPUCompute;
-    private modelRunner: G3DModelRunner;
-    private memoryManager: G3DMemoryManager;
+export class GANGenerator {
+    private gpuCompute: GPUCompute;
+    private modelRunner: ModelRunner;
+    private memoryManager: MemoryManager;
     private models: Map<string, GANModel>;
     private trainingHistory: any[];
     private performanceMetrics: Map<string, number>;
 
     constructor() {
-        this.gpuCompute = new G3DGPUCompute();
-        this.modelRunner = new G3DModelRunner();
-        this.memoryManager = new G3DMemoryManager();
+        this.gpuCompute = new GPUCompute();
+        this.modelRunner = new ModelRunner();
+        this.memoryManager = new MemoryManager();
         this.models = new Map();
         this.trainingHistory = [];
         this.performanceMetrics = new Map();

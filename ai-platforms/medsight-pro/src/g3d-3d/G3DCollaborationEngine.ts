@@ -13,7 +13,7 @@
 
 import { vec3, mat4, quat } from 'gl-matrix';
 
-export interface G3DCollaborationConfig {
+export interface CollaborationConfig {
     enableCollaboration: boolean;
     enableMedicalAnnotations: boolean;
     maxParticipants: number;
@@ -24,36 +24,36 @@ export interface G3DCollaborationConfig {
     medicalPrivacy: boolean;
 }
 
-export interface G3DParticipant {
+export interface Participant {
     id: string;
     name: string;
     role: 'radiologist' | 'surgeon' | 'student' | 'technician' | 'observer';
-    avatar: G3DAvatar;
-    permissions: G3DPermissions;
+    avatar: Avatar;
+    permissions: Permissions;
     status: 'active' | 'away' | 'busy' | 'offline';
-    medicalCredentials?: G3DMedicalCredentials;
+    medicalCredentials?: MedicalCredentials;
     joinTime: number;
     lastActivity: number;
 }
 
-export interface G3DAvatar {
+export interface Avatar {
     id: string;
     position: vec3;
     rotation: quat;
     color: vec3;
     visibility: boolean;
-    cursor: G3DCursor;
+    cursor: Cursor;
     medicalFocus?: string; // Current area of medical focus
 }
 
-export interface G3DCursor {
+export interface Cursor {
     position: vec3;
     type: 'pointer' | 'measurement' | 'annotation' | 'selection';
     visible: boolean;
     medicalContext?: string;
 }
 
-export interface G3DPermissions {
+export interface Permissions {
     canView: boolean;
     canAnnotate: boolean;
     canMeasure: boolean;
@@ -63,7 +63,7 @@ export interface G3DPermissions {
     medicalDataAccess: 'none' | 'limited' | 'full';
 }
 
-export interface G3DMedicalCredentials {
+export interface MedicalCredentials {
     licenseNumber: string;
     specialty: string;
     institution: string;
@@ -71,22 +71,22 @@ export interface G3DMedicalCredentials {
     expirationDate: Date;
 }
 
-export interface G3DCollaborationSession {
+export interface CollaborationSession {
     id: string;
     name: string;
     description: string;
     hostId: string;
-    participants: Map<string, G3DParticipant>;
-    medicalCase?: G3DMedicalCase;
+    participants: Map<string, Participant>;
+    medicalCase?: MedicalCase;
     startTime: number;
     endTime?: number;
-    recording?: G3DSessionRecording;
-    annotations: G3DAnnotation[];
-    measurements: G3DMeasurement[];
+    recording?: SessionRecording;
+    annotations: Annotation[];
+    measurements: Measurement[];
     privacy: 'public' | 'private' | 'medical_confidential';
 }
 
-export interface G3DMedicalCase {
+export interface MedicalCase {
     patientId: string;
     studyId: string;
     modality: string;
@@ -96,7 +96,7 @@ export interface G3DMedicalCase {
     anonymized: boolean;
 }
 
-export interface G3DAnnotation {
+export interface Annotation {
     id: string;
     authorId: string;
     position: vec3;
@@ -108,7 +108,7 @@ export interface G3DAnnotation {
     color: vec3;
 }
 
-export interface G3DMeasurement {
+export interface Measurement {
     id: string;
     authorId: string;
     type: 'distance' | 'angle' | 'area' | 'volume';
@@ -120,17 +120,17 @@ export interface G3DMeasurement {
     accuracy: number;
 }
 
-export interface G3DSessionRecording {
+export interface SessionRecording {
     id: string;
     sessionId: string;
     startTime: number;
     endTime?: number;
-    events: G3DCollaborationEvent[];
+    events: CollaborationEvent[];
     medicalPrivacy: boolean;
     participants: string[];
 }
 
-export interface G3DCollaborationEvent {
+export interface CollaborationEvent {
     id: string;
     type: 'join' | 'leave' | 'move' | 'annotate' | 'measure' | 'speak' | 'scene_change';
     participantId: string;
@@ -139,13 +139,13 @@ export interface G3DCollaborationEvent {
     medicalContext?: string;
 }
 
-export class G3DCollaborationEngine {
-    private config: G3DCollaborationConfig;
-    private currentSession: G3DCollaborationSession | null = null;
-    private participants: Map<string, G3DParticipant> = new Map();
-    private annotations: Map<string, G3DAnnotation> = new Map();
-    private measurements: Map<string, G3DMeasurement> = new Map();
-    private eventHistory: G3DCollaborationEvent[] = [];
+export class CollaborationEngine {
+    private config: CollaborationConfig;
+    private currentSession: CollaborationSession | null = null;
+    private participants: Map<string, Participant> = new Map();
+    private annotations: Map<string, Annotation> = new Map();
+    private measurements: Map<string, Measurement> = new Map();
+    private eventHistory: CollaborationEvent[] = [];
     private isInitialized: boolean = false;
     private websocket: WebSocket | null = null;
 
@@ -201,7 +201,7 @@ export class G3DCollaborationEngine {
         }
     };
 
-    constructor(config: Partial<G3DCollaborationConfig> = {}) {
+    constructor(config: Partial<CollaborationConfig> = {}) {
         this.config = {
             enableCollaboration: true,
             enableMedicalAnnotations: true,
@@ -288,8 +288,8 @@ export class G3DCollaborationEngine {
         }, 5000);
     }
 
-    public createSession(sessionData: Partial<G3DCollaborationSession>): G3DCollaborationSession {
-        const session: G3DCollaborationSession = {
+    public createSession(sessionData: Partial<CollaborationSession>): CollaborationSession {
+        const session: CollaborationSession = {
             id: sessionData.id || `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
             name: sessionData.name || 'Medical Collaboration Session',
             description: sessionData.description || '',
@@ -318,7 +318,7 @@ export class G3DCollaborationEngine {
         return session;
     }
 
-    public joinSession(sessionId: string, participant: Partial<G3DParticipant>): boolean {
+    public joinSession(sessionId: string, participant: Partial<Participant>): boolean {
         if (!this.currentSession || this.currentSession.id !== sessionId) {
             console.error('Session not found or not current');
             return false;
@@ -329,7 +329,7 @@ export class G3DCollaborationEngine {
             return false;
         }
 
-        const newParticipant: G3DParticipant = {
+        const newParticipant: Participant = {
             id: participant.id || `participant_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
             name: participant.name || 'Anonymous',
             role: participant.role || 'observer',
@@ -361,7 +361,7 @@ export class G3DCollaborationEngine {
         return true;
     }
 
-    private createDefaultAvatar(role: G3DParticipant['role']): G3DAvatar {
+    private createDefaultAvatar(role: Participant['role']): Avatar {
         const roleConfig = G3DCollaborationEngine.MEDICAL_ROLES[role];
 
         return {
@@ -404,7 +404,7 @@ export class G3DCollaborationEngine {
         return true;
     }
 
-    public addAnnotation(annotation: Partial<G3DAnnotation>, authorId: string): G3DAnnotation | null {
+    public addAnnotation(annotation: Partial<Annotation>, authorId: string): Annotation | null {
         if (!this.currentSession) return null;
 
         const participant = this.participants.get(authorId);
@@ -413,7 +413,7 @@ export class G3DCollaborationEngine {
             return null;
         }
 
-        const newAnnotation: G3DAnnotation = {
+        const newAnnotation: Annotation = {
             id: annotation.id || `annotation_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
             authorId,
             position: annotation.position || vec3.create(),
@@ -445,7 +445,7 @@ export class G3DCollaborationEngine {
         return newAnnotation;
     }
 
-    public addMeasurement(measurement: Partial<G3DMeasurement>, authorId: string): G3DMeasurement | null {
+    public addMeasurement(measurement: Partial<Measurement>, authorId: string): Measurement | null {
         if (!this.currentSession) return null;
 
         const participant = this.participants.get(authorId);
@@ -454,7 +454,7 @@ export class G3DCollaborationEngine {
             return null;
         }
 
-        const newMeasurement: G3DMeasurement = {
+        const newMeasurement: Measurement = {
             id: measurement.id || `measurement_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
             authorId,
             type: measurement.type || 'distance',
@@ -507,7 +507,7 @@ export class G3DCollaborationEngine {
         return true;
     }
 
-    public updateCursorPosition(participantId: string, position: vec3, type?: G3DCursor['type']): boolean {
+    public updateCursorPosition(participantId: string, position: vec3, type?: Cursor['type']): boolean {
         const participant = this.participants.get(participantId);
         if (!participant) return false;
 
@@ -527,7 +527,7 @@ export class G3DCollaborationEngine {
         return true;
     }
 
-    private recordEvent(event: G3DCollaborationEvent): void {
+    private recordEvent(event: CollaborationEvent): void {
         if (!this.config.enableSessionRecording || !this.currentSession?.recording) return;
 
         this.eventHistory.push(event);
@@ -572,7 +572,7 @@ export class G3DCollaborationEngine {
         }
     }
 
-    private handleParticipantJoined(data: G3DParticipant): void {
+    private handleParticipantJoined(data: Participant): void {
         this.participants.set(data.id, data);
         console.log(`Remote participant joined: ${data.name}`);
     }
@@ -592,7 +592,7 @@ export class G3DCollaborationEngine {
         }
     }
 
-    private handleCursorMoved(data: { participantId: string; position: vec3; type: G3DCursor['type'] }): void {
+    private handleCursorMoved(data: { participantId: string; position: vec3; type: Cursor['type'] }): void {
         const participant = this.participants.get(data.participantId);
         if (participant) {
             vec3.copy(participant.avatar.cursor.position, data.position);
@@ -601,33 +601,33 @@ export class G3DCollaborationEngine {
         }
     }
 
-    private handleAnnotationAdded(annotation: G3DAnnotation): void {
+    private handleAnnotationAdded(annotation: Annotation): void {
         this.annotations.set(annotation.id, annotation);
         if (this.currentSession) {
             this.currentSession.annotations.push(annotation);
         }
     }
 
-    private handleMeasurementAdded(measurement: G3DMeasurement): void {
+    private handleMeasurementAdded(measurement: Measurement): void {
         this.measurements.set(measurement.id, measurement);
         if (this.currentSession) {
             this.currentSession.measurements.push(measurement);
         }
     }
 
-    public getCurrentSession(): G3DCollaborationSession | null {
+    public getCurrentSession(): CollaborationSession | null {
         return this.currentSession;
     }
 
-    public getParticipants(): G3DParticipant[] {
+    public getParticipants(): Participant[] {
         return Array.from(this.participants.values());
     }
 
-    public getAnnotations(): G3DAnnotation[] {
+    public getAnnotations(): Annotation[] {
         return Array.from(this.annotations.values());
     }
 
-    public getMeasurements(): G3DMeasurement[] {
+    public getMeasurements(): Measurement[] {
         return Array.from(this.measurements.values());
     }
 
@@ -689,4 +689,4 @@ export class G3DCollaborationEngine {
     }
 }
 
-export default G3DCollaborationEngine;
+export default CollaborationEngine;

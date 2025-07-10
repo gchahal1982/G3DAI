@@ -50,7 +50,7 @@ export interface Measurement3D {
     points: [number, number, number][];
 }
 
-export class G3DVolumeGenerator {
+export class VolumeGenerator {
     private performanceMetrics: Map<string, number>;
 
     constructor() {
@@ -497,4 +497,4 @@ export class G3DVolumeGenerator {
     }
 }
 
-export default G3DVolumeGenerator;
+export default VolumeGenerator;

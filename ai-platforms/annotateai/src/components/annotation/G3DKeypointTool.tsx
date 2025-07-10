@@ -5,13 +5,13 @@
  */
 
 import React, { useRef, useEffect, useState, useCallback } from 'react';
-import { G3DNativeRenderer } from '../../g3d-integration/G3DNativeRenderer';
-import { G3DSceneManager } from '../../g3d-integration/G3DSceneManager';
-import { G3DMaterialSystem } from '../../g3d-integration/G3DMaterialSystem';
-import { G3DGeometryProcessor } from '../../g3d-integration/G3DGeometryProcessor';
-import { G3DComputeShaders } from '../../g3d-ai/G3DComputeShaders';
-import { G3DMathLibraries } from '../../g3d-3d/G3DMathLibraries';
-import { PhysicsIntegration } from '../../g3d-3d/PhysicsIntegration';
+import { NativeRenderer } from '../../integration/G3DNativeRenderer';
+import { SceneManager } from '../../integration/G3DSceneManager';
+import { MaterialSystem } from '../../integration/G3DMaterialSystem';
+import { GeometryProcessor } from '../../integration/G3DGeometryProcessor';
+import { ComputeShaders } from '../../ai/G3DComputeShaders';
+import { MathLibraries } from '../../core/G3DMathLibraries';
+import { PhysicsIntegration } from '../../core/PhysicsIntegration';
 
 // Types and Interfaces
 interface Point3D {
@@ -222,7 +222,7 @@ interface DragState {
     constraintsActive: boolean;
 }
 
-interface G3DKeypointToolProps {
+interface KeypointToolProps {
     imageData: ImageData;
     onKeypointCreate: (keypoint: Keypoint) => void;
     onKeypointUpdate: (keypoint: Keypoint) => void;
@@ -254,7 +254,7 @@ interface ImageData {
 }
 
 // Main Component
-export const G3DKeypointTool: React.FC<G3DKeypointToolProps> = ({
+export const G3DKeypointTool: React.FC<KeypointToolProps> = ({
     imageData,
     onKeypointCreate,
     onKeypointUpdate,
@@ -267,12 +267,12 @@ export const G3DKeypointTool: React.FC<G3DKeypointToolProps> = ({
     templates
 }) => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
-    const rendererRef = useRef<G3DNativeRenderer | null>(null);
-    const sceneRef = useRef<G3DSceneManager | null>(null);
-    const materialsRef = useRef<G3DMaterialSystem | null>(null);
-    const geometryRef = useRef<G3DGeometryProcessor | null>(null);
-    const computeRef = useRef<G3DComputeShaders | null>(null);
-    const mathRef = useRef<G3DMathLibraries | null>(null);
+    const rendererRef = useRef<NativeRenderer | null>(null);
+    const sceneRef = useRef<SceneManager | null>(null);
+    const materialsRef = useRef<MaterialSystem | null>(null);
+    const geometryRef = useRef<GeometryProcessor | null>(null);
+    const computeRef = useRef<ComputeShaders | null>(null);
+    const mathRef = useRef<MathLibraries | null>(null);
     const physicsRef = useRef<PhysicsIntegration | null>(null);
 
     const [keypoints, setKeypoints] = useState<Map<string, Keypoint>>(new Map());
@@ -308,23 +308,23 @@ export const G3DKeypointTool: React.FC<G3DKeypointToolProps> = ({
         const initializeG3D = async () => {
             try {
                 // Initialize renderer
-                const renderer = new G3DNativeRenderer(canvasRef.current!, { antialias: true, alpha: true });
+                const renderer = new NativeRenderer(canvasRef.current!, { antialias: true, alpha: true });
                 rendererRef.current = renderer;
 
                 // Initialize scene
-                const scene = new G3DSceneManager(rendererRef.current || new G3DNativeRenderer(canvasRef.current!, { antialias: true, alpha: true }));
+                const scene = new SceneManager(rendererRef.current || new NativeRenderer(canvasRef.current!, { antialias: true, alpha: true }));
                 sceneRef.current = scene;
 
                 // Initialize materials
-                const materials = new G3DMaterialSystem();
+                const materials = new MaterialSystem();
                 materialsRef.current = materials;
 
                 // Initialize geometry
-                const geometry = new G3DGeometryProcessor();
+                const geometry = new GeometryProcessor();
                 geometryRef.current = geometry;
 
                 // Initialize compute shaders
-                const compute = new G3DComputeShaders({ 
+                const compute = new ComputeShaders({ 
                     backend: 'webgpu',
                     device: { 
                         preferredDevice: 'gpu', 
@@ -359,7 +359,7 @@ export const G3DKeypointTool: React.FC<G3DKeypointToolProps> = ({
                 computeRef.current = compute;
 
                 // Initialize math libraries
-                const math = new G3DMathLibraries();
+                const math = new MathLibraries();
                 mathRef.current = math;
 
                 // Initialize physics if enabled

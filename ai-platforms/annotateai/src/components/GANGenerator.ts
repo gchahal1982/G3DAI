@@ -4,10 +4,10 @@
  * ~2,800 lines of production code
  */
 
-import { G3DModelRunner } from '../g3d-ai/G3DModelRunner';
-import { G3DComputeShaders } from '../g3d-ai/G3DComputeShaders';
-import { G3DPerformanceOptimizer } from '../g3d-integration/G3DPerformanceOptimizer';
-import { G3DNativeRenderer } from '../g3d-integration/G3DNativeRenderer';
+import { ModelRunner } from '../ai/G3DModelRunner';
+import { ComputeShaders } from '../ai/G3DComputeShaders';
+import { PerformanceOptimizer } from '../integration/G3DPerformanceOptimizer';
+import { NativeRenderer } from '../integration/G3DNativeRenderer';
 
 // Types and Interfaces
 interface GANConfig {
@@ -232,11 +232,11 @@ interface TrainingMetrics {
 }
 
 // Main GAN Generator Class
-export class G3DGANGenerator {
-    private modelRunner: G3DModelRunner;
-    private computeShaders: G3DComputeShaders;
-    private optimizer: G3DPerformanceOptimizer;
-    private renderer: G3DNativeRenderer;
+export class GANGenerator {
+    private modelRunner: ModelRunner;
+    private computeShaders: ComputeShaders;
+    private optimizer: PerformanceOptimizer;
+    private renderer: NativeRenderer;
 
     private config: GANConfig;
     private generator: LoadedModel | null = null;
@@ -257,10 +257,10 @@ export class G3DGANGenerator {
     };
 
     constructor(
-        modelRunner: G3DModelRunner,
-        computeShaders: G3DComputeShaders,
-        optimizer: G3DPerformanceOptimizer,
-        renderer: G3DNativeRenderer
+        modelRunner: ModelRunner,
+        computeShaders: ComputeShaders,
+        optimizer: PerformanceOptimizer,
+        renderer: NativeRenderer
     ) {
         this.modelRunner = modelRunner;
         this.computeShaders = computeShaders;

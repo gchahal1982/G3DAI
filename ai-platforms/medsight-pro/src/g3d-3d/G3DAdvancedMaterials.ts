@@ -13,7 +13,7 @@
 
 import { vec3, vec4 } from 'gl-matrix';
 
-export interface G3DMaterialConfig {
+export interface MaterialConfig {
     enablePBR: boolean;
     enableSubsurfaceScattering: boolean;
     enableTransparency: boolean;
@@ -23,7 +23,7 @@ export interface G3DMaterialConfig {
     enableDynamicProperties: boolean;
 }
 
-export interface G3DMaterial {
+export interface Material {
     id: string;
     name: string;
     type: 'pbr' | 'medical' | 'tissue' | 'bone' | 'fluid' | 'metal' | 'glass' | 'custom';
@@ -44,15 +44,15 @@ export interface G3DMaterial {
     scattering: vec3;
 
     // Subsurface Scattering
-    subsurface: G3DSubsurfaceMaterial;
+    subsurface: SubsurfaceMaterial;
 
     // Textures
-    textures: G3DMaterialTextures;
+    textures: MaterialTextures;
 
     // Dynamic Properties
     animated: boolean;
     timeDependent: boolean;
-    medicalContext: G3DMedicalContext;
+    medicalContext: MedicalContext;
 
     // Rendering Properties
     doubleSided: boolean;
@@ -61,13 +61,13 @@ export interface G3DMaterial {
     blendMode: 'normal' | 'additive' | 'multiply' | 'screen';
 
     // Medical Visualization
-    medicalVisualization: G3DMedicalVisualization;
+    medicalVisualization: MedicalVisualization;
 
     // User data for additional properties
     userData?: Map<string, any>;
 }
 
-export interface G3DSubsurfaceMaterial {
+export interface SubsurfaceMaterial {
     enabled: boolean;
     color: vec3;
     radius: vec3; // RGB channels for different wavelengths
@@ -78,7 +78,7 @@ export interface G3DSubsurfaceMaterial {
     scale: number;
 }
 
-export interface G3DMaterialTextures {
+export interface MaterialTextures {
     albedoMap?: WebGLTexture;
     normalMap?: WebGLTexture;
     metallicMap?: WebGLTexture;
@@ -90,7 +90,7 @@ export interface G3DMaterialTextures {
     medicalDataMap?: WebGLTexture;
 }
 
-export interface G3DMedicalContext {
+export interface MedicalContext {
     patientAge: number;
     gender: 'male' | 'female' | 'other';
     pathologyPresent: boolean;
@@ -99,16 +99,16 @@ export interface G3DMedicalContext {
     tissueState: 'healthy' | 'diseased' | 'healing' | 'necrotic';
 }
 
-export interface G3DMedicalVisualization {
+export interface MedicalVisualization {
     enhanceContrast: boolean;
     highlightPathology: boolean;
     showBloodFlow: boolean;
     showMetabolism: boolean;
     colorCoding: 'anatomical' | 'functional' | 'pathological' | 'custom';
-    intensityMapping: G3DIntensityMapping;
+    intensityMapping: IntensityMapping;
 }
 
-export interface G3DIntensityMapping {
+export interface IntensityMapping {
     windowWidth: number;
     windowLevel: number;
     lutType: 'grayscale' | 'hot' | 'cool' | 'rainbow' | 'medical' | 'custom';
@@ -116,24 +116,24 @@ export interface G3DIntensityMapping {
     gammaCorrection: number;
 }
 
-export interface G3DMaterialPreset {
+export interface MaterialPreset {
     id: string;
     name: string;
     category: 'tissue' | 'bone' | 'fluid' | 'pathology' | 'implant';
-    material: Partial<G3DMaterial>;
+    material: Partial<Material>;
     medicalAccuracy: number;
     clinicalUse: string[];
 }
 
-export class G3DAdvancedMaterials {
-    private config: G3DMaterialConfig;
-    private materials: Map<string, G3DMaterial> = new Map();
-    private presets: Map<string, G3DMaterialPreset> = new Map();
+export class AdvancedMaterials {
+    private config: MaterialConfig;
+    private materials: Map<string, Material> = new Map();
+    private presets: Map<string, MaterialPreset> = new Map();
     private shaderCache: Map<string, WebGLProgram> = new Map();
     private isInitialized: boolean = false;
 
     // Medical material presets
-    private static readonly MEDICAL_PRESETS: G3DMaterialPreset[] = [
+    private static readonly MEDICAL_PRESETS: MaterialPreset[] = [
         {
             id: 'skin',
             name: 'Human Skin',
@@ -234,7 +234,7 @@ export class G3DAdvancedMaterials {
         }
     ];
 
-    constructor(config: Partial<G3DMaterialConfig> = {}) {
+    constructor(config: Partial<MaterialConfig> = {}) {
         this.config = {
             enablePBR: true,
             enableSubsurfaceScattering: true,
@@ -290,8 +290,8 @@ export class G3DAdvancedMaterials {
         }
     }
 
-    public createMaterial(materialData: Partial<G3DMaterial>): G3DMaterial {
-        const material: G3DMaterial = {
+    public createMaterial(materialData: Partial<Material>): Material {
+        const material: Material = {
             id: materialData.id || `material_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
             name: materialData.name || 'Unnamed Material',
             type: materialData.type || 'pbr',
@@ -366,7 +366,7 @@ export class G3DAdvancedMaterials {
         return material;
     }
 
-    public createMaterialFromPreset(preset: G3DMaterialPreset): G3DMaterial {
+    public createMaterialFromPreset(preset: MaterialPreset): Material {
         const baseData = {
             id: `${preset.id}_${Date.now()}`,
             name: preset.name,
@@ -376,23 +376,23 @@ export class G3DAdvancedMaterials {
         return this.createMaterial(baseData);
     }
 
-    public getMaterial(materialId: string): G3DMaterial | null {
+    public getMaterial(materialId: string): Material | null {
         return this.materials.get(materialId) || null;
     }
 
-    public getAllMaterials(): G3DMaterial[] {
+    public getAllMaterials(): Material[] {
         return Array.from(this.materials.values());
     }
 
-    public getMaterialsByType(type: G3DMaterial['type']): G3DMaterial[] {
+    public getMaterialsByType(type: Material['type']): Material[] {
         return Array.from(this.materials.values()).filter(m => m.type === type);
     }
 
-    public getMaterialsByMedicalType(medicalType: G3DMaterial['medicalType']): G3DMaterial[] {
+    public getMaterialsByMedicalType(medicalType: Material['medicalType']): Material[] {
         return Array.from(this.materials.values()).filter(m => m.medicalType === medicalType);
     }
 
-    public updateMaterial(materialId: string, updates: Partial<G3DMaterial>): boolean {
+    public updateMaterial(materialId: string, updates: Partial<Material>): boolean {
         const material = this.materials.get(materialId);
         if (!material) return false;
 
@@ -409,7 +409,7 @@ export class G3DAdvancedMaterials {
         return deleted;
     }
 
-    public setMedicalContext(materialId: string, context: Partial<G3DMedicalContext>): boolean {
+    public setMedicalContext(materialId: string, context: Partial<MedicalContext>): boolean {
         const material = this.materials.get(materialId);
         if (!material) return false;
 
@@ -418,7 +418,7 @@ export class G3DAdvancedMaterials {
         return true;
     }
 
-    private updateMaterialForContext(material: G3DMaterial): void {
+    private updateMaterialForContext(material: Material): void {
         const context = material.medicalContext;
 
         // Adjust material properties based on medical context
@@ -443,7 +443,7 @@ export class G3DAdvancedMaterials {
         }
     }
 
-    public applyIntensityMapping(materialId: string, mapping: G3DIntensityMapping): boolean {
+    public applyIntensityMapping(materialId: string, mapping: IntensityMapping): boolean {
         const material = this.materials.get(materialId);
         if (!material) return false;
 
@@ -452,7 +452,7 @@ export class G3DAdvancedMaterials {
         return true;
     }
 
-    private updateMaterialIntensity(material: G3DMaterial): void {
+    private updateMaterialIntensity(material: Material): void {
         const mapping = material.medicalVisualization.intensityMapping;
 
         // Apply window/level adjustments
@@ -467,7 +467,7 @@ export class G3DAdvancedMaterials {
         material.userData.set('gammaCorrection', mapping.gammaCorrection);
     }
 
-    public enableSubsurfaceScattering(materialId: string, settings: Partial<G3DSubsurfaceMaterial>): boolean {
+    public enableSubsurfaceScattering(materialId: string, settings: Partial<SubsurfaceMaterial>): boolean {
         const material = this.materials.get(materialId);
         if (!material || !this.config.enableSubsurfaceScattering) return false;
 
@@ -481,8 +481,8 @@ export class G3DAdvancedMaterials {
         return true;
     }
 
-    public createTissueMaterial(tissueType: string, properties: Partial<G3DMaterial> = {}): G3DMaterial {
-        const tissuePresets: Record<string, Partial<G3DMaterial>> = {
+    public createTissueMaterial(tissueType: string, properties: Partial<Material> = {}): Material {
+        const tissuePresets: Record<string, Partial<Material>> = {
             muscle: {
                 albedo: vec3.fromValues(0.7, 0.3, 0.3),
                 roughness: 0.6,
@@ -572,11 +572,11 @@ export class G3DAdvancedMaterials {
         };
     }
 
-    public getPresets(): G3DMaterialPreset[] {
+    public getPresets(): MaterialPreset[] {
         return Array.from(this.presets.values());
     }
 
-    public getPresetsByCategory(category: G3DMaterialPreset['category']): G3DMaterialPreset[] {
+    public getPresetsByCategory(category: MaterialPreset['category']): MaterialPreset[] {
         return Array.from(this.presets.values()).filter(p => p.category === category);
     }
 
@@ -631,4 +631,4 @@ export class G3DAdvancedMaterials {
     }
 }
 
-export default G3DAdvancedMaterials;
+export default AdvancedMaterials;

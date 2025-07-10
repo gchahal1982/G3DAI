@@ -79,7 +79,7 @@ interface CacheEvictionPolicy {
     selectForEviction(cache: Map<string, CacheEntry>, targetSize: number): string[];
 }
 
-export class G3DMemoryManager extends EventEmitter {
+export class MemoryManager extends EventEmitter {
     private pools: Map<string, MemoryPool> = new Map();
     private cache: Map<string, CacheEntry> = new Map();
     private allocations: Map<string, MemoryAllocation> = new Map();

@@ -3,7 +3,7 @@
  * Advanced business intelligence, predictive analytics, and decision support
  */
 
-export interface G3DBIConfig {
+export interface BIConfig {
     enablePredictiveAnalytics: boolean;
     enableMachineLearning: boolean;
     enableRealTimeAnalytics: boolean;
@@ -16,7 +16,7 @@ export interface G3DBIConfig {
     analyticsLevel: 'basic' | 'advanced' | 'enterprise' | 'ai_powered';
 }
 
-export interface G3DInsight {
+export interface Insight {
     id: string;
     type: 'trend' | 'anomaly' | 'prediction' | 'recommendation' | 'alert';
     category: 'medical' | 'operational' | 'financial' | 'performance' | 'compliance';
@@ -31,32 +31,32 @@ export interface G3DInsight {
     medicalRelevance: boolean;
 }
 
-export interface G3DPrediction {
+export interface Prediction {
     id: string;
     model: string;
     target: string;
     timeframe: number;
     confidence: number;
     prediction: any;
-    factors: G3DPredictionFactor[];
+    factors: PredictionFactor[];
     accuracy: number;
     medicalContext: boolean;
 }
 
-export interface G3DPredictionFactor {
+export interface PredictionFactor {
     name: string;
     importance: number;
     impact: 'positive' | 'negative' | 'neutral';
     value: any;
 }
 
-export class G3DBusinessIntelligence {
-    private config: G3DBIConfig;
+export class BusinessIntelligence {
+    private config: BIConfig;
     private isInitialized: boolean = false;
-    private insights: Map<string, G3DInsight> = new Map();
-    private predictions: Map<string, G3DPrediction> = new Map();
+    private insights: Map<string, Insight> = new Map();
+    private predictions: Map<string, Prediction> = new Map();
 
-    constructor(config: Partial<G3DBIConfig> = {}) {
+    constructor(config: Partial<BIConfig> = {}) {
         this.config = {
             enablePredictiveAnalytics: true,
             enableMachineLearning: true,
@@ -98,7 +98,7 @@ export class G3DBusinessIntelligence {
 
     private async generateInitialInsights(): Promise<void> {
         // Medical Efficiency Insight
-        const medicalInsight: G3DInsight = {
+        const medicalInsight: Insight = {
             id: 'medical_efficiency_trend',
             type: 'trend',
             category: 'medical',
@@ -123,7 +123,7 @@ export class G3DBusinessIntelligence {
         };
 
         // Operational Performance Insight
-        const operationalInsight: G3DInsight = {
+        const operationalInsight: Insight = {
             id: 'system_performance_anomaly',
             type: 'anomaly',
             category: 'operational',
@@ -154,7 +154,7 @@ export class G3DBusinessIntelligence {
     public async generatePrediction(model: string, target: string, timeframe: number): Promise<string> {
         const predictionId = `prediction_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
-        const prediction: G3DPrediction = {
+        const prediction: Prediction = {
             id: predictionId,
             model,
             target,
@@ -215,12 +215,12 @@ export class G3DBusinessIntelligence {
         }
     }
 
-    public getInsights(category?: string): G3DInsight[] {
+    public getInsights(category?: string): Insight[] {
         const allInsights = Array.from(this.insights.values());
         return category ? allInsights.filter(i => i.category === category) : allInsights;
     }
 
-    public getPredictions(): G3DPrediction[] {
+    public getPredictions(): Prediction[] {
         return Array.from(this.predictions.values());
     }
 
@@ -248,4 +248,4 @@ export class G3DBusinessIntelligence {
     }
 }
 
-export default G3DBusinessIntelligence;
+export default BusinessIntelligence;

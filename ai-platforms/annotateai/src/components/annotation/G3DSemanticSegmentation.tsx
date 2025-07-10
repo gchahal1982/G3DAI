@@ -5,12 +5,12 @@
  */
 
 import React, { useRef, useEffect, useState, useCallback } from 'react';
-import { G3DNativeRenderer } from '../../g3d-integration/G3DNativeRenderer';
-import { G3DSceneManager } from '../../g3d-integration/G3DSceneManager';
-import { G3DMaterialSystem } from '../../g3d-integration/G3DMaterialSystem';
-import { G3DGeometryProcessor } from '../../g3d-integration/G3DGeometryProcessor';
-import { G3DComputeShaders } from '../../g3d-ai/G3DComputeShaders';
-import { G3DModelRunner } from '../../g3d-ai/G3DModelRunner';
+import { NativeRenderer } from '../../integration/G3DNativeRenderer';
+import { SceneManager } from '../../integration/G3DSceneManager';
+import { MaterialSystem } from '../../integration/G3DMaterialSystem';
+import { GeometryProcessor } from '../../integration/G3DGeometryProcessor';
+import { ComputeShaders } from '../../ai/G3DComputeShaders';
+import { ModelRunner } from '../../ai/G3DModelRunner';
 
 // Types and Interfaces
 interface SegmentationMask {
@@ -103,7 +103,7 @@ interface AIAssistConfig {
     contextual: boolean;
 }
 
-interface G3DSemanticSegmentationProps {
+interface SemanticSegmentationProps {
     imageData: ImageData;
     classes: SegmentationClass[];
     onMaskUpdate: (mask: SegmentationMask) => void;
@@ -132,7 +132,7 @@ interface ImageData {
 }
 
 // Main Component
-export const G3DSemanticSegmentation: React.FC<G3DSemanticSegmentationProps> = ({
+export const G3DSemanticSegmentation: React.FC<SemanticSegmentationProps> = ({
     imageData,
     classes,
     onMaskUpdate,
@@ -144,12 +144,12 @@ export const G3DSemanticSegmentation: React.FC<G3DSemanticSegmentationProps> = (
 }) => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const overlayCanvasRef = useRef<HTMLCanvasElement>(null);
-    const rendererRef = useRef<G3DNativeRenderer | null>(null);
-    const sceneRef = useRef<G3DSceneManager | null>(null);
-    const materialsRef = useRef<G3DMaterialSystem | null>(null);
-    const geometryRef = useRef<G3DGeometryProcessor | null>(null);
-    const computeRef = useRef<G3DComputeShaders | null>(null);
-    const aiModelRef = useRef<G3DModelRunner | null>(null);
+    const rendererRef = useRef<NativeRenderer | null>(null);
+    const sceneRef = useRef<SceneManager | null>(null);
+    const materialsRef = useRef<MaterialSystem | null>(null);
+    const geometryRef = useRef<GeometryProcessor | null>(null);
+    const computeRef = useRef<ComputeShaders | null>(null);
+    const aiModelRef = useRef<ModelRunner | null>(null);
 
     const [masks, setMasks] = useState<Map<string, SegmentationMask>>(new Map());
     const [toolState, setToolState] = useState<ToolState>({
@@ -189,23 +189,23 @@ export const G3DSemanticSegmentation: React.FC<G3DSemanticSegmentationProps> = (
         const initializeG3D = async () => {
             try {
                 // Initialize renderer
-                const renderer = new G3DNativeRenderer(canvasRef.current!, { antialias: true, alpha: true });
+                const renderer = new NativeRenderer(canvasRef.current!, { antialias: true, alpha: true });
                 rendererRef.current = renderer;
 
                 // Initialize scene
-                const scene = new G3DSceneManager(rendererRef.current || new G3DNativeRenderer(canvasRef.current!, { antialias: true, alpha: true }));
+                const scene = new SceneManager(rendererRef.current || new NativeRenderer(canvasRef.current!, { antialias: true, alpha: true }));
                 sceneRef.current = scene;
 
                 // Initialize materials
-                const materials = new G3DMaterialSystem();
+                const materials = new MaterialSystem();
                 materialsRef.current = materials;
 
                 // Initialize geometry
-                const geometry = new G3DGeometryProcessor();
+                const geometry = new GeometryProcessor();
                 geometryRef.current = geometry;
 
                 // Initialize compute shaders
-                const compute = new G3DComputeShaders({
+                const compute = new ComputeShaders({
                     backend: 'webgpu',
                     device: {
                         preferredDevice: 'gpu',
@@ -243,7 +243,7 @@ export const G3DSemanticSegmentation: React.FC<G3DSemanticSegmentationProps> = (
 
                 // Initialize AI model if enabled
                 if (aiConfig?.enabled) {
-                    const aiModel = new G3DModelRunner();
+                    const aiModel = new ModelRunner();
                     if (aiModel.loadModel) {
                         await aiModel.loadModel({
                             modelPath: aiConfig.model,

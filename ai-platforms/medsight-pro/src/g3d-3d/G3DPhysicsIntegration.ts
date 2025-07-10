@@ -104,7 +104,7 @@ export interface BiomechanicalJoint {
     wearLevel: number; // 0-1
 }
 
-export class G3DPhysicsIntegration {
+export class PhysicsIntegration {
     private config: MedicalPhysicsConfig;
     private world: any; // Physics world
     private medicalBodies: Map<string, MedicalPhysicsBody>;
@@ -979,4 +979,4 @@ interface CollisionInfo {
     medicalContext: any;
 }
 
-export default G3DPhysicsIntegration;
+export default PhysicsIntegration;

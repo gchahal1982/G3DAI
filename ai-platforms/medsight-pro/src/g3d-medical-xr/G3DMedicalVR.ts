@@ -11,7 +11,7 @@
  * - Clinical workflow optimization for VR
  */
 
-export interface G3DMedicalVRConfig {
+export interface MedicalVRConfig {
     enableImmersiveMode: boolean;
     enableHandTracking: boolean;
     enableEyeTracking: boolean;
@@ -24,7 +24,7 @@ export interface G3DMedicalVRConfig {
     medicalSafetyMode: boolean;
 }
 
-export interface G3DVRSession {
+export interface VRSession {
     id: string;
     userId: string;
     patientId?: string;
@@ -32,23 +32,23 @@ export interface G3DVRSession {
     sessionType: 'visualization' | 'planning' | 'training' | 'collaboration' | 'simulation';
     startTime: number;
     duration: number;
-    participants: G3DVRParticipant[];
-    medicalContext: G3DMedicalVRContext;
-    recordings: G3DVRRecording[];
+    participants: VRParticipant[];
+    medicalContext: MedicalVRContext;
+    recordings: VRRecording[];
 }
 
-export interface G3DVRParticipant {
+export interface VRParticipant {
     id: string;
     name: string;
     role: 'surgeon' | 'resident' | 'student' | 'observer' | 'patient' | 'technician';
-    permissions: G3DVRPermissions;
-    position: G3DVector3;
-    orientation: G3DQuaternion;
-    avatar: G3DVRAvatar;
-    tools: G3DVRTool[];
+    permissions: VRPermissions;
+    position: Vector3;
+    orientation: Quaternion;
+    avatar: VRAvatar;
+    tools: VRTool[];
 }
 
-export interface G3DMedicalVRContext {
+export interface MedicalVRContext {
     patientData: {
         id: string;
         age: number;
@@ -69,7 +69,7 @@ export interface G3DMedicalVRContext {
     qualityRequirements: 'standard' | 'high' | 'surgical';
 }
 
-export interface G3DVRPermissions {
+export interface VRPermissions {
     canViewPatientData: boolean;
     canModifyVisualization: boolean;
     canUseSurgicalTools: boolean;
@@ -78,7 +78,7 @@ export interface G3DVRPermissions {
     canAccessTrainingMaterials: boolean;
 }
 
-export interface G3DVRAvatar {
+export interface VRAvatar {
     model: string;
     scale: number;
     visibility: boolean;
@@ -87,91 +87,91 @@ export interface G3DVRAvatar {
     roleIndicator: boolean;
 }
 
-export interface G3DVRTool {
+export interface VRTool {
     id: string;
     type: 'scalpel' | 'probe' | 'measure' | 'annotation' | 'slice' | 'zoom' | 'rotate';
-    position: G3DVector3;
-    orientation: G3DQuaternion;
+    position: Vector3;
+    orientation: Quaternion;
     active: boolean;
     hapticEnabled: boolean;
     precision: number;
 }
 
-export interface G3DVRRecording {
+export interface VRRecording {
     id: string;
     type: 'session' | 'procedure' | 'training';
     startTime: number;
     duration: number;
     quality: string;
     size: number;
-    annotations: G3DVRAnnotation[];
-    keyframes: G3DVRKeyframe[];
+    annotations: VRAnnotation[];
+    keyframes: VRKeyframe[];
 }
 
-export interface G3DVRAnnotation {
+export interface VRAnnotation {
     id: string;
     timestamp: number;
-    position: G3DVector3;
+    position: Vector3;
     text: string;
     author: string;
     type: 'note' | 'measurement' | 'finding' | 'instruction';
     visibility: 'private' | 'session' | 'public';
 }
 
-export interface G3DVRKeyframe {
+export interface VRKeyframe {
     timestamp: number;
-    cameraPosition: G3DVector3;
-    cameraOrientation: G3DQuaternion;
+    cameraPosition: Vector3;
+    cameraOrientation: Quaternion;
     sceneState: any;
     annotations: string[];
 }
 
-export interface G3DVector3 {
+export interface Vector3 {
     x: number;
     y: number;
     z: number;
 }
 
-export interface G3DQuaternion {
+export interface Quaternion {
     x: number;
     y: number;
     z: number;
     w: number;
 }
 
-export interface G3DVRControllerInput {
+export interface VRControllerInput {
     controllerId: string;
-    position: G3DVector3;
-    orientation: G3DQuaternion;
+    position: Vector3;
+    orientation: Quaternion;
     buttons: Map<string, boolean>;
     axes: Map<string, number>;
     hapticIntensity: number;
     tracking: boolean;
 }
 
-export interface G3DVRHandTracking {
+export interface VRHandTracking {
     handId: 'left' | 'right';
-    fingers: G3DFingerData[];
-    palm: G3DPalmData;
-    gestures: G3DGesture[];
+    fingers: FingerData[];
+    palm: PalmData;
+    gestures: Gesture[];
     confidence: number;
 }
 
-export interface G3DFingerData {
+export interface FingerData {
     fingerId: 'thumb' | 'index' | 'middle' | 'ring' | 'pinky';
-    joints: G3DVector3[];
+    joints: Vector3[];
     extended: boolean;
     touching: boolean;
 }
 
-export interface G3DPalmData {
-    position: G3DVector3;
-    normal: G3DVector3;
+export interface PalmData {
+    position: Vector3;
+    normal: Vector3;
     width: number;
     height: number;
 }
 
-export interface G3DGesture {
+export interface Gesture {
     type: 'point' | 'grab' | 'pinch' | 'swipe' | 'rotate' | 'scale';
     confidence: number;
     startTime: number;
@@ -179,25 +179,25 @@ export interface G3DGesture {
     parameters: Map<string, number>;
 }
 
-export class G3DMedicalVR {
-    private config: G3DMedicalVRConfig;
+export class MedicalVR {
+    private config: MedicalVRConfig;
     private vrDisplay: any = null; // VRDisplay or XRSystem
     private vrSession: any = null; // VRSession or XRSession
-    private currentSession: G3DVRSession | null = null;
-    private participants: Map<string, G3DVRParticipant> = new Map();
+    private currentSession: VRSession | null = null;
+    private participants: Map<string, VRParticipant> = new Map();
     private medicalData: any = null;
     private vrScene: any = null;
     private isInitialized: boolean = false;
 
-    private controllers: Map<string, G3DVRControllerInput> = new Map();
-    private handTracking: Map<string, G3DVRHandTracking> = new Map();
+    private controllers: Map<string, VRControllerInput> = new Map();
+    private handTracking: Map<string, VRHandTracking> = new Map();
     private hapticDevices: Map<string, any> = new Map();
 
-    private sessionRecorder: G3DVRSessionRecorder | null = null;
-    private collaborationManager: G3DVRCollaborationManager | null = null;
-    private medicalTools: G3DMedicalVRTools | null = null;
+    private sessionRecorder: VRSessionRecorder | null = null;
+    private collaborationManager: VRCollaborationManager | null = null;
+    private medicalTools: MedicalVRTools | null = null;
 
-    constructor(config: Partial<G3DMedicalVRConfig> = {}) {
+    constructor(config: Partial<MedicalVRConfig> = {}) {
         this.config = {
             enableImmersiveMode: true,
             enableHandTracking: true,
@@ -224,17 +224,17 @@ export class G3DMedicalVR {
             await this.initializeVRDisplay();
 
             // Initialize medical tools
-            this.medicalTools = new G3DMedicalVRTools(this.config);
+            this.medicalTools = new MedicalVRTools(this.config);
             await this.medicalTools.initialize();
 
             // Initialize collaboration if enabled
             if (this.config.enableCollaboration) {
-                this.collaborationManager = new G3DVRCollaborationManager(this.config);
+                this.collaborationManager = new VRCollaborationManager(this.config);
                 await this.collaborationManager.initialize();
             }
 
             // Initialize session recorder
-            this.sessionRecorder = new G3DVRSessionRecorder(this.config);
+            this.sessionRecorder = new VRSessionRecorder(this.config);
             await this.sessionRecorder.initialize();
 
             this.isInitialized = true;
@@ -347,7 +347,7 @@ export class G3DMedicalVR {
 
                 const pose = frame.getPose(inputSource.targetRaySpace, frame.session.viewerSpace);
                 if (pose) {
-                    const controller: G3DVRControllerInput = {
+                    const controller: VRControllerInput = {
                         controllerId,
                         position: {
                             x: pose.transform.position.x,
@@ -390,7 +390,7 @@ export class G3DMedicalVR {
             if (inputSource.hand) {
                 const handId = inputSource.handedness as 'left' | 'right';
 
-                const handTracking: G3DVRHandTracking = {
+                const handTracking: VRHandTracking = {
                     handId,
                     fingers: [],
                     palm: {
@@ -409,7 +409,7 @@ export class G3DMedicalVR {
                     if (pose) {
                         // Process finger data based on joint name
                         // This is a simplified implementation
-                        const fingerData: G3DFingerData = {
+                        const fingerData: FingerData = {
                             fingerId: this.mapJointToFinger(jointName),
                             joints: [{
                                 x: pose.transform.position.x,
@@ -441,8 +441,8 @@ export class G3DMedicalVR {
         return 'index'; // default
     }
 
-    private detectGestures(handData: G3DVRHandTracking): G3DGesture[] {
-        const gestures: G3DGesture[] = [];
+    private detectGestures(handData: VRHandTracking): Gesture[] {
+        const gestures: Gesture[] = [];
 
         // Simple gesture detection logic
         const extendedFingers = handData.fingers.filter(f => f.extended).length;
@@ -497,7 +497,7 @@ export class G3DMedicalVR {
         }
     }
 
-    private handleMedicalInteraction(controller: G3DVRControllerInput): void {
+    private handleMedicalInteraction(controller: VRControllerInput): void {
         if (!this.medicalTools) return;
 
         // Determine active tool and perform interaction
@@ -507,7 +507,7 @@ export class G3DMedicalVR {
         }
     }
 
-    private handleMedicalGesture(gesture: G3DGesture, handData: G3DVRHandTracking): void {
+    private handleMedicalGesture(gesture: Gesture, handData: VRHandTracking): void {
         switch (gesture.type) {
             case 'point':
                 this.handlePointGesture(handData);
@@ -527,35 +527,35 @@ export class G3DMedicalVR {
         }
     }
 
-    private handlePointGesture(handData: G3DVRHandTracking): void {
+    private handlePointGesture(handData: VRHandTracking): void {
         // Handle pointing gesture for medical data selection
         console.log(`Point gesture detected with ${handData.handId} hand`);
     }
 
-    private handleGrabGesture(handData: G3DVRHandTracking): void {
+    private handleGrabGesture(handData: VRHandTracking): void {
         // Handle grab gesture for medical data manipulation
         console.log(`Grab gesture detected with ${handData.handId} hand`);
     }
 
-    private handlePinchGesture(handData: G3DVRHandTracking): void {
+    private handlePinchGesture(handData: VRHandTracking): void {
         // Handle pinch gesture for precise medical interactions
         console.log(`Pinch gesture detected with ${handData.handId} hand`);
     }
 
-    private handleRotateGesture(handData: G3DVRHandTracking): void {
+    private handleRotateGesture(handData: VRHandTracking): void {
         // Handle rotation gesture for 3D medical data
         console.log(`Rotate gesture detected with ${handData.handId} hand`);
     }
 
-    private handleScaleGesture(handData: G3DVRHandTracking): void {
+    private handleScaleGesture(handData: VRHandTracking): void {
         // Handle scale gesture for zooming medical data
         console.log(`Scale gesture detected with ${handData.handId} hand`);
     }
 
     // Public API
     public async startMedicalVRSession(
-        sessionType: G3DVRSession['sessionType'],
-        medicalContext: G3DMedicalVRContext,
+        sessionType: VRSession['sessionType'],
+        medicalContext: MedicalVRContext,
         userId: string
     ): Promise<string> {
         if (!this.isInitialized) {
@@ -564,7 +564,7 @@ export class G3DMedicalVR {
 
         const sessionId = `vr_session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
-        const session: G3DVRSession = {
+        const session: VRSession = {
             id: sessionId,
             userId,
             patientId: medicalContext.patientData.id,
@@ -578,7 +578,7 @@ export class G3DMedicalVR {
         };
 
         // Add primary participant
-        const primaryParticipant: G3DVRParticipant = {
+        const primaryParticipant: VRParticipant = {
             id: userId,
             name: 'Primary User',
             role: this.determineUserRole(sessionType),
@@ -612,7 +612,7 @@ export class G3DMedicalVR {
         return sessionId;
     }
 
-    private determineUserRole(sessionType: G3DVRSession['sessionType']): G3DVRParticipant['role'] {
+    private determineUserRole(sessionType: VRSession['sessionType']): VRParticipant['role'] {
         switch (sessionType) {
             case 'planning': return 'surgeon';
             case 'training': return 'student';
@@ -623,8 +623,8 @@ export class G3DMedicalVR {
         }
     }
 
-    private getDefaultPermissions(sessionType: G3DVRSession['sessionType']): G3DVRPermissions {
-        const basePermissions: G3DVRPermissions = {
+    private getDefaultPermissions(sessionType: VRSession['sessionType']): VRPermissions {
+        const basePermissions: VRPermissions = {
             canViewPatientData: true,
             canModifyVisualization: true,
             canUseSurgicalTools: false,
@@ -658,7 +658,7 @@ export class G3DMedicalVR {
         }
     }
 
-    private async loadMedicalDataForSession(context: G3DMedicalVRContext): Promise<void> {
+    private async loadMedicalDataForSession(context: MedicalVRContext): Promise<void> {
         // Load medical data based on context
         // This would integrate with DICOM processor and medical renderers
         console.log(`Loading medical data for patient: ${context.patientData.id}`);
@@ -677,7 +677,7 @@ export class G3DMedicalVR {
     public async inviteParticipant(
         sessionId: string,
         participantId: string,
-        role: G3DVRParticipant['role']
+        role: VRParticipant['role']
     ): Promise<boolean> {
         if (!this.currentSession || this.currentSession.id !== sessionId) {
             throw new Error('Invalid session');
@@ -687,7 +687,7 @@ export class G3DMedicalVR {
             throw new Error('Maximum collaborators reached');
         }
 
-        const participant: G3DVRParticipant = {
+        const participant: VRParticipant = {
             id: participantId,
             name: `Participant ${participantId}`,
             role,
@@ -716,8 +716,8 @@ export class G3DMedicalVR {
         return true;
     }
 
-    private getPermissionsForRole(role: G3DVRParticipant['role']): G3DVRPermissions {
-        const permissions: Record<G3DVRParticipant['role'], G3DVRPermissions> = {
+    private getPermissionsForRole(role: VRParticipant['role']): VRPermissions {
+        const permissions: Record<VRParticipant['role'], VRPermissions> = {
             surgeon: {
                 canViewPatientData: true,
                 canModifyVisualization: true,
@@ -771,8 +771,8 @@ export class G3DMedicalVR {
         return permissions[role];
     }
 
-    private getAvatarForRole(role: G3DVRParticipant['role']): string {
-        const avatars: Record<G3DVRParticipant['role'], string> = {
+    private getAvatarForRole(role: VRParticipant['role']): string {
+        const avatars: Record<VRParticipant['role'], string> = {
             surgeon: 'surgeon_avatar',
             resident: 'resident_avatar',
             student: 'student_avatar',
@@ -810,19 +810,19 @@ export class G3DMedicalVR {
         this.medicalData = null;
     }
 
-    public getCurrentSession(): G3DVRSession | null {
+    public getCurrentSession(): VRSession | null {
         return this.currentSession;
     }
 
-    public getParticipants(): G3DVRParticipant[] {
+    public getParticipants(): VRParticipant[] {
         return Array.from(this.participants.values());
     }
 
-    public getControllerInputs(): G3DVRControllerInput[] {
+    public getControllerInputs(): VRControllerInput[] {
         return Array.from(this.controllers.values());
     }
 
-    public getHandTrackingData(): G3DVRHandTracking[] {
+    public getHandTrackingData(): VRHandTracking[] {
         return Array.from(this.handTracking.values());
     }
 
@@ -869,16 +869,16 @@ export class G3DMedicalVR {
 }
 
 // Supporting classes (simplified implementations)
-class G3DVRSessionRecorder {
+class VRSessionRecorder {
     private isRecordingActive: boolean = false;
 
-    constructor(private config: G3DMedicalVRConfig) { }
+    constructor(private config: MedicalVRConfig) { }
 
     async initialize(): Promise<void> {
         console.log('VR Session Recorder initialized');
     }
 
-    async startRecording(session: G3DVRSession): Promise<void> {
+    async startRecording(session: VRSession): Promise<void> {
         this.isRecordingActive = true;
         console.log(`Started recording session: ${session.id}`);
     }
@@ -901,14 +901,14 @@ class G3DVRSessionRecorder {
     }
 }
 
-class G3DVRCollaborationManager {
-    constructor(private config: G3DMedicalVRConfig) { }
+class VRCollaborationManager {
+    constructor(private config: MedicalVRConfig) { }
 
     async initialize(): Promise<void> {
         console.log('VR Collaboration Manager initialized');
     }
 
-    async addParticipant(participant: G3DVRParticipant): Promise<void> {
+    async addParticipant(participant: VRParticipant): Promise<void> {
         console.log(`Added participant: ${participant.id}`);
     }
 
@@ -925,10 +925,10 @@ class G3DVRCollaborationManager {
     }
 }
 
-class G3DMedicalVRTools {
-    private tools: Map<string, G3DVRTool> = new Map();
+class MedicalVRTools {
+    private tools: Map<string, VRTool> = new Map();
 
-    constructor(private config: G3DMedicalVRConfig) { }
+    constructor(private config: MedicalVRConfig) { }
 
     async initialize(): Promise<void> {
         // Initialize medical VR tools
@@ -937,7 +937,7 @@ class G3DMedicalVRTools {
     }
 
     private createDefaultTools(): void {
-        const defaultTools: G3DVRTool[] = [
+        const defaultTools: VRTool[] = [
             {
                 id: 'scalpel',
                 type: 'scalpel',
@@ -972,7 +972,7 @@ class G3DMedicalVRTools {
         });
     }
 
-    getActiveTool(controllerId: string): G3DVRTool | null {
+    getActiveTool(controllerId: string): VRTool | null {
         // Return active tool for controller
         for (const tool of this.tools.values()) {
             if (tool.active) {
@@ -982,7 +982,7 @@ class G3DMedicalVRTools {
         return null;
     }
 
-    executeToolAction(tool: G3DVRTool, controller: G3DVRControllerInput): void {
+    executeToolAction(tool: VRTool, controller: VRControllerInput): void {
         console.log(`Executing ${tool.type} action`);
 
         // Provide haptic feedback if enabled
@@ -1002,4 +1002,4 @@ class G3DMedicalVRTools {
     }
 }
 
-export default G3DMedicalVR;
+export default MedicalVR;

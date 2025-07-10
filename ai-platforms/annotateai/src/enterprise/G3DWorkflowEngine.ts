@@ -4,8 +4,8 @@
  * with visual workflow designer and real-time execution
  */
 
-import { G3DGPUCompute } from '../g3d-performance/G3DGPUCompute';
-import { G3DModelRunner } from '../g3d-ai/G3DModelRunner';
+import { GPUCompute } from '../performance/G3DGPUCompute';
+import { ModelRunner } from '../ai/G3DModelRunner';
 
 export interface WorkflowConfig {
     maxConcurrentExecutions: number;
@@ -379,17 +379,17 @@ export interface ExecutionError {
     retryable: boolean;
 }
 
-export class G3DWorkflowEngine {
-    private gpuCompute: G3DGPUCompute;
-    private modelRunner: G3DModelRunner;
+export class WorkflowEngine {
+    private gpuCompute: GPUCompute;
+    private modelRunner: ModelRunner;
     private config: WorkflowConfig;
     private workflows: Map<string, WorkflowDefinition>;
     private executions: Map<string, WorkflowExecution>;
     private activeExecutions: Set<string>;
 
     constructor(config: WorkflowConfig) {
-        this.gpuCompute = new G3DGPUCompute();
-        this.modelRunner = new G3DModelRunner();
+        this.gpuCompute = new GPUCompute();
+        this.modelRunner = new ModelRunner();
         this.config = config;
         this.workflows = new Map();
         this.executions = new Map();
@@ -1250,4 +1250,4 @@ export class G3DWorkflowEngine {
     }
 }
 
-export default G3DWorkflowEngine;
+export default WorkflowEngine;

@@ -4,9 +4,9 @@
  * ~3,000 lines of production code
  */
 
-import { G3DModelRunner, G3DPrecision } from '../../../g3d-ai/G3DModelRunner';
-import { G3DComputeShaders } from '../../../g3d-ai/G3DComputeShaders';
-import { G3DPerformanceOptimizer } from '../../../g3d-integration/G3DPerformanceOptimizer';
+import { ModelRunner, Precision } from '../../../ai/G3DModelRunner';
+import { ComputeShaders } from '../../../ai/G3DComputeShaders';
+import { PerformanceOptimizer } from '../../../integration/PerformanceOptimizer';
 
 // Types and Interfaces
 interface DetectionResult {
@@ -63,7 +63,7 @@ interface ModelConfig {
     confidenceThreshold: number;
     maxDetections: number;
     batchSize: number;
-    precision: G3DPrecision;
+    precision: Precision;
 }
 
 interface EnsembleConfig {
@@ -136,10 +136,10 @@ interface ModelOutput {
 }
 
 // Main Object Detection Model Class
-export class G3DObjectDetectionModel {
-    private modelRunner: G3DModelRunner;
-    private computeShaders: G3DComputeShaders;
-    private optimizer: G3DPerformanceOptimizer;
+export class ObjectDetectionModel {
+    private modelRunner: ModelRunner;
+    private computeShaders: ComputeShaders;
+    private optimizer: PerformanceOptimizer;
 
     private models: Map<string, LoadedModel> = new Map();
     private ensembleConfig: EnsembleConfig | null = null;
@@ -162,9 +162,9 @@ export class G3DObjectDetectionModel {
     };
 
     constructor(
-        modelRunner: G3DModelRunner,
-        computeShaders: G3DComputeShaders,
-        optimizer: G3DPerformanceOptimizer
+        modelRunner: ModelRunner,
+        computeShaders: ComputeShaders,
+        optimizer: PerformanceOptimizer
     ) {
         this.modelRunner = modelRunner;
         this.computeShaders = computeShaders;

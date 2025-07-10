@@ -10,7 +10,7 @@
  * - Real-time holographic medical imaging
  */
 
-export interface G3DHolographicConfig {
+export interface HolographicConfig {
     hologramResolution: '2K' | '4K' | '8K';
     viewingAngle: number;
     brightness: number;
@@ -22,18 +22,18 @@ export interface G3DHolographicConfig {
     medicalAccuracyMode: boolean;
 }
 
-export interface G3DHolographicSession {
+export interface HolographicSession {
     id: string;
     userId: string;
     patientId?: string;
     sessionType: 'visualization' | 'planning' | 'collaboration' | 'education';
     startTime: number;
-    holographicObjects: G3DHolographicObject[];
-    viewers: G3DHolographicViewer[];
-    medicalContext: G3DMedicalHolographicContext;
+    holographicObjects: HolographicObject[];
+    viewers: HolographicViewer[];
+    medicalContext: MedicalHolographicContext;
 }
 
-export interface G3DMedicalHolographicContext {
+export interface MedicalHolographicContext {
     patientData: {
         id: string;
         bodyRegion: string;
@@ -49,19 +49,19 @@ export interface G3DMedicalHolographicContext {
     interactionMode: 'view' | 'manipulate' | 'measure' | 'annotate';
 }
 
-export interface G3DHolographicObject {
+export interface HolographicObject {
     id: string;
     type: 'volume' | 'surface' | 'annotation' | 'measurement';
-    position: G3DVector3;
-    rotation: G3DQuaternion;
-    scale: G3DVector3;
+    position: Vector3;
+    rotation: Quaternion;
+    scale: Vector3;
     visible: boolean;
     opacity: number;
     medicalData: any;
-    holographicProperties: G3DHolographicProperties;
+    holographicProperties: HolographicProperties;
 }
 
-export interface G3DHolographicProperties {
+export interface HolographicProperties {
     luminance: number;
     depth: number;
     transparency: number;
@@ -70,46 +70,46 @@ export interface G3DHolographicProperties {
     interference: boolean;
 }
 
-export interface G3DHolographicViewer {
+export interface HolographicViewer {
     id: string;
-    position: G3DVector3;
-    viewDirection: G3DVector3;
-    eyePosition: G3DVector3;
-    permissions: G3DViewerPermissions;
+    position: Vector3;
+    viewDirection: Vector3;
+    eyePosition: Vector3;
+    permissions: ViewerPermissions;
 }
 
-export interface G3DViewerPermissions {
+export interface ViewerPermissions {
     canManipulate: boolean;
     canAnnotate: boolean;
     canMeasure: boolean;
     canRecord: boolean;
 }
 
-export interface G3DVector3 {
+export interface Vector3 {
     x: number;
     y: number;
     z: number;
 }
 
-export interface G3DQuaternion {
+export interface Quaternion {
     x: number;
     y: number;
     z: number;
     w: number;
 }
 
-export class G3DHolographicImaging {
-    private config: G3DHolographicConfig;
-    private currentSession: G3DHolographicSession | null = null;
-    private holographicObjects: Map<string, G3DHolographicObject> = new Map();
-    private viewers: Map<string, G3DHolographicViewer> = new Map();
+export class HolographicImaging {
+    private config: HolographicConfig;
+    private currentSession: HolographicSession | null = null;
+    private holographicObjects: Map<string, HolographicObject> = new Map();
+    private viewers: Map<string, HolographicViewer> = new Map();
     private isInitialized: boolean = false;
 
-    private holographicRenderer: G3DHolographicRenderer | null = null;
-    private volumeProcessor: G3DVolumeProcessor | null = null;
-    private collaborationManager: G3DHolographicCollaboration | null = null;
+    private holographicRenderer: HolographicRenderer | null = null;
+    private volumeProcessor: VolumeProcessor | null = null;
+    private collaborationManager: HolographicCollaboration | null = null;
 
-    constructor(config: Partial<G3DHolographicConfig> = {}) {
+    constructor(config: Partial<HolographicConfig> = {}) {
         this.config = {
             hologramResolution: '4K',
             viewingAngle: 45,
@@ -129,15 +129,15 @@ export class G3DHolographicImaging {
             console.log('Initializing G3D Holographic Imaging System...');
 
             // Initialize holographic renderer
-            this.holographicRenderer = new G3DHolographicRenderer(this.config);
+            this.holographicRenderer = new HolographicRenderer(this.config);
             await this.holographicRenderer.initialize();
 
             // Initialize volume processor
-            this.volumeProcessor = new G3DVolumeProcessor(this.config);
+            this.volumeProcessor = new VolumeProcessor(this.config);
             await this.volumeProcessor.initialize();
 
             // Initialize collaboration manager
-            this.collaborationManager = new G3DHolographicCollaboration(this.config);
+            this.collaborationManager = new HolographicCollaboration(this.config);
             await this.collaborationManager.initialize();
 
             this.isInitialized = true;
@@ -149,8 +149,8 @@ export class G3DHolographicImaging {
     }
 
     public async startHolographicSession(
-        sessionType: G3DHolographicSession['sessionType'],
-        medicalContext: G3DMedicalHolographicContext,
+        sessionType: HolographicSession['sessionType'],
+        medicalContext: MedicalHolographicContext,
         userId: string
     ): Promise<string> {
         if (!this.isInitialized) {
@@ -159,7 +159,7 @@ export class G3DHolographicImaging {
 
         const sessionId = `holo_session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
-        const session: G3DHolographicSession = {
+        const session: HolographicSession = {
             id: sessionId,
             userId,
             patientId: medicalContext.patientData.id,
@@ -179,11 +179,11 @@ export class G3DHolographicImaging {
         return sessionId;
     }
 
-    private async loadMedicalDataForHologram(context: G3DMedicalHolographicContext): Promise<void> {
+    private async loadMedicalDataForHologram(context: MedicalHolographicContext): Promise<void> {
         console.log(`Loading medical data for holographic visualization: ${context.patientData.id}`);
 
         // Create holographic objects based on medical data
-        const volumeObject: G3DHolographicObject = {
+        const volumeObject: HolographicObject = {
             id: `volume_${context.patientData.bodyRegion}`,
             type: 'volume',
             position: { x: 0, y: 0, z: 0 },
@@ -208,7 +208,7 @@ export class G3DHolographicImaging {
         this.holographicObjects.set(volumeObject.id, volumeObject);
     }
 
-    public async addViewer(viewerId: string, position: G3DVector3): Promise<void> {
+    public async addViewer(viewerId: string, position: Vector3): Promise<void> {
         if (!this.currentSession) {
             throw new Error('No active holographic session');
         }
@@ -217,7 +217,7 @@ export class G3DHolographicImaging {
             throw new Error('Maximum viewers reached');
         }
 
-        const viewer: G3DHolographicViewer = {
+        const viewer: HolographicViewer = {
             id: viewerId,
             position,
             viewDirection: { x: 0, y: 0, z: -1 },
@@ -240,11 +240,11 @@ export class G3DHolographicImaging {
         console.log(`Viewer ${viewerId} added to holographic session`);
     }
 
-    public getCurrentSession(): G3DHolographicSession | null {
+    public getCurrentSession(): HolographicSession | null {
         return this.currentSession;
     }
 
-    public getHolographicObjects(): G3DHolographicObject[] {
+    public getHolographicObjects(): HolographicObject[] {
         return Array.from(this.holographicObjects.values());
     }
 
@@ -288,8 +288,8 @@ export class G3DHolographicImaging {
 }
 
 // Supporting classes
-class G3DHolographicRenderer {
-    constructor(private config: G3DHolographicConfig) { }
+class HolographicRenderer {
+    constructor(private config: HolographicConfig) { }
 
     async initialize(): Promise<void> {
         console.log('Holographic Renderer initialized');
@@ -300,8 +300,8 @@ class G3DHolographicRenderer {
     }
 }
 
-class G3DVolumeProcessor {
-    constructor(private config: G3DHolographicConfig) { }
+class VolumeProcessor {
+    constructor(private config: HolographicConfig) { }
 
     async initialize(): Promise<void> {
         console.log('Volume Processor initialized');
@@ -312,14 +312,14 @@ class G3DVolumeProcessor {
     }
 }
 
-class G3DHolographicCollaboration {
-    constructor(private config: G3DHolographicConfig) { }
+class HolographicCollaboration {
+    constructor(private config: HolographicConfig) { }
 
     async initialize(): Promise<void> {
         console.log('Holographic Collaboration initialized');
     }
 
-    async addViewer(viewer: G3DHolographicViewer): Promise<void> {
+    async addViewer(viewer: HolographicViewer): Promise<void> {
         console.log(`Added viewer: ${viewer.id}`);
     }
 
@@ -328,4 +328,4 @@ class G3DHolographicCollaboration {
     }
 }
 
-export default G3DHolographicImaging;
+export default HolographicImaging;

@@ -14,7 +14,7 @@
 import { vec3, mat4, quat } from 'gl-matrix';
 
 // MPR Types and Interfaces
-export interface G3DMPRConfig {
+export interface MPRConfig {
     interpolationMethod: 'nearest' | 'linear' | 'cubic' | 'lanczos';
     renderQuality: 'draft' | 'standard' | 'high' | 'ultra';
     enableGPUAcceleration: boolean;
@@ -23,7 +23,7 @@ export interface G3DMPRConfig {
     enableAdvancedFiltering: boolean;
 }
 
-export interface G3DMPRPlane {
+export interface MPRPlane {
     id: string;
     type: 'axial' | 'sagittal' | 'coronal' | 'oblique' | 'curved';
     position: vec3;
@@ -37,7 +37,7 @@ export interface G3DMPRPlane {
     opacity: number;
 }
 
-export interface G3DCurvedReformation {
+export interface CurvedReformation {
     id: string;
     controlPoints: vec3[];
     curvature: number;
@@ -47,15 +47,15 @@ export interface G3DCurvedReformation {
     smoothing: number;
 }
 
-export interface G3DMPRSlice {
+export interface MPRSlice {
     id: string;
     planeId: string;
     imageData: ImageData;
-    metadata: G3DSliceMetadata;
+    metadata: SliceMetadata;
     timestamp: number;
 }
 
-export interface G3DSliceMetadata {
+export interface SliceMetadata {
     position: vec3;
     orientation: mat4;
     spacing: vec3;
@@ -66,7 +66,7 @@ export interface G3DSliceMetadata {
     renderTime: number;
 }
 
-export interface G3DVolumeInfo {
+export interface VolumeInfo {
     dimensions: vec3;
     spacing: vec3;
     origin: vec3;
@@ -77,7 +77,7 @@ export interface G3DVolumeInfo {
 }
 
 // Advanced MPR Shader Manager
-export class G3DMPRShaderManager {
+export class MPRShaderManager {
     private static readonly MPR_VERTEX_SHADER = `#version 300 es
     precision highp float;
     
@@ -287,8 +287,8 @@ export class G3DMPRShaderManager {
     constructor(private gl: WebGL2RenderingContext) { }
 
     createMPRProgram(): WebGLProgram {
-        const vertexShader = this.compileShader(G3DMPRShaderManager.MPR_VERTEX_SHADER, this.gl.VERTEX_SHADER);
-        const fragmentShader = this.compileShader(G3DMPRShaderManager.MPR_FRAGMENT_SHADER, this.gl.FRAGMENT_SHADER);
+        const vertexShader = this.compileShader(MPRShaderManager.MPR_VERTEX_SHADER, this.gl.VERTEX_SHADER);
+        const fragmentShader = this.compileShader(MPRShaderManager.MPR_FRAGMENT_SHADER, this.gl.FRAGMENT_SHADER);
 
         const program = this.gl.createProgram()!;
         this.gl.attachShader(program, vertexShader);
@@ -316,22 +316,22 @@ export class G3DMPRShaderManager {
 }
 
 // Main MPR Renderer Class
-export class G3DMPRRenderer {
-    private config: G3DMPRConfig;
+export class MPRRenderer {
+    private config: MPRConfig;
     private gl: WebGL2RenderingContext;
-    private shaderManager: G3DMPRShaderManager;
+    private shaderManager: MPRShaderManager;
     private mprProgram: WebGLProgram | null = null;
-    private planes: Map<string, G3DMPRPlane> = new Map();
-    private sliceCache: Map<string, G3DMPRSlice> = new Map();
-    private curvedReformations: Map<string, G3DCurvedReformation> = new Map();
+    private planes: Map<string, MPRPlane> = new Map();
+    private sliceCache: Map<string, MPRSlice> = new Map();
+    private curvedReformations: Map<string, CurvedReformation> = new Map();
     private quadGeometry: WebGLVertexArrayObject | null = null;
     private volumeTexture: WebGLTexture | null = null;
-    private volumeInfo: G3DVolumeInfo | null = null;
+    private volumeInfo: VolumeInfo | null = null;
     private framebuffer: WebGLFramebuffer | null = null;
     private renderTexture: WebGLTexture | null = null;
     private isInitialized: boolean = false;
 
-    constructor(gl: WebGL2RenderingContext, config: Partial<G3DMPRConfig> = {}) {
+    constructor(gl: WebGL2RenderingContext, config: Partial<MPRConfig> = {}) {
         this.gl = gl;
         this.config = {
             interpolationMethod: 'linear',
@@ -343,7 +343,7 @@ export class G3DMPRRenderer {
             ...config
         };
 
-        this.shaderManager = new G3DMPRShaderManager(gl);
+        this.shaderManager = new MPRShaderManager(gl);
     }
 
     async initialize(): Promise<void> {
@@ -442,7 +442,7 @@ export class G3DMPRRenderer {
 
     private setupDefaultPlanes(): void {
         // Create standard anatomical planes
-        const defaultPlanes: Partial<G3DMPRPlane>[] = [
+        const defaultPlanes: Partial<MPRPlane>[] = [
             {
                 id: 'axial',
                 type: 'axial',
@@ -467,7 +467,7 @@ export class G3DMPRRenderer {
         ];
 
         defaultPlanes.forEach(planeConfig => {
-            const plane: G3DMPRPlane = {
+            const plane: MPRPlane = {
                 id: planeConfig.id!,
                 type: planeConfig.type!,
                 position: planeConfig.position!,
@@ -488,7 +488,7 @@ export class G3DMPRRenderer {
 
     loadVolumeData(
         texture: WebGLTexture,
-        volumeInfo: G3DVolumeInfo
+        volumeInfo: VolumeInfo
     ): void {
         this.volumeTexture = texture;
         this.volumeInfo = volumeInfo;
@@ -508,10 +508,10 @@ export class G3DMPRRenderer {
         console.log('Volume data loaded for MPR rendering');
     }
 
-    createPlane(config: Partial<G3DMPRPlane>): string {
+    createPlane(config: Partial<MPRPlane>): string {
         const planeId = config.id || `plane_${Date.now()}_${Math.random()}`;
 
-        const plane: G3DMPRPlane = {
+        const plane: MPRPlane = {
             id: planeId,
             type: config.type || 'oblique',
             position: config.position || vec3.create(),
@@ -531,7 +531,7 @@ export class G3DMPRRenderer {
         return planeId;
     }
 
-    updatePlane(planeId: string, updates: Partial<G3DMPRPlane>): void {
+    updatePlane(planeId: string, updates: Partial<MPRPlane>): void {
         const plane = this.planes.get(planeId);
         if (!plane) {
             throw new Error(`Plane ${planeId} not found`);
@@ -544,7 +544,7 @@ export class G3DMPRRenderer {
         this.sliceCache.delete(planeId);
     }
 
-    private updatePlaneTransform(plane: G3DMPRPlane): void {
+    private updatePlaneTransform(plane: MPRPlane): void {
         // Create transformation matrix for the plane
         const rightVector = vec3.create();
         vec3.cross(rightVector, plane.upVector, plane.normal);
@@ -582,7 +582,7 @@ export class G3DMPRRenderer {
         windowWidth: number = 1,
         rescaleSlope: number = 1,
         rescaleIntercept: number = 0
-    ): G3DMPRSlice | null {
+    ): MPRSlice | null {
         if (!this.isInitialized || !this.mprProgram || !this.volumeTexture || !this.volumeInfo) {
             console.warn('Cannot render slice: MPR renderer not properly initialized');
             return null;
@@ -637,7 +637,7 @@ export class G3DMPRRenderer {
 
         const renderTime = Date.now() - startTime;
 
-        const slice: G3DMPRSlice = {
+        const slice: MPRSlice = {
             id: `slice_${planeId}_${Date.now()}`,
             planeId,
             imageData,
@@ -666,7 +666,7 @@ export class G3DMPRRenderer {
     }
 
     private setMPRUniforms(
-        plane: G3DMPRPlane,
+        plane: MPRPlane,
         windowLevel: number,
         windowWidth: number,
         rescaleSlope: number,
@@ -726,10 +726,10 @@ export class G3DMPRRenderer {
         return imageData;
     }
 
-    createCurvedReformation(config: Partial<G3DCurvedReformation>): string {
+    createCurvedReformation(config: Partial<CurvedReformation>): string {
         const reformationId = config.id || `curved_${Date.now()}_${Math.random()}`;
 
-        const reformation: G3DCurvedReformation = {
+        const reformation: CurvedReformation = {
             id: reformationId,
             controlPoints: config.controlPoints || [],
             curvature: config.curvature || 0.5,
@@ -766,7 +766,7 @@ export class G3DMPRRenderer {
         return reformationData;
     }
 
-    private generateCurvedPath(reformation: G3DCurvedReformation): vec3[] {
+    private generateCurvedPath(reformation: CurvedReformation): vec3[] {
         const path: vec3[] = [];
         const controlPoints = reformation.controlPoints;
 
@@ -835,11 +835,11 @@ export class G3DMPRRenderer {
         this.sliceCache.clear();
     }
 
-    getPlane(planeId: string): G3DMPRPlane | undefined {
+    getPlane(planeId: string): MPRPlane | undefined {
         return this.planes.get(planeId);
     }
 
-    getAllPlanes(): G3DMPRPlane[] {
+    getAllPlanes(): MPRPlane[] {
         return Array.from(this.planes.values());
     }
 
@@ -882,4 +882,4 @@ export class G3DMPRRenderer {
     }
 }
 
-export default G3DMPRRenderer;
+export default MPRRenderer;

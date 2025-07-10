@@ -3,7 +3,7 @@
  * Real-time monitoring and alerting for medical production systems
  */
 
-export interface G3DMedicalMonitoringConfig {
+export interface MedicalMonitoringConfig {
     enableRealTimeMonitoring: boolean;
     enablePredictiveAnalytics: boolean;
     enableAutomatedAlerting: boolean;
@@ -11,12 +11,12 @@ export interface G3DMedicalMonitoringConfig {
     enableHealthChecks: boolean;
     enableComplianceMonitoring: boolean;
     monitoringInterval: number; // seconds
-    alertThresholds: G3DAlertThresholds;
+    alertThresholds: AlertThresholds;
     retentionPeriod: number; // days
     enableMedicalWorkflowTracking: boolean;
 }
 
-export interface G3DAlertThresholds {
+export interface AlertThresholds {
     cpuUsage: number;
     memoryUsage: number;
     diskUsage: number;
@@ -28,7 +28,7 @@ export interface G3DAlertThresholds {
     complianceViolation: number;
 }
 
-export interface G3DSystemMetric {
+export interface SystemMetric {
     id: string;
     timestamp: number;
     component: string;
@@ -40,7 +40,7 @@ export interface G3DSystemMetric {
     patientImpact: 'none' | 'low' | 'medium' | 'high' | 'critical';
 }
 
-export interface G3DAlert {
+export interface Alert {
     id: string;
     timestamp: number;
     severity: 'info' | 'warning' | 'error' | 'critical' | 'emergency';
@@ -56,7 +56,7 @@ export interface G3DAlert {
     escalationLevel: number;
 }
 
-export interface G3DHealthCheck {
+export interface HealthCheck {
     component: string;
     status: 'healthy' | 'degraded' | 'unhealthy' | 'critical';
     lastCheck: number;
@@ -68,16 +68,16 @@ export interface G3DHealthCheck {
     details: Record<string, any>;
 }
 
-export interface G3DMonitoringDashboard {
-    systemHealth: G3DSystemHealth;
-    alerts: G3DAlert[];
-    metrics: G3DSystemMetric[];
-    medicalWorkflows: G3DMedicalWorkflowStatus[];
-    complianceStatus: G3DComplianceStatus;
-    patientSafetyIndicators: G3DPatientSafetyIndicators;
+export interface MonitoringDashboard {
+    systemHealth: SystemHealth;
+    alerts: Alert[];
+    metrics: SystemMetric[];
+    medicalWorkflows: MedicalWorkflowStatus[];
+    complianceStatus: ComplianceStatus;
+    patientSafetyIndicators: PatientSafetyIndicators;
 }
 
-export interface G3DSystemHealth {
+export interface SystemHealth {
     overall: 'healthy' | 'degraded' | 'unhealthy' | 'critical';
     uptime: number; // percentage
     performance: number; // percentage
@@ -88,7 +88,7 @@ export interface G3DSystemHealth {
     lastUpdate: number;
 }
 
-export interface G3DMedicalWorkflowStatus {
+export interface MedicalWorkflowStatus {
     workflowId: string;
     name: string;
     status: 'running' | 'paused' | 'failed' | 'completed';
@@ -99,7 +99,7 @@ export interface G3DMedicalWorkflowStatus {
     medicalSpecialty: string;
 }
 
-export interface G3DComplianceStatus {
+export interface ComplianceStatus {
     hipaaCompliant: boolean;
     fdaCompliant: boolean;
     auditReady: boolean;
@@ -111,7 +111,7 @@ export interface G3DComplianceStatus {
     violationsCount: number;
 }
 
-export interface G3DPatientSafetyIndicators {
+export interface PatientSafetyIndicators {
     systemsOperational: boolean;
     dataIntegrityValid: boolean;
     emergencySystemsReady: boolean;
@@ -122,15 +122,15 @@ export interface G3DPatientSafetyIndicators {
     safetyScore: number; // 0-100
 }
 
-export class G3DMedicalMonitoring {
-    private config: G3DMedicalMonitoringConfig;
-    private metrics: Map<string, G3DSystemMetric[]> = new Map();
-    private alerts: Map<string, G3DAlert> = new Map();
-    private healthChecks: Map<string, G3DHealthCheck> = new Map();
+export class MedicalMonitoring {
+    private config: MedicalMonitoringConfig;
+    private metrics: Map<string, SystemMetric[]> = new Map();
+    private alerts: Map<string, Alert> = new Map();
+    private healthChecks: Map<string, HealthCheck> = new Map();
     private isMonitoring: boolean = false;
     private monitoringInterval: NodeJS.Timeout | null = null;
 
-    constructor(config: Partial<G3DMedicalMonitoringConfig> = {}) {
+    constructor(config: Partial<MedicalMonitoringConfig> = {}) {
         this.config = {
             enableRealTimeMonitoring: true,
             enablePredictiveAnalytics: true,
@@ -189,10 +189,10 @@ export class G3DMedicalMonitoring {
         console.log('G3D Medical System Monitoring stopped');
     }
 
-    async recordMetric(metric: Partial<G3DSystemMetric>): Promise<string> {
+    async recordMetric(metric: Partial<SystemMetric>): Promise<string> {
         const metricId = `metric_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
-        const systemMetric: G3DSystemMetric = {
+        const systemMetric: SystemMetric = {
             id: metricId,
             timestamp: Date.now(),
             component: metric.component || 'system',
@@ -214,10 +214,10 @@ export class G3DMedicalMonitoring {
         return metricId;
     }
 
-    async createAlert(alertData: Partial<G3DAlert>): Promise<string> {
+    async createAlert(alertData: Partial<Alert>): Promise<string> {
         const alertId = `alert_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
-        const alert: G3DAlert = {
+        const alert: Alert = {
             id: alertId,
             timestamp: Date.now(),
             severity: alertData.severity || 'info',
@@ -271,7 +271,7 @@ export class G3DMedicalMonitoring {
         console.log(`Alert resolved: ${alertId} by ${userId}`);
     }
 
-    getDashboard(): G3DMonitoringDashboard {
+    getDashboard(): MonitoringDashboard {
         const activeAlerts = Array.from(this.alerts.values()).filter(a => !a.resolved);
         const recentMetrics = this.getRecentMetrics(100);
 
@@ -285,7 +285,7 @@ export class G3DMedicalMonitoring {
         };
     }
 
-    getMetrics(component?: string, limit: number = 100): G3DSystemMetric[] {
+    getMetrics(component?: string, limit: number = 100): SystemMetric[] {
         if (component) {
             return this.metrics.get(component)?.slice(-limit) || [];
         }
@@ -293,7 +293,7 @@ export class G3DMedicalMonitoring {
         return this.getRecentMetrics(limit);
     }
 
-    getAlerts(resolved: boolean = false): G3DAlert[] {
+    getAlerts(resolved: boolean = false): Alert[] {
         return Array.from(this.alerts.values()).filter(a => a.resolved === resolved);
     }
 
@@ -334,7 +334,7 @@ export class G3DMedicalMonitoring {
         const components = ['api', 'database', 'imaging_system', 'ai_processor', 'security_system'];
 
         for (const component of components) {
-            const healthCheck: G3DHealthCheck = {
+            const healthCheck: HealthCheck = {
                 component,
                 status: Math.random() > 0.1 ? 'healthy' : 'degraded',
                 lastCheck: Date.now(),
@@ -361,10 +361,10 @@ export class G3DMedicalMonitoring {
         }
     }
 
-    private async evaluateMetricForAlert(metric: G3DSystemMetric): Promise<void> {
+    private async evaluateMetricForAlert(metric: SystemMetric): Promise<void> {
         const thresholds = this.config.alertThresholds;
         let shouldAlert = false;
-        let severity: G3DAlert['severity'] = 'info';
+        let severity: Alert['severity'] = 'info';
 
         // Evaluate based on component and value
         switch (metric.component) {
@@ -401,12 +401,12 @@ export class G3DMedicalMonitoring {
         }
     }
 
-    private async handleEmergencyAlert(alert: G3DAlert): Promise<void> {
+    private async handleEmergencyAlert(alert: Alert): Promise<void> {
         console.log(`EMERGENCY ALERT: ${alert.message}`);
         // Emergency notification logic would go here
     }
 
-    private calculateSystemHealth(): G3DSystemHealth {
+    private calculateSystemHealth(): SystemHealth {
         const healthChecks = Array.from(this.healthChecks.values());
         const healthyCount = healthChecks.filter(h => h.status === 'healthy').length;
         const healthPercentage = healthChecks.length > 0 ? (healthyCount / healthChecks.length) * 100 : 100;
@@ -423,8 +423,8 @@ export class G3DMedicalMonitoring {
         };
     }
 
-    private getRecentMetrics(limit: number): G3DSystemMetric[] {
-        const allMetrics: G3DSystemMetric[] = [];
+    private getRecentMetrics(limit: number): SystemMetric[] {
+        const allMetrics: SystemMetric[] = [];
 
         for (const componentMetrics of this.metrics.values()) {
             allMetrics.push(...componentMetrics);
@@ -435,7 +435,7 @@ export class G3DMedicalMonitoring {
             .slice(0, limit);
     }
 
-    private getMedicalWorkflowStatus(): G3DMedicalWorkflowStatus[] {
+    private getMedicalWorkflowStatus(): MedicalWorkflowStatus[] {
         return [
             {
                 workflowId: 'wf_imaging_001',
@@ -460,7 +460,7 @@ export class G3DMedicalMonitoring {
         ];
     }
 
-    private getComplianceStatus(): G3DComplianceStatus {
+    private getComplianceStatus(): ComplianceStatus {
         return {
             hipaaCompliant: true,
             fdaCompliant: true,
@@ -474,7 +474,7 @@ export class G3DMedicalMonitoring {
         };
     }
 
-    private getPatientSafetyIndicators(): G3DPatientSafetyIndicators {
+    private getPatientSafetyIndicators(): PatientSafetyIndicators {
         return {
             systemsOperational: true,
             dataIntegrityValid: true,
@@ -496,4 +496,4 @@ export class G3DMedicalMonitoring {
     }
 }
 
-export default G3DMedicalMonitoring;
+export default MedicalMonitoring;

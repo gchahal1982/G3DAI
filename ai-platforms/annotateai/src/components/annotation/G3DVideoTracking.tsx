@@ -6,11 +6,11 @@
 
 import * as React from 'react';
 import { useRef, useEffect, useState, useCallback } from 'react';
-import { G3DNativeRenderer } from '../../g3d-integration/G3DNativeRenderer';
-import { G3DSceneManager } from '../../g3d-integration/G3DSceneManager';
-import { G3DMaterialSystem } from '../../g3d-integration/G3DMaterialSystem';
-import { G3DComputeShaders } from '../../g3d-ai/G3DComputeShaders';
-import { G3DModelRunner } from '../../g3d-ai/G3DModelRunner';
+import { NativeRenderer } from '../../integration/G3DNativeRenderer';
+import { SceneManager } from '../../integration/G3DSceneManager';
+import { MaterialSystem } from '../../integration/G3DMaterialSystem';
+import { ComputeShaders } from '../../ai/G3DComputeShaders';
+import { ModelRunner } from '../../ai/G3DModelRunner';
 
 // Core Types
 interface VideoFrame {
@@ -104,7 +104,7 @@ interface FrameMetadata {
     codec: string;
 }
 
-interface G3DVideoTrackingProps {
+interface VideoTrackingProps {
     videoData: VideoData;
     onTrackCreate: (track: Track) => void;
     onTrackUpdate: (track: Track) => void;
@@ -147,7 +147,7 @@ interface TrackingModel {
 }
 
 // Main Component
-export const G3DVideoTracking: React.FC<G3DVideoTrackingProps> = ({
+export const G3DVideoTracking: React.FC<VideoTrackingProps> = ({
     videoData,
     onTrackCreate,
     onTrackUpdate,
@@ -157,11 +157,11 @@ export const G3DVideoTracking: React.FC<G3DVideoTrackingProps> = ({
     aiModels
 }) => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
-    const rendererRef = useRef<G3DNativeRenderer | null>(null);
-    const sceneRef = useRef<G3DSceneManager | null>(null);
-    const materialsRef = useRef<G3DMaterialSystem | null>(null);
-    const computeRef = useRef<G3DComputeShaders | null>(null);
-    const modelRunnerRef = useRef<G3DModelRunner | null>(null);
+    const rendererRef = useRef<NativeRenderer | null>(null);
+    const sceneRef = useRef<SceneManager | null>(null);
+    const materialsRef = useRef<MaterialSystem | null>(null);
+    const computeRef = useRef<ComputeShaders | null>(null);
+    const modelRunnerRef = useRef<ModelRunner | null>(null);
 
     const [tracks, setTracks] = useState<Map<string, Track>>(new Map());
     const [currentFrame, setCurrentFrame] = useState(0);
@@ -194,16 +194,16 @@ export const G3DVideoTracking: React.FC<G3DVideoTrackingProps> = ({
 
         const initializeG3D = async () => {
             try {
-                const renderer = new G3DNativeRenderer(canvasRef.current!, { antialias: true, alpha: true });
+                const renderer = new NativeRenderer(canvasRef.current!, { antialias: true, alpha: true });
                 rendererRef.current = renderer;
 
-                const scene = new G3DSceneManager(rendererRef.current || new G3DNativeRenderer(canvasRef.current!, { antialias: true, alpha: true }));
+                const scene = new SceneManager(rendererRef.current || new NativeRenderer(canvasRef.current!, { antialias: true, alpha: true }));
                 sceneRef.current = scene;
 
-                const materials = new G3DMaterialSystem();
+                const materials = new MaterialSystem();
                 materialsRef.current = materials;
 
-                const compute = new G3DComputeShaders({
+                const compute = new ComputeShaders({
             backend: 'webgpu',
             device: {
                 preferredDevice: 'gpu',
@@ -247,7 +247,7 @@ export const G3DVideoTracking: React.FC<G3DVideoTrackingProps> = ({
                 computeRef.current = compute;
 
                 if (settings.enableAITracking) {
-                    const modelRunner = new G3DModelRunner();
+                    const modelRunner = new ModelRunner();
                     await modelRunner.init();
                     modelRunnerRef.current = modelRunner;
                 }
@@ -327,7 +327,7 @@ export const G3DVideoTracking: React.FC<G3DVideoTrackingProps> = ({
         if (!rendererRef.current) throw new Error('Renderer not initialized');
 
         // For now, return a simple texture object - in a real implementation
-        // this would interface with the G3DNativeRenderer's internal texture system
+        // this would interface with the NativeRenderer's internal texture system
         const texture = {
             id: generateId(),
             width: imageData.width,

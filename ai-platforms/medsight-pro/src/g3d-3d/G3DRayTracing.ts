@@ -13,7 +13,7 @@
 
 import { vec3, mat4 } from 'gl-matrix';
 
-export interface G3DRayTracingConfig {
+export interface RayTracingConfig {
     enableRayTracing: boolean;
     enableMedicalRayTracing: boolean;
     maxRayDepth: number;
@@ -24,7 +24,7 @@ export interface G3DRayTracingConfig {
     volumeRayMarching: boolean;
 }
 
-export interface G3DRay {
+export interface Ray {
     origin: vec3;
     direction: vec3;
     tMin: number;
@@ -32,17 +32,17 @@ export interface G3DRay {
     medicalContext?: string;
 }
 
-export interface G3DHitInfo {
+export interface HitInfo {
     hit: boolean;
     t: number;
     point: vec3;
     normal: vec3;
-    material?: G3DMedicalMaterial;
+    material?: MedicalMaterial;
     medicalData?: number;
     tissueType?: string;
 }
 
-export interface G3DMedicalMaterial {
+export interface MedicalMaterial {
     id: string;
     type: 'tissue' | 'bone' | 'fluid' | 'air' | 'contrast' | 'implant';
     albedo: vec3;
@@ -59,7 +59,7 @@ export interface G3DMedicalMaterial {
     };
 }
 
-export interface G3DVolumeData {
+export interface VolumeData {
     id: string;
     data: Float32Array;
     dimensions: [number, number, number];
@@ -73,7 +73,7 @@ export interface G3DVolumeData {
     };
 }
 
-export interface G3DRayTracingResult {
+export interface RayTracingResult {
     color: vec3;
     depth: number;
     normal: vec3;
@@ -84,16 +84,16 @@ export interface G3DRayTracingResult {
     };
 }
 
-export class G3DRayTracing {
-    private config: G3DRayTracingConfig;
-    private materials: Map<string, G3DMedicalMaterial> = new Map();
-    private volumes: Map<string, G3DVolumeData> = new Map();
+export class RayTracing {
+    private config: RayTracingConfig;
+    private materials: Map<string, MedicalMaterial> = new Map();
+    private volumes: Map<string, VolumeData> = new Map();
     private isInitialized: boolean = false;
     private gl: WebGL2RenderingContext | null = null;
     private computeShader: WebGLProgram | null = null;
 
     // Medical tissue materials
-    private static readonly MEDICAL_MATERIALS: G3DMedicalMaterial[] = [
+    private static readonly MEDICAL_MATERIALS: MedicalMaterial[] = [
         {
             id: 'air',
             type: 'air',
@@ -160,7 +160,7 @@ export class G3DRayTracing {
         }
     ];
 
-    constructor(config: Partial<G3DRayTracingConfig> = {}) {
+    constructor(config: Partial<RayTracingConfig> = {}) {
         this.config = {
             enableRayTracing: true,
             enableMedicalRayTracing: true,
@@ -212,7 +212,7 @@ export class G3DRayTracing {
     }
 
     // CPU Ray Tracing Implementation
-    public traceRay(ray: G3DRay, depth: number = 0): G3DRayTracingResult {
+    public traceRay(ray: Ray, depth: number = 0): RayTracingResult {
         if (depth >= this.config.maxRayDepth) {
             return {
                 color: vec3.fromValues(0, 0, 0),
@@ -237,8 +237,8 @@ export class G3DRayTracing {
         return this.shade(ray, hitInfo, depth);
     }
 
-    private intersectScene(ray: G3DRay): G3DHitInfo {
-        let closestHit: G3DHitInfo = {
+    private intersectScene(ray: Ray): HitInfo {
+        let closestHit: HitInfo = {
             hit: false,
             t: ray.tMax,
             point: vec3.create(),
@@ -256,7 +256,7 @@ export class G3DRayTracing {
         return closestHit;
     }
 
-    private intersectVolume(ray: G3DRay, volume: G3DVolumeData): G3DHitInfo {
+    private intersectVolume(ray: Ray, volume: VolumeData): HitInfo {
         if (!this.config.volumeRayMarching) {
             return { hit: false, t: ray.tMax, point: vec3.create(), normal: vec3.create() };
         }
@@ -308,7 +308,7 @@ export class G3DRayTracing {
         return { hit: false, t: ray.tMax, point: vec3.create(), normal: vec3.create() };
     }
 
-    private sampleVolume(volume: G3DVolumeData, position: vec3): number {
+    private sampleVolume(volume: VolumeData, position: vec3): number {
         const [width, height, depth] = volume.dimensions;
         const [sx, sy, sz] = volume.spacing;
 
@@ -361,7 +361,7 @@ export class G3DRayTracing {
         return v0 * (1 - fz) + v1 * fz;
     }
 
-    private getVoxelValue(volume: G3DVolumeData, x: number, y: number, z: number): number {
+    private getVoxelValue(volume: VolumeData, x: number, y: number, z: number): number {
         const [width, height, depth] = volume.dimensions;
         if (x < 0 || x >= width || y < 0 || y >= height || z < 0 || z >= depth) {
             return 0;
@@ -369,7 +369,7 @@ export class G3DRayTracing {
         return volume.data[z * width * height + y * width + x];
     }
 
-    private getMaterialFromDensity(density: number, volume: G3DVolumeData): G3DMedicalMaterial {
+    private getMaterialFromDensity(density: number, volume: VolumeData): MedicalMaterial {
         // Convert density to Hounsfield units (simplified)
         const hounsfieldUnit = (density - 0.5) * 2000 - 1000;
 
@@ -385,7 +385,7 @@ export class G3DRayTracing {
         }
     }
 
-    private calculateVolumeColor(density: number, material: G3DMedicalMaterial, volume: G3DVolumeData): vec3 {
+    private calculateVolumeColor(density: number, material: MedicalMaterial, volume: VolumeData): vec3 {
         // Apply medical windowing
         const { windowWidth, windowLevel } = volume.medicalMetadata;
         const windowMin = windowLevel - windowWidth / 2;
@@ -400,7 +400,7 @@ export class G3DRayTracing {
         return color;
     }
 
-    private calculateVolumeNormal(volume: G3DVolumeData, position: vec3): vec3 {
+    private calculateVolumeNormal(volume: VolumeData, position: vec3): vec3 {
         const epsilon = 0.1;
         const normal = vec3.create();
 
@@ -420,7 +420,7 @@ export class G3DRayTracing {
         return normal;
     }
 
-    private shade(ray: G3DRay, hitInfo: G3DHitInfo, depth: number): G3DRayTracingResult {
+    private shade(ray: Ray, hitInfo: HitInfo, depth: number): RayTracingResult {
         const color = vec3.create();
 
         if (!hitInfo.material) {
@@ -465,7 +465,7 @@ export class G3DRayTracing {
         };
     }
 
-    private createReflectedRay(ray: G3DRay, hitInfo: G3DHitInfo): G3DRay {
+    private createReflectedRay(ray: Ray, hitInfo: HitInfo): Ray {
         const reflectedDirection = vec3.create();
         const incident = vec3.create();
         vec3.negate(incident, ray.direction);
@@ -484,13 +484,13 @@ export class G3DRayTracing {
         };
     }
 
-    private getBackgroundColor(ray: G3DRay): vec3 {
+    private getBackgroundColor(ray: Ray): vec3 {
         // Medical visualization background (typically black or dark)
         return vec3.fromValues(0.05, 0.05, 0.08);
     }
 
     // Volume management
-    public addVolume(volume: G3DVolumeData): void {
+    public addVolume(volume: VolumeData): void {
         this.volumes.set(volume.id, volume);
         console.log(`Volume added: ${volume.id} (${volume.medicalMetadata.modality})`);
     }
@@ -499,26 +499,26 @@ export class G3DRayTracing {
         return this.volumes.delete(volumeId);
     }
 
-    public getVolume(volumeId: string): G3DVolumeData | null {
+    public getVolume(volumeId: string): VolumeData | null {
         return this.volumes.get(volumeId) || null;
     }
 
     // Material management
-    public addMaterial(material: G3DMedicalMaterial): void {
+    public addMaterial(material: MedicalMaterial): void {
         this.materials.set(material.id, material);
         console.log(`Material added: ${material.id} (${material.type})`);
     }
 
-    public getMaterial(materialId: string): G3DMedicalMaterial | null {
+    public getMaterial(materialId: string): MedicalMaterial | null {
         return this.materials.get(materialId) || null;
     }
 
-    public getAllMaterials(): G3DMedicalMaterial[] {
+    public getAllMaterials(): MedicalMaterial[] {
         return Array.from(this.materials.values());
     }
 
     // Ray generation utilities
-    public createCameraRay(x: number, y: number, camera: any): G3DRay {
+    public createCameraRay(x: number, y: number, camera: any): Ray {
         // Create ray from camera through pixel (x, y)
         const origin = vec3.clone(camera.position);
         const direction = vec3.create();
@@ -631,4 +631,4 @@ export class G3DRayTracing {
     }
 }
 
-export default G3DRayTracing;
+export default RayTracing;

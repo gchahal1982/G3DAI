@@ -4,8 +4,8 @@
  * with G3D-accelerated fairness analysis
  */
 
-import { G3DGPUCompute } from '../../g3d-performance/G3DGPUCompute';
-import { G3DModelRunner } from '../../g3d-ai/G3DModelRunner';
+import { GPUCompute } from '../../performance/G3DGPUCompute';
+import { ModelRunner } from '../../ai/G3DModelRunner';
 
 export interface BiasConfig {
     protectedAttributes: string[];
@@ -124,14 +124,14 @@ export interface MonitoringPlan {
     alertThresholds: Record<string, number>;
 }
 
-export class G3DBiasDetection {
-    private gpuCompute: G3DGPUCompute;
-    private modelRunner: G3DModelRunner;
+export class BiasDetection {
+    private gpuCompute: GPUCompute;
+    private modelRunner: ModelRunner;
     private fairnessModels: Map<string, any>;
 
     constructor() {
-        this.gpuCompute = new G3DGPUCompute();
-        this.modelRunner = new G3DModelRunner();
+        this.gpuCompute = new GPUCompute();
+        this.modelRunner = new ModelRunner();
         this.fairnessModels = new Map();
         this.initializeKernels();
     }
@@ -940,4 +940,4 @@ export class G3DBiasDetection {
     }
 }
 
-export default G3DBiasDetection;
+export default BiasDetection;

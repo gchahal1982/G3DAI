@@ -11,7 +11,7 @@
  * - Precision haptic control for microsurgery
  */
 
-export interface G3DMedicalHapticsConfig {
+export interface MedicalHapticsConfig {
     enableForceRendering: boolean;
     enableTactileRendering: boolean;
     enableThermalFeedback: boolean;
@@ -19,11 +19,11 @@ export interface G3DMedicalHapticsConfig {
     maxForce: number; // Newtons
     forceResolution: number; // Hz
     tactileResolution: number; // Hz
-    safetyLimits: G3DHapticSafetyLimits;
+    safetyLimits: HapticSafetyLimits;
     medicalAccuracy: 'training' | 'simulation' | 'surgical';
 }
 
-export interface G3DHapticSafetyLimits {
+export interface HapticSafetyLimits {
     maxForceLimit: number;
     maxVelocityLimit: number;
     maxAccelerationLimit: number;
@@ -31,36 +31,36 @@ export interface G3DHapticSafetyLimits {
     forceGradientLimit: number;
 }
 
-export interface G3DHapticSession {
+export interface HapticSession {
     id: string;
     userId: string;
     sessionType: 'training' | 'simulation' | 'guidance' | 'assessment';
     startTime: number;
-    hapticDevices: G3DHapticDevice[];
-    medicalContext: G3DMedicalHapticContext;
-    hapticObjects: G3DHapticObject[];
-    performanceMetrics: G3DHapticPerformanceMetrics;
+    hapticDevices: HapticDevice[];
+    medicalContext: MedicalHapticContext;
+    hapticObjects: HapticObject[];
+    performanceMetrics: HapticPerformanceMetrics;
 }
 
-export interface G3DMedicalHapticContext {
+export interface MedicalHapticContext {
     procedureType: string;
     anatomyRegion: string;
-    tissueTypes: G3DTissueType[];
-    instruments: G3DMedicalInstrument[];
+    tissueTypes: TissueType[];
+    instruments: MedicalInstrument[];
     learningObjectives: string[];
     difficultyLevel: 'beginner' | 'intermediate' | 'advanced' | 'expert';
     realismLevel: 'basic' | 'enhanced' | 'realistic' | 'surgical_grade';
 }
 
-export interface G3DTissueType {
+export interface TissueType {
     id: string;
     name: string;
-    properties: G3DTissueProperties;
-    hapticModel: G3DHapticModel;
-    visualModel: G3DVisualModel;
+    properties: TissueProperties;
+    hapticModel: HapticModel;
+    visualModel: VisualModel;
 }
 
-export interface G3DTissueProperties {
+export interface TissueProperties {
     elasticity: number;
     viscosity: number;
     density: number;
@@ -71,28 +71,28 @@ export interface G3DTissueProperties {
     tearResistance: number;
 }
 
-export interface G3DHapticModel {
+export interface HapticModel {
     forceModel: 'spring_damper' | 'finite_element' | 'mass_spring' | 'neural_network';
     parameters: Map<string, number>;
     responseTime: number;
     accuracy: number;
 }
 
-export interface G3DVisualModel {
+export interface VisualModel {
     deformationModel: string;
     textureModel: string;
     colorModel: string;
     transparencyModel: string;
 }
 
-export interface G3DMedicalInstrument {
+export interface MedicalInstrument {
     id: string;
     type: 'scalpel' | 'forceps' | 'needle' | 'probe' | 'catheter' | 'endoscope';
-    properties: G3DInstrumentProperties;
-    hapticMapping: G3DHapticMapping;
+    properties: InstrumentProperties;
+    hapticMapping: HapticMapping;
 }
 
-export interface G3DInstrumentProperties {
+export interface InstrumentProperties {
     weight: number;
     length: number;
     flexibility: number;
@@ -101,65 +101,65 @@ export interface G3DInstrumentProperties {
     thermalConductivity: number;
 }
 
-export interface G3DHapticMapping {
+export interface HapticMapping {
     forceMultiplier: number;
     tactileMultiplier: number;
     thermalMultiplier: number;
     vibrationMultiplier: number;
 }
 
-export interface G3DHapticDevice {
+export interface HapticDevice {
     id: string;
     type: 'force_feedback' | 'tactile' | 'thermal' | 'vibrotactile' | 'ultrasound';
-    position: G3DVector3;
-    orientation: G3DQuaternion;
-    capabilities: G3DHapticCapabilities;
+    position: Vector3;
+    orientation: Quaternion;
+    capabilities: HapticCapabilities;
     status: 'connected' | 'disconnected' | 'error' | 'calibrating';
-    calibration: G3DHapticCalibration;
+    calibration: HapticCalibration;
 }
 
-export interface G3DHapticCapabilities {
-    maxForce: G3DVector3;
-    maxTorque: G3DVector3;
-    workspace: G3DBoundingBox;
-    resolution: G3DVector3;
+export interface HapticCapabilities {
+    maxForce: Vector3;
+    maxTorque: Vector3;
+    workspace: BoundingBox;
+    resolution: Vector3;
     updateRate: number;
     latency: number;
 }
 
-export interface G3DHapticCalibration {
-    forceCalibration: G3DMatrix3;
-    positionCalibration: G3DMatrix4;
+export interface HapticCalibration {
+    forceCalibration: Matrix3;
+    positionCalibration: Matrix4;
     lastCalibrated: number;
     accuracy: number;
-    drift: G3DVector3;
+    drift: Vector3;
 }
 
-export interface G3DBoundingBox {
-    min: G3DVector3;
-    max: G3DVector3;
+export interface BoundingBox {
+    min: Vector3;
+    max: Vector3;
 }
 
-export interface G3DMatrix3 {
+export interface Matrix3 {
     elements: number[]; // 9 elements
 }
 
-export interface G3DMatrix4 {
+export interface Matrix4 {
     elements: number[]; // 16 elements
 }
 
-export interface G3DHapticObject {
+export interface HapticObject {
     id: string;
     type: 'tissue' | 'organ' | 'instrument' | 'guide' | 'constraint';
-    position: G3DVector3;
-    rotation: G3DQuaternion;
-    scale: G3DVector3;
-    hapticProperties: G3DHapticObjectProperties;
-    medicalProperties: G3DMedicalObjectProperties;
-    interactionState: G3DInteractionState;
+    position: Vector3;
+    rotation: Quaternion;
+    scale: Vector3;
+    hapticProperties: HapticObjectProperties;
+    medicalProperties: MedicalObjectProperties;
+    interactionState: InteractionState;
 }
 
-export interface G3DHapticObjectProperties {
+export interface HapticObjectProperties {
     stiffness: number;
     damping: number;
     friction: number;
@@ -170,7 +170,7 @@ export interface G3DHapticObjectProperties {
     cuttable: boolean;
 }
 
-export interface G3DMedicalObjectProperties {
+export interface MedicalObjectProperties {
     anatomicalName: string;
     pathologyPresent: boolean;
     criticalStructure: boolean;
@@ -179,16 +179,16 @@ export interface G3DMedicalObjectProperties {
     medicalSignificance: 'normal' | 'abnormal' | 'critical' | 'pathological';
 }
 
-export interface G3DInteractionState {
+export interface InteractionState {
     isInContact: boolean;
-    contactForce: G3DVector3;
+    contactForce: Vector3;
     contactArea: number;
     deformation: number;
     temperature: number;
     lastInteraction: number;
 }
 
-export interface G3DHapticPerformanceMetrics {
+export interface HapticPerformanceMetrics {
     averageForce: number;
     maxForce: number;
     forceVariability: number;
@@ -199,33 +199,33 @@ export interface G3DHapticPerformanceMetrics {
     medicalAccuracyScore: number;
 }
 
-export interface G3DVector3 {
+export interface Vector3 {
     x: number;
     y: number;
     z: number;
 }
 
-export interface G3DQuaternion {
+export interface Quaternion {
     x: number;
     y: number;
     z: number;
     w: number;
 }
 
-export class G3DMedicalHaptics {
-    private config: G3DMedicalHapticsConfig;
-    private currentSession: G3DHapticSession | null = null;
-    private hapticDevices: Map<string, G3DHapticDevice> = new Map();
-    private hapticObjects: Map<string, G3DHapticObject> = new Map();
-    private tissueModels: Map<string, G3DTissueType> = new Map();
+export class MedicalHaptics {
+    private config: MedicalHapticsConfig;
+    private currentSession: HapticSession | null = null;
+    private hapticDevices: Map<string, HapticDevice> = new Map();
+    private hapticObjects: Map<string, HapticObject> = new Map();
+    private tissueModels: Map<string, TissueType> = new Map();
     private isInitialized: boolean = false;
 
-    private forceRenderer: G3DForceRenderer | null = null;
-    private tactileRenderer: G3DTactileRenderer | null = null;
-    private thermalRenderer: G3DThermalRenderer | null = null;
-    private safetyMonitor: G3DHapticSafetyMonitor | null = null;
+    private forceRenderer: ForceRenderer | null = null;
+    private tactileRenderer: TactileRenderer | null = null;
+    private thermalRenderer: ThermalRenderer | null = null;
+    private safetyMonitor: HapticSafetyMonitor | null = null;
 
-    constructor(config: Partial<G3DMedicalHapticsConfig> = {}) {
+    constructor(config: Partial<MedicalHapticsConfig> = {}) {
         this.config = {
             enableForceRendering: true,
             enableTactileRendering: true,
@@ -252,22 +252,22 @@ export class G3DMedicalHaptics {
 
             // Initialize haptic renderers
             if (this.config.enableForceRendering) {
-                this.forceRenderer = new G3DForceRenderer(this.config);
+                this.forceRenderer = new ForceRenderer(this.config);
                 await this.forceRenderer.initialize();
             }
 
             if (this.config.enableTactileRendering) {
-                this.tactileRenderer = new G3DTactileRenderer(this.config);
+                this.tactileRenderer = new TactileRenderer(this.config);
                 await this.tactileRenderer.initialize();
             }
 
             if (this.config.enableThermalFeedback) {
-                this.thermalRenderer = new G3DThermalRenderer(this.config);
+                this.thermalRenderer = new ThermalRenderer(this.config);
                 await this.thermalRenderer.initialize();
             }
 
             // Initialize safety monitor
-            this.safetyMonitor = new G3DHapticSafetyMonitor(this.config);
+            this.safetyMonitor = new HapticSafetyMonitor(this.config);
             await this.safetyMonitor.initialize();
 
             // Discover and initialize haptic devices
@@ -288,7 +288,7 @@ export class G3DMedicalHaptics {
         console.log('Discovering haptic devices...');
 
         // Simulate haptic device discovery
-        const mockDevices: G3DHapticDevice[] = [
+        const mockDevices: HapticDevice[] = [
             {
                 id: 'force_device_1',
                 type: 'force_feedback',
@@ -347,7 +347,7 @@ export class G3DMedicalHaptics {
     private async loadMedicalTissueModels(): Promise<void> {
         console.log('Loading medical tissue models...');
 
-        const tissueTypes: G3DTissueType[] = [
+        const tissueTypes: TissueType[] = [
             {
                 id: 'skin',
                 name: 'Human Skin',
@@ -448,8 +448,8 @@ export class G3DMedicalHaptics {
     }
 
     public async startHapticSession(
-        sessionType: G3DHapticSession['sessionType'],
-        medicalContext: G3DMedicalHapticContext,
+        sessionType: HapticSession['sessionType'],
+        medicalContext: MedicalHapticContext,
         userId: string
     ): Promise<string> {
         if (!this.isInitialized) {
@@ -458,7 +458,7 @@ export class G3DMedicalHaptics {
 
         const sessionId = `haptic_session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
-        const session: G3DHapticSession = {
+        const session: HapticSession = {
             id: sessionId,
             userId,
             sessionType,
@@ -490,12 +490,12 @@ export class G3DMedicalHaptics {
         return sessionId;
     }
 
-    private async loadHapticObjectsForSession(context: G3DMedicalHapticContext): Promise<void> {
+    private async loadHapticObjectsForSession(context: MedicalHapticContext): Promise<void> {
         console.log(`Loading haptic objects for ${context.procedureType} in ${context.anatomyRegion}`);
 
         // Create haptic objects based on tissue types
         for (const tissueType of context.tissueTypes) {
-            const hapticObject: G3DHapticObject = {
+            const hapticObject: HapticObject = {
                 id: `tissue_${tissueType.id}`,
                 type: 'tissue',
                 position: { x: 0, y: 0, z: 0 },
@@ -535,7 +535,7 @@ export class G3DMedicalHaptics {
 
         // Create haptic objects for instruments
         for (const instrument of context.instruments) {
-            const instrumentObject: G3DHapticObject = {
+            const instrumentObject: HapticObject = {
                 id: `instrument_${instrument.id}`,
                 type: 'instrument',
                 position: { x: 0, y: 0, z: 0 },
@@ -602,9 +602,9 @@ export class G3DMedicalHaptics {
 
     public updateHapticInteraction(
         deviceId: string,
-        position: G3DVector3,
-        velocity: G3DVector3,
-        force: G3DVector3
+        position: Vector3,
+        velocity: Vector3,
+        force: Vector3
     ): void {
         if (!this.currentSession) return;
 
@@ -634,7 +634,7 @@ export class G3DMedicalHaptics {
         }
     }
 
-    private checkCollision(position: G3DVector3, hapticObject: G3DHapticObject): boolean {
+    private checkCollision(position: Vector3, hapticObject: HapticObject): boolean {
         // Simplified collision detection
         const distance = Math.sqrt(
             Math.pow(position.x - hapticObject.position.x, 2) +
@@ -647,10 +647,10 @@ export class G3DMedicalHaptics {
 
     private handleHapticCollision(
         deviceId: string,
-        hapticObject: G3DHapticObject,
-        position: G3DVector3,
-        velocity: G3DVector3,
-        force: G3DVector3
+        hapticObject: HapticObject,
+        position: Vector3,
+        velocity: Vector3,
+        force: Vector3
     ): void {
         hapticObject.interactionState.isInContact = true;
         hapticObject.interactionState.lastInteraction = Date.now();
@@ -682,10 +682,10 @@ export class G3DMedicalHaptics {
     }
 
     private calculateContactForce(
-        hapticObject: G3DHapticObject,
-        position: G3DVector3,
-        velocity: G3DVector3
-    ): G3DVector3 {
+        hapticObject: HapticObject,
+        position: Vector3,
+        velocity: Vector3
+    ): Vector3 {
         const props = hapticObject.hapticProperties;
 
         // Spring-damper model
@@ -706,7 +706,7 @@ export class G3DMedicalHaptics {
         };
     }
 
-    private calculateDeformation(hapticObject: G3DHapticObject, force: G3DVector3): number {
+    private calculateDeformation(hapticObject: HapticObject, force: Vector3): number {
         if (!hapticObject.hapticProperties.deformable) return 0;
 
         const forcemagnitude = Math.sqrt(force.x * force.x + force.y * force.y + force.z * force.z);
@@ -715,7 +715,7 @@ export class G3DMedicalHaptics {
         return forcemagnitude / stiffness;
     }
 
-    private updatePerformanceMetrics(force: G3DVector3): void {
+    private updatePerformanceMetrics(force: Vector3): void {
         if (!this.currentSession) return;
 
         const forcemagnitude = Math.sqrt(force.x * force.x + force.y * force.y + force.z * force.z);
@@ -733,19 +733,19 @@ export class G3DMedicalHaptics {
         metrics.medicalAccuracyScore = (metrics.precisionScore + metrics.smoothnessScore) / 2;
     }
 
-    public getCurrentSession(): G3DHapticSession | null {
+    public getCurrentSession(): HapticSession | null {
         return this.currentSession;
     }
 
-    public getHapticDevices(): G3DHapticDevice[] {
+    public getHapticDevices(): HapticDevice[] {
         return Array.from(this.hapticDevices.values());
     }
 
-    public getHapticObjects(): G3DHapticObject[] {
+    public getHapticObjects(): HapticObject[] {
         return Array.from(this.hapticObjects.values());
     }
 
-    public getTissueModels(): G3DTissueType[] {
+    public getTissueModels(): TissueType[] {
         return Array.from(this.tissueModels.values());
     }
 
@@ -818,8 +818,8 @@ export class G3DMedicalHaptics {
 }
 
 // Supporting classes
-class G3DForceRenderer {
-    constructor(private config: G3DMedicalHapticsConfig) { }
+class ForceRenderer {
+    constructor(private config: MedicalHapticsConfig) { }
 
     async initialize(): Promise<void> {
         console.log('Force Renderer initialized');
@@ -829,7 +829,7 @@ class G3DForceRenderer {
         console.log('Force rendering started');
     }
 
-    renderForce(deviceId: string, force: G3DVector3): void {
+    renderForce(deviceId: string, force: Vector3): void {
         console.log(`Rendering force on ${deviceId}: ${force.x}, ${force.y}, ${force.z}`);
     }
 
@@ -842,8 +842,8 @@ class G3DForceRenderer {
     }
 }
 
-class G3DTactileRenderer {
-    constructor(private config: G3DMedicalHapticsConfig) { }
+class TactileRenderer {
+    constructor(private config: MedicalHapticsConfig) { }
 
     async initialize(): Promise<void> {
         console.log('Tactile Renderer initialized');
@@ -866,8 +866,8 @@ class G3DTactileRenderer {
     }
 }
 
-class G3DThermalRenderer {
-    constructor(private config: G3DMedicalHapticsConfig) { }
+class ThermalRenderer {
+    constructor(private config: MedicalHapticsConfig) { }
 
     async initialize(): Promise<void> {
         console.log('Thermal Renderer initialized');
@@ -890,8 +890,8 @@ class G3DThermalRenderer {
     }
 }
 
-class G3DHapticSafetyMonitor {
-    constructor(private config: G3DMedicalHapticsConfig) { }
+class HapticSafetyMonitor {
+    constructor(private config: MedicalHapticsConfig) { }
 
     async initialize(): Promise<void> {
         console.log('Haptic Safety Monitor initialized');
@@ -901,7 +901,7 @@ class G3DHapticSafetyMonitor {
         console.log('Safety monitoring started');
     }
 
-    checkSafety(deviceId: string, position: G3DVector3, velocity: G3DVector3, force: G3DVector3): boolean {
+    checkSafety(deviceId: string, position: Vector3, velocity: Vector3, force: Vector3): boolean {
         const forceLimit = this.config.safetyLimits.maxForceLimit;
         const forcemagnitude = Math.sqrt(force.x * force.x + force.y * force.y + force.z * force.z);
 
@@ -922,4 +922,4 @@ class G3DHapticSafetyMonitor {
     }
 }
 
-export default G3DMedicalHaptics;
+export default MedicalHaptics;

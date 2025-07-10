@@ -11,7 +11,7 @@
  * - Performance monitoring and optimization
  */
 
-export interface G3DMedicalDeploymentConfig {
+export interface MedicalDeploymentConfig {
     deploymentTarget: 'cloud' | 'edge' | 'hybrid' | 'on_premise';
     scalingMode: 'manual' | 'auto' | 'predictive';
     enableLoadBalancing: boolean;
@@ -24,38 +24,38 @@ export interface G3DMedicalDeploymentConfig {
     securityLevel: 'standard' | 'enhanced' | 'maximum';
 }
 
-export interface G3DDeploymentEnvironment {
+export interface DeploymentEnvironment {
     id: string;
     name: string;
     type: 'development' | 'staging' | 'production' | 'testing';
     region: string;
-    infrastructure: G3DInfrastructure;
-    compliance: G3DComplianceSettings;
-    security: G3DSecuritySettings;
-    monitoring: G3DMonitoringSettings;
+    infrastructure: Infrastructure;
+    compliance: ComplianceSettings;
+    security: SecuritySettings;
+    monitoring: MonitoringSettings;
     status: 'initializing' | 'active' | 'updating' | 'error' | 'maintenance';
 }
 
-export interface G3DInfrastructure {
+export interface Infrastructure {
     cloudProvider: 'AWS' | 'Azure' | 'GCP' | 'custom';
     region: string;
     availabilityZones: string[];
-    computeResources: G3DComputeResources;
-    storageResources: G3DStorageResources;
-    networkResources: G3DNetworkResources;
-    containerOrchestration: G3DContainerConfig;
+    computeResources: ComputeResources;
+    storageResources: StorageResources;
+    networkResources: NetworkResources;
+    containerOrchestration: ContainerConfig;
 }
 
-export interface G3DComputeResources {
+export interface ComputeResources {
     cpuCores: number;
     memory: number; // GB
     gpuCount: number;
     gpuMemory: number; // GB
     instanceType: string;
-    autoScaling: G3DAutoScalingConfig;
+    autoScaling: AutoScalingConfig;
 }
 
-export interface G3DStorageResources {
+export interface StorageResources {
     primaryStorage: number; // GB
     backupStorage: number; // GB
     cacheStorage: number; // GB
@@ -64,15 +64,15 @@ export interface G3DStorageResources {
     replication: 'none' | 'local' | 'regional' | 'global';
 }
 
-export interface G3DNetworkResources {
+export interface NetworkResources {
     bandwidth: number; // Mbps
     latencyTarget: number; // ms
     enableCDN: boolean;
-    loadBalancer: G3DLoadBalancerConfig;
-    firewall: G3DFirewallConfig;
+    loadBalancer: LoadBalancerConfig;
+    firewall: FirewallConfig;
 }
 
-export interface G3DAutoScalingConfig {
+export interface AutoScalingConfig {
     enabled: boolean;
     minInstances: number;
     maxInstances: number;
@@ -83,23 +83,23 @@ export interface G3DAutoScalingConfig {
     medicalWorkloadOptimized: boolean;
 }
 
-export interface G3DContainerConfig {
+export interface ContainerConfig {
     orchestrator: 'Kubernetes' | 'Docker Swarm' | 'ECS' | 'custom';
     containerRegistry: string;
     imageVersion: string;
     replicas: number;
-    resourceLimits: G3DResourceLimits;
-    healthChecks: G3DHealthCheckConfig;
+    resourceLimits: ResourceLimits;
+    healthChecks: HealthCheckConfig;
 }
 
-export interface G3DResourceLimits {
+export interface ResourceLimits {
     cpu: string;
     memory: string;
     gpu: string;
     storage: string;
 }
 
-export interface G3DHealthCheckConfig {
+export interface HealthCheckConfig {
     enabled: boolean;
     endpoint: string;
     interval: number; // seconds
@@ -108,21 +108,21 @@ export interface G3DHealthCheckConfig {
     medicalSpecific: boolean;
 }
 
-export interface G3DLoadBalancerConfig {
+export interface LoadBalancerConfig {
     type: 'round_robin' | 'least_connections' | 'weighted' | 'medical_optimized';
     healthCheckEnabled: boolean;
     stickySessionsEnabled: boolean;
     medicalDataAware: boolean;
 }
 
-export interface G3DFirewallConfig {
+export interface FirewallConfig {
     enabled: boolean;
-    rules: G3DFirewallRule[];
+    rules: FirewallRule[];
     medicalPortsProtected: boolean;
     intrusionDetection: boolean;
 }
 
-export interface G3DFirewallRule {
+export interface FirewallRule {
     id: string;
     action: 'allow' | 'deny' | 'log';
     protocol: 'TCP' | 'UDP' | 'ICMP' | 'all';
@@ -131,7 +131,7 @@ export interface G3DFirewallRule {
     medicalContext: boolean;
 }
 
-export interface G3DComplianceSettings {
+export interface ComplianceSettings {
     standard: 'HIPAA' | 'GDPR' | 'FDA' | 'custom';
     dataEncryptionAtRest: boolean;
     dataEncryptionInTransit: boolean;
@@ -141,7 +141,7 @@ export interface G3DComplianceSettings {
     medicalDataClassification: boolean;
 }
 
-export interface G3DSecuritySettings {
+export interface SecuritySettings {
     authenticationMethod: 'OAuth2' | 'SAML' | 'certificate' | 'multi_factor';
     encryptionAlgorithm: 'AES256' | 'RSA2048' | 'ECC' | 'custom';
     keyManagement: 'AWS KMS' | 'Azure Key Vault' | 'GCP KMS' | 'custom';
@@ -150,23 +150,23 @@ export interface G3DSecuritySettings {
     medicalDataProtection: boolean;
 }
 
-export interface G3DMonitoringSettings {
+export interface MonitoringSettings {
     metricsCollection: boolean;
     logAggregation: boolean;
-    alerting: G3DAlertingConfig;
+    alerting: AlertingConfig;
     performanceMonitoring: boolean;
     medicalMetrics: boolean;
     complianceMonitoring: boolean;
 }
 
-export interface G3DAlertingConfig {
+export interface AlertingConfig {
     enabled: boolean;
     channels: string[]; // email, SMS, Slack, etc.
-    thresholds: G3DAlertThresholds;
+    thresholds: AlertThresholds;
     medicalCriticalAlerts: boolean;
 }
 
-export interface G3DAlertThresholds {
+export interface AlertThresholds {
     cpuUtilization: number;
     memoryUtilization: number;
     diskUtilization: number;
@@ -175,25 +175,25 @@ export interface G3DAlertThresholds {
     medicalDataProcessingErrors: number;
 }
 
-export interface G3DDeploymentPipeline {
+export interface DeploymentPipeline {
     id: string;
     name: string;
-    stages: G3DPipelineStage[];
-    triggers: G3DPipelineTrigger[];
-    approvals: G3DApprovalConfig[];
-    medicalValidation: G3DMedicalValidationConfig;
+    stages: PipelineStage[];
+    triggers: PipelineTrigger[];
+    approvals: ApprovalConfig[];
+    medicalValidation: MedicalValidationConfig;
 }
 
-export interface G3DPipelineStage {
+export interface PipelineStage {
     id: string;
     name: string;
     type: 'build' | 'test' | 'deploy' | 'validate' | 'approve';
     environment: string;
-    actions: G3DPipelineAction[];
-    medicalChecks: G3DMedicalCheck[];
+    actions: PipelineAction[];
+    medicalChecks: MedicalCheck[];
 }
 
-export interface G3DPipelineAction {
+export interface PipelineAction {
     id: string;
     type: 'script' | 'docker' | 'kubernetes' | 'test' | 'medical_validation';
     command: string;
@@ -202,7 +202,7 @@ export interface G3DPipelineAction {
     medicalCritical: boolean;
 }
 
-export interface G3DMedicalCheck {
+export interface MedicalCheck {
     id: string;
     type: 'compliance' | 'security' | 'performance' | 'accuracy' | 'safety';
     description: string;
@@ -211,20 +211,20 @@ export interface G3DMedicalCheck {
     medicalStandard: string;
 }
 
-export interface G3DPipelineTrigger {
+export interface PipelineTrigger {
     type: 'manual' | 'webhook' | 'schedule' | 'medical_event';
     conditions: string[];
     medicalContext: boolean;
 }
 
-export interface G3DApprovalConfig {
+export interface ApprovalConfig {
     required: boolean;
     approvers: string[];
     medicalOfficerRequired: boolean;
     complianceOfficerRequired: boolean;
 }
 
-export interface G3DMedicalValidationConfig {
+export interface MedicalValidationConfig {
     enabled: boolean;
     accuracyTests: boolean;
     safetyValidation: boolean;
@@ -233,7 +233,7 @@ export interface G3DMedicalValidationConfig {
     medicalOfficerApproval: boolean;
 }
 
-export interface G3DDeploymentMetrics {
+export interface DeploymentMetrics {
     deploymentTime: number;
     successRate: number;
     rollbackRate: number;
@@ -244,19 +244,19 @@ export interface G3DDeploymentMetrics {
     securityScore: number;
 }
 
-export class G3DMedicalDeployment {
-    private config: G3DMedicalDeploymentConfig;
-    private environments: Map<string, G3DDeploymentEnvironment> = new Map();
-    private pipelines: Map<string, G3DDeploymentPipeline> = new Map();
-    private activeDeployments: Map<string, G3DActiveDeployment> = new Map();
+export class MedicalDeployment {
+    private config: MedicalDeploymentConfig;
+    private environments: Map<string, DeploymentEnvironment> = new Map();
+    private pipelines: Map<string, DeploymentPipeline> = new Map();
+    private activeDeployments: Map<string, ActiveDeployment> = new Map();
     private isInitialized: boolean = false;
 
-    private infrastructureManager: G3DInfrastructureManager | null = null;
-    private complianceManager: G3DComplianceManager | null = null;
-    private securityManager: G3DDeploymentSecurityManager | null = null;
-    private monitoringManager: G3DDeploymentMonitoringManager | null = null;
+    private infrastructureManager: InfrastructureManager | null = null;
+    private complianceManager: ComplianceManager | null = null;
+    private securityManager: DeploymentSecurityManager | null = null;
+    private monitoringManager: DeploymentMonitoringManager | null = null;
 
-    constructor(config: Partial<G3DMedicalDeploymentConfig> = {}) {
+    constructor(config: Partial<MedicalDeploymentConfig> = {}) {
         this.config = {
             deploymentTarget: 'cloud',
             scalingMode: 'auto',
@@ -277,19 +277,19 @@ export class G3DMedicalDeployment {
             console.log('Initializing G3D Medical Deployment System...');
 
             // Initialize infrastructure manager
-            this.infrastructureManager = new G3DInfrastructureManager(this.config);
+            this.infrastructureManager = new InfrastructureManager(this.config);
             await this.infrastructureManager.initialize();
 
             // Initialize compliance manager
-            this.complianceManager = new G3DComplianceManager(this.config);
+            this.complianceManager = new ComplianceManager(this.config);
             await this.complianceManager.initialize();
 
             // Initialize security manager
-            this.securityManager = new G3DDeploymentSecurityManager(this.config);
+            this.securityManager = new DeploymentSecurityManager(this.config);
             await this.securityManager.initialize();
 
             // Initialize monitoring manager
-            this.monitoringManager = new G3DDeploymentMonitoringManager(this.config);
+            this.monitoringManager = new DeploymentMonitoringManager(this.config);
             await this.monitoringManager.initialize();
 
             // Set up default environments
@@ -307,7 +307,7 @@ export class G3DMedicalDeployment {
     }
 
     private async createDefaultEnvironments(): Promise<void> {
-        const environments: G3DDeploymentEnvironment[] = [
+        const environments: DeploymentEnvironment[] = [
             {
                 id: 'dev',
                 name: 'Development',
@@ -351,7 +351,7 @@ export class G3DMedicalDeployment {
         }
     }
 
-    private getDefaultInfrastructure(envType: string): G3DInfrastructure {
+    private getDefaultInfrastructure(envType: string): Infrastructure {
         const baseConfig = {
             cloudProvider: 'AWS' as const,
             region: 'us-east-1',
@@ -520,7 +520,7 @@ export class G3DMedicalDeployment {
         }
     }
 
-    private getDefaultCompliance(envType: string): G3DComplianceSettings {
+    private getDefaultCompliance(envType: string): ComplianceSettings {
         return {
             standard: this.config.medicalComplianceMode,
             dataEncryptionAtRest: envType !== 'development',
@@ -532,7 +532,7 @@ export class G3DMedicalDeployment {
         };
     }
 
-    private getDefaultSecurity(envType: string): G3DSecuritySettings {
+    private getDefaultSecurity(envType: string): SecuritySettings {
         return {
             authenticationMethod: envType === 'production' ? 'multi_factor' : 'OAuth2',
             encryptionAlgorithm: 'AES256',
@@ -543,7 +543,7 @@ export class G3DMedicalDeployment {
         };
     }
 
-    private getDefaultMonitoring(envType: string): G3DMonitoringSettings {
+    private getDefaultMonitoring(envType: string): MonitoringSettings {
         return {
             metricsCollection: true,
             logAggregation: true,
@@ -567,7 +567,7 @@ export class G3DMedicalDeployment {
     }
 
     private async createDefaultPipelines(): Promise<void> {
-        const pipeline: G3DDeploymentPipeline = {
+        const pipeline: DeploymentPipeline = {
             id: 'medical_deployment_pipeline',
             name: 'Medical Application Deployment',
             stages: [
@@ -682,7 +682,7 @@ export class G3DMedicalDeployment {
     public async deployToEnvironment(
         environmentId: string,
         applicationVersion: string,
-        deploymentOptions: Partial<G3DDeploymentOptions> = {}
+        deploymentOptions: Partial<DeploymentOptions> = {}
     ): Promise<string> {
         if (!this.isInitialized) {
             throw new Error('Deployment system not initialized');
@@ -695,7 +695,7 @@ export class G3DMedicalDeployment {
 
         const deploymentId = `deploy_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
-        const deployment: G3DActiveDeployment = {
+        const deployment: ActiveDeployment = {
             id: deploymentId,
             environmentId,
             applicationVersion,
@@ -726,8 +726,8 @@ export class G3DMedicalDeployment {
     }
 
     private async executeDeployment(
-        deployment: G3DActiveDeployment,
-        environment: G3DDeploymentEnvironment
+        deployment: ActiveDeployment,
+        environment: DeploymentEnvironment
     ): Promise<void> {
         try {
             console.log(`Starting deployment ${deployment.id} to ${environment.name}`);
@@ -784,8 +784,8 @@ export class G3DMedicalDeployment {
     }
 
     private async validatePreDeployment(
-        deployment: G3DActiveDeployment,
-        environment: G3DDeploymentEnvironment
+        deployment: ActiveDeployment,
+        environment: DeploymentEnvironment
     ): Promise<void> {
         // Validate environment readiness
         if (environment.status !== 'active') {
@@ -798,8 +798,8 @@ export class G3DMedicalDeployment {
     }
 
     private async deployApplication(
-        deployment: G3DActiveDeployment,
-        environment: G3DDeploymentEnvironment
+        deployment: ActiveDeployment,
+        environment: DeploymentEnvironment
     ): Promise<void> {
         // Simulate application deployment
         deployment.logs.push(`Deploying application version ${deployment.applicationVersion}`);
@@ -815,8 +815,8 @@ export class G3DMedicalDeployment {
     }
 
     private async performMedicalValidation(
-        deployment: G3DActiveDeployment,
-        environment: G3DDeploymentEnvironment
+        deployment: ActiveDeployment,
+        environment: DeploymentEnvironment
     ): Promise<void> {
         // Perform medical-specific validation
         deployment.logs.push('Performing medical validation...');
@@ -838,15 +838,15 @@ export class G3DMedicalDeployment {
         }
     }
 
-    public getActiveDeployments(): G3DActiveDeployment[] {
+    public getActiveDeployments(): ActiveDeployment[] {
         return Array.from(this.activeDeployments.values());
     }
 
-    public getEnvironments(): G3DDeploymentEnvironment[] {
+    public getEnvironments(): DeploymentEnvironment[] {
         return Array.from(this.environments.values());
     }
 
-    public getDeploymentMetrics(deploymentId: string): G3DDeploymentMetrics | null {
+    public getDeploymentMetrics(deploymentId: string): DeploymentMetrics | null {
         const deployment = this.activeDeployments.get(deploymentId);
         return deployment ? deployment.metrics : null;
     }
@@ -904,13 +904,13 @@ export class G3DMedicalDeployment {
 }
 
 // Supporting interfaces and classes
-interface G3DDeploymentOptions {
+interface DeploymentOptions {
     skipValidation: boolean;
     rollbackOnFailure: boolean;
     medicalValidationRequired: boolean;
 }
 
-interface G3DActiveDeployment {
+interface ActiveDeployment {
     id: string;
     environmentId: string;
     applicationVersion: string;
@@ -918,24 +918,24 @@ interface G3DActiveDeployment {
     status: 'deploying' | 'completed' | 'failed' | 'rolling_back' | 'rolled_back';
     progress: number;
     logs: string[];
-    metrics: G3DDeploymentMetrics;
+    metrics: DeploymentMetrics;
     medicalValidationPassed: boolean;
     complianceValidationPassed: boolean;
 }
 
 // Supporting classes (simplified implementations)
-class G3DInfrastructureManager {
-    constructor(private config: G3DMedicalDeploymentConfig) { }
+class InfrastructureManager {
+    constructor(private config: MedicalDeploymentConfig) { }
 
     async initialize(): Promise<void> {
         console.log('Infrastructure Manager initialized');
     }
 
-    async provisionEnvironment(environment: G3DDeploymentEnvironment): Promise<void> {
+    async provisionEnvironment(environment: DeploymentEnvironment): Promise<void> {
         console.log(`Provisioning environment: ${environment.name}`);
     }
 
-    async prepareInfrastructure(deployment: G3DActiveDeployment, environment: G3DDeploymentEnvironment): Promise<void> {
+    async prepareInfrastructure(deployment: ActiveDeployment, environment: DeploymentEnvironment): Promise<void> {
         console.log(`Preparing infrastructure for deployment: ${deployment.id}`);
     }
 
@@ -944,14 +944,14 @@ class G3DInfrastructureManager {
     }
 }
 
-class G3DComplianceManager {
-    constructor(private config: G3DMedicalDeploymentConfig) { }
+class ComplianceManager {
+    constructor(private config: MedicalDeploymentConfig) { }
 
     async initialize(): Promise<void> {
         console.log('Compliance Manager initialized');
     }
 
-    async validateCompliance(deployment: G3DActiveDeployment, environment: G3DDeploymentEnvironment): Promise<{ passed: boolean }> {
+    async validateCompliance(deployment: ActiveDeployment, environment: DeploymentEnvironment): Promise<{ passed: boolean }> {
         console.log(`Validating compliance for deployment: ${deployment.id}`);
         return { passed: true };
     }
@@ -961,14 +961,14 @@ class G3DComplianceManager {
     }
 }
 
-class G3DDeploymentSecurityManager {
-    constructor(private config: G3DMedicalDeploymentConfig) { }
+class DeploymentSecurityManager {
+    constructor(private config: MedicalDeploymentConfig) { }
 
     async initialize(): Promise<void> {
         console.log('Deployment Security Manager initialized');
     }
 
-    async validateSecurity(deployment: G3DActiveDeployment, environment: G3DDeploymentEnvironment): Promise<void> {
+    async validateSecurity(deployment: ActiveDeployment, environment: DeploymentEnvironment): Promise<void> {
         console.log(`Validating security for deployment: ${deployment.id}`);
     }
 
@@ -977,14 +977,14 @@ class G3DDeploymentSecurityManager {
     }
 }
 
-class G3DDeploymentMonitoringManager {
-    constructor(private config: G3DMedicalDeploymentConfig) { }
+class DeploymentMonitoringManager {
+    constructor(private config: MedicalDeploymentConfig) { }
 
     async initialize(): Promise<void> {
         console.log('Deployment Monitoring Manager initialized');
     }
 
-    async startMonitoring(deployment: G3DActiveDeployment, environment: G3DDeploymentEnvironment): Promise<void> {
+    async startMonitoring(deployment: ActiveDeployment, environment: DeploymentEnvironment): Promise<void> {
         console.log(`Starting monitoring for deployment: ${deployment.id}`);
     }
 
@@ -993,4 +993,4 @@ class G3DDeploymentMonitoringManager {
     }
 }
 
-export default G3DMedicalDeployment;
+export default MedicalDeployment;

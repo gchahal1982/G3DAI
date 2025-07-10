@@ -135,7 +135,7 @@ interface RoutingAlgorithm {
     findRoute(source: string, target: string, topology: NetworkTopology): Route | null;
 }
 
-export class G3DNetworkOptimizer extends EventEmitter {
+export class NetworkOptimizer extends EventEmitter {
     private topology: NetworkTopology;
     private qosPolicies: Map<string, QoSPolicy> = new Map();
     private loadBalancer: LoadBalancingStrategy;

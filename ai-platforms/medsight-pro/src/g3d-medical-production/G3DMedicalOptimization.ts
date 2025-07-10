@@ -3,7 +3,7 @@
  * Advanced optimization for medical imaging and AI processing
  */
 
-export interface G3DMedicalOptimizationConfig {
+export interface MedicalOptimizationConfig {
     enablePerformanceOptimization: boolean;
     enableResourceOptimization: boolean;
     enableAIOptimization: boolean;
@@ -14,7 +14,7 @@ export interface G3DMedicalOptimizationConfig {
     maxResourceUsage: number; // percentage
 }
 
-export interface G3DOptimizationMetrics {
+export interface OptimizationMetrics {
     performanceGain: number;
     resourceSaving: number;
     aiAccuracyImprovement: number;
@@ -25,7 +25,7 @@ export interface G3DOptimizationMetrics {
     medicalWorkflowImprovement: number;
 }
 
-export interface G3DOptimizationTarget {
+export interface OptimizationTarget {
     component: string;
     currentPerformance: number;
     targetPerformance: number;
@@ -34,13 +34,13 @@ export interface G3DOptimizationTarget {
     medicalImpact: 'minimal' | 'moderate' | 'significant' | 'critical';
 }
 
-export class G3DMedicalOptimization {
-    private config: G3DMedicalOptimizationConfig;
-    private metrics: G3DOptimizationMetrics;
-    private optimizationTargets: G3DOptimizationTarget[] = [];
+export class MedicalOptimization {
+    private config: MedicalOptimizationConfig;
+    private metrics: OptimizationMetrics;
+    private optimizationTargets: OptimizationTarget[] = [];
     private isOptimizing: boolean = false;
 
-    constructor(config: Partial<G3DMedicalOptimizationConfig> = {}) {
+    constructor(config: Partial<MedicalOptimizationConfig> = {}) {
         this.config = {
             enablePerformanceOptimization: true,
             enableResourceOptimization: true,
@@ -81,16 +81,16 @@ export class G3DMedicalOptimization {
         }
     }
 
-    addOptimizationTarget(target: G3DOptimizationTarget): void {
+    addOptimizationTarget(target: OptimizationTarget): void {
         this.optimizationTargets.push(target);
         console.log(`Added optimization target: ${target.component}`);
     }
 
-    getMetrics(): G3DOptimizationMetrics {
+    getMetrics(): OptimizationMetrics {
         return this.metrics;
     }
 
-    getOptimizationTargets(): G3DOptimizationTarget[] {
+    getOptimizationTargets(): OptimizationTarget[] {
         return this.optimizationTargets;
     }
 
@@ -136,7 +136,7 @@ export class G3DMedicalOptimization {
         // Validation logic
     }
 
-    private initializeMetrics(): G3DOptimizationMetrics {
+    private initializeMetrics(): OptimizationMetrics {
         return {
             performanceGain: 0,
             resourceSaving: 0,
@@ -156,4 +156,4 @@ export class G3DMedicalOptimization {
     }
 }
 
-export default G3DMedicalOptimization;
+export default MedicalOptimization;

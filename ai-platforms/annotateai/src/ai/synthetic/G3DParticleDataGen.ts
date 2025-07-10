@@ -3,8 +3,8 @@
  * Particle-based synthetic data generation with G3D GPU acceleration
  */
 
-import { G3DGPUCompute } from '../../g3d-performance/G3DGPUCompute';
-import { G3DParticleSystem } from '../../g3d-3d/G3DParticleSystem';
+import { GPUCompute } from '../../performance/G3DGPUCompute';
+import { ParticleSystem } from '../../core/G3DParticleSystem';
 
 export interface ParticleConfig {
     particleCount: number;
@@ -67,15 +67,15 @@ export interface FlowField {
     positions: [number, number, number][];
 }
 
-export class G3DParticleDataGen {
-    private gpuCompute: G3DGPUCompute;
-    private particleSystem: G3DParticleSystem;
+export class ParticleDataGen {
+    private gpuCompute: GPUCompute;
+    private particleSystem: ParticleSystem;
     private particles: Map<string, ParticleData>;
     private generationHistory: ParticleGenerationResult[];
 
     constructor() {
-        this.gpuCompute = new G3DGPUCompute();
-        this.particleSystem = new G3DParticleSystem();
+        this.gpuCompute = new GPUCompute();
+        this.particleSystem = new ParticleSystem();
         this.particles = new Map();
         this.generationHistory = [];
 
@@ -463,4 +463,4 @@ export class G3DParticleDataGen {
     }
 }
 
-export default G3DParticleDataGen;
+export default ParticleDataGen;

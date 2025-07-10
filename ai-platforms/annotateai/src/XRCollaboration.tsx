@@ -13,23 +13,23 @@ interface XRFrameData {
 }
 
 // Mock G3D classes if not available
-class G3DGPUCompute {
+class GPUCompute {
     async init(): Promise<void> {
-        console.log('G3DGPUCompute initialized');
+        console.log('GPUCompute initialized');
     }
     
     async cleanup(): Promise<void> {
-        console.log('G3DGPUCompute cleaned up');
+        console.log('GPUCompute cleaned up');
     }
 }
 
-class G3DXRAnnotation {
+class XRAnnotation {
     async initialize(): Promise<void> {
-        console.log('G3DXRAnnotation initialized');
+        console.log('XRAnnotation initialized');
     }
     
     async setupXRSession(config: any): Promise<void> {
-        console.log('G3DXRAnnotation XR session setup:', config);
+        console.log('XRAnnotation XR session setup:', config);
     }
     
     renderFrame(frame: any, data: any): void {
@@ -37,21 +37,21 @@ class G3DXRAnnotation {
     }
     
     async cleanup(): Promise<void> {
-        console.log('G3DXRAnnotation cleaned up');
+        console.log('XRAnnotation cleaned up');
     }
 }
 
-class G3DCollaborationEngine {
+class CollaborationEngine {
     async initialize(): Promise<void> {
-        console.log('G3DCollaborationEngine initialized');
+        console.log('CollaborationEngine initialized');
     }
     
     async setupDesktopMode(config: any): Promise<void> {
-        console.log('G3DCollaborationEngine desktop mode setup:', config);
+        console.log('CollaborationEngine desktop mode setup:', config);
     }
     
     async cleanup(): Promise<void> {
-        console.log('G3DCollaborationEngine cleaned up');
+        console.log('CollaborationEngine cleaned up');
     }
 }
 
@@ -165,9 +165,9 @@ const G3DXRCollaboration: React.FC<XRCollaborationProps> = ({
     const cameraRef = useRef<any>(null);
 
     // G3D components
-    const gpuComputeRef = useRef<G3DGPUCompute | null>(null);
-    const xrAnnotationRef = useRef<G3DXRAnnotation | null>(null);
-    const collaborationEngineRef = useRef<G3DCollaborationEngine | null>(null);
+    const gpuComputeRef = useRef<GPUCompute | null>(null);
+    const xrAnnotationRef = useRef<XRAnnotation | null>(null);
+    const collaborationEngineRef = useRef<CollaborationEngine | null>(null);
 
     // WebSocket connection for real-time collaboration
     const wsRef = useRef<WebSocket | null>(null);
@@ -191,9 +191,9 @@ const G3DXRCollaboration: React.FC<XRCollaborationProps> = ({
 
             // Initialize G3D components
             if (enableG3DAcceleration) {
-                gpuComputeRef.current = new G3DGPUCompute();
-                xrAnnotationRef.current = new G3DXRAnnotation();
-                collaborationEngineRef.current = new G3DCollaborationEngine();
+                gpuComputeRef.current = new GPUCompute();
+                xrAnnotationRef.current = new XRAnnotation();
+                collaborationEngineRef.current = new CollaborationEngine();
 
                 await gpuComputeRef.current.init();
                 await xrAnnotationRef.current.initialize();

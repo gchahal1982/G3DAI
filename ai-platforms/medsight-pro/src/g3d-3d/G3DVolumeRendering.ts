@@ -13,7 +13,7 @@
 
 import { vec3, mat4 } from 'gl-matrix';
 
-export interface G3DVolumeRenderingConfig {
+export interface VolumeRenderingConfig {
     enableVolumeRendering: boolean;
     enableMedicalOptimization: boolean;
     maxSteps: number;
@@ -24,17 +24,17 @@ export interface G3DVolumeRenderingConfig {
     clinicalAccuracy: boolean;
 }
 
-export interface G3DVolumeData {
+export interface VolumeData {
     id: string;
     data: Float32Array | Uint16Array | Uint8Array;
     dimensions: [number, number, number];
     spacing: [number, number, number];
     origin: vec3;
     dataType: 'float32' | 'uint16' | 'uint8';
-    medicalMetadata: G3DMedicalMetadata;
+    medicalMetadata: MedicalMetadata;
 }
 
-export interface G3DMedicalMetadata {
+export interface MedicalMetadata {
     modality: 'CT' | 'MRI' | 'PET' | 'SPECT' | 'US' | 'XR';
     windowWidth: number;
     windowLevel: number;
@@ -48,42 +48,42 @@ export interface G3DMedicalMetadata {
     acquisitionParameters?: any;
 }
 
-export interface G3DTransferFunction {
+export interface TransferFunction {
     id: string;
     name: string;
     type: 'linear' | 'spline' | 'piecewise' | 'medical';
-    controlPoints: G3DTransferFunctionPoint[];
+    controlPoints: TransferFunctionPoint[];
     medicalPreset?: string;
-    opacity: G3DOpacityFunction;
-    color: G3DColorFunction;
+    opacity: OpacityFunction;
+    color: ColorFunction;
 }
 
-export interface G3DTransferFunctionPoint {
+export interface TransferFunctionPoint {
     value: number;
     color: vec3;
     opacity: number;
     medicalSignificance?: number;
 }
 
-export interface G3DOpacityFunction {
+export interface OpacityFunction {
     points: Array<{ value: number; opacity: number }>;
     interpolation: 'linear' | 'cubic' | 'step';
 }
 
-export interface G3DColorFunction {
+export interface ColorFunction {
     points: Array<{ value: number; color: vec3 }>;
     interpolation: 'linear' | 'cubic' | 'step';
     medicalColormap?: 'grayscale' | 'hot' | 'cool' | 'rainbow' | 'bone' | 'jet';
 }
 
-export interface G3DVolumeRenderingResult {
+export interface VolumeRenderingResult {
     framebuffer: WebGLFramebuffer;
     colorTexture: WebGLTexture;
     depthTexture: WebGLTexture;
-    statistics: G3DRenderingStatistics;
+    statistics: RenderingStatistics;
 }
 
-export interface G3DRenderingStatistics {
+export interface RenderingStatistics {
     renderTime: number;
     samplesPerRay: number;
     totalRays: number;
@@ -91,10 +91,10 @@ export interface G3DRenderingStatistics {
     memoryUsage: number;
 }
 
-export class G3DVolumeRendering {
-    private config: G3DVolumeRenderingConfig;
-    private volumes: Map<string, G3DVolumeData> = new Map();
-    private transferFunctions: Map<string, G3DTransferFunction> = new Map();
+export class VolumeRendering {
+    private config: VolumeRenderingConfig;
+    private volumes: Map<string, VolumeData> = new Map();
+    private transferFunctions: Map<string, TransferFunction> = new Map();
     private volumeTextures: Map<string, WebGLTexture> = new Map();
     private transferFunctionTextures: Map<string, WebGLTexture> = new Map();
     private gl: WebGL2RenderingContext | null = null;
@@ -102,7 +102,7 @@ export class G3DVolumeRendering {
     private isInitialized: boolean = false;
 
     // Medical transfer function presets
-    private static readonly MEDICAL_PRESETS: Record<string, Partial<G3DTransferFunction>> = {
+    private static readonly MEDICAL_PRESETS: Record<string, Partial<TransferFunction>> = {
         CT_BONE: {
             name: 'CT Bone',
             type: 'medical',
@@ -253,7 +253,7 @@ export class G3DVolumeRendering {
             }`
     };
 
-    constructor(config: Partial<G3DVolumeRenderingConfig> = {}) {
+    constructor(config: Partial<VolumeRenderingConfig> = {}) {
         this.config = {
             enableVolumeRendering: true,
             enableMedicalOptimization: true,
@@ -307,7 +307,7 @@ export class G3DVolumeRendering {
         console.log(`Loaded ${this.transferFunctions.size} medical transfer function presets`);
     }
 
-    public addVolume(volume: G3DVolumeData): boolean {
+    public addVolume(volume: VolumeData): boolean {
         if (!this.gl) return false;
 
         try {
@@ -326,7 +326,7 @@ export class G3DVolumeRendering {
         }
     }
 
-    private createVolumeTexture(volume: G3DVolumeData): WebGLTexture | null {
+    private createVolumeTexture(volume: VolumeData): WebGLTexture | null {
         if (!this.gl) return null;
 
         const gl = this.gl;
@@ -374,8 +374,8 @@ export class G3DVolumeRendering {
         return texture;
     }
 
-    public createTransferFunction(data: Partial<G3DTransferFunction>): G3DTransferFunction {
-        const transferFunction: G3DTransferFunction = {
+    public createTransferFunction(data: Partial<TransferFunction>): TransferFunction {
+        const transferFunction: TransferFunction = {
             id: data.id || `tf_${Date.now()}`,
             name: data.name || 'Unnamed Transfer Function',
             type: data.type || 'linear',
@@ -406,7 +406,7 @@ export class G3DVolumeRendering {
         return transferFunction;
     }
 
-    private createTransferFunctionTexture(transferFunction: G3DTransferFunction): WebGLTexture | null {
+    private createTransferFunctionTexture(transferFunction: TransferFunction): WebGLTexture | null {
         if (!this.gl) return null;
 
         const gl = this.gl;
@@ -443,7 +443,7 @@ export class G3DVolumeRendering {
         return texture;
     }
 
-    private evaluateColorFunction(colorFunction: G3DColorFunction, value: number): vec3 {
+    private evaluateColorFunction(colorFunction: ColorFunction, value: number): vec3 {
         if (colorFunction.points.length === 0) {
             return vec3.fromValues(value, value, value);
         }
@@ -471,7 +471,7 @@ export class G3DVolumeRendering {
         return result;
     }
 
-    private evaluateOpacityFunction(opacityFunction: G3DOpacityFunction, value: number): number {
+    private evaluateOpacityFunction(opacityFunction: OpacityFunction, value: number): number {
         if (opacityFunction.points.length === 0) {
             return value;
         }
@@ -497,7 +497,7 @@ export class G3DVolumeRendering {
         return leftPoint.opacity + t * (rightPoint.opacity - leftPoint.opacity);
     }
 
-    public render(volumeId: string, transferFunctionId: string, camera: any): G3DVolumeRenderingResult | null {
+    public render(volumeId: string, transferFunctionId: string, camera: any): VolumeRenderingResult | null {
         if (!this.isInitialized || !this.gl || !this.shaderProgram) return null;
 
         const volume = this.volumes.get(volumeId);
@@ -544,7 +544,7 @@ export class G3DVolumeRendering {
         };
     }
 
-    private setVolumeUniforms(volume: G3DVolumeData, transferFunction: G3DTransferFunction, camera: any): void {
+    private setVolumeUniforms(volume: VolumeData, transferFunction: TransferFunction, camera: any): void {
         if (!this.gl || !this.shaderProgram) return;
 
         const gl = this.gl;
@@ -586,7 +586,7 @@ export class G3DVolumeRendering {
         return true;
     }
 
-    public optimizeForModality(volumeId: string, modality: G3DMedicalMetadata['modality']): boolean {
+    public optimizeForModality(volumeId: string, modality: MedicalMetadata['modality']): boolean {
         const volume = this.volumes.get(volumeId);
         if (!volume) return false;
 
@@ -610,23 +610,23 @@ export class G3DVolumeRendering {
         return true;
     }
 
-    public getVolume(volumeId: string): G3DVolumeData | null {
+    public getVolume(volumeId: string): VolumeData | null {
         return this.volumes.get(volumeId) || null;
     }
 
-    public getTransferFunction(transferFunctionId: string): G3DTransferFunction | null {
+    public getTransferFunction(transferFunctionId: string): TransferFunction | null {
         return this.transferFunctions.get(transferFunctionId) || null;
     }
 
-    public getAllVolumes(): G3DVolumeData[] {
+    public getAllVolumes(): VolumeData[] {
         return Array.from(this.volumes.values());
     }
 
-    public getAllTransferFunctions(): G3DTransferFunction[] {
+    public getAllTransferFunctions(): TransferFunction[] {
         return Array.from(this.transferFunctions.values());
     }
 
-    public getMedicalPresets(): G3DTransferFunction[] {
+    public getMedicalPresets(): TransferFunction[] {
         return Array.from(this.transferFunctions.values()).filter(tf => tf.medicalPreset);
     }
 
@@ -699,4 +699,4 @@ export class G3DVolumeRendering {
     }
 }
 
-export default G3DVolumeRendering;
+export default VolumeRendering;

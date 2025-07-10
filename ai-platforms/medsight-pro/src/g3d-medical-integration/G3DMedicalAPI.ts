@@ -11,7 +11,7 @@
  * - HIPAA compliant logging and auditing
  */
 
-export interface G3DMedicalAPIConfig {
+export interface MedicalAPIConfig {
     port: number;
     enableREST: boolean;
     enableGraphQL: boolean;
@@ -27,19 +27,19 @@ export interface G3DMedicalAPIConfig {
     requestTimeout: number; // seconds
 }
 
-export interface G3DAPIEndpoint {
+export interface APIEndpoint {
     path: string;
     method: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
     handler: string;
     authentication: boolean;
     authorization: string[];
-    rateLimit: G3DRateLimitConfig;
-    validation: G3DValidationConfig;
+    rateLimit: RateLimitConfig;
+    validation: ValidationConfig;
     medicalContext: boolean;
     hipaaCompliant: boolean;
 }
 
-export interface G3DRateLimitConfig {
+export interface RateLimitConfig {
     enabled: boolean;
     requestsPerMinute: number;
     requestsPerHour: number;
@@ -47,7 +47,7 @@ export interface G3DRateLimitConfig {
     medicalPriorityBypass: boolean;
 }
 
-export interface G3DValidationConfig {
+export interface ValidationConfig {
     enabled: boolean;
     schema: string;
     medicalDataValidation: boolean;
@@ -55,7 +55,7 @@ export interface G3DValidationConfig {
     optionalFields: string[];
 }
 
-export interface G3DGraphQLSchema {
+export interface GraphQLSchema {
     typeDefs: string;
     resolvers: Map<string, Function>;
     medicalTypes: string[];
@@ -63,7 +63,7 @@ export interface G3DGraphQLSchema {
     auditedOperations: string[];
 }
 
-export interface G3DWebSocketConfig {
+export interface WebSocketConfig {
     enabled: boolean;
     maxConnections: number;
     heartbeatInterval: number;
@@ -71,17 +71,17 @@ export interface G3DWebSocketConfig {
     realTimeCollaboration: boolean;
 }
 
-export interface G3DMedicalDataModel {
+export interface MedicalDataModel {
     id: string;
     type: 'patient' | 'study' | 'series' | 'image' | 'annotation' | 'report';
     schema: any;
-    validation: G3DValidationConfig;
+    validation: ValidationConfig;
     encryption: boolean;
     auditRequired: boolean;
     retentionPeriod: number; // days
 }
 
-export interface G3DAPIRequest {
+export interface APIRequest {
     id: string;
     timestamp: number;
     method: string;
@@ -92,10 +92,10 @@ export interface G3DAPIRequest {
     sessionId: string;
     clientIP: string;
     userAgent: string;
-    medicalContext: G3DMedicalContext;
+    medicalContext: MedicalContext;
 }
 
-export interface G3DAPIResponse {
+export interface APIResponse {
     id: string;
     requestId: string;
     timestamp: number;
@@ -107,7 +107,7 @@ export interface G3DAPIResponse {
     auditLogged: boolean;
 }
 
-export interface G3DMedicalContext {
+export interface MedicalContext {
     patientId?: string;
     studyId?: string;
     facilityId: string;
@@ -117,7 +117,7 @@ export interface G3DMedicalContext {
     dataClassification: 'public' | 'internal' | 'confidential' | 'restricted';
 }
 
-export interface G3DAuthenticationResult {
+export interface AuthenticationResult {
     success: boolean;
     userId: string;
     roles: string[];
@@ -128,7 +128,7 @@ export interface G3DAuthenticationResult {
     facilityAccess: string[];
 }
 
-export interface G3DAuditEntry {
+export interface AuditEntry {
     id: string;
     timestamp: number;
     userId: string;
@@ -137,25 +137,25 @@ export interface G3DAuditEntry {
     resourceId: string;
     result: 'success' | 'failure' | 'warning';
     details: any;
-    medicalContext: G3DMedicalContext;
+    medicalContext: MedicalContext;
     ipAddress: string;
     userAgent: string;
 }
 
-export class G3DMedicalAPI {
-    private config: G3DMedicalAPIConfig;
-    private endpoints: Map<string, G3DAPIEndpoint> = new Map();
-    private dataModels: Map<string, G3DMedicalDataModel> = new Map();
-    private activeConnections: Map<string, G3DWebSocketConnection> = new Map();
-    private rateLimiters: Map<string, G3DRateLimiter> = new Map();
+export class MedicalAPI {
+    private config: MedicalAPIConfig;
+    private endpoints: Map<string, APIEndpoint> = new Map();
+    private dataModels: Map<string, MedicalDataModel> = new Map();
+    private activeConnections: Map<string, WebSocketConnection> = new Map();
+    private rateLimiters: Map<string, RateLimiter> = new Map();
     private isInitialized: boolean = false;
 
-    private authenticationManager: G3DAuthenticationManager | null = null;
-    private validationManager: G3DValidationManager | null = null;
-    private auditManager: G3DAuditManager | null = null;
-    private encryptionManager: G3DEncryptionManager | null = null;
+    private authenticationManager: AuthenticationManager | null = null;
+    private validationManager: ValidationManager | null = null;
+    private auditManager: AuditManager | null = null;
+    private encryptionManager: EncryptionManager | null = null;
 
-    constructor(config: Partial<G3DMedicalAPIConfig> = {}) {
+    constructor(config: Partial<MedicalAPIConfig> = {}) {
         this.config = {
             port: 8080,
             enableREST: true,
@@ -179,20 +179,20 @@ export class G3DMedicalAPI {
             console.log('Initializing G3D Medical API Gateway...');
 
             // Initialize authentication manager
-            this.authenticationManager = new G3DAuthenticationManager(this.config);
+            this.authenticationManager = new AuthenticationManager(this.config);
             await this.authenticationManager.initialize();
 
             // Initialize validation manager
-            this.validationManager = new G3DValidationManager(this.config);
+            this.validationManager = new ValidationManager(this.config);
             await this.validationManager.initialize();
 
             // Initialize audit manager
-            this.auditManager = new G3DAuditManager(this.config);
+            this.auditManager = new AuditManager(this.config);
             await this.auditManager.initialize();
 
             // Initialize encryption manager
             if (this.config.enableEncryption) {
-                this.encryptionManager = new G3DEncryptionManager(this.config);
+                this.encryptionManager = new EncryptionManager(this.config);
                 await this.encryptionManager.initialize();
             }
 
@@ -226,7 +226,7 @@ export class G3DMedicalAPI {
     }
 
     private async setupDataModels(): Promise<void> {
-        const models: G3DMedicalDataModel[] = [
+        const models: MedicalDataModel[] = [
             {
                 id: 'patient',
                 type: 'patient',
@@ -355,7 +355,7 @@ export class G3DMedicalAPI {
     }
 
     private async setupRESTEndpoints(): Promise<void> {
-        const endpoints: G3DAPIEndpoint[] = [
+        const endpoints: APIEndpoint[] = [
             // Patient endpoints
             {
                 path: '/api/v1/patients',
@@ -725,7 +725,7 @@ export class G3DMedicalAPI {
         resolvers.set('Mutation.analyzeImage', this.resolveAnalyzeImage.bind(this));
 
         // Set up GraphQL schema
-        const schema: G3DGraphQLSchema = {
+        const schema: GraphQLSchema = {
             typeDefs,
             resolvers,
             medicalTypes: ['Patient', 'Study', 'Image', 'Report', 'Annotation'],
@@ -749,7 +749,7 @@ export class G3DMedicalAPI {
         ];
 
         for (const limiter of limiters) {
-            this.rateLimiters.set(limiter.key, new G3DRateLimiter(limiter));
+            this.rateLimiters.set(limiter.key, new RateLimiter(limiter));
         }
     }
 
@@ -866,7 +866,7 @@ export class G3DMedicalAPI {
     }
 
     // Public API
-    public async handleRequest(request: G3DAPIRequest): Promise<G3DAPIResponse> {
+    public async handleRequest(request: APIRequest): Promise<APIResponse> {
         const startTime = Date.now();
 
         try {
@@ -909,7 +909,7 @@ export class G3DMedicalAPI {
         }
     }
 
-    private async checkRateLimit(request: G3DAPIRequest): Promise<{ allowed: boolean, remaining: number }> {
+    private async checkRateLimit(request: APIRequest): Promise<{ allowed: boolean, remaining: number }> {
         const limiter = this.rateLimiters.get('general');
         if (limiter) {
             return await limiter.checkLimit(request.userId);
@@ -917,7 +917,7 @@ export class G3DMedicalAPI {
         return { allowed: true, remaining: 100 };
     }
 
-    private async processRequest(request: G3DAPIRequest): Promise<G3DAPIResponse> {
+    private async processRequest(request: APIRequest): Promise<APIResponse> {
         const endpoint = this.endpoints.get(`${request.method}:${request.path}`);
         if (!endpoint) {
             return this.createErrorResponse(request.id, 404, 'Endpoint not found', Date.now());
@@ -942,7 +942,7 @@ export class G3DMedicalAPI {
         };
     }
 
-    private async executeHandler(handlerName: string, request: G3DAPIRequest): Promise<any> {
+    private async executeHandler(handlerName: string, request: APIRequest): Promise<any> {
         // Simulate handler execution
         switch (handlerName) {
             case 'getPatients':
@@ -966,7 +966,7 @@ export class G3DMedicalAPI {
         }
     }
 
-    private createErrorResponse(requestId: string, statusCode: number, message: string, startTime: number): G3DAPIResponse {
+    private createErrorResponse(requestId: string, statusCode: number, message: string, startTime: number): APIResponse {
         return {
             id: `error_${Date.now()}`,
             requestId,
@@ -983,11 +983,11 @@ export class G3DMedicalAPI {
         };
     }
 
-    public getEndpoints(): G3DAPIEndpoint[] {
+    public getEndpoints(): APIEndpoint[] {
         return Array.from(this.endpoints.values());
     }
 
-    public getDataModels(): G3DMedicalDataModel[] {
+    public getDataModels(): MedicalDataModel[] {
         return Array.from(this.dataModels.values());
     }
 
@@ -1029,7 +1029,7 @@ export class G3DMedicalAPI {
 }
 
 // Supporting interfaces and classes
-interface G3DWebSocketConnection {
+interface WebSocketConnection {
     id: string;
     userId: string;
     socket: any;
@@ -1038,14 +1038,14 @@ interface G3DWebSocketConnection {
 }
 
 // Supporting classes (simplified implementations)
-class G3DAuthenticationManager {
-    constructor(private config: G3DMedicalAPIConfig) { }
+class AuthenticationManager {
+    constructor(private config: MedicalAPIConfig) { }
 
     async initialize(): Promise<void> {
         console.log('Authentication Manager initialized');
     }
 
-    async authenticate(request: G3DAPIRequest): Promise<G3DAuthenticationResult> {
+    async authenticate(request: APIRequest): Promise<AuthenticationResult> {
         // Simplified authentication
         return {
             success: true,
@@ -1064,14 +1064,14 @@ class G3DAuthenticationManager {
     }
 }
 
-class G3DValidationManager {
-    constructor(private config: G3DMedicalAPIConfig) { }
+class ValidationManager {
+    constructor(private config: MedicalAPIConfig) { }
 
     async initialize(): Promise<void> {
         console.log('Validation Manager initialized');
     }
 
-    async validate(request: G3DAPIRequest): Promise<{ valid: boolean, errors: string[] }> {
+    async validate(request: APIRequest): Promise<{ valid: boolean, errors: string[] }> {
         // Simplified validation
         return { valid: true, errors: [] };
     }
@@ -1081,8 +1081,8 @@ class G3DValidationManager {
     }
 }
 
-class G3DAuditManager {
-    constructor(private config: G3DMedicalAPIConfig) { }
+class AuditManager {
+    constructor(private config: MedicalAPIConfig) { }
 
     async initialize(): Promise<void> {
         console.log('Audit Manager initialized');
@@ -1096,7 +1096,7 @@ class G3DAuditManager {
         console.log(`Audit: User ${userId} performed ${action}`, data);
     }
 
-    async logRequest(request: G3DAPIRequest, response: G3DAPIResponse): Promise<void> {
+    async logRequest(request: APIRequest, response: APIResponse): Promise<void> {
         console.log(`Audit: Request ${request.id} -> Response ${response.id}`);
     }
 
@@ -1105,8 +1105,8 @@ class G3DAuditManager {
     }
 }
 
-class G3DEncryptionManager {
-    constructor(private config: G3DMedicalAPIConfig) { }
+class EncryptionManager {
+    constructor(private config: MedicalAPIConfig) { }
 
     async initialize(): Promise<void> {
         console.log('Encryption Manager initialized');
@@ -1117,7 +1117,7 @@ class G3DEncryptionManager {
     }
 }
 
-class G3DRateLimiter {
+class RateLimiter {
     private requests: Map<string, number[]> = new Map();
 
     constructor(private config: { requestsPerMinute: number, requestsPerHour: number }) { }
@@ -1140,4 +1140,4 @@ class G3DRateLimiter {
     }
 }
 
-export default G3DMedicalAPI;
+export default MedicalAPI;

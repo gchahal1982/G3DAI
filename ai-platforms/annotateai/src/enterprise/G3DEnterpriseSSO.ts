@@ -4,8 +4,8 @@
  * Supporting SAML, OAuth 2.0, OpenID Connect, LDAP, and Active Directory
  */
 
-import { G3DGPUCompute } from '../g3d-performance/G3DGPUCompute';
-import { G3DModelRunner } from '../g3d-ai/G3DModelRunner';
+import { GPUCompute } from '../performance/G3DGPUCompute';
+import { ModelRunner } from '../ai/G3DModelRunner';
 
 export interface SSOConfig {
     providers: IdentityProvider[];
@@ -236,17 +236,17 @@ export interface SecurityEvent {
     riskScore: number;
 }
 
-export class G3DEnterpriseSSO {
-    private gpuCompute: G3DGPUCompute;
-    private modelRunner: G3DModelRunner;
+export class EnterpriseSSO {
+    private gpuCompute: GPUCompute;
+    private modelRunner: ModelRunner;
     private providers: Map<string, IdentityProvider>;
     private sessions: Map<string, SessionInfo>;
     private securityEvents: SecurityEvent[];
     private metrics: SSOMetrics;
 
     constructor() {
-        this.gpuCompute = new G3DGPUCompute();
-        this.modelRunner = new G3DModelRunner();
+        this.gpuCompute = new GPUCompute();
+        this.modelRunner = new ModelRunner();
         this.providers = new Map();
         this.sessions = new Map();
         this.securityEvents = [];
@@ -1074,4 +1074,4 @@ interface AuthOptions {
     sessionDuration?: number;
 }
 
-export default G3DEnterpriseSSO;
+export default EnterpriseSSO;

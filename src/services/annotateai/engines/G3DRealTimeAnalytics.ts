@@ -189,7 +189,7 @@ interface RealTimeMetrics {
     uptime: number;
 }
 
-export class G3DRealTimeAnalytics extends EventEmitter {
+export class RealTimeAnalytics extends EventEmitter {
     private dataPoints: Map<string, DataPoint[]> = new Map();
     private metrics: Map<string, MetricDefinition> = new Map();
     private alerts: Map<string, Alert> = new Map();

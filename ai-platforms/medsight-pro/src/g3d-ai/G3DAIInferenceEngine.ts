@@ -14,7 +14,7 @@
 import { vec3, mat4 } from 'gl-matrix';
 
 // AI Inference Types
-export interface G3DAIInferenceConfig {
+export interface AIInferenceConfig {
     enableGPUAcceleration: boolean;
     maxBatchSize: number;
     enableModelCaching: boolean;
@@ -24,7 +24,7 @@ export interface G3DAIInferenceConfig {
     complianceLevel: 'FDA' | 'CE' | 'research' | 'experimental';
 }
 
-export interface G3DAIModel {
+export interface AIModel {
     id: string;
     name: string;
     version: string;
@@ -34,13 +34,13 @@ export interface G3DAIModel {
     inputShape: number[];
     outputShape: number[];
     modelData: ArrayBuffer;
-    metadata: G3DAIModelMetadata;
-    performance: G3DAIModelPerformance;
-    compliance: G3DAIModelCompliance;
+    metadata: AIModelMetadata;
+    performance: AIModelPerformance;
+    compliance: AIModelCompliance;
     isLoaded: boolean;
 }
 
-export interface G3DAIModelMetadata {
+export interface AIModelMetadata {
     description: string;
     author: string;
     institution: string;
@@ -53,7 +53,7 @@ export interface G3DAIModelMetadata {
     tags: string[];
 }
 
-export interface G3DAIModelPerformance {
+export interface AIModelPerformance {
     accuracy: number;
     sensitivity: number;
     specificity: number;
@@ -66,7 +66,7 @@ export interface G3DAIModelPerformance {
     benchmarkResults: object;
 }
 
-export interface G3DAIModelCompliance {
+export interface AIModelCompliance {
     regulatoryApproval: string[];
     validationStudies: string[];
     clinicalTrials: string[];
@@ -76,27 +76,27 @@ export interface G3DAIModelCompliance {
     explainabilityLevel: 'none' | 'low' | 'medium' | 'high';
 }
 
-export interface G3DAIInferenceRequest {
+export interface AIInferenceRequest {
     id: string;
     modelId: string;
-    inputData: G3DAIInputData;
+    inputData: AIInputData;
     parameters: object;
     priority: 'low' | 'normal' | 'high' | 'urgent';
     timeout?: number;
-    callback?: (result: G3DAIInferenceResult) => void;
+    callback?: (result: AIInferenceResult) => void;
 }
 
-export interface G3DAIInputData {
+export interface AIInputData {
     type: 'image' | 'volume' | 'series' | 'multimodal';
     data: ArrayBuffer | ArrayBuffer[];
     dimensions: number[];
     spacing?: number[];
     orientation?: mat4;
     metadata?: object;
-    preprocessing?: G3DAIPreprocessingConfig;
+    preprocessing?: AIPreprocessingConfig;
 }
 
-export interface G3DAIPreprocessingConfig {
+export interface AIPreprocessingConfig {
     normalize: boolean;
     resize?: number[];
     crop?: { x: number; y: number; width: number; height: number };
@@ -105,27 +105,27 @@ export interface G3DAIPreprocessingConfig {
     customFilters?: string[];
 }
 
-export interface G3DAIInferenceResult {
+export interface AIInferenceResult {
     requestId: string;
     modelId: string;
     status: 'success' | 'error' | 'timeout' | 'cancelled';
-    result?: G3DAIModelOutput;
+    result?: AIModelOutput;
     error?: string;
-    metrics: G3DAIInferenceMetrics;
+    metrics: AIInferenceMetrics;
     timestamp: Date;
     confidence: number;
-    explainability?: G3DAIExplanation;
+    explainability?: AIExplanation;
 }
 
-export interface G3DAIModelOutput {
+export interface AIModelOutput {
     type: 'classification' | 'segmentation' | 'detection' | 'regression' | 'generative';
     data: any;
     postprocessed?: any;
-    visualizations?: G3DAIVisualization[];
+    visualizations?: AIVisualization[];
     clinicalInterpretation?: string;
 }
 
-export interface G3DAIInferenceMetrics {
+export interface AIInferenceMetrics {
     preprocessingTime: number;
     inferenceTime: number;
     postprocessingTime: number;
@@ -135,7 +135,7 @@ export interface G3DAIInferenceMetrics {
     throughput: number;
 }
 
-export interface G3DAIExplanation {
+export interface AIExplanation {
     method: 'gradcam' | 'lime' | 'shap' | 'attention' | 'saliency';
     heatmap?: ArrayBuffer;
     featureImportance?: number[];
@@ -143,7 +143,7 @@ export interface G3DAIExplanation {
     confidence: number;
 }
 
-export interface G3DAIVisualization {
+export interface AIVisualization {
     type: 'heatmap' | 'overlay' | 'contour' | 'mesh' | 'annotation';
     data: ArrayBuffer;
     dimensions: number[];
@@ -153,7 +153,7 @@ export interface G3DAIVisualization {
 }
 
 // WebGPU Compute Shaders for AI Inference
-export class G3DAIComputeShaders {
+export class AIComputeShaders {
     static readonly CONVOLUTION_SHADER = `
     @group(0) @binding(0) var<storage, read> input: array<f32>;
     @group(0) @binding(1) var<storage, read> weights: array<f32>;
@@ -322,14 +322,14 @@ export class G3DAIComputeShaders {
 }
 
 // Main AI Inference Engine
-export class G3DAIInferenceEngine {
-    private config: G3DAIInferenceConfig;
-    private models: Map<string, G3DAIModel> = new Map();
-    private requestQueue: G3DAIInferenceRequest[] = [];
-    private activeRequests: Map<string, G3DAIInferenceRequest> = new Map();
+export class AIInferenceEngine {
+    private config: AIInferenceConfig;
+    private models: Map<string, AIModel> = new Map();
+    private requestQueue: AIInferenceRequest[] = [];
+    private activeRequests: Map<string, AIInferenceRequest> = new Map();
     private device: GPUDevice | null = null;
     private isInitialized: boolean = false;
-    private metrics: G3DAIEngineMetrics = {
+    private metrics: AIEngineMetrics = {
         totalInferences: 0,
         successfulInferences: 0,
         failedInferences: 0,
@@ -338,7 +338,7 @@ export class G3DAIInferenceEngine {
         modelsLoaded: 0
     };
 
-    constructor(config: Partial<G3DAIInferenceConfig> = {}) {
+    constructor(config: Partial<AIInferenceConfig> = {}) {
         this.config = {
             enableGPUAcceleration: true,
             maxBatchSize: 8,
@@ -424,9 +424,9 @@ export class G3DAIInferenceEngine {
         this.metrics.modelsLoaded = this.models.size;
     }
 
-    private async createDefaultModel(config: any): Promise<G3DAIModel> {
+    private async createDefaultModel(config: any): Promise<AIModel> {
         // Create a default model structure (in real implementation, load from file)
-        const model: G3DAIModel = {
+        const model: AIModel = {
             id: config.id,
             name: config.name,
             version: '1.0.0',
@@ -493,8 +493,8 @@ export class G3DAIInferenceEngine {
         }
     }
 
-    async runInference(request: Omit<G3DAIInferenceRequest, 'id'>): Promise<string> {
-        const inferenceRequest: G3DAIInferenceRequest = {
+    async runInference(request: Omit<AIInferenceRequest, 'id'>): Promise<string> {
+        const inferenceRequest: AIInferenceRequest = {
             id: `inference_${Date.now()}_${Math.random()}`,
             ...request
         };
@@ -532,7 +532,7 @@ export class G3DAIInferenceEngine {
         }
     }
 
-    private async processInference(request: G3DAIInferenceRequest): Promise<G3DAIInferenceResult> {
+    private async processInference(request: AIInferenceRequest): Promise<AIInferenceResult> {
         const startTime = Date.now();
 
         try {
@@ -561,14 +561,14 @@ export class G3DAIInferenceEngine {
             const postprocessingTime = Date.now() - postprocessStartTime;
 
             // Generate explanation if supported
-            let explanation: G3DAIExplanation | undefined;
+            let explanation: AIExplanation | undefined;
             if (model.compliance.explainabilityLevel !== 'none') {
                 explanation = await this.generateExplanation(model, preprocessedData, rawOutput);
             }
 
             const totalTime = Date.now() - startTime;
 
-            const result: G3DAIInferenceResult = {
+            const result: AIInferenceResult = {
                 requestId: request.id,
                 modelId: request.modelId,
                 status: 'success',
@@ -607,9 +607,9 @@ export class G3DAIInferenceEngine {
         }
     }
 
-    private async preprocessInput(inputData: G3DAIInputData, model: G3DAIModel): Promise<Float32Array> {
+    private async preprocessInput(inputData: AIInputData, model: AIModel): Promise<Float32Array> {
         // Simplified preprocessing - in real implementation, would handle various data types
-        const config: Partial<G3DAIPreprocessingConfig> = inputData.preprocessing || {};
+        const config: Partial<AIPreprocessingConfig> = inputData.preprocessing || {};
 
         // Convert input data to Float32Array
         let data: Float32Array;
@@ -654,7 +654,7 @@ export class G3DAIInferenceEngine {
         return data;
     }
 
-    private async runModelInference(model: G3DAIModel, inputData: Float32Array): Promise<Float32Array> {
+    private async runModelInference(model: AIModel, inputData: Float32Array): Promise<Float32Array> {
         // Simplified inference - in real implementation, would use actual ML framework
         if (this.device && this.config.enableGPUAcceleration) {
             return this.runGPUInference(model, inputData);
@@ -663,7 +663,7 @@ export class G3DAIInferenceEngine {
         }
     }
 
-    private async runGPUInference(model: G3DAIModel, inputData: Float32Array): Promise<Float32Array> {
+    private async runGPUInference(model: AIModel, inputData: Float32Array): Promise<Float32Array> {
         // Simplified GPU inference using WebGPU compute shaders
         const device = this.device!;
 
@@ -701,7 +701,7 @@ export class G3DAIInferenceEngine {
         return outputData;
     }
 
-    private async runCPUInference(model: G3DAIModel, inputData: Float32Array): Promise<Float32Array> {
+    private async runCPUInference(model: AIModel, inputData: Float32Array): Promise<Float32Array> {
         // Simplified CPU inference
         const outputSize = model.outputShape.reduce((a, b) => a * b, 1);
         const outputData = new Float32Array(outputSize);
@@ -717,8 +717,8 @@ export class G3DAIInferenceEngine {
         return outputData;
     }
 
-    private async postprocessOutput(rawOutput: Float32Array, model: G3DAIModel): Promise<G3DAIModelOutput> {
-        const output: G3DAIModelOutput = {
+    private async postprocessOutput(rawOutput: Float32Array, model: AIModel): Promise<AIModelOutput> {
+        const output: AIModelOutput = {
             type: model.type,
             data: rawOutput
         };
@@ -803,7 +803,7 @@ export class G3DAIInferenceEngine {
         return detections;
     }
 
-    private async generateExplanation(model: G3DAIModel, input: Float32Array, output: Float32Array): Promise<G3DAIExplanation> {
+    private async generateExplanation(model: AIModel, input: Float32Array, output: Float32Array): Promise<AIExplanation> {
         // Simplified explanation generation
         return {
             method: 'gradcam',
@@ -812,16 +812,16 @@ export class G3DAIInferenceEngine {
         };
     }
 
-    private calculateConfidence(output: Float32Array, model: G3DAIModel): number {
+    private calculateConfidence(output: Float32Array, model: AIModel): number {
         // Simplified confidence calculation
         return Math.max(...output);
     }
 
-    private estimateMemoryUsage(model: G3DAIModel): number {
+    private estimateMemoryUsage(model: AIModel): number {
         return model.performance.memoryUsage;
     }
 
-    private updateMetrics(result: G3DAIInferenceResult): void {
+    private updateMetrics(result: AIInferenceResult): void {
         this.metrics.totalInferences++;
 
         if (result.status === 'success') {
@@ -836,23 +836,23 @@ export class G3DAIInferenceEngine {
         this.metrics.totalMemoryUsage += result.metrics.memoryUsage;
     }
 
-    getModel(modelId: string): G3DAIModel | undefined {
+    getModel(modelId: string): AIModel | undefined {
         return this.models.get(modelId);
     }
 
-    getAllModels(): G3DAIModel[] {
+    getAllModels(): AIModel[] {
         return Array.from(this.models.values());
     }
 
-    getModelsByModality(modality: string): G3DAIModel[] {
+    getModelsByModality(modality: string): AIModel[] {
         return Array.from(this.models.values()).filter(model => model.modality === modality);
     }
 
-    getModelsBySpecialty(specialty: string): G3DAIModel[] {
+    getModelsBySpecialty(specialty: string): AIModel[] {
         return Array.from(this.models.values()).filter(model => model.specialty === specialty);
     }
 
-    getMetrics(): G3DAIEngineMetrics {
+    getMetrics(): AIEngineMetrics {
         return { ...this.metrics };
     }
 
@@ -869,7 +869,7 @@ export class G3DAIInferenceEngine {
     }
 }
 
-interface G3DAIEngineMetrics {
+interface AIEngineMetrics {
     totalInferences: number;
     successfulInferences: number;
     failedInferences: number;
@@ -878,4 +878,4 @@ interface G3DAIEngineMetrics {
     modelsLoaded: number;
 }
 
-export default G3DAIInferenceEngine;
+export default AIInferenceEngine;

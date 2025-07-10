@@ -11,21 +11,21 @@
  * - Performance monitoring and analytics
  */
 
-import G3DMedicalRenderer from '../g3d-medical/G3DMedicalRenderer';
-import G3DVolumeRenderer from '../g3d-medical/G3DVolumeRenderer';
-import G3DDICOMProcessor from '../g3d-medical/G3DDICOMProcessor';
-import G3DMedicalAI from '../g3d-ai/G3DMedicalAI';
-import G3DComputerVision from '../g3d-ai/G3DComputerVision';
-import G3DNeuralNetworks from '../g3d-ai/G3DNeuralNetworks';
-import G3DSpatialIndex from '../g3d-3d/G3DSpatialIndex';
-import G3DGeometryUtils from '../g3d-3d/G3DGeometryUtils';
-import G3DSceneGraph from '../g3d-3d/G3DSceneGraph';
-import G3DComputeShaders from '../g3d-performance/G3DComputeShaders';
-import G3DPerformanceMonitor from '../g3d-performance/G3DPerformanceMonitor';
-import G3DMemoryManager from '../g3d-performance/G3DMemoryManager';
-import G3DMedicalXRManager from '../g3d-medical-xr';
+import MedicalRenderer from '../g3d-medical/MedicalRenderer';
+import VolumeRenderer from '../g3d-medical/VolumeRenderer';
+import DICOMProcessor from '../g3d-medical/DICOMProcessor';
+import MedicalAI from '../g3d-ai/MedicalAI';
+import ComputerVision from '../g3d-ai/ComputerVision';
+import NeuralNetworks from '../g3d-ai/NeuralNetworks';
+import SpatialIndex from '../g3d-3d/SpatialIndex';
+import GeometryUtils from '../g3d-3d/GeometryUtils';
+import SceneGraph from '../g3d-3d/SceneGraph';
+import ComputeShaders from '../g3d-performance/ComputeShaders';
+import PerformanceMonitor from '../g3d-performance/PerformanceMonitor';
+import MemoryManager from '../g3d-performance/MemoryManager';
+import MedicalXRManager from '../g3d-medical-xr';
 
-export interface G3DMedicalOrchestratorConfig {
+export interface MedicalOrchestratorConfig {
     enableMedicalRendering: boolean;
     enableAIProcessing: boolean;
     enable3DProcessing: boolean;
@@ -38,22 +38,22 @@ export interface G3DMedicalOrchestratorConfig {
     enableRealTimeMonitoring: boolean;
 }
 
-export interface G3DMedicalWorkflow {
+export interface MedicalWorkflow {
     id: string;
     name: string;
     type: 'diagnostic' | 'planning' | 'intervention' | 'education' | 'research';
-    steps: G3DWorkflowStep[];
-    requiredSystems: G3DSystemType[];
+    steps: WorkflowStep[];
+    requiredSystems: SystemType[];
     priority: 'low' | 'normal' | 'high' | 'critical';
     estimatedDuration: number;
-    patientContext: G3DPatientContext;
+    patientContext: PatientContext;
 }
 
-export interface G3DWorkflowStep {
+export interface WorkflowStep {
     id: string;
     name: string;
     description: string;
-    requiredSystems: G3DSystemType[];
+    requiredSystems: SystemType[];
     dependencies: string[];
     estimatedDuration: number;
     autoExecute: boolean;
@@ -61,7 +61,7 @@ export interface G3DWorkflowStep {
     medicalSignificance: 'routine' | 'important' | 'critical';
 }
 
-export interface G3DPatientContext {
+export interface PatientContext {
     patientId: string;
     studyId: string;
     modality: string;
@@ -72,16 +72,16 @@ export interface G3DPatientContext {
     privacyLevel: 'standard' | 'restricted' | 'confidential';
 }
 
-export interface G3DSystemStatus {
-    systemType: G3DSystemType;
+export interface SystemStatus {
+    systemType: SystemType;
     status: 'initializing' | 'ready' | 'busy' | 'error' | 'disabled';
-    performance: G3DSystemPerformance;
+    performance: SystemPerformance;
     lastUpdate: number;
     errorMessage?: string;
-    resourceUsage: G3DResourceUsage;
+    resourceUsage: ResourceUsage;
 }
 
-export interface G3DSystemPerformance {
+export interface SystemPerformance {
     cpuUsage: number;
     memoryUsage: number;
     gpuUsage: number;
@@ -91,14 +91,14 @@ export interface G3DSystemPerformance {
     quality: number;
 }
 
-export interface G3DResourceUsage {
+export interface ResourceUsage {
     memory: number;
     gpu: number;
     storage: number;
     bandwidth: number;
 }
 
-export type G3DSystemType =
+export type SystemType =
     | 'medical_renderer'
     | 'volume_renderer'
     | 'dicom_processor'
@@ -113,37 +113,37 @@ export type G3DSystemType =
     | 'memory_manager'
     | 'xr_manager';
 
-export interface G3DMedicalSession {
+export interface MedicalSession {
     id: string;
     userId: string;
-    patientContext: G3DPatientContext;
-    activeWorkflows: G3DMedicalWorkflow[];
-    activeSystems: G3DSystemType[];
+    patientContext: PatientContext;
+    activeWorkflows: MedicalWorkflow[];
+    activeSystems: SystemType[];
     startTime: number;
     duration: number;
-    sessionMetrics: G3DSessionMetrics;
-    securityContext: G3DSecurityContext;
+    sessionMetrics: SessionMetrics;
+    securityContext: SecurityContext;
 }
 
-export interface G3DSessionMetrics {
+export interface SessionMetrics {
     totalProcessingTime: number;
-    systemUtilization: Map<G3DSystemType, number>;
+    systemUtilization: Map<SystemType, number>;
     dataProcessed: number;
     errorsEncountered: number;
     qualityMetrics: Map<string, number>;
     performanceMetrics: Map<string, number>;
 }
 
-export interface G3DSecurityContext {
+export interface SecurityContext {
     userId: string;
     permissions: string[];
     accessLevel: 'read' | 'write' | 'admin';
-    auditTrail: G3DAuditEntry[];
+    auditTrail: AuditEntry[];
     encryptionEnabled: boolean;
     complianceMode: 'HIPAA' | 'GDPR' | 'FDA' | 'custom';
 }
 
-export interface G3DAuditEntry {
+export interface AuditEntry {
     timestamp: number;
     userId: string;
     action: string;
@@ -152,30 +152,30 @@ export interface G3DAuditEntry {
     details: string;
 }
 
-export interface G3DSystemIntegration {
-    sourceSystem: G3DSystemType;
-    targetSystem: G3DSystemType;
+export interface SystemIntegration {
+    sourceSystem: SystemType;
+    targetSystem: SystemType;
     dataType: string;
     transformationRequired: boolean;
     latencyRequirement: number;
     qualityRequirement: number;
 }
 
-export class G3DMedicalOrchestrator {
-    private config: G3DMedicalOrchestratorConfig;
-    private systems: Map<G3DSystemType, any> = new Map();
-    private systemStatus: Map<G3DSystemType, G3DSystemStatus> = new Map();
-    private activeWorkflows: Map<string, G3DMedicalWorkflow> = new Map();
-    private activeSessions: Map<string, G3DMedicalSession> = new Map();
-    private systemIntegrations: G3DSystemIntegration[] = [];
+export class MedicalOrchestrator {
+    private config: MedicalOrchestratorConfig;
+    private systems: Map<SystemType, any> = new Map();
+    private systemStatus: Map<SystemType, SystemStatus> = new Map();
+    private activeWorkflows: Map<string, MedicalWorkflow> = new Map();
+    private activeSessions: Map<string, MedicalSession> = new Map();
+    private systemIntegrations: SystemIntegration[] = [];
     private isInitialized: boolean = false;
 
-    private workflowEngine: G3DWorkflowEngine | null = null;
-    private resourceManager: G3DResourceManager | null = null;
-    private securityManager: G3DSecurityManager | null = null;
-    private analyticsEngine: G3DAnalyticsEngine | null = null;
+    private workflowEngine: WorkflowEngine | null = null;
+    private resourceManager: ResourceManager | null = null;
+    private securityManager: SecurityManager | null = null;
+    private analyticsEngine: AnalyticsEngine | null = null;
 
-    constructor(config: Partial<G3DMedicalOrchestratorConfig> = {}) {
+    constructor(config: Partial<MedicalOrchestratorConfig> = {}) {
         this.config = {
             enableMedicalRendering: true,
             enableAIProcessing: true,
@@ -241,25 +241,25 @@ export class G3DMedicalOrchestrator {
         console.log('Initializing core managers...');
 
         // Initialize workflow engine
-        this.workflowEngine = new G3DWorkflowEngine(this.config);
+        this.workflowEngine = new WorkflowEngine(this.config);
         if ((this.workflowEngine as any).init) {
             await (this.workflowEngine as any).init();
         }
 
         // Initialize resource manager
-        this.resourceManager = new G3DResourceManager(this.config);
+        this.resourceManager = new ResourceManager(this.config);
         if ((this.resourceManager as any).init) {
             await (this.resourceManager as any).init();
         }
 
         // Initialize security manager
-        this.securityManager = new G3DSecurityManager(this.config);
+        this.securityManager = new SecurityManager(this.config);
         if ((this.securityManager as any).init) {
             await (this.securityManager as any).init();
         }
 
         // Initialize analytics engine
-        this.analyticsEngine = new G3DAnalyticsEngine(this.config);
+        this.analyticsEngine = new AnalyticsEngine(this.config);
         if ((this.analyticsEngine as any).init) {
             await (this.analyticsEngine as any).init();
         }
@@ -270,7 +270,7 @@ export class G3DMedicalOrchestrator {
 
         if (this.config.enableMedicalRendering) {
             // Initialize medical renderer
-            const medicalRenderer = new G3DMedicalRenderer(document.createElement('canvas') as HTMLCanvasElement);
+            const medicalRenderer = new MedicalRenderer(document.createElement('canvas') as HTMLCanvasElement);
             if ((medicalRenderer as any).init) {
                 await (medicalRenderer as any).init();
             }
@@ -278,7 +278,7 @@ export class G3DMedicalOrchestrator {
             this.updateSystemStatus('medical_renderer', 'ready');
 
             // Initialize volume renderer
-            const volumeRenderer = new G3DVolumeRenderer(document.createElement('canvas').getContext('webgl2') as WebGL2RenderingContext);
+            const volumeRenderer = new VolumeRenderer(document.createElement('canvas').getContext('webgl2') as WebGL2RenderingContext);
             if ((volumeRenderer as any).init) {
                 await (volumeRenderer as any).init();
             }
@@ -286,7 +286,7 @@ export class G3DMedicalOrchestrator {
             this.updateSystemStatus('volume_renderer', 'ready');
 
             // Initialize DICOM processor
-            const dicomProcessor = new G3DDICOMProcessor();
+            const dicomProcessor = new DICOMProcessor();
             if ((dicomProcessor as any).init) {
                 await (dicomProcessor as any).init();
             }
@@ -299,7 +299,7 @@ export class G3DMedicalOrchestrator {
         console.log('Initializing AI systems...');
 
         // Initialize medical AI
-        const medicalAI = new G3DMedicalAI();
+        const medicalAI = new MedicalAI();
         if ((medicalAI as any).init) {
             await (medicalAI as any).init();
         }
@@ -307,7 +307,7 @@ export class G3DMedicalOrchestrator {
         this.updateSystemStatus('medical_ai', 'ready');
 
         // Initialize computer vision
-        const computerVision = new G3DComputerVision();
+        const computerVision = new ComputerVision();
         if ((computerVision as any).init) {
             await (computerVision as any).init();
         }
@@ -315,7 +315,7 @@ export class G3DMedicalOrchestrator {
         this.updateSystemStatus('computer_vision', 'ready');
 
         // Initialize neural networks
-        const neuralNetworks = new G3DNeuralNetworks();
+        const neuralNetworks = new NeuralNetworks();
         if ((neuralNetworks as any).init) {
             await (neuralNetworks as any).init();
         }
@@ -327,7 +327,7 @@ export class G3DMedicalOrchestrator {
         console.log('Initializing 3D systems...');
 
         // Initialize spatial index
-        const spatialIndex = new G3DSpatialIndex({
+        const spatialIndex = new SpatialIndex({
             min: { x: -1000, y: -1000, z: -1000 },
             max: { x: 1000, y: 1000, z: 1000 },
             center: { x: 0, y: 0, z: 0 },
@@ -341,7 +341,7 @@ export class G3DMedicalOrchestrator {
         this.updateSystemStatus('spatial_index', 'ready');
 
         // Initialize geometry utils
-        const geometryUtils = new G3DGeometryUtils();
+        const geometryUtils = new GeometryUtils();
         if ((geometryUtils as any).init) {
             await (geometryUtils as any).init();
         }
@@ -349,7 +349,7 @@ export class G3DMedicalOrchestrator {
         this.updateSystemStatus('geometry_utils', 'ready');
 
         // Initialize scene graph
-        const sceneGraph = new G3DSceneGraph();
+        const sceneGraph = new SceneGraph();
         if ((sceneGraph as any).init) {
             await (sceneGraph as any).init();
         }
@@ -361,7 +361,7 @@ export class G3DMedicalOrchestrator {
         console.log('Initializing performance systems...');
 
         // Initialize compute shaders
-        const computeShaders = new G3DComputeShaders({ device: 'gpu' } as any);
+        const computeShaders = new ComputeShaders({ device: 'gpu' } as any);
         if ((computeShaders as any).init) {
             await (computeShaders as any).init();
         }
@@ -369,7 +369,7 @@ export class G3DMedicalOrchestrator {
         this.updateSystemStatus('compute_shaders', 'ready');
 
         // Initialize performance monitor
-        const performanceMonitor = new G3DPerformanceMonitor();
+        const performanceMonitor = new PerformanceMonitor();
         if ((performanceMonitor as any).init) {
             await (performanceMonitor as any).init();
         }
@@ -377,7 +377,7 @@ export class G3DMedicalOrchestrator {
         this.updateSystemStatus('performance_monitor', 'ready');
 
         // Initialize memory manager
-        const memoryManager = new G3DMemoryManager();
+        const memoryManager = new MemoryManager();
         if ((memoryManager as any).init) {
             await (memoryManager as any).init();
         }
@@ -389,7 +389,7 @@ export class G3DMedicalOrchestrator {
         console.log('Initializing XR systems...');
 
         // Initialize XR manager
-        const xrManager = new G3DMedicalXRManager();
+        const xrManager = new MedicalXRManager();
         if ((xrManager as any).init) {
             await (xrManager as any).init();
         }
@@ -442,7 +442,7 @@ export class G3DMedicalOrchestrator {
         }
     }
 
-    private async setupDataPipeline(integration: G3DSystemIntegration): Promise<void> {
+    private async setupDataPipeline(integration: SystemIntegration): Promise<void> {
         const sourceSystem = this.systems.get(integration.sourceSystem);
         const targetSystem = this.systems.get(integration.targetSystem);
 
@@ -457,12 +457,12 @@ export class G3DMedicalOrchestrator {
         }
     }
 
-    private async setupDataTransformation(integration: G3DSystemIntegration): Promise<void> {
+    private async setupDataTransformation(integration: SystemIntegration): Promise<void> {
         console.log(`Setting up data transformation: ${integration.sourceSystem} -> ${integration.targetSystem}`);
         // Implementation would depend on specific data types and transformations needed
     }
 
-    private async connectSystems(sourceSystem: any, targetSystem: any, integration: G3DSystemIntegration): Promise<void> {
+    private async connectSystems(sourceSystem: any, targetSystem: any, integration: SystemIntegration): Promise<void> {
         console.log(`Connecting systems: ${integration.sourceSystem} -> ${integration.targetSystem}`);
         // Implementation would set up the actual data flow between systems
     }
@@ -486,7 +486,7 @@ export class G3DMedicalOrchestrator {
         }, 2000); // Update every 2 seconds
     }
 
-    private updateSystemStatus(systemType: G3DSystemType, status: G3DSystemStatus['status']): void {
+    private updateSystemStatus(systemType: SystemType, status: SystemStatus['status']): void {
         const currentStatus = this.systemStatus.get(systemType) || {
             systemType,
             status: 'initializing',
@@ -543,8 +543,8 @@ export class G3DMedicalOrchestrator {
     // Public API
     public async startMedicalSession(
         userId: string,
-        patientContext: G3DPatientContext,
-        securityContext: G3DSecurityContext
+        patientContext: PatientContext,
+        securityContext: SecurityContext
     ): Promise<string> {
         if (!this.isInitialized) {
             throw new Error('Orchestrator not initialized');
@@ -552,7 +552,7 @@ export class G3DMedicalOrchestrator {
 
         const sessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
-        const session: G3DMedicalSession = {
+        const session: MedicalSession = {
             id: sessionId,
             userId,
             patientContext,
@@ -580,7 +580,7 @@ export class G3DMedicalOrchestrator {
         return sessionId;
     }
 
-    private async initializeSessionSystems(session: G3DMedicalSession): Promise<void> {
+    private async initializeSessionSystems(session: MedicalSession): Promise<void> {
         // Determine required systems based on patient context
         const requiredSystems = this.determineRequiredSystems(session.patientContext);
 
@@ -593,8 +593,8 @@ export class G3DMedicalOrchestrator {
         }
     }
 
-    private determineRequiredSystems(patientContext: G3DPatientContext): G3DSystemType[] {
-        const systems: G3DSystemType[] = ['medical_renderer', 'dicom_processor'];
+    private determineRequiredSystems(patientContext: PatientContext): SystemType[] {
+        const systems: SystemType[] = ['medical_renderer', 'dicom_processor'];
 
         // Add systems based on modality
         switch (patientContext.modality.toLowerCase()) {
@@ -624,7 +624,7 @@ export class G3DMedicalOrchestrator {
 
     public async executeWorkflow(
         sessionId: string,
-        workflow: G3DMedicalWorkflow
+        workflow: MedicalWorkflow
     ): Promise<string> {
         const session = this.activeSessions.get(sessionId);
         if (!session) {
@@ -643,15 +643,15 @@ export class G3DMedicalOrchestrator {
         return workflowId;
     }
 
-    public getSystemStatus(): Map<G3DSystemType, G3DSystemStatus> {
+    public getSystemStatus(): Map<SystemType, SystemStatus> {
         return new Map(this.systemStatus);
     }
 
-    public getActiveWorkflows(): G3DMedicalWorkflow[] {
+    public getActiveWorkflows(): MedicalWorkflow[] {
         return Array.from(this.activeWorkflows.values());
     }
 
-    public getActiveSessions(): G3DMedicalSession[] {
+    public getActiveSessions(): MedicalSession[] {
         return Array.from(this.activeSessions.values());
     }
 
@@ -747,14 +747,14 @@ export class G3DMedicalOrchestrator {
 }
 
 // Supporting classes (simplified implementations)
-class G3DWorkflowEngine {
-    constructor(private config: G3DMedicalOrchestratorConfig) { }
+class WorkflowEngine {
+    constructor(private config: MedicalOrchestratorConfig) { }
 
     async initialize(): Promise<void> {
         console.log('Workflow Engine initialized');
     }
 
-    async executeWorkflow(workflow: G3DMedicalWorkflow, session: G3DMedicalSession): Promise<string> {
+    async executeWorkflow(workflow: MedicalWorkflow, session: MedicalSession): Promise<string> {
         console.log(`Executing workflow: ${workflow.name}`);
         return `workflow_${Date.now()}`;
     }
@@ -764,14 +764,14 @@ class G3DWorkflowEngine {
     }
 }
 
-class G3DResourceManager {
-    constructor(private config: G3DMedicalOrchestratorConfig) { }
+class ResourceManager {
+    constructor(private config: MedicalOrchestratorConfig) { }
 
     async initialize(): Promise<void> {
         console.log('Resource Manager initialized');
     }
 
-    updateResourceUsage(systems: Map<G3DSystemType, any>): void {
+    updateResourceUsage(systems: Map<SystemType, any>): void {
         // Update resource usage for all systems
     }
 
@@ -784,8 +784,8 @@ class G3DResourceManager {
     }
 }
 
-class G3DSecurityManager {
-    constructor(private config: G3DMedicalOrchestratorConfig) { }
+class SecurityManager {
+    constructor(private config: MedicalOrchestratorConfig) { }
 
     async initialize(): Promise<void> {
         console.log('Security Manager initialized');
@@ -796,18 +796,18 @@ class G3DSecurityManager {
     }
 }
 
-class G3DAnalyticsEngine {
-    constructor(private config: G3DMedicalOrchestratorConfig) { }
+class AnalyticsEngine {
+    constructor(private config: MedicalOrchestratorConfig) { }
 
     async initialize(): Promise<void> {
         console.log('Analytics Engine initialized');
     }
 
-    collectMetrics(systemStatus: Map<G3DSystemType, G3DSystemStatus>): void {
+    collectMetrics(systemStatus: Map<SystemType, SystemStatus>): void {
         // Collect performance metrics
     }
 
-    async storeSessionMetrics(session: G3DMedicalSession): Promise<void> {
+    async storeSessionMetrics(session: MedicalSession): Promise<void> {
         console.log(`Storing metrics for session: ${session.id}`);
     }
 
@@ -816,4 +816,4 @@ class G3DAnalyticsEngine {
     }
 }
 
-export default G3DMedicalOrchestrator;
+export default MedicalOrchestrator;

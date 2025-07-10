@@ -14,8 +14,8 @@
 import { vec3 } from 'gl-matrix';
 
 // DICOM Types and Interfaces
-export interface G3DDICOMDataset {
-    elements: Map<string, G3DDICOMElement>;
+export interface DICOMDataset {
+    elements: Map<string, DICOMElement>;
     transferSyntax: string;
     isLittleEndian: boolean;
     isImplicitVR: boolean;
@@ -23,26 +23,26 @@ export interface G3DDICOMDataset {
     errors: string[];
 }
 
-export interface G3DDICOMElement {
+export interface DICOMElement {
     tag: string;
     vr: string;
     length: number;
     value: any;
     offset: number;
     dataOffset?: number;
-    items?: G3DDICOMDataset[];
+    items?: DICOMDataset[];
 }
 
-export interface G3DDICOMImage {
+export interface DICOMImage {
     id: string;
-    dataset: G3DDICOMDataset;
+    dataset: DICOMDataset;
     pixelData: ArrayBuffer;
-    imageInfo: G3DImageInfo;
-    metadata: G3DMedicalMetadata;
-    processingInfo: G3DProcessingInfo;
+    imageInfo: ImageInfo;
+    metadata: MedicalMetadata;
+    processingInfo: ProcessingInfo;
 }
 
-export interface G3DImageInfo {
+export interface ImageInfo {
     rows: number;
     columns: number;
     frames: number;
@@ -63,7 +63,7 @@ export interface G3DImageInfo {
     rescaleIntercept: number;
 }
 
-export interface G3DMedicalMetadata {
+export interface MedicalMetadata {
     patientInfo: {
         patientID: string;
         patientName: string;
@@ -112,7 +112,7 @@ export interface G3DMedicalMetadata {
     };
 }
 
-export interface G3DProcessingInfo {
+export interface ProcessingInfo {
     processingTime: number;
     compressionRatio?: number;
     qualityMetrics: {
@@ -124,7 +124,7 @@ export interface G3DProcessingInfo {
     gpuAccelerated: boolean;
 }
 
-export interface G3DDICOMProcessingConfig {
+export interface DICOMProcessingConfig {
     enableGPUAcceleration: boolean;
     enableMultiThreading: boolean;
     maxWorkerThreads: number;
@@ -245,14 +245,14 @@ export const VR_TYPES = {
 };
 
 // Advanced DICOM Parser with G3D Acceleration
-export class G3DDICOMParser {
-    private config: G3DDICOMProcessingConfig;
+export class DICOMParser {
+    private config: DICOMProcessingConfig;
     private workers: Worker[] = [];
-    private cache: Map<string, G3DDICOMImage> = new Map();
+    private cache: Map<string, DICOMImage> = new Map();
     private processingQueue: Array<{ buffer: ArrayBuffer; resolve: Function; reject: Function }> = [];
     private isProcessing: boolean = false;
 
-    constructor(config: Partial<G3DDICOMProcessingConfig> = {}) {
+    constructor(config: Partial<DICOMProcessingConfig> = {}) {
         this.config = {
             enableGPUAcceleration: true,
             enableMultiThreading: true,
@@ -295,7 +295,7 @@ export class G3DDICOMParser {
         // Process the result and resolve the corresponding promise
     }
 
-    async parseDICOM(buffer: ArrayBuffer): Promise<G3DDICOMImage> {
+    async parseDICOM(buffer: ArrayBuffer): Promise<DICOMImage> {
         const startTime = Date.now();
 
         try {
@@ -319,14 +319,14 @@ export class G3DDICOMParser {
 
             // Calculate processing metrics
             const processingTime = Date.now() - startTime;
-            const processingInfo: G3DProcessingInfo = {
+            const processingInfo: ProcessingInfo = {
                 processingTime,
                 qualityMetrics: this.calculateQualityMetrics(pixelData, imageInfo),
                 optimizations: this.getAppliedOptimizations(),
                 gpuAccelerated: this.config.enableGPUAcceleration
             };
 
-            const dicomImage: G3DDICOMImage = {
+            const dicomImage: DICOMImage = {
                 id: this.generateImageId(metadata),
                 dataset,
                 pixelData,
@@ -347,7 +347,7 @@ export class G3DDICOMParser {
         }
     }
 
-    private async parseDataset(buffer: ArrayBuffer): Promise<G3DDICOMDataset> {
+    private async parseDataset(buffer: ArrayBuffer): Promise<DICOMDataset> {
         const dataView = new DataView(buffer);
         let offset = 0;
 
@@ -370,7 +370,7 @@ export class G3DDICOMParser {
             offset = 4;
         }
 
-        const dataset: G3DDICOMDataset = {
+        const dataset: DICOMDataset = {
             elements: new Map(),
             transferSyntax: '',
             isLittleEndian: true,
@@ -396,7 +396,7 @@ export class G3DDICOMParser {
     private async parseMetaInformation(
         dataView: DataView,
         offset: number,
-        dataset: G3DDICOMDataset
+        dataset: DICOMDataset
     ): Promise<number> {
         // Parse file meta information (always explicit VR, little endian)
         const metaLengthElement = await this.parseElement(dataView, offset, true, true);
@@ -418,7 +418,7 @@ export class G3DDICOMParser {
         dataView: DataView,
         offset: number,
         endOffset: number,
-        dataset: G3DDICOMDataset
+        dataset: DICOMDataset
     ): Promise<void> {
         while (offset < endOffset && offset < dataView.byteLength) {
             try {
@@ -453,7 +453,7 @@ export class G3DDICOMParser {
         offset: number,
         isLittleEndian: boolean,
         isExplicitVR: boolean
-    ): Promise<G3DDICOMElement> {
+    ): Promise<DICOMElement> {
         const startOffset = offset;
 
         // Read tag (group, element)
@@ -622,8 +622,8 @@ export class G3DDICOMParser {
         offset: number,
         length: number,
         isLittleEndian: boolean
-    ): Promise<G3DDICOMDataset[]> {
-        const items: G3DDICOMDataset[] = [];
+    ): Promise<DICOMDataset[]> {
+        const items: DICOMDataset[] = [];
         const endOffset = length === 0xFFFFFFFF ? dataView.byteLength : offset + length;
         let currentOffset = offset;
 
@@ -636,7 +636,7 @@ export class G3DDICOMParser {
                 const itemLength = dataView.getUint32(currentOffset, isLittleEndian);
                 currentOffset += 4;
 
-                const itemDataset: G3DDICOMDataset = {
+                const itemDataset: DICOMDataset = {
                     elements: new Map(),
                     transferSyntax: '',
                     isLittleEndian,
@@ -678,7 +678,7 @@ export class G3DDICOMParser {
         return items;
     }
 
-    private extractImageInfo(dataset: G3DDICOMDataset): G3DImageInfo {
+    private extractImageInfo(dataset: DICOMDataset): ImageInfo {
         const getElementValue = (tag: string, defaultValue: any = null) => {
             const element = dataset.elements.get(tag);
             return element ? element.value : defaultValue;
@@ -738,7 +738,7 @@ export class G3DDICOMParser {
         };
     }
 
-    private extractMetadata(dataset: G3DDICOMDataset): G3DMedicalMetadata {
+    private extractMetadata(dataset: DICOMDataset): MedicalMetadata {
         const getElementValue = (tag: string, defaultValue: any = '') => {
             const element = dataset.elements.get(tag);
             return element ? element.value : defaultValue;
@@ -794,7 +794,7 @@ export class G3DDICOMParser {
         };
     }
 
-    private async processPixelData(dataset: G3DDICOMDataset, imageInfo: G3DImageInfo): Promise<ArrayBuffer> {
+    private async processPixelData(dataset: DICOMDataset, imageInfo: ImageInfo): Promise<ArrayBuffer> {
         const pixelDataElement = dataset.elements.get(DICOM_TAGS.PixelData);
         if (!pixelDataElement) {
             throw new Error('No pixel data found in DICOM');
@@ -813,7 +813,7 @@ export class G3DDICOMParser {
         return pixelData;
     }
 
-    private async applyGPUOptimizations(pixelData: ArrayBuffer, imageInfo: G3DImageInfo): Promise<ArrayBuffer> {
+    private async applyGPUOptimizations(pixelData: ArrayBuffer, imageInfo: ImageInfo): Promise<ArrayBuffer> {
         // GPU-accelerated pixel data processing
         // This would use WebGL compute shaders or WebGPU for acceleration
 
@@ -826,7 +826,7 @@ export class G3DDICOMParser {
         return pixelData;
     }
 
-    private async applyQualityEnhancements(pixelData: ArrayBuffer, imageInfo: G3DImageInfo): Promise<ArrayBuffer> {
+    private async applyQualityEnhancements(pixelData: ArrayBuffer, imageInfo: ImageInfo): Promise<ArrayBuffer> {
         // Apply medical image quality enhancements
         // - Noise reduction
         // - Contrast enhancement
@@ -836,7 +836,7 @@ export class G3DDICOMParser {
         return pixelData;
     }
 
-    private calculateQualityMetrics(pixelData: ArrayBuffer, imageInfo: G3DImageInfo): { snr: number; contrast: number; sharpness: number } {
+    private calculateQualityMetrics(pixelData: ArrayBuffer, imageInfo: ImageInfo): { snr: number; contrast: number; sharpness: number } {
         // Calculate image quality metrics
         // This is a simplified implementation
         return {
@@ -862,7 +862,7 @@ export class G3DDICOMParser {
         return optimizations;
     }
 
-    private generateImageId(metadata: G3DMedicalMetadata): string {
+    private generateImageId(metadata: MedicalMetadata): string {
         return `${metadata.studyInfo.studyInstanceUID}_${metadata.seriesInfo.seriesInstanceUID}_${metadata.imageInfo.sopInstanceUID}`;
     }
 
@@ -872,7 +872,7 @@ export class G3DDICOMParser {
         return `dicom_${buffer.byteLength}_${Date.now()}`;
     }
 
-    private addToCache(key: string, image: G3DDICOMImage): void {
+    private addToCache(key: string, image: DICOMImage): void {
         // Simple cache management
         if (this.cache.size > 100) { // Limit cache size
             const firstKey = this.cache.keys().next().value;
@@ -881,7 +881,7 @@ export class G3DDICOMParser {
         this.cache.set(key, image);
     }
 
-    private determineTransferSyntax(dataset: G3DDICOMDataset): void {
+    private determineTransferSyntax(dataset: DICOMDataset): void {
         const transferSyntaxElement = dataset.elements.get(DICOM_TAGS.TransferSyntaxUID);
         if (transferSyntaxElement) {
             dataset.transferSyntax = transferSyntaxElement.value;
@@ -961,4 +961,4 @@ export class G3DDICOMParser {
     }
 }
 
-export default G3DDICOMParser;
+export default DICOMParser;

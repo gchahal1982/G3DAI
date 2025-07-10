@@ -14,28 +14,28 @@
 import { vec3, mat4, quat } from 'gl-matrix';
 
 // Anatomy Visualization Types
-export interface G3DAnatomyConfig {
+export interface AnatomyConfig {
     renderingMode: 'realistic' | 'schematic' | 'educational' | 'diagnostic';
     detailLevel: 'overview' | 'system' | 'organ' | 'tissue' | 'cellular';
     interactionMode: 'exploration' | 'annotation' | 'measurement' | 'simulation';
     clinicalContext: 'education' | 'diagnosis' | 'surgery' | 'research';
 }
 
-export interface G3DAnatomicalStructure {
+export interface AnatomicalStructure {
     id: string;
     name: string;
     type: 'organ' | 'system' | 'tissue' | 'vessel' | 'nerve' | 'bone' | 'muscle';
     category: 'cardiovascular' | 'respiratory' | 'nervous' | 'musculoskeletal' | 'digestive' | 'urogenital' | 'endocrine' | 'integumentary';
-    geometry: G3DAnatomyGeometry;
-    properties: G3DAnatomicalProperties;
-    visualization: G3DVisualizationSettings;
-    annotations: G3DAnatomyAnnotation[];
-    relationships: G3DAnatomicalRelationship[];
+    geometry: AnatomyGeometry;
+    properties: AnatomicalProperties;
+    visualization: VisualizationSettings;
+    annotations: AnatomyAnnotation[];
+    relationships: AnatomicalRelationship[];
     isVisible: boolean;
     opacity: number;
 }
 
-export interface G3DAnatomyGeometry {
+export interface AnatomyGeometry {
     meshData: Float32Array;
     indices: Uint32Array;
     normals: Float32Array;
@@ -46,7 +46,7 @@ export interface G3DAnatomyGeometry {
     centerOfMass: vec3;
 }
 
-export interface G3DAnatomicalProperties {
+export interface AnatomicalProperties {
     medicalData: {
         terminology: string; // Standard anatomical terminology
         function: string;
@@ -68,23 +68,23 @@ export interface G3DAnatomicalProperties {
     };
 }
 
-export interface G3DVisualizationSettings {
+export interface VisualizationSettings {
     colorScheme: 'anatomical' | 'functional' | 'pathological' | 'educational';
     transparency: number;
     highlighting: boolean;
-    cutawayViews: G3DCutawayPlane[];
+    cutawayViews: CutawayPlane[];
     labelVisibility: boolean;
-    animationState: G3DAnimationState;
+    animationState: AnimationState;
 }
 
-export interface G3DCutawayPlane {
+export interface CutawayPlane {
     normal: vec3;
     position: vec3;
     enabled: boolean;
     fadeDistance: number;
 }
 
-export interface G3DAnimationState {
+export interface AnimationState {
     type: 'static' | 'breathing' | 'heartbeat' | 'peristalsis' | 'custom';
     phase: number;
     speed: number;
@@ -92,16 +92,16 @@ export interface G3DAnimationState {
     enabled: boolean;
 }
 
-export interface G3DAnatomyAnnotation {
+export interface AnatomyAnnotation {
     id: string;
     type: 'label' | 'measurement' | 'pathology' | 'function' | 'reference';
     position: vec3;
-    content: G3DAnnotationContent;
-    style: G3DAnnotationStyle;
+    content: AnnotationContent;
+    style: AnnotationStyle;
     visibility: boolean;
 }
 
-export interface G3DAnnotationContent {
+export interface AnnotationContent {
     title: string;
     description: string;
     medicalTerms: string[];
@@ -113,7 +113,7 @@ export interface G3DAnnotationContent {
     };
 }
 
-export interface G3DAnnotationStyle {
+export interface AnnotationStyle {
     labelColor: vec3;
     backgroundColor: vec3;
     fontSize: number;
@@ -122,23 +122,23 @@ export interface G3DAnnotationStyle {
     priority: number;
 }
 
-export interface G3DAnatomicalRelationship {
+export interface AnatomicalRelationship {
     targetStructureId: string;
     relationshipType: 'contains' | 'adjacentTo' | 'connectedTo' | 'innervates' | 'suppliedBy' | 'drainedBy';
     strength: number;
     description: string;
 }
 
-export interface G3DAnatomySystem {
+export interface AnatomySystem {
     id: string;
     name: string;
     structures: string[]; // Structure IDs
     primaryFunction: string;
-    interactions: G3DSystemInteraction[];
+    interactions: SystemInteraction[];
     visualizationPreset: string;
 }
 
-export interface G3DSystemInteraction {
+export interface SystemInteraction {
     targetSystemId: string;
     interactionType: 'functional' | 'structural' | 'regulatory' | 'pathological';
     description: string;
@@ -146,7 +146,7 @@ export interface G3DSystemInteraction {
 }
 
 // Advanced Anatomy Shader Templates
-export class G3DAnatomyShaderTemplates {
+export class AnatomyShaderTemplates {
     static readonly ANATOMY_VERTEX_SHADER = `#version 300 es
     precision highp float;
     
@@ -401,17 +401,17 @@ export class G3DAnatomyShaderTemplates {
 }
 
 // Main Anatomy Visualization System
-export class G3DAnatomyVisualization {
-    private config: G3DAnatomyConfig;
+export class AnatomyVisualization {
+    private config: AnatomyConfig;
     private gl: WebGL2RenderingContext;
     private anatomyProgram: WebGLProgram | null = null;
-    private structures: Map<string, G3DAnatomicalStructure> = new Map();
-    private systems: Map<string, G3DAnatomySystem> = new Map();
-    private annotations: Map<string, G3DAnatomyAnnotation> = new Map();
+    private structures: Map<string, AnatomicalStructure> = new Map();
+    private systems: Map<string, AnatomySystem> = new Map();
+    private annotations: Map<string, AnatomyAnnotation> = new Map();
     private currentSystem: string | null = null;
     private isInitialized: boolean = false;
 
-    constructor(gl: WebGL2RenderingContext, config: Partial<G3DAnatomyConfig> = {}) {
+    constructor(gl: WebGL2RenderingContext, config: Partial<AnatomyConfig> = {}) {
         this.gl = gl;
         this.config = {
             renderingMode: 'realistic',
@@ -437,12 +437,12 @@ export class G3DAnatomyVisualization {
 
     private async compileShaders(): Promise<void> {
         const vertexShader = this.compileShader(
-            G3DAnatomyShaderTemplates.ANATOMY_VERTEX_SHADER,
+            AnatomyShaderTemplates.ANATOMY_VERTEX_SHADER,
             this.gl.VERTEX_SHADER
         );
 
         const fragmentShader = this.compileShader(
-            G3DAnatomyShaderTemplates.ANATOMY_FRAGMENT_SHADER,
+            AnatomyShaderTemplates.ANATOMY_FRAGMENT_SHADER,
             this.gl.FRAGMENT_SHADER
         );
 
@@ -543,15 +543,15 @@ export class G3DAnatomyVisualization {
     private createAnatomicalStructure(config: {
         id: string;
         name: string;
-        type: G3DAnatomicalStructure['type'];
-        category: G3DAnatomicalStructure['category'];
-        medicalData: G3DAnatomicalProperties['medicalData'];
-        physicalProperties: G3DAnatomicalProperties['physicalProperties'];
-    }): G3DAnatomicalStructure {
+        type: AnatomicalStructure['type'];
+        category: AnatomicalStructure['category'];
+        medicalData: AnatomicalProperties['medicalData'];
+        physicalProperties: AnatomicalProperties['physicalProperties'];
+    }): AnatomicalStructure {
         // Generate basic geometry (in real implementation, this would load from medical atlases)
         const geometry = this.generateBasicGeometry(config.type);
 
-        const structure: G3DAnatomicalStructure = {
+        const structure: AnatomicalStructure = {
             id: config.id,
             name: config.name,
             type: config.type,
@@ -589,7 +589,7 @@ export class G3DAnatomyVisualization {
         return structure;
     }
 
-    private generateBasicGeometry(type: string): G3DAnatomyGeometry {
+    private generateBasicGeometry(type: string): AnatomyGeometry {
         // Simplified geometry generation - in real implementation, load from medical atlases
         const vertices = new Float32Array([
             -1, -1, -1, 1, -1, -1, 1, 1, -1, -1, 1, -1, // Front face
@@ -676,14 +676,14 @@ export class G3DAnatomyVisualization {
         return true;
     }
 
-    addAnnotation(structureId: string, annotation: Omit<G3DAnatomyAnnotation, 'id'>): string {
+    addAnnotation(structureId: string, annotation: Omit<AnatomyAnnotation, 'id'>): string {
         const structure = this.structures.get(structureId);
         if (!structure) {
             throw new Error(`Structure ${structureId} not found`);
         }
 
         const annotationId = `annotation_${Date.now()}_${Math.random()}`;
-        const fullAnnotation: G3DAnatomyAnnotation = {
+        const fullAnnotation: AnatomyAnnotation = {
             id: annotationId,
             ...annotation
         };
@@ -701,7 +701,7 @@ export class G3DAnatomyVisualization {
         }
     }
 
-    setStructureAnimation(structureId: string, animationType: G3DAnimationState['type']): void {
+    setStructureAnimation(structureId: string, animationType: AnimationState['type']): void {
         const structure = this.structures.get(structureId);
         if (structure) {
             structure.visualization.animationState.type = animationType;
@@ -709,19 +709,19 @@ export class G3DAnatomyVisualization {
         }
     }
 
-    applyCutawayPlane(structureId: string, plane: G3DCutawayPlane): void {
+    applyCutawayPlane(structureId: string, plane: CutawayPlane): void {
         const structure = this.structures.get(structureId);
         if (structure) {
             structure.visualization.cutawayViews.push(plane);
         }
     }
 
-    setVisualizationMode(mode: G3DAnatomyConfig['renderingMode']): void {
+    setVisualizationMode(mode: AnatomyConfig['renderingMode']): void {
         this.config.renderingMode = mode;
         console.log(`Set anatomy visualization mode: ${mode}`);
     }
 
-    setColorScheme(scheme: G3DVisualizationSettings['colorScheme']): void {
+    setColorScheme(scheme: VisualizationSettings['colorScheme']): void {
         this.structures.forEach(structure => {
             structure.visualization.colorScheme = scheme;
         });
@@ -749,7 +749,7 @@ export class G3DAnatomyVisualization {
         this.gl.useProgram(null);
     }
 
-    private renderStructure(structure: G3DAnatomicalStructure): void {
+    private renderStructure(structure: AnatomicalStructure): void {
         const program = this.anatomyProgram!;
 
         // Set structure-specific uniforms
@@ -779,24 +779,24 @@ export class G3DAnatomyVisualization {
         // In real implementation, this would properly bind and render the structure's geometry
     }
 
-    getStructure(structureId: string): G3DAnatomicalStructure | undefined {
+    getStructure(structureId: string): AnatomicalStructure | undefined {
         return this.structures.get(structureId);
     }
 
-    getSystem(systemId: string): G3DAnatomySystem | undefined {
+    getSystem(systemId: string): AnatomySystem | undefined {
         return this.systems.get(systemId);
     }
 
-    getAllStructures(): G3DAnatomicalStructure[] {
+    getAllStructures(): AnatomicalStructure[] {
         return Array.from(this.structures.values());
     }
 
-    getAllSystems(): G3DAnatomySystem[] {
+    getAllSystems(): AnatomySystem[] {
         return Array.from(this.systems.values());
     }
 
-    searchStructures(query: string): G3DAnatomicalStructure[] {
-        const results: G3DAnatomicalStructure[] = [];
+    searchStructures(query: string): AnatomicalStructure[] {
+        const results: AnatomicalStructure[] = [];
         const lowerQuery = query.toLowerCase();
 
         this.structures.forEach(structure => {
@@ -837,4 +837,4 @@ export class G3DAnatomyVisualization {
     }
 }
 
-export default G3DAnatomyVisualization;
+export default AnatomyVisualization;

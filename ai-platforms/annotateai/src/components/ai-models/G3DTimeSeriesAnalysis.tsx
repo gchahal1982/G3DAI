@@ -5,9 +5,9 @@
  */
 
 import React, { useRef, useEffect, useState, useCallback } from 'react';
-import { G3DNativeRenderer } from '../../g3d-integration/G3DNativeRenderer';
-import { G3DSceneManager } from '../../g3d-integration/G3DSceneManager';
-import { G3DModelRunner } from '../../g3d-ai/G3DModelRunner';
+import { NativeRenderer } from '../../integration/G3DNativeRenderer';
+import { SceneManager } from '../../integration/G3DSceneManager';
+import { ModelRunner } from '../../ai/G3DModelRunner';
 
 // Core Types
 interface TimeSeriesModel {
@@ -220,7 +220,7 @@ interface AnalysisMetadata {
 }
 
 // Props Interface
-interface G3DTimeSeriesAnalysisProps {
+interface TimeSeriesAnalysisProps {
     models: TimeSeriesModel[];
     onAnalysisComplete: (result: TimeSeriesAnalysisResult) => void;
     onForecastUpdate: (forecasts: Forecast[]) => void;
@@ -242,7 +242,7 @@ interface TimeSeriesConfig {
 }
 
 // Main Component
-export const G3DTimeSeriesAnalysis: React.FC<G3DTimeSeriesAnalysisProps> = ({
+export const G3DTimeSeriesAnalysis: React.FC<TimeSeriesAnalysisProps> = ({
     models,
     onAnalysisComplete,
     onForecastUpdate,
@@ -251,9 +251,9 @@ export const G3DTimeSeriesAnalysis: React.FC<G3DTimeSeriesAnalysisProps> = ({
     config
 }) => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
-    const rendererRef = useRef<G3DNativeRenderer | null>(null);
-    const sceneRef = useRef<G3DSceneManager | null>(null);
-    const modelRunnerRef = useRef<G3DModelRunner | null>(null);
+    const rendererRef = useRef<NativeRenderer | null>(null);
+    const sceneRef = useRef<SceneManager | null>(null);
+    const modelRunnerRef = useRef<ModelRunner | null>(null);
 
     const [loadedModels, setLoadedModels] = useState<Map<string, any>>(new Map());
     const [activeModel, setActiveModel] = useState<string | null>(null);
@@ -307,10 +307,10 @@ export const G3DTimeSeriesAnalysis: React.FC<G3DTimeSeriesAnalysisProps> = ({
     const initialize3D = async () => {
         if (!canvasRef.current) return;
 
-        const renderer = new G3DNativeRenderer(canvasRef.current);
+        const renderer = new NativeRenderer(canvasRef.current);
         rendererRef.current = renderer;
 
-        const scene = new G3DSceneManager(rendererRef.current || new G3DNativeRenderer(canvasRef.current!));
+        const scene = new SceneManager(rendererRef.current || new NativeRenderer(canvasRef.current!));
         sceneRef.current = scene;
 
         // Setup visualization scene
@@ -324,7 +324,7 @@ export const G3DTimeSeriesAnalysis: React.FC<G3DTimeSeriesAnalysisProps> = ({
 
     // Initialize AI systems
     const initializeAI = async () => {
-        const modelRunner = new G3DModelRunner();
+        const modelRunner = new ModelRunner();
         modelRunnerRef.current = modelRunner;
     };
 
@@ -483,14 +483,14 @@ export const G3DTimeSeriesAnalysis: React.FC<G3DTimeSeriesAnalysisProps> = ({
 
         // Trend detection
         const trendFeatures = await modelRunner.runInference(model.trendDetectionId, data.values);
-        // Fix G3DInferenceResult access
+        // Fix InferenceResult access
         const trends = await parseTrendPatterns(trendFeatures.data as Float32Array, data.timestamps);
         patterns.push(...trends);
 
         // Seasonality detection
         if (model.seasonalityDetectionId) {
             const seasonalFeatures = await modelRunner.runInference(model.seasonalityDetectionId, data.values);
-            // Fix G3DInferenceResult access
+            // Fix InferenceResult access
             const seasonal = await parseSeasonalPatterns(seasonalFeatures.data as Float32Array, data.timestamps);
             patterns.push(...seasonal);
         }
@@ -498,7 +498,7 @@ export const G3DTimeSeriesAnalysis: React.FC<G3DTimeSeriesAnalysisProps> = ({
         // Cycle detection
         if (model.cycleDetectionId) {
             const cycleFeatures = await modelRunner.runInference(model.cycleDetectionId, data.values);
-            // Fix G3DInferenceResult access
+            // Fix InferenceResult access
             const cycles = await parseCyclePatterns(cycleFeatures.data as Float32Array, data.timestamps);
             patterns.push(...cycles);
         }
@@ -506,7 +506,7 @@ export const G3DTimeSeriesAnalysis: React.FC<G3DTimeSeriesAnalysisProps> = ({
         // Change point detection
         if (model.changepointDetectionId) {
             const changepointFeatures = await modelRunner.runInference(model.changepointDetectionId, data.values);
-            // Fix G3DInferenceResult access
+            // Fix InferenceResult access
             const changepoints = await parseChangepointPatterns(changepointFeatures.data as Float32Array, data.timestamps);
             patterns.push(...changepoints);
         }

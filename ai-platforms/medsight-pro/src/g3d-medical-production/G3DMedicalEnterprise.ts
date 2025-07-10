@@ -11,7 +11,7 @@
  * - Multi-facility resource sharing
  */
 
-export interface G3DMedicalEnterpriseConfig {
+export interface MedicalEnterpriseConfig {
     enableMultiTenant: boolean;
     enableFacilityNetworking: boolean;
     enableResourceSharing: boolean;
@@ -24,44 +24,44 @@ export interface G3DMedicalEnterpriseConfig {
     enterpriseSecurityLevel: 'standard' | 'enhanced' | 'maximum';
 }
 
-export interface G3DHealthcareOrganization {
+export interface HealthcareOrganization {
     id: string;
     name: string;
     type: 'hospital_system' | 'clinic_network' | 'imaging_center' | 'research_institution' | 'government_health';
-    headquarters: G3DFacilityLocation;
-    facilities: G3DMedicalFacility[];
+    headquarters: FacilityLocation;
+    facilities: MedicalFacility[];
     totalBeds: number;
     totalStaff: number;
     annualPatientVolume: number;
-    specialties: G3DMedicalSpecialty[];
-    accreditations: G3DAccreditation[];
+    specialties: MedicalSpecialty[];
+    accreditations: Accreditation[];
     complianceRequirements: string[];
-    networkConfiguration: G3DNetworkConfiguration;
-    subscriptionTier: G3DSubscriptionTier;
+    networkConfiguration: NetworkConfiguration;
+    subscriptionTier: SubscriptionTier;
     createdAt: number;
     updatedAt: number;
 }
 
-export interface G3DMedicalFacility {
+export interface MedicalFacility {
     id: string;
     organizationId: string;
     name: string;
     type: 'hospital' | 'clinic' | 'imaging_center' | 'surgery_center' | 'emergency_room' | 'research_lab';
-    location: G3DFacilityLocation;
-    capacity: G3DFacilityCapacity;
-    departments: G3DMedicalDepartment[];
+    location: FacilityLocation;
+    capacity: FacilityCapacity;
+    departments: MedicalDepartment[];
     equipment: string[]; // Equipment IDs
     staff: string[]; // Staff IDs
-    operatingHours: G3DOperatingHours;
+    operatingHours: OperatingHours;
     emergencyCapable: boolean;
     traumaLevel: number | null;
-    certifications: G3DCertification[];
-    networkAccess: G3DNetworkAccess;
-    resourceSharing: G3DResourceSharingConfig;
+    certifications: Certification[];
+    networkAccess: NetworkAccess;
+    resourceSharing: ResourceSharingConfig;
     status: 'active' | 'maintenance' | 'emergency' | 'offline';
 }
 
-export interface G3DFacilityLocation {
+export interface FacilityLocation {
     address: string;
     city: string;
     state: string;
@@ -75,7 +75,7 @@ export interface G3DFacilityLocation {
     region: string;
 }
 
-export interface G3DFacilityCapacity {
+export interface FacilityCapacity {
     totalBeds: number;
     icuBeds: number;
     emergencyBeds: number;
@@ -86,7 +86,7 @@ export interface G3DFacilityCapacity {
     staffCapacity: number;
 }
 
-export interface G3DMedicalDepartment {
+export interface MedicalDepartment {
     id: string;
     name: string;
     type: 'radiology' | 'cardiology' | 'oncology' | 'neurology' | 'orthopedics' | 'emergency' | 'surgery' | 'pediatrics';
@@ -94,13 +94,13 @@ export interface G3DMedicalDepartment {
     staff: string[]; // Staff IDs
     equipment: string[]; // Equipment IDs
     specializations: string[];
-    operatingHours: G3DOperatingHours;
+    operatingHours: OperatingHours;
     emergencyCapable: boolean;
     researchActive: boolean;
     aiIntegrationLevel: 'none' | 'basic' | 'advanced' | 'full';
 }
 
-export interface G3DMedicalEquipment {
+export interface MedicalEquipment {
     id: string;
     name: string;
     type: 'ct_scanner' | 'mri_machine' | 'xray_machine' | 'ultrasound' | 'pet_scanner' | 'mammography' | 'fluoroscopy';
@@ -112,13 +112,13 @@ export interface G3DMedicalEquipment {
     nextMaintenance: number;
     status: 'operational' | 'maintenance' | 'repair' | 'offline' | 'calibration';
     specifications: Record<string, any>;
-    aiCapabilities: G3DAICapabilities;
+    aiCapabilities: AICapabilities;
     networkConnected: boolean;
-    dataIntegration: G3DDataIntegrationConfig;
-    utilizationMetrics: G3DEquipmentMetrics;
+    dataIntegration: DataIntegrationConfig;
+    utilizationMetrics: EquipmentMetrics;
 }
 
-export interface G3DMedicalStaff {
+export interface MedicalStaff {
     id: string;
     employeeId: string;
     firstName: string;
@@ -126,49 +126,49 @@ export interface G3DMedicalStaff {
     role: 'radiologist' | 'physician' | 'nurse' | 'technologist' | 'administrator' | 'researcher' | 'ai_specialist';
     department: string;
     specializations: string[];
-    certifications: G3DCertification[];
-    licenses: G3DMedicalLicense[];
+    certifications: Certification[];
+    licenses: MedicalLicense[];
     accessLevel: 'basic' | 'standard' | 'advanced' | 'administrator' | 'super_admin';
-    workSchedule: G3DWorkSchedule;
-    contactInfo: G3DContactInfo;
-    emergencyContact: G3DEmergencyContact;
+    workSchedule: WorkSchedule;
+    contactInfo: ContactInfo;
+    emergencyContact: EmergencyContact;
     aiTrainingLevel: 'none' | 'basic' | 'intermediate' | 'advanced' | 'expert';
     status: 'active' | 'on_leave' | 'training' | 'inactive';
 }
 
-export interface G3DOperatingHours {
-    monday: G3DDailyHours;
-    tuesday: G3DDailyHours;
-    wednesday: G3DDailyHours;
-    thursday: G3DDailyHours;
-    friday: G3DDailyHours;
-    saturday: G3DDailyHours;
-    sunday: G3DDailyHours;
-    holidays: G3DHolidaySchedule[];
+export interface OperatingHours {
+    monday: DailyHours;
+    tuesday: DailyHours;
+    wednesday: DailyHours;
+    thursday: DailyHours;
+    friday: DailyHours;
+    saturday: DailyHours;
+    sunday: DailyHours;
+    holidays: HolidaySchedule[];
     emergency24x7: boolean;
 }
 
-export interface G3DDailyHours {
+export interface DailyHours {
     open: string; // HH:MM format
     close: string; // HH:MM format
-    breaks: G3DBreakPeriod[];
+    breaks: BreakPeriod[];
     emergencyOnly: boolean;
 }
 
-export interface G3DBreakPeriod {
+export interface BreakPeriod {
     start: string;
     end: string;
     type: 'lunch' | 'maintenance' | 'shift_change' | 'emergency_drill';
 }
 
-export interface G3DHolidaySchedule {
+export interface HolidaySchedule {
     date: string; // YYYY-MM-DD
     name: string;
     type: 'closed' | 'emergency_only' | 'reduced_hours';
-    specialHours?: G3DDailyHours;
+    specialHours?: DailyHours;
 }
 
-export interface G3DMedicalSpecialty {
+export interface MedicalSpecialty {
     id: string;
     name: string;
     category: 'imaging' | 'surgical' | 'medical' | 'emergency' | 'pediatric' | 'research';
@@ -178,7 +178,7 @@ export interface G3DMedicalSpecialty {
     researchActive: boolean;
 }
 
-export interface G3DAccreditation {
+export interface Accreditation {
     id: string;
     name: string;
     issuingBody: string;
@@ -189,7 +189,7 @@ export interface G3DAccreditation {
     medicalStandards: string[];
 }
 
-export interface G3DCertification {
+export interface Certification {
     id: string;
     name: string;
     issuingBody: string;
@@ -200,7 +200,7 @@ export interface G3DCertification {
     continuingEducationRequired: boolean;
 }
 
-export interface G3DMedicalLicense {
+export interface MedicalLicense {
     id: string;
     licenseNumber: string;
     type: 'medical' | 'nursing' | 'radiology' | 'pharmacy' | 'administration';
@@ -211,16 +211,16 @@ export interface G3DMedicalLicense {
     restrictions: string[];
 }
 
-export interface G3DWorkSchedule {
+export interface WorkSchedule {
     type: 'full_time' | 'part_time' | 'per_diem' | 'contract' | 'on_call';
     hoursPerWeek: number;
-    shifts: G3DShift[];
-    onCallSchedule: G3DOnCallSchedule[];
+    shifts: Shift[];
+    onCallSchedule: OnCallSchedule[];
     vacationDays: number;
     sickDays: number;
 }
 
-export interface G3DShift {
+export interface Shift {
     dayOfWeek: number; // 0-6, Sunday = 0
     startTime: string; // HH:MM
     endTime: string; // HH:MM
@@ -229,7 +229,7 @@ export interface G3DShift {
     emergencyBackup: boolean;
 }
 
-export interface G3DOnCallSchedule {
+export interface OnCallSchedule {
     startDate: string; // YYYY-MM-DD
     endDate: string; // YYYY-MM-DD
     priority: 'primary' | 'secondary' | 'backup';
@@ -237,24 +237,24 @@ export interface G3DOnCallSchedule {
     contactMethod: 'phone' | 'pager' | 'app' | 'all';
 }
 
-export interface G3DContactInfo {
+export interface ContactInfo {
     email: string;
     phone: string;
     mobile: string;
     pager?: string;
-    address: G3DAddress;
+    address: Address;
     preferredContact: 'email' | 'phone' | 'mobile' | 'pager';
 }
 
-export interface G3DEmergencyContact {
+export interface EmergencyContact {
     name: string;
     relationship: string;
     phone: string;
     email: string;
-    address: G3DAddress;
+    address: Address;
 }
 
-export interface G3DAddress {
+export interface Address {
     street: string;
     city: string;
     state: string;
@@ -262,26 +262,26 @@ export interface G3DAddress {
     country: string;
 }
 
-export interface G3DNetworkConfiguration {
+export interface NetworkConfiguration {
     networkType: 'private' | 'public' | 'hybrid' | 'vpn';
     bandwidth: number; // Mbps
     redundancy: boolean;
     securityLevel: 'standard' | 'enhanced' | 'maximum';
     encryptionEnabled: boolean;
-    firewallConfiguration: G3DFirewallConfiguration;
-    vpnConfiguration?: G3DVPNConfiguration;
-    medicalDataRouting: G3DMedicalDataRouting;
+    firewallConfiguration: FirewallConfiguration;
+    vpnConfiguration?: VPNConfiguration;
+    medicalDataRouting: MedicalDataRouting;
 }
 
-export interface G3DFirewallConfiguration {
+export interface FirewallConfiguration {
     enabled: boolean;
-    rules: G3DFirewallRule[];
+    rules: FirewallRule[];
     intrusionDetection: boolean;
     ddosProtection: boolean;
     medicalPortProtection: boolean;
 }
 
-export interface G3DFirewallRule {
+export interface FirewallRule {
     id: string;
     action: 'allow' | 'deny' | 'log';
     protocol: 'TCP' | 'UDP' | 'ICMP' | 'all';
@@ -291,14 +291,14 @@ export interface G3DFirewallRule {
     priority: number;
 }
 
-export interface G3DVPNConfiguration {
+export interface VPNConfiguration {
     protocol: 'IPSec' | 'OpenVPN' | 'WireGuard' | 'custom';
     encryptionLevel: 'AES128' | 'AES256' | 'ChaCha20';
     authenticationMethod: 'certificate' | 'psk' | 'radius' | 'ldap';
     medicalDataOptimized: boolean;
 }
 
-export interface G3DMedicalDataRouting {
+export interface MedicalDataRouting {
     priorityRouting: boolean;
     emergencyBypass: boolean;
     dataClassification: boolean;
@@ -307,7 +307,7 @@ export interface G3DMedicalDataRouting {
     medicalStandardCompliance: string[];
 }
 
-export interface G3DSubscriptionTier {
+export interface SubscriptionTier {
     tier: 'basic' | 'professional' | 'enterprise' | 'academic' | 'government';
     maxFacilities: number;
     maxUsers: number;
@@ -320,30 +320,30 @@ export interface G3DSubscriptionTier {
     dedicatedSupport: boolean;
 }
 
-export interface G3DNetworkAccess {
+export interface NetworkAccess {
     internetAccess: boolean;
     intranetAccess: boolean;
     vpnRequired: boolean;
     whitelistedIPs: string[];
-    accessHours: G3DAccessHours;
+    accessHours: AccessHours;
     emergencyAccess: boolean;
-    medicalDataAccess: G3DMedicalDataAccess;
+    medicalDataAccess: MedicalDataAccess;
 }
 
-export interface G3DAccessHours {
+export interface AccessHours {
     unrestricted: boolean;
-    allowedHours: G3DTimeRange[];
+    allowedHours: TimeRange[];
     emergencyOverride: boolean;
     holidayAccess: boolean;
 }
 
-export interface G3DTimeRange {
+export interface TimeRange {
     start: string; // HH:MM
     end: string; // HH:MM
     daysOfWeek: number[]; // 0-6, Sunday = 0
 }
 
-export interface G3DMedicalDataAccess {
+export interface MedicalDataAccess {
     level: 'read_only' | 'read_write' | 'full_admin';
     dataTypes: string[];
     patientDataAccess: boolean;
@@ -352,39 +352,39 @@ export interface G3DMedicalDataAccess {
     auditRequired: boolean;
 }
 
-export interface G3DResourceSharingConfig {
+export interface ResourceSharingConfig {
     enabled: boolean;
-    shareableResources: G3DShareableResource[];
+    shareableResources: ShareableResource[];
     accessibleResources: string[]; // Resource IDs from other facilities
-    sharingAgreements: G3DSharingAgreement[];
+    sharingAgreements: SharingAgreement[];
     emergencySharing: boolean;
-    dataSharing: G3DDataSharingConfig;
+    dataSharing: DataSharingConfig;
 }
 
-export interface G3DShareableResource {
+export interface ShareableResource {
     resourceId: string;
     resourceType: 'equipment' | 'staff' | 'data' | 'ai_model' | 'expertise';
-    availability: G3DResourceAvailability;
-    sharingTerms: G3DSharingTerms;
+    availability: ResourceAvailability;
+    sharingTerms: SharingTerms;
     medicalSpecialty: string;
     qualityRating: number; // 0-5
 }
 
-export interface G3DResourceAvailability {
-    schedule: G3DAvailabilitySchedule[];
+export interface ResourceAvailability {
+    schedule: AvailabilitySchedule[];
     emergencyAvailable: boolean;
     advanceBookingRequired: boolean;
     minimumNotice: number; // hours
     maximumDuration: number; // hours
 }
 
-export interface G3DAvailabilitySchedule {
+export interface AvailabilitySchedule {
     dayOfWeek: number;
-    timeSlots: G3DTimeSlot[];
+    timeSlots: TimeSlot[];
     specialConditions: string[];
 }
 
-export interface G3DTimeSlot {
+export interface TimeSlot {
     start: string; // HH:MM
     end: string; // HH:MM
     available: boolean;
@@ -392,7 +392,7 @@ export interface G3DTimeSlot {
     emergencyReservation: boolean;
 }
 
-export interface G3DSharingTerms {
+export interface SharingTerms {
     costPerHour: number;
     minimumDuration: number; // hours
     cancellationPolicy: string;
@@ -402,19 +402,19 @@ export interface G3DSharingTerms {
     medicalLiabilityTerms: string;
 }
 
-export interface G3DSharingAgreement {
+export interface SharingAgreement {
     id: string;
     facilityId: string;
     resourceType: string;
     startDate: number;
     endDate: number;
-    terms: G3DSharingTerms;
+    terms: SharingTerms;
     status: 'active' | 'pending' | 'expired' | 'terminated';
     emergencyAccess: boolean;
     medicalSpecialties: string[];
 }
 
-export interface G3DDataSharingConfig {
+export interface DataSharingConfig {
     enabled: boolean;
     allowedDataTypes: string[];
     anonymizationRequired: boolean;
@@ -426,7 +426,7 @@ export interface G3DDataSharingConfig {
     emergencySharing: boolean;
 }
 
-export interface G3DAICapabilities {
+export interface AICapabilities {
     aiEnabled: boolean;
     aiModels: string[];
     processingCapacity: number; // operations per hour
@@ -436,17 +436,17 @@ export interface G3DAICapabilities {
     updateFrequency: 'real_time' | 'daily' | 'weekly' | 'monthly';
 }
 
-export interface G3DDataIntegrationConfig {
+export interface DataIntegrationConfig {
     enabled: boolean;
     protocols: string[]; // DICOM, HL7, FHIR, etc.
     realTimeSync: boolean;
     batchProcessing: boolean;
     dataValidation: boolean;
-    errorHandling: G3DErrorHandling;
+    errorHandling: ErrorHandling;
     medicalStandardCompliance: string[];
 }
 
-export interface G3DErrorHandling {
+export interface ErrorHandling {
     retryAttempts: number;
     escalationPolicy: string;
     notificationChannels: string[];
@@ -454,7 +454,7 @@ export interface G3DErrorHandling {
     medicalSafetyProtocols: string[];
 }
 
-export interface G3DEquipmentMetrics {
+export interface EquipmentMetrics {
     utilizationRate: number; // 0-1
     averageSessionDuration: number; // minutes
     maintenanceFrequency: number; // days
@@ -465,16 +465,16 @@ export interface G3DEquipmentMetrics {
     costPerExam: number;
 }
 
-export interface G3DEnterpriseMetrics {
-    organizationMetrics: G3DOrganizationMetrics;
-    facilityMetrics: Map<string, G3DFacilityMetrics>;
-    networkMetrics: G3DNetworkMetrics;
-    resourceSharingMetrics: G3DResourceSharingMetrics;
-    complianceMetrics: G3DComplianceMetrics;
-    financialMetrics: G3DFinancialMetrics;
+export interface EnterpriseMetrics {
+    organizationMetrics: OrganizationMetrics;
+    facilityMetrics: Map<string, FacilityMetrics>;
+    networkMetrics: NetworkMetrics;
+    resourceSharingMetrics: ResourceSharingMetrics;
+    complianceMetrics: ComplianceMetrics;
+    financialMetrics: FinancialMetrics;
 }
 
-export interface G3DOrganizationMetrics {
+export interface OrganizationMetrics {
     totalPatients: number;
     totalStaff: number;
     totalFacilities: number;
@@ -487,7 +487,7 @@ export interface G3DOrganizationMetrics {
     complianceScore: number;
 }
 
-export interface G3DFacilityMetrics {
+export interface FacilityMetrics {
     facilityId: string;
     patientVolume: number;
     staffUtilization: number;
@@ -495,11 +495,11 @@ export interface G3DFacilityMetrics {
     averageWaitTime: number;
     patientSatisfaction: number;
     qualityIndicators: Record<string, number>;
-    financialPerformance: G3DFinancialPerformance;
-    safetyMetrics: G3DSafetyMetrics;
+    financialPerformance: FinancialPerformance;
+    safetyMetrics: SafetyMetrics;
 }
 
-export interface G3DNetworkMetrics {
+export interface NetworkMetrics {
     networkUtilization: number;
     dataTransferVolume: number; // GB
     latency: number; // ms
@@ -509,7 +509,7 @@ export interface G3DNetworkMetrics {
     emergencyNetworkUsage: number;
 }
 
-export interface G3DResourceSharingMetrics {
+export interface ResourceSharingMetrics {
     totalSharedResources: number;
     utilizationRate: number;
     costSavings: number;
@@ -519,27 +519,27 @@ export interface G3DResourceSharingMetrics {
     networkEfficiency: number;
 }
 
-export interface G3DComplianceMetrics {
+export interface ComplianceMetrics {
     hipaaCompliance: number;
     fdaCompliance: number;
     accreditationStatus: number;
-    auditResults: G3DAuditResults;
+    auditResults: AuditResults;
     violationsCount: number;
     remediationTime: number; // hours
     trainingCompletion: number; // percentage
 }
 
-export interface G3DAuditResults {
+export interface AuditResults {
     lastAuditDate: number;
     overallScore: number;
-    findings: G3DAuditFinding[];
+    findings: AuditFinding[];
     recommendations: string[];
     nextAuditDate: number;
     auditorName: string;
     complianceLevel: 'full' | 'conditional' | 'non_compliant';
 }
 
-export interface G3DAuditFinding {
+export interface AuditFinding {
     id: string;
     category: 'security' | 'privacy' | 'safety' | 'quality' | 'operational';
     severity: 'low' | 'medium' | 'high' | 'critical';
@@ -550,7 +550,7 @@ export interface G3DAuditFinding {
     assignedTo: string;
 }
 
-export interface G3DFinancialMetrics {
+export interface FinancialMetrics {
     totalRevenue: number;
     operatingCosts: number;
     profitMargin: number;
@@ -561,7 +561,7 @@ export interface G3DFinancialMetrics {
     networkCosts: number;
 }
 
-export interface G3DFinancialPerformance {
+export interface FinancialPerformance {
     revenue: number;
     expenses: number;
     profit: number;
@@ -572,7 +572,7 @@ export interface G3DFinancialPerformance {
     maintenanceCost: number;
 }
 
-export interface G3DSafetyMetrics {
+export interface SafetyMetrics {
     incidentCount: number;
     nearMissCount: number;
     safetyTrainingCompletion: number;
@@ -583,22 +583,22 @@ export interface G3DSafetyMetrics {
     medicalErrorRate: number;
 }
 
-export class G3DMedicalEnterprise {
-    private config: G3DMedicalEnterpriseConfig;
-    private organizations: Map<string, G3DHealthcareOrganization> = new Map();
-    private facilities: Map<string, G3DMedicalFacility> = new Map();
-    private staff: Map<string, G3DMedicalStaff> = new Map();
-    private equipment: Map<string, G3DMedicalEquipment> = new Map();
-    private resourceSharing: Map<string, G3DResourceSharingConfig> = new Map();
+export class MedicalEnterprise {
+    private config: MedicalEnterpriseConfig;
+    private organizations: Map<string, HealthcareOrganization> = new Map();
+    private facilities: Map<string, MedicalFacility> = new Map();
+    private staff: Map<string, MedicalStaff> = new Map();
+    private equipment: Map<string, MedicalEquipment> = new Map();
+    private resourceSharing: Map<string, ResourceSharingConfig> = new Map();
     private isInitialized: boolean = false;
 
-    private facilityManager: G3DFacilityManager | null = null;
-    private networkManager: G3DNetworkManager | null = null;
-    private complianceManager: G3DEnterpriseComplianceManager | null = null;
-    private resourceManager: G3DEnterpriseResourceManager | null = null;
-    private analyticsManager: G3DEnterpriseAnalyticsManager | null = null;
+    private facilityManager: FacilityManager | null = null;
+    private networkManager: NetworkManager | null = null;
+    private complianceManager: EnterpriseComplianceManager | null = null;
+    private resourceManager: EnterpriseResourceManager | null = null;
+    private analyticsManager: EnterpriseAnalyticsManager | null = null;
 
-    constructor(config: Partial<G3DMedicalEnterpriseConfig> = {}) {
+    constructor(config: Partial<MedicalEnterpriseConfig> = {}) {
         this.config = {
             enableMultiTenant: true,
             enableFacilityNetworking: true,
@@ -619,23 +619,23 @@ export class G3DMedicalEnterprise {
             console.log('Initializing G3D Medical Enterprise System...');
 
             // Initialize facility manager
-            this.facilityManager = new G3DFacilityManager(this.config);
+            this.facilityManager = new FacilityManager(this.config);
             await this.facilityManager.initialize();
 
             // Initialize network manager
-            this.networkManager = new G3DNetworkManager(this.config);
+            this.networkManager = new NetworkManager(this.config);
             await this.networkManager.initialize();
 
             // Initialize compliance manager
-            this.complianceManager = new G3DEnterpriseComplianceManager(this.config);
+            this.complianceManager = new EnterpriseComplianceManager(this.config);
             await this.complianceManager.initialize();
 
             // Initialize resource manager
-            this.resourceManager = new G3DEnterpriseResourceManager(this.config);
+            this.resourceManager = new EnterpriseResourceManager(this.config);
             await this.resourceManager.initialize();
 
             // Initialize analytics manager
-            this.analyticsManager = new G3DEnterpriseAnalyticsManager(this.config);
+            this.analyticsManager = new EnterpriseAnalyticsManager(this.config);
             await this.analyticsManager.initialize();
 
             this.isInitialized = true;
@@ -647,12 +647,12 @@ export class G3DMedicalEnterprise {
     }
 
     // Public API
-    public async createOrganization(organizationData: Partial<G3DHealthcareOrganization>): Promise<string> {
+    public async createOrganization(organizationData: Partial<HealthcareOrganization>): Promise<string> {
         if (!this.isInitialized) {
             throw new Error('Enterprise system not initialized');
         }
 
-        const organization: G3DHealthcareOrganization = {
+        const organization: HealthcareOrganization = {
             id: `org_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
             name: organizationData.name || 'Healthcare Organization',
             type: organizationData.type || 'hospital_system',
@@ -676,13 +676,13 @@ export class G3DMedicalEnterprise {
         return organization.id;
     }
 
-    public async addFacility(organizationId: string, facilityData: Partial<G3DMedicalFacility>): Promise<string> {
+    public async addFacility(organizationId: string, facilityData: Partial<MedicalFacility>): Promise<string> {
         const organization = this.organizations.get(organizationId);
         if (!organization) {
             throw new Error('Organization not found');
         }
 
-        const facility: G3DMedicalFacility = {
+        const facility: MedicalFacility = {
             id: `facility_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
             organizationId,
             name: facilityData.name || 'Medical Facility',
@@ -713,13 +713,13 @@ export class G3DMedicalEnterprise {
         return facility.id;
     }
 
-    public async addStaff(facilityId: string, staffData: Partial<G3DMedicalStaff>): Promise<string> {
+    public async addStaff(facilityId: string, staffData: Partial<MedicalStaff>): Promise<string> {
         const facility = this.facilities.get(facilityId);
         if (!facility) {
             throw new Error('Facility not found');
         }
 
-        const staff: G3DMedicalStaff = {
+        const staff: MedicalStaff = {
             id: `staff_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
             employeeId: staffData.employeeId || `EMP${Date.now()}`,
             firstName: staffData.firstName || 'John',
@@ -744,13 +744,13 @@ export class G3DMedicalEnterprise {
         return staff.id;
     }
 
-    public async addEquipment(facilityId: string, equipmentData: Partial<G3DMedicalEquipment>): Promise<string> {
+    public async addEquipment(facilityId: string, equipmentData: Partial<MedicalEquipment>): Promise<string> {
         const facility = this.facilities.get(facilityId);
         if (!facility) {
             throw new Error('Facility not found');
         }
 
-        const equipment: G3DMedicalEquipment = {
+        const equipment: MedicalEquipment = {
             id: `equipment_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
             name: equipmentData.name || 'Medical Equipment',
             type: equipmentData.type || 'ct_scanner',
@@ -775,7 +775,7 @@ export class G3DMedicalEnterprise {
         return equipment.id;
     }
 
-    public async enableResourceSharing(facilityId: string, resourceSharingConfig: G3DResourceSharingConfig): Promise<void> {
+    public async enableResourceSharing(facilityId: string, resourceSharingConfig: ResourceSharingConfig): Promise<void> {
         const facility = this.facilities.get(facilityId);
         if (!facility) {
             throw new Error('Facility not found');
@@ -791,32 +791,32 @@ export class G3DMedicalEnterprise {
         console.log(`Resource sharing enabled for facility: ${facilityId}`);
     }
 
-    public getOrganizations(): G3DHealthcareOrganization[] {
+    public getOrganizations(): HealthcareOrganization[] {
         return Array.from(this.organizations.values());
     }
 
-    public getFacilities(organizationId?: string): G3DMedicalFacility[] {
+    public getFacilities(organizationId?: string): MedicalFacility[] {
         const facilities = Array.from(this.facilities.values());
         return organizationId ? facilities.filter(f => f.organizationId === organizationId) : facilities;
     }
 
-    public getStaff(facilityId?: string): G3DMedicalStaff[] {
+    public getStaff(facilityId?: string): MedicalStaff[] {
         const staff = Array.from(this.staff.values());
         if (!facilityId) return staff;
 
         const facility = this.facilities.get(facilityId);
-        return facility ? facility.staff.map(id => this.staff.get(id)).filter(s => s) as G3DMedicalStaff[] : [];
+        return facility ? facility.staff.map(id => this.staff.get(id)).filter(s => s) as MedicalStaff[] : [];
     }
 
-    public getEquipment(facilityId?: string): G3DMedicalEquipment[] {
+    public getEquipment(facilityId?: string): MedicalEquipment[] {
         const equipment = Array.from(this.equipment.values());
         if (!facilityId) return equipment;
 
         const facility = this.facilities.get(facilityId);
-        return facility ? facility.equipment.map(id => this.equipment.get(id)).filter(e => e) as G3DMedicalEquipment[] : [];
+        return facility ? facility.equipment.map(id => this.equipment.get(id)).filter(e => e) as MedicalEquipment[] : [];
     }
 
-    public getEnterpriseMetrics(): G3DEnterpriseMetrics {
+    public getEnterpriseMetrics(): EnterpriseMetrics {
         const organizations = this.getOrganizations();
         const facilities = this.getFacilities();
         const staff = this.getStaff();
@@ -885,7 +885,7 @@ export class G3DMedicalEnterprise {
     }
 
     // Helper methods
-    private getDefaultLocation(): G3DFacilityLocation {
+    private getDefaultLocation(): FacilityLocation {
         return {
             address: '123 Medical Center Dr',
             city: 'Healthcare City',
@@ -901,7 +901,7 @@ export class G3DMedicalEnterprise {
         };
     }
 
-    private getDefaultCapacity(): G3DFacilityCapacity {
+    private getDefaultCapacity(): FacilityCapacity {
         return {
             totalBeds: 200,
             icuBeds: 20,
@@ -914,8 +914,8 @@ export class G3DMedicalEnterprise {
         };
     }
 
-    private getDefaultOperatingHours(): G3DOperatingHours {
-        const standardHours: G3DDailyHours = {
+    private getDefaultOperatingHours(): OperatingHours {
+        const standardHours: DailyHours = {
             open: '06:00',
             close: '22:00',
             breaks: [],
@@ -935,7 +935,7 @@ export class G3DMedicalEnterprise {
         };
     }
 
-    private getDefaultNetworkConfig(): G3DNetworkConfiguration {
+    private getDefaultNetworkConfig(): NetworkConfiguration {
         return {
             networkType: 'private',
             bandwidth: 1000,
@@ -960,7 +960,7 @@ export class G3DMedicalEnterprise {
         };
     }
 
-    private getDefaultSubscriptionTier(): G3DSubscriptionTier {
+    private getDefaultSubscriptionTier(): SubscriptionTier {
         return {
             tier: 'enterprise',
             maxFacilities: 50,
@@ -975,7 +975,7 @@ export class G3DMedicalEnterprise {
         };
     }
 
-    private getDefaultNetworkAccess(): G3DNetworkAccess {
+    private getDefaultNetworkAccess(): NetworkAccess {
         return {
             internetAccess: true,
             intranetAccess: true,
@@ -999,7 +999,7 @@ export class G3DMedicalEnterprise {
         };
     }
 
-    private getDefaultResourceSharing(): G3DResourceSharingConfig {
+    private getDefaultResourceSharing(): ResourceSharingConfig {
         return {
             enabled: false,
             shareableResources: [],
@@ -1020,7 +1020,7 @@ export class G3DMedicalEnterprise {
         };
     }
 
-    private getDefaultWorkSchedule(): G3DWorkSchedule {
+    private getDefaultWorkSchedule(): WorkSchedule {
         return {
             type: 'full_time',
             hoursPerWeek: 40,
@@ -1031,7 +1031,7 @@ export class G3DMedicalEnterprise {
         };
     }
 
-    private getDefaultContactInfo(): G3DContactInfo {
+    private getDefaultContactInfo(): ContactInfo {
         return {
             email: 'staff@hospital.com',
             phone: '555-0123',
@@ -1047,7 +1047,7 @@ export class G3DMedicalEnterprise {
         };
     }
 
-    private getDefaultEmergencyContact(): G3DEmergencyContact {
+    private getDefaultEmergencyContact(): EmergencyContact {
         return {
             name: 'Emergency Contact',
             relationship: 'spouse',
@@ -1063,7 +1063,7 @@ export class G3DMedicalEnterprise {
         };
     }
 
-    private getDefaultAICapabilities(): G3DAICapabilities {
+    private getDefaultAICapabilities(): AICapabilities {
         return {
             aiEnabled: true,
             aiModels: ['diagnostic_ai', 'image_analysis'],
@@ -1075,7 +1075,7 @@ export class G3DMedicalEnterprise {
         };
     }
 
-    private getDefaultDataIntegration(): G3DDataIntegrationConfig {
+    private getDefaultDataIntegration(): DataIntegrationConfig {
         return {
             enabled: true,
             protocols: ['DICOM', 'HL7', 'FHIR'],
@@ -1093,7 +1093,7 @@ export class G3DMedicalEnterprise {
         };
     }
 
-    private getDefaultEquipmentMetrics(): G3DEquipmentMetrics {
+    private getDefaultEquipmentMetrics(): EquipmentMetrics {
         return {
             utilizationRate: 0.75,
             averageSessionDuration: 30,
@@ -1148,14 +1148,14 @@ export class G3DMedicalEnterprise {
 }
 
 // Supporting classes (simplified implementations)
-class G3DFacilityManager {
-    constructor(private config: G3DMedicalEnterpriseConfig) { }
+class FacilityManager {
+    constructor(private config: MedicalEnterpriseConfig) { }
 
     async initialize(): Promise<void> {
         console.log('Facility Manager initialized');
     }
 
-    async registerFacility(facility: G3DMedicalFacility): Promise<void> {
+    async registerFacility(facility: MedicalFacility): Promise<void> {
         console.log(`Registering facility: ${facility.name}`);
     }
 
@@ -1164,8 +1164,8 @@ class G3DFacilityManager {
     }
 }
 
-class G3DNetworkManager {
-    constructor(private config: G3DMedicalEnterpriseConfig) { }
+class NetworkManager {
+    constructor(private config: MedicalEnterpriseConfig) { }
 
     async initialize(): Promise<void> {
         console.log('Network Manager initialized');
@@ -1176,8 +1176,8 @@ class G3DNetworkManager {
     }
 }
 
-class G3DEnterpriseComplianceManager {
-    constructor(private config: G3DMedicalEnterpriseConfig) { }
+class EnterpriseComplianceManager {
+    constructor(private config: MedicalEnterpriseConfig) { }
 
     async initialize(): Promise<void> {
         console.log('Enterprise Compliance Manager initialized');
@@ -1188,14 +1188,14 @@ class G3DEnterpriseComplianceManager {
     }
 }
 
-class G3DEnterpriseResourceManager {
-    constructor(private config: G3DMedicalEnterpriseConfig) { }
+class EnterpriseResourceManager {
+    constructor(private config: MedicalEnterpriseConfig) { }
 
     async initialize(): Promise<void> {
         console.log('Enterprise Resource Manager initialized');
     }
 
-    async enableSharing(facilityId: string, config: G3DResourceSharingConfig): Promise<void> {
+    async enableSharing(facilityId: string, config: ResourceSharingConfig): Promise<void> {
         console.log(`Enabling resource sharing for facility: ${facilityId}`);
     }
 
@@ -1204,8 +1204,8 @@ class G3DEnterpriseResourceManager {
     }
 }
 
-class G3DEnterpriseAnalyticsManager {
-    constructor(private config: G3DMedicalEnterpriseConfig) { }
+class EnterpriseAnalyticsManager {
+    constructor(private config: MedicalEnterpriseConfig) { }
 
     async initialize(): Promise<void> {
         console.log('Enterprise Analytics Manager initialized');
@@ -1216,4 +1216,4 @@ class G3DEnterpriseAnalyticsManager {
     }
 }
 
-export default G3DMedicalEnterprise;
+export default MedicalEnterprise;

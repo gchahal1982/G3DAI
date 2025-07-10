@@ -14,11 +14,11 @@
 import { vec3, mat4 } from 'gl-matrix';
 
 // Neural Network Types
-export type G3DPrecision = 'float32' | 'float16' | 'int8' | 'mixed';
-export interface G3DNeuralNetworkConfig {
+export type Precision = 'float32' | 'float16' | 'int8' | 'mixed';
+export interface NeuralNetworkConfig {
     architecture: 'cnn' | 'transformer' | 'hybrid' | 'gan' | 'autoencoder';
     modelSize: 'small' | 'medium' | 'large' | 'xlarge';
-    precision: G3DPrecision;
+    precision: Precision;
     enableTransferLearning: boolean;
     enableFederatedLearning: boolean;
     optimizationLevel: 'none' | 'basic' | 'aggressive';
@@ -26,31 +26,31 @@ export interface G3DNeuralNetworkConfig {
     maxInferenceTime: number; // milliseconds
 }
 
-export interface G3DModelArchitecture {
+export interface ModelArchitecture {
     id: string;
     name: string;
     type: 'classification' | 'segmentation' | 'detection' | 'generation' | 'reconstruction';
-    layers: G3DLayer[];
+    layers: Layer[];
     inputShape: number[];
     outputShape: number[];
     parameters: number;
     flops: number;
     memoryRequirement: number; // MB
-    trainingConfig: G3DTrainingConfig;
-    optimizations: G3DModelOptimization[];
+    trainingConfig: TrainingConfig;
+    optimizations: ModelOptimization[];
 }
 
-export interface G3DLayer {
+export interface Layer {
     id: string;
     type: 'conv2d' | 'conv3d' | 'attention' | 'dense' | 'pooling' | 'normalization' | 'activation' | 'dropout';
-    parameters: G3DLayerParameters;
+    parameters: LayerParameters;
     inputShape: number[];
     outputShape: number[];
     trainable: boolean;
-    regularization?: G3DRegularization;
+    regularization?: Regularization;
 }
 
-export interface G3DLayerParameters {
+export interface LayerParameters {
     filters?: number;
     kernelSize?: number | number[];
     stride?: number | number[];
@@ -64,7 +64,7 @@ export interface G3DLayerParameters {
     keyDim?: number; // For attention layers
 }
 
-export interface G3DRegularization {
+export interface Regularization {
     l1: number;
     l2: number;
     dropout: number;
@@ -72,20 +72,20 @@ export interface G3DRegularization {
     layerNormalization: boolean;
 }
 
-export interface G3DTrainingConfig {
+export interface TrainingConfig {
     optimizer: 'adam' | 'sgd' | 'rmsprop' | 'adamw';
     learningRate: number;
-    learningRateSchedule: G3DLearningRateSchedule;
+    learningRateSchedule: LearningRateSchedule;
     batchSize: number;
     epochs: number;
     validationSplit: number;
     earlyStoppingPatience: number;
     lossFunction: string;
     metrics: string[];
-    augmentationConfig: G3DAugmentationConfig;
+    augmentationConfig: AugmentationConfig;
 }
 
-export interface G3DLearningRateSchedule {
+export interface LearningRateSchedule {
     type: 'constant' | 'exponential' | 'cosine' | 'polynomial' | 'step';
     initialLearningRate: number;
     decaySteps?: number;
@@ -94,7 +94,7 @@ export interface G3DLearningRateSchedule {
     minLearningRate?: number;
 }
 
-export interface G3DAugmentationConfig {
+export interface AugmentationConfig {
     enabled: boolean;
     rotation: { enabled: boolean; range: number };
     translation: { enabled: boolean; range: number };
@@ -104,17 +104,17 @@ export interface G3DAugmentationConfig {
     contrast: { enabled: boolean; range: number };
     noise: { enabled: boolean; type: 'gaussian' | 'salt_pepper'; strength: number };
     elastic: { enabled: boolean; alpha: number; sigma: number };
-    medicalSpecific: G3DMedicalAugmentation;
+    medicalSpecific: MedicalAugmentation;
 }
 
-export interface G3DMedicalAugmentation {
+export interface MedicalAugmentation {
     windowingVariation: { enabled: boolean; centerRange: number; widthRange: number };
     intensityShift: { enabled: boolean; range: number };
     modalityMixing: { enabled: boolean; probability: number };
     anatomicalVariation: { enabled: boolean; deformationStrength: number };
 }
 
-export interface G3DModelOptimization {
+export interface ModelOptimization {
     type: 'quantization' | 'pruning' | 'distillation' | 'tensorrt' | 'onnx';
     parameters: object;
     speedupFactor: number;
@@ -122,17 +122,17 @@ export interface G3DModelOptimization {
     memoryReduction: number;
 }
 
-export interface G3DTrainingResult {
+export interface TrainingResult {
     modelId: string;
-    trainingHistory: G3DTrainingHistory;
-    finalMetrics: G3DModelMetrics;
+    trainingHistory: TrainingHistory;
+    finalMetrics: ModelMetrics;
     bestCheckpoint: string;
     trainingTime: number;
     convergenceEpoch: number;
-    optimizedModel?: G3DOptimizedModel;
+    optimizedModel?: OptimizedModel;
 }
 
-export interface G3DTrainingHistory {
+export interface TrainingHistory {
     epochs: number[];
     trainLoss: number[];
     valLoss: number[];
@@ -142,7 +142,7 @@ export interface G3DTrainingHistory {
     customMetrics: Map<string, number[]>;
 }
 
-export interface G3DModelMetrics {
+export interface ModelMetrics {
     accuracy: number;
     precision: number;
     recall: number;
@@ -153,27 +153,27 @@ export interface G3DModelMetrics {
     dice: number; // For segmentation
     iou: number; // For segmentation
     hausdorffDistance?: number; // For segmentation
-    clinicalMetrics: G3DClinicalMetrics;
+    clinicalMetrics: ClinicalMetrics;
 }
 
-export interface G3DClinicalMetrics {
+export interface ClinicalMetrics {
     diagnosticAccuracy: number;
     falsePositiveRate: number;
     falseNegativeRate: number;
     clinicalAgreement: number;
-    radiologistComparison: G3DRadiologistComparison;
+    radiologistComparison: RadiologistComparison;
     timeToDecision: number;
     confidenceCalibration: number;
 }
 
-export interface G3DRadiologistComparison {
+export interface RadiologistComparison {
     juniorRadiologist: { agreement: number; confidence: number };
     seniorRadiologist: { agreement: number; confidence: number };
     subspecialist: { agreement: number; confidence: number };
     consensus: { agreement: number; confidence: number };
 }
 
-export interface G3DOptimizedModel {
+export interface OptimizedModel {
     originalSize: number; // MB
     optimizedSize: number; // MB
     speedupFactor: number;
@@ -183,10 +183,10 @@ export interface G3DOptimizedModel {
 }
 
 // Medical-Specific Neural Network Architectures
-export class G3DMedicalArchitectures {
+export class MedicalArchitectures {
     // ResNet-based Medical CNN
-    static createMedicalResNet(inputShape: number[], numClasses: number): G3DModelArchitecture {
-        const layers: G3DLayer[] = [
+    static createMedicalResNet(inputShape: number[], numClasses: number): ModelArchitecture {
+        const layers: Layer[] = [
             // Initial convolution
             {
                 id: 'conv1',
@@ -258,8 +258,8 @@ export class G3DMedicalArchitectures {
     }
 
     // U-Net for Medical Segmentation
-    static createMedicalUNet(inputShape: number[], numClasses: number): G3DModelArchitecture {
-        const layers: G3DLayer[] = [
+    static createMedicalUNet(inputShape: number[], numClasses: number): ModelArchitecture {
+        const layers: Layer[] = [
             // Encoder
             {
                 id: 'enc_conv1',
@@ -307,14 +307,14 @@ export class G3DMedicalArchitectures {
     }
 
     // Vision Transformer for Medical Imaging
-    static createMedicalViT(inputShape: number[], numClasses: number): G3DModelArchitecture {
+    static createMedicalViT(inputShape: number[], numClasses: number): ModelArchitecture {
         const patchSize = 16;
         const numPatches = (inputShape[0] / patchSize) * (inputShape[1] / patchSize);
         const embedDim = 768;
         const numHeads = 12;
         const numLayers = 12;
 
-        const layers: G3DLayer[] = [
+        const layers: Layer[] = [
             // Patch embedding
             {
                 id: 'patch_embed',
@@ -371,8 +371,8 @@ export class G3DMedicalArchitectures {
     }
 
     // 3D CNN for Volumetric Medical Data
-    static createMedical3DCNN(inputShape: number[], numClasses: number): G3DModelArchitecture {
-        const layers: G3DLayer[] = [
+    static createMedical3DCNN(inputShape: number[], numClasses: number): ModelArchitecture {
+        const layers: Layer[] = [
             {
                 id: 'conv3d_1',
                 type: 'conv3d',
@@ -427,7 +427,7 @@ export class G3DMedicalArchitectures {
         };
     }
 
-    private static getDefaultTrainingConfig(): G3DTrainingConfig {
+    private static getDefaultTrainingConfig(): TrainingConfig {
         return {
             optimizer: 'adam',
             learningRate: 0.001,
@@ -467,18 +467,18 @@ export class G3DMedicalArchitectures {
 }
 
 // Main Neural Networks System
-export class G3DNeuralNetworks {
-    private config: G3DNeuralNetworkConfig;
-    private models: Map<string, G3DModelArchitecture> = new Map();
+export class NeuralNetworks {
+    private config: NeuralNetworkConfig;
+    private models: Map<string, ModelArchitecture> = new Map();
     private trainedModels: Map<string, any> = new Map(); // Would store actual model weights
-    private trainingHistory: Map<string, G3DTrainingHistory> = new Map();
+    private trainingHistory: Map<string, TrainingHistory> = new Map();
     private isInitialized: boolean = false;
 
-    constructor(config: Partial<G3DNeuralNetworkConfig> = {}) {
+    constructor(config: Partial<NeuralNetworkConfig> = {}) {
         this.config = {
             architecture: 'cnn',
             modelSize: 'medium',
-            precision: 'float32' as G3DPrecision,
+            precision: 'float32' as Precision,
             enableTransferLearning: true,
             enableFederatedLearning: false,
             optimizationLevel: 'basic',
@@ -514,18 +514,18 @@ export class G3DNeuralNetworks {
         const numClasses = 10;
 
         // CNN architectures
-        const resnet = G3DMedicalArchitectures.createMedicalResNet(inputShape, numClasses);
+        const resnet = MedicalArchitectures.createMedicalResNet(inputShape, numClasses);
         this.models.set(resnet.id, resnet);
 
-        const unet = G3DMedicalArchitectures.createMedicalUNet(inputShape, 1);
+        const unet = MedicalArchitectures.createMedicalUNet(inputShape, 1);
         this.models.set(unet.id, unet);
 
         // Transformer architectures
-        const vit = G3DMedicalArchitectures.createMedicalViT(inputShape, numClasses);
+        const vit = MedicalArchitectures.createMedicalViT(inputShape, numClasses);
         this.models.set(vit.id, vit);
 
         // 3D architectures
-        const cnn3d = G3DMedicalArchitectures.createMedical3DCNN([64, 64, 64, 1], numClasses);
+        const cnn3d = MedicalArchitectures.createMedical3DCNN([64, 64, 64, 1], numClasses);
         this.models.set(cnn3d.id, cnn3d);
 
         console.log(`Loaded ${this.models.size} medical neural network architectures`);
@@ -551,14 +551,14 @@ export class G3DNeuralNetworks {
 
     createCustomArchitecture(config: {
         name: string;
-        type: G3DModelArchitecture['type'];
+        type: ModelArchitecture['type'];
         inputShape: number[];
         outputShape: number[];
-        layers: Partial<G3DLayer>[];
+        layers: Partial<Layer>[];
     }): string {
         const modelId = `custom_${Date.now()}_${Math.random()}`;
 
-        const layers: G3DLayer[] = config.layers.map((layerConfig, index) => ({
+        const layers: Layer[] = config.layers.map((layerConfig, index) => ({
             id: layerConfig.id || `layer_${index}`,
             type: layerConfig.type || 'conv2d',
             parameters: layerConfig.parameters || {},
@@ -568,7 +568,7 @@ export class G3DNeuralNetworks {
             regularization: layerConfig.regularization
         }));
 
-        const architecture: G3DModelArchitecture = {
+        const architecture: ModelArchitecture = {
             id: modelId,
             name: config.name,
             type: config.type,
@@ -578,7 +578,7 @@ export class G3DNeuralNetworks {
             parameters: this.calculateParameters(layers),
             flops: this.calculateFLOPs(layers),
             memoryRequirement: this.calculateMemoryRequirement(layers),
-            trainingConfig: G3DMedicalArchitectures['getDefaultTrainingConfig'](),
+            trainingConfig: MedicalArchitectures['getDefaultTrainingConfig'](),
             optimizations: []
         };
 
@@ -590,7 +590,7 @@ export class G3DNeuralNetworks {
         modelId: string,
         trainingData: { inputs: ArrayBuffer[]; labels: ArrayBuffer[] },
         validationData?: { inputs: ArrayBuffer[]; labels: ArrayBuffer[] }
-    ): Promise<G3DTrainingResult> {
+    ): Promise<TrainingResult> {
         const model = this.models.get(modelId);
         if (!model) {
             throw new Error(`Model ${modelId} not found`);
@@ -615,7 +615,7 @@ export class G3DNeuralNetworks {
 
         this.trainingHistory.set(modelId, trainingHistory);
 
-        const result: G3DTrainingResult = {
+        const result: TrainingResult = {
             modelId,
             trainingHistory,
             finalMetrics,
@@ -635,14 +635,14 @@ export class G3DNeuralNetworks {
     async evaluateModel(
         modelId: string,
         testData: { inputs: ArrayBuffer[]; labels: ArrayBuffer[] }
-    ): Promise<G3DModelMetrics> {
+    ): Promise<ModelMetrics> {
         const model = this.models.get(modelId);
         if (!model) {
             throw new Error(`Model ${modelId} not found`);
         }
 
         // Simulate model evaluation
-        const metrics: G3DModelMetrics = {
+        const metrics: ModelMetrics = {
             accuracy: 0.85 + Math.random() * 0.1,
             precision: 0.83 + Math.random() * 0.1,
             recall: 0.82 + Math.random() * 0.1,
@@ -671,13 +671,13 @@ export class G3DNeuralNetworks {
         return metrics;
     }
 
-    async optimizeModel(modelId: string): Promise<G3DOptimizedModel> {
+    async optimizeModel(modelId: string): Promise<OptimizedModel> {
         const model = this.models.get(modelId);
         if (!model) {
             throw new Error(`Model ${modelId} not found`);
         }
 
-        const optimizations: G3DModelOptimization[] = [];
+        const optimizations: ModelOptimization[] = [];
         let speedupFactor = 1.0;
         let accuracyRetention = 1.0;
         let memoryReduction = 0.0;
@@ -686,7 +686,7 @@ export class G3DNeuralNetworks {
         if (this.config.optimizationLevel === 'basic' || this.config.optimizationLevel === 'aggressive') {
             optimizations.push({
                 type: 'quantization',
-                parameters: { precision: 'int8' as G3DPrecision },
+                parameters: { precision: 'int8' as Precision },
                 speedupFactor: 2.0,
                 accuracyRetention: 0.98,
                 memoryReduction: 0.75
@@ -754,12 +754,12 @@ export class G3DNeuralNetworks {
     }
 
     private async simulateTraining(
-        model: G3DModelArchitecture,
+        model: ModelArchitecture,
         trainingData: any,
         validationData?: any
-    ): Promise<G3DTrainingHistory> {
+    ): Promise<TrainingHistory> {
         const epochs = model.trainingConfig.epochs;
-        const history: G3DTrainingHistory = {
+        const history: TrainingHistory = {
             epochs: [],
             trainLoss: [],
             valLoss: [],
@@ -795,7 +795,7 @@ export class G3DNeuralNetworks {
         return history;
     }
 
-    private findConvergenceEpoch(history: G3DTrainingHistory): number {
+    private findConvergenceEpoch(history: TrainingHistory): number {
         // Find epoch with best validation accuracy
         let bestEpoch = 0;
         let bestAccuracy = 0;
@@ -810,7 +810,7 @@ export class G3DNeuralNetworks {
         return bestEpoch;
     }
 
-    private calculateParameters(layers: G3DLayer[]): number {
+    private calculateParameters(layers: Layer[]): number {
         // Simplified parameter calculation
         return layers.reduce((total, layer) => {
             switch (layer.type) {
@@ -831,7 +831,7 @@ export class G3DNeuralNetworks {
         }, 0);
     }
 
-    private calculateFLOPs(layers: G3DLayer[]): number {
+    private calculateFLOPs(layers: Layer[]): number {
         // Simplified FLOP calculation
         return layers.reduce((total, layer) => {
             switch (layer.type) {
@@ -852,7 +852,7 @@ export class G3DNeuralNetworks {
         }, 0);
     }
 
-    private calculateMemoryRequirement(layers: G3DLayer[]): number {
+    private calculateMemoryRequirement(layers: Layer[]): number {
         // Simplified memory calculation in MB
         const totalParameters = this.calculateParameters(layers);
         const activationMemory = layers.reduce((total, layer) => {
@@ -863,15 +863,15 @@ export class G3DNeuralNetworks {
         return (totalParameters * 4 + activationMemory) / (1024 * 1024); // Convert to MB
     }
 
-    getModel(modelId: string): G3DModelArchitecture | undefined {
+    getModel(modelId: string): ModelArchitecture | undefined {
         return this.models.get(modelId);
     }
 
-    getAllModels(): G3DModelArchitecture[] {
+    getAllModels(): ModelArchitecture[] {
         return Array.from(this.models.values());
     }
 
-    getTrainingHistory(modelId: string): G3DTrainingHistory | undefined {
+    getTrainingHistory(modelId: string): TrainingHistory | undefined {
         return this.trainingHistory.get(modelId);
     }
 
@@ -879,7 +879,7 @@ export class G3DNeuralNetworks {
         return this.trainedModels.has(modelId);
     }
 
-    getModelsByType(type: G3DModelArchitecture['type']): G3DModelArchitecture[] {
+    getModelsByType(type: ModelArchitecture['type']): ModelArchitecture[] {
         return Array.from(this.models.values()).filter(model => model.type === type);
     }
 
@@ -893,4 +893,4 @@ export class G3DNeuralNetworks {
     }
 }
 
-export default G3DNeuralNetworks;
+export default NeuralNetworks;

@@ -14,7 +14,7 @@
 import { vec3, mat4 } from 'gl-matrix';
 
 // Computer Vision Types
-export interface G3DComputerVisionConfig {
+export interface ComputerVisionConfig {
     enableGPUAcceleration: boolean;
     enableRealTimeProcessing: boolean;
     imageEnhancementLevel: 'basic' | 'advanced' | 'professional';
@@ -24,17 +24,17 @@ export interface G3DComputerVisionConfig {
     qualityAssessment: boolean;
 }
 
-export interface G3DImageProcessingPipeline {
+export interface ImageProcessingPipeline {
     id: string;
     name: string;
-    steps: G3DProcessingStep[];
+    steps: ProcessingStep[];
     inputFormat: string;
     outputFormat: string;
     processingTime: number;
-    qualityMetrics: G3DQualityMetrics;
+    qualityMetrics: QualityMetrics;
 }
 
-export interface G3DProcessingStep {
+export interface ProcessingStep {
     id: string;
     name: string;
     type: 'filter' | 'enhancement' | 'segmentation' | 'registration' | 'analysis';
@@ -44,17 +44,17 @@ export interface G3DProcessingStep {
     processingTime: number;
 }
 
-export interface G3DQualityMetrics {
+export interface QualityMetrics {
     snr: number; // Signal-to-Noise Ratio
     cnr: number; // Contrast-to-Noise Ratio
     sharpness: number;
     contrast: number;
     brightness: number;
     uniformity: number;
-    artifacts: G3DArtifactDetection[];
+    artifacts: ArtifactDetection[];
 }
 
-export interface G3DArtifactDetection {
+export interface ArtifactDetection {
     type: 'motion' | 'noise' | 'aliasing' | 'truncation' | 'susceptibility' | 'chemical_shift';
     severity: 'minimal' | 'mild' | 'moderate' | 'severe';
     location: vec3;
@@ -62,66 +62,66 @@ export interface G3DArtifactDetection {
     correction: string;
 }
 
-export interface G3DImageEnhancement {
-    contrastEnhancement: G3DContrastEnhancement;
-    noiseReduction: G3DNoiseReduction;
-    sharpening: G3DSharpening;
-    edgeEnhancement: G3DEdgeEnhancement;
-    histogramEqualization: G3DHistogramEqualization;
+export interface ImageEnhancement {
+    contrastEnhancement: ContrastEnhancement;
+    noiseReduction: NoiseReduction;
+    sharpening: Sharpening;
+    edgeEnhancement: EdgeEnhancement;
+    histogramEqualization: HistogramEqualization;
 }
 
-export interface G3DContrastEnhancement {
+export interface ContrastEnhancement {
     method: 'linear' | 'gamma' | 'sigmoid' | 'adaptive' | 'clahe';
     parameters: object;
     windowLevel: { center: number; width: number };
     adaptiveRegions: boolean;
 }
 
-export interface G3DNoiseReduction {
+export interface NoiseReduction {
     method: 'none' | 'gaussian' | 'bilateral' | 'non_local_means' | 'anisotropic_diffusion' | 'wavelet';
     strength: number;
     preserveEdges: boolean;
     iterations: number;
 }
 
-export interface G3DSharpening {
+export interface Sharpening {
     method: 'unsharp_mask' | 'laplacian' | 'high_boost' | 'adaptive';
     strength: number;
     radius: number;
     threshold: number;
 }
 
-export interface G3DEdgeEnhancement {
+export interface EdgeEnhancement {
     method: 'sobel' | 'canny' | 'laplacian_of_gaussian' | 'gradient_magnitude';
     threshold: number;
     sigma: number;
     suppressNonMaxima: boolean;
 }
 
-export interface G3DHistogramEqualization {
+export interface HistogramEqualization {
     method: 'global' | 'adaptive' | 'clahe' | 'specification';
     clipLimit: number;
     tileGridSize: [number, number];
     distributionType: 'uniform' | 'exponential' | 'rayleigh';
 }
 
-export interface G3DFeatureExtraction {
-    textureFeatures: G3DTextureFeatures;
-    shapeFeatures: G3DShapeFeatures;
-    intensityFeatures: G3DIntensityFeatures;
-    spatialFeatures: G3DSpatialFeatures;
-    deepFeatures: G3DDeepFeatures;
+export interface FeatureExtraction {
+    textureFeatures: TextureFeatures;
+    shapeFeatures: ShapeFeatures;
+    intensityFeatures: IntensityFeatures;
+    spatialFeatures: SpatialFeatures;
+    deepFeatures: DeepFeatures;
 }
 
-export interface G3DTextureFeatures {
-    glcm: G3DGLCMFeatures; // Gray Level Co-occurrence Matrix
-    lbp: G3DLBPFeatures; // Local Binary Pattern
-    gabor: G3DGaborFeatures;
-    wavelet: G3DWaveletFeatures;
-    fractal: G3DFractalFeatures;
+export interface TextureFeatures {
+    glcm: GLCMFeatures; // Gray Level Co-occurrence Matrix
+    lbp: LBPFeatures; // Local Binary Pattern
+    gabor: GaborFeatures;
+    wavelet: WaveletFeatures;
+    fractal: FractalFeatures;
 }
 
-export interface G3DGLCMFeatures {
+export interface GLCMFeatures {
     contrast: number;
     correlation: number;
     energy: number;
@@ -130,14 +130,14 @@ export interface G3DGLCMFeatures {
     dissimilarity: number;
 }
 
-export interface G3DLBPFeatures {
+export interface LBPFeatures {
     histogram: number[];
     uniformity: number;
     variance: number;
     rotation_invariant: boolean;
 }
 
-export interface G3DGaborFeatures {
+export interface GaborFeatures {
     responses: number[];
     orientations: number[];
     frequencies: number[];
@@ -145,7 +145,7 @@ export interface G3DGaborFeatures {
     mean_amplitude: number;
 }
 
-export interface G3DWaveletFeatures {
+export interface WaveletFeatures {
     coefficients: number[];
     energy_distribution: number[];
     entropy: number;
@@ -153,14 +153,14 @@ export interface G3DWaveletFeatures {
     standard_deviation: number;
 }
 
-export interface G3DFractalFeatures {
+export interface FractalFeatures {
     dimension: number;
     lacunarity: number;
     multifractal_spectrum: number[];
     roughness: number;
 }
 
-export interface G3DShapeFeatures {
+export interface ShapeFeatures {
     area: number;
     perimeter: number;
     compactness: number;
@@ -170,17 +170,17 @@ export interface G3DShapeFeatures {
     orientation: number;
     major_axis_length: number;
     minor_axis_length: number;
-    moments: G3DMoments;
+    moments: Moments;
 }
 
-export interface G3DMoments {
+export interface Moments {
     central: number[];
     normalized: number[];
     hu: number[];
     zernike: number[];
 }
 
-export interface G3DIntensityFeatures {
+export interface IntensityFeatures {
     mean: number;
     median: number;
     mode: number;
@@ -194,7 +194,7 @@ export interface G3DIntensityFeatures {
     percentiles: number[];
 }
 
-export interface G3DSpatialFeatures {
+export interface SpatialFeatures {
     centroid: vec3;
     bounding_box: { min: vec3; max: vec3 };
     convex_hull: vec3[];
@@ -202,7 +202,7 @@ export interface G3DSpatialFeatures {
     distance_transform: number[];
 }
 
-export interface G3DDeepFeatures {
+export interface DeepFeatures {
     feature_vector: number[];
     layer_activations: Map<string, number[]>;
     attention_maps: number[][];
@@ -210,16 +210,16 @@ export interface G3DDeepFeatures {
     learned_representations: number[];
 }
 
-export interface G3DSegmentationResult {
+export interface SegmentationResult {
     id: string;
     algorithm: string;
-    segments: G3DSegment[];
+    segments: Segment[];
     confidence: number;
     processingTime: number;
     qualityScore: number;
 }
 
-export interface G3DSegment {
+export interface Segment {
     id: number;
     label: string;
     mask: Uint8Array;
@@ -228,18 +228,18 @@ export interface G3DSegment {
     volume: number;
     centroid: vec3;
     confidence: number;
-    properties: G3DSegmentProperties;
+    properties: SegmentProperties;
 }
 
-export interface G3DSegmentProperties {
+export interface SegmentProperties {
     meanIntensity: number;
     standardDeviation: number;
-    textureFeatures: G3DTextureFeatures;
-    shapeFeatures: G3DShapeFeatures;
+    textureFeatures: TextureFeatures;
+    shapeFeatures: ShapeFeatures;
     clinicalRelevance: string;
 }
 
-export interface G3DRegistrationResult {
+export interface RegistrationResult {
     id: string;
     method: string;
     transformationMatrix: mat4;
@@ -251,7 +251,7 @@ export interface G3DRegistrationResult {
 }
 
 // GPU Compute Shaders for Computer Vision
-export class G3DComputerVisionShaders {
+export class ComputerVisionShaders {
     static readonly GAUSSIAN_BLUR_SHADER = `
     @group(0) @binding(0) var<storage, read> input: array<f32>;
     @group(0) @binding(1) var<storage, read_write> output: array<f32>;
@@ -385,13 +385,13 @@ export class G3DComputerVisionShaders {
 }
 
 // Main Computer Vision System
-export class G3DComputerVision {
-    private config: G3DComputerVisionConfig;
+export class ComputerVision {
+    private config: ComputerVisionConfig;
     private device: GPUDevice | null = null;
     private isInitialized: boolean = false;
-    private processingPipelines: Map<string, G3DImageProcessingPipeline> = new Map();
+    private processingPipelines: Map<string, ImageProcessingPipeline> = new Map();
 
-    constructor(config: Partial<G3DComputerVisionConfig> = {}) {
+    constructor(config: Partial<ComputerVisionConfig> = {}) {
         this.config = {
             enableGPUAcceleration: true,
             enableRealTimeProcessing: true,
@@ -443,7 +443,7 @@ export class G3DComputerVision {
 
     private setupProcessingPipelines(): void {
         // Standard medical image enhancement pipeline
-        const enhancementPipeline: G3DImageProcessingPipeline = {
+        const enhancementPipeline: ImageProcessingPipeline = {
             id: 'medical_enhancement',
             name: 'Medical Image Enhancement',
             steps: [
@@ -492,7 +492,7 @@ export class G3DComputerVision {
         this.processingPipelines.set('medical_enhancement', enhancementPipeline);
 
         // Segmentation pipeline
-        const segmentationPipeline: G3DImageProcessingPipeline = {
+        const segmentationPipeline: ImageProcessingPipeline = {
             id: 'medical_segmentation',
             name: 'Medical Image Segmentation',
             steps: [
@@ -532,7 +532,7 @@ export class G3DComputerVision {
         this.processingPipelines.set('medical_segmentation', segmentationPipeline);
     }
 
-    async enhanceImage(imageData: ArrayBuffer, enhancementConfig?: Partial<G3DImageEnhancement>): Promise<ArrayBuffer> {
+    async enhanceImage(imageData: ArrayBuffer, enhancementConfig?: Partial<ImageEnhancement>): Promise<ArrayBuffer> {
         if (!this.isInitialized) {
             throw new Error('Computer vision system not initialized');
         }
@@ -565,10 +565,10 @@ export class G3DComputerVision {
         return processedData;
     }
 
-    async extractFeatures(imageData: ArrayBuffer, method?: string): Promise<G3DFeatureExtraction> {
+    async extractFeatures(imageData: ArrayBuffer, method?: string): Promise<FeatureExtraction> {
         const extractionMethod = method || this.config.featureExtractionMethod;
 
-        const features: G3DFeatureExtraction = {
+        const features: FeatureExtraction = {
             textureFeatures: await this.extractTextureFeatures(imageData),
             shapeFeatures: await this.extractShapeFeatures(imageData),
             intensityFeatures: await this.extractIntensityFeatures(imageData),
@@ -579,11 +579,11 @@ export class G3DComputerVision {
         return features;
     }
 
-    async segmentImage(imageData: ArrayBuffer, algorithm?: string): Promise<G3DSegmentationResult> {
+    async segmentImage(imageData: ArrayBuffer, algorithm?: string): Promise<SegmentationResult> {
         const segmentationAlgorithm = algorithm || this.config.segmentationAlgorithm;
         const startTime = Date.now();
 
-        let segments: G3DSegment[] = [];
+        let segments: Segment[] = [];
 
         switch (segmentationAlgorithm) {
             case 'watershed':
@@ -612,7 +612,7 @@ export class G3DComputerVision {
         };
     }
 
-    async registerImages(fixedImage: ArrayBuffer, movingImage: ArrayBuffer, method?: string): Promise<G3DRegistrationResult> {
+    async registerImages(fixedImage: ArrayBuffer, movingImage: ArrayBuffer, method?: string): Promise<RegistrationResult> {
         const registrationMethod = method || this.config.registrationMethod;
         const startTime = Date.now();
 
@@ -650,8 +650,8 @@ export class G3DComputerVision {
         };
     }
 
-    async assessImageQuality(imageData: ArrayBuffer): Promise<G3DQualityMetrics> {
-        const metrics: G3DQualityMetrics = {
+    async assessImageQuality(imageData: ArrayBuffer): Promise<QualityMetrics> {
+        const metrics: QualityMetrics = {
             snr: await this.calculateSNR(imageData),
             cnr: await this.calculateCNR(imageData),
             sharpness: await this.calculateSharpness(imageData),
@@ -664,7 +664,7 @@ export class G3DComputerVision {
         return metrics;
     }
 
-    private getDefaultEnhancementConfig(): G3DImageEnhancement {
+    private getDefaultEnhancementConfig(): ImageEnhancement {
         return {
             contrastEnhancement: {
                 method: 'clahe',
@@ -699,39 +699,39 @@ export class G3DComputerVision {
         };
     }
 
-    private async applyNoiseReduction(imageData: ArrayBuffer, config: G3DNoiseReduction): Promise<ArrayBuffer> {
+    private async applyNoiseReduction(imageData: ArrayBuffer, config: NoiseReduction): Promise<ArrayBuffer> {
         // Simplified noise reduction - in real implementation, would use GPU shaders
         return imageData; // Placeholder
     }
 
-    private async applyContrastEnhancement(imageData: ArrayBuffer, config: G3DContrastEnhancement): Promise<ArrayBuffer> {
+    private async applyContrastEnhancement(imageData: ArrayBuffer, config: ContrastEnhancement): Promise<ArrayBuffer> {
         if (this.device && config.method === 'clahe') {
             return this.applyCLAHEGPU(imageData, config);
         }
         return this.applyCLAHECPU(imageData, config);
     }
 
-    private async applyCLAHEGPU(imageData: ArrayBuffer, config: G3DContrastEnhancement): Promise<ArrayBuffer> {
+    private async applyCLAHEGPU(imageData: ArrayBuffer, config: ContrastEnhancement): Promise<ArrayBuffer> {
         // Simplified GPU CLAHE implementation
         return imageData; // Placeholder
     }
 
-    private async applyCLAHECPU(imageData: ArrayBuffer, config: G3DContrastEnhancement): Promise<ArrayBuffer> {
+    private async applyCLAHECPU(imageData: ArrayBuffer, config: ContrastEnhancement): Promise<ArrayBuffer> {
         // Simplified CPU CLAHE implementation
         return imageData; // Placeholder
     }
 
-    private async applySharpening(imageData: ArrayBuffer, config: G3DSharpening): Promise<ArrayBuffer> {
+    private async applySharpening(imageData: ArrayBuffer, config: Sharpening): Promise<ArrayBuffer> {
         // Simplified sharpening implementation
         return imageData; // Placeholder
     }
 
-    private async applyEdgeEnhancement(imageData: ArrayBuffer, config: G3DEdgeEnhancement): Promise<ArrayBuffer> {
+    private async applyEdgeEnhancement(imageData: ArrayBuffer, config: EdgeEnhancement): Promise<ArrayBuffer> {
         // Simplified edge enhancement implementation
         return imageData; // Placeholder
     }
 
-    private async extractTextureFeatures(imageData: ArrayBuffer): Promise<G3DTextureFeatures> {
+    private async extractTextureFeatures(imageData: ArrayBuffer): Promise<TextureFeatures> {
         // Simplified texture feature extraction
         return {
             glcm: {
@@ -771,7 +771,7 @@ export class G3DComputerVision {
         };
     }
 
-    private async extractShapeFeatures(imageData: ArrayBuffer): Promise<G3DShapeFeatures> {
+    private async extractShapeFeatures(imageData: ArrayBuffer): Promise<ShapeFeatures> {
         // Simplified shape feature extraction
         return {
             area: 1000,
@@ -792,7 +792,7 @@ export class G3DComputerVision {
         };
     }
 
-    private async extractIntensityFeatures(imageData: ArrayBuffer): Promise<G3DIntensityFeatures> {
+    private async extractIntensityFeatures(imageData: ArrayBuffer): Promise<IntensityFeatures> {
         // Simplified intensity feature extraction
         const data = new Float32Array(imageData);
 
@@ -821,7 +821,7 @@ export class G3DComputerVision {
         };
     }
 
-    private async extractSpatialFeatures(imageData: ArrayBuffer): Promise<G3DSpatialFeatures> {
+    private async extractSpatialFeatures(imageData: ArrayBuffer): Promise<SpatialFeatures> {
         // Simplified spatial feature extraction
         return {
             centroid: vec3.fromValues(100, 100, 50),
@@ -844,7 +844,7 @@ export class G3DComputerVision {
         };
     }
 
-    private async extractDeepFeatures(imageData: ArrayBuffer): Promise<G3DDeepFeatures> {
+    private async extractDeepFeatures(imageData: ArrayBuffer): Promise<DeepFeatures> {
         // Simplified deep feature extraction
         return {
             feature_vector: new Array(2048).fill(0).map(() => Math.random()),
@@ -863,7 +863,7 @@ export class G3DComputerVision {
         };
     }
 
-    private async watershedSegmentation(imageData: ArrayBuffer): Promise<G3DSegment[]> {
+    private async watershedSegmentation(imageData: ArrayBuffer): Promise<Segment[]> {
         // Simplified watershed segmentation
         return [{
             id: 1,
@@ -887,17 +887,17 @@ export class G3DComputerVision {
         }];
     }
 
-    private async regionGrowingSegmentation(imageData: ArrayBuffer): Promise<G3DSegment[]> {
+    private async regionGrowingSegmentation(imageData: ArrayBuffer): Promise<Segment[]> {
         // Simplified region growing segmentation
         return await this.watershedSegmentation(imageData); // Placeholder
     }
 
-    private async levelSetSegmentation(imageData: ArrayBuffer): Promise<G3DSegment[]> {
+    private async levelSetSegmentation(imageData: ArrayBuffer): Promise<Segment[]> {
         // Simplified level set segmentation
         return await this.watershedSegmentation(imageData); // Placeholder
     }
 
-    private async deepLearningSegmentation(imageData: ArrayBuffer): Promise<G3DSegment[]> {
+    private async deepLearningSegmentation(imageData: ArrayBuffer): Promise<Segment[]> {
         // Simplified deep learning segmentation
         return await this.watershedSegmentation(imageData); // Placeholder
     }
@@ -950,12 +950,12 @@ export class G3DComputerVision {
         return await this.affineRegistration(fixedImage, movingImage); // Placeholder
     }
 
-    private calculateSegmentationConfidence(segments: G3DSegment[]): number {
+    private calculateSegmentationConfidence(segments: Segment[]): number {
         if (segments.length === 0) return 0;
         return segments.reduce((sum, segment) => sum + segment.confidence, 0) / segments.length;
     }
 
-    private assessSegmentationQuality(segments: G3DSegment[]): number {
+    private assessSegmentationQuality(segments: Segment[]): number {
         // Simplified quality assessment
         return 0.85;
     }
@@ -990,7 +990,7 @@ export class G3DComputerVision {
         return 0.9;
     }
 
-    private async detectArtifacts(imageData: ArrayBuffer): Promise<G3DArtifactDetection[]> {
+    private async detectArtifacts(imageData: ArrayBuffer): Promise<ArtifactDetection[]> {
         // Simplified artifact detection
         return [{
             type: 'motion',
@@ -1001,11 +1001,11 @@ export class G3DComputerVision {
         }];
     }
 
-    getProcessingPipeline(id: string): G3DImageProcessingPipeline | undefined {
+    getProcessingPipeline(id: string): ImageProcessingPipeline | undefined {
         return this.processingPipelines.get(id);
     }
 
-    getAllPipelines(): G3DImageProcessingPipeline[] {
+    getAllPipelines(): ImageProcessingPipeline[] {
         return Array.from(this.processingPipelines.values());
     }
 
@@ -1017,4 +1017,4 @@ export class G3DComputerVision {
     }
 }
 
-export default G3DComputerVision;
+export default ComputerVision;

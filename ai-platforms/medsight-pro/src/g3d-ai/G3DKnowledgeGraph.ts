@@ -14,7 +14,7 @@
 import { vec3, mat4 } from 'gl-matrix';
 
 // Knowledge Graph Types
-export interface G3DKnowledgeGraphConfig {
+export interface KnowledgeGraphConfig {
     enableSemanticReasoning: boolean;
     enableOntologyInference: boolean;
     enableClinicalRules: boolean;
@@ -25,24 +25,24 @@ export interface G3DKnowledgeGraphConfig {
     updateFrequency: 'realtime' | 'daily' | 'weekly';
 }
 
-export interface G3DKnowledgeNode {
+export interface KnowledgeNode {
     id: string;
-    type: G3DNodeType;
+    type: NodeType;
     label: string;
     description: string;
     properties: Record<string, any>;
     confidence: number;
-    source: G3DKnowledgeSource;
+    source: KnowledgeSource;
     lastUpdated: Date;
     aliases: string[];
-    metadata: G3DNodeMetadata;
+    metadata: NodeMetadata;
 }
 
-export type G3DNodeType =
+export type NodeType =
     | 'disease' | 'symptom' | 'finding' | 'anatomy' | 'drug' | 'procedure'
     | 'biomarker' | 'gene' | 'pathway' | 'concept' | 'guideline' | 'evidence';
 
-export interface G3DKnowledgeSource {
+export interface KnowledgeSource {
     name: string;
     version: string;
     reliability: number;
@@ -51,7 +51,7 @@ export interface G3DKnowledgeSource {
     citation?: string;
 }
 
-export interface G3DNodeMetadata {
+export interface NodeMetadata {
     createdAt: Date;
     updatedAt: Date;
     version: number;
@@ -61,27 +61,27 @@ export interface G3DNodeMetadata {
     reviewStatus: 'pending' | 'approved' | 'deprecated';
 }
 
-export interface G3DKnowledgeEdge {
+export interface KnowledgeEdge {
     id: string;
     sourceId: string;
     targetId: string;
-    relationship: G3DRelationshipType;
+    relationship: RelationshipType;
     weight: number;
     confidence: number;
-    evidence: G3DEvidence[];
+    evidence: Evidence[];
     properties: Record<string, any>;
     bidirectional: boolean;
-    temporal: G3DTemporalConstraint[];
-    context: G3DContextConstraint[];
+    temporal: TemporalConstraint[];
+    context: ContextConstraint[];
 }
 
-export type G3DRelationshipType =
+export type RelationshipType =
     | 'causes' | 'treats' | 'prevents' | 'indicates' | 'contraindicates'
     | 'interacts_with' | 'located_in' | 'part_of' | 'associated_with'
     | 'precedes' | 'follows' | 'increases_risk' | 'decreases_risk'
     | 'manifests_as' | 'diagnosed_by' | 'measured_by' | 'affects' | 'detects';
 
-export interface G3DEvidence {
+export interface Evidence {
     type: 'clinical_trial' | 'meta_analysis' | 'case_study' | 'expert_opinion' | 'guideline';
     level: 'I' | 'II' | 'III' | 'IV' | 'V';
     strength: 'strong' | 'moderate' | 'weak' | 'insufficient';
@@ -93,107 +93,107 @@ export interface G3DEvidence {
     studyType?: string;
 }
 
-export interface G3DTemporalConstraint {
+export interface TemporalConstraint {
     type: 'before' | 'after' | 'during' | 'concurrent';
     timeframe?: string;
     duration?: number;
     unit?: 'minutes' | 'hours' | 'days' | 'weeks' | 'months' | 'years';
 }
 
-export interface G3DContextConstraint {
+export interface ContextConstraint {
     type: 'age' | 'gender' | 'condition' | 'severity' | 'stage' | 'location';
     value: string | number;
     operator: 'equals' | 'greater_than' | 'less_than' | 'in_range' | 'contains';
     unit?: string;
 }
 
-export interface G3DSemanticQuery {
+export interface SemanticQuery {
     id: string;
     query: string;
     queryType: 'concept' | 'relationship' | 'path' | 'inference' | 'similarity';
     parameters: Record<string, any>;
-    filters: G3DQueryFilter[];
+    filters: QueryFilter[];
     includeInferred: boolean;
     maxResults: number;
     confidenceThreshold: number;
 }
 
-export interface G3DQueryFilter {
+export interface QueryFilter {
     field: string;
     operator: 'equals' | 'contains' | 'starts_with' | 'greater_than' | 'less_than';
     value: any;
     negate?: boolean;
 }
 
-export interface G3DSemanticResult {
+export interface SemanticResult {
     queryId: string;
     timestamp: Date;
-    results: G3DKnowledgeMatch[];
+    results: KnowledgeMatch[];
     totalCount: number;
     executionTime: number;
     confidence: number;
-    inferenceChain?: G3DInferenceStep[];
+    inferenceChain?: InferenceStep[];
 }
 
-export interface G3DKnowledgeMatch {
-    node?: G3DKnowledgeNode;
-    edge?: G3DKnowledgeEdge;
-    path?: G3DKnowledgePath;
+export interface KnowledgeMatch {
+    node?: KnowledgeNode;
+    edge?: KnowledgeEdge;
+    path?: KnowledgePath;
     score: number;
     confidence: number;
     relevance: number;
     explanation: string;
 }
 
-export interface G3DKnowledgePath {
-    nodes: G3DKnowledgeNode[];
-    edges: G3DKnowledgeEdge[];
+export interface KnowledgePath {
+    nodes: KnowledgeNode[];
+    edges: KnowledgeEdge[];
     length: number;
     totalWeight: number;
     confidence: number;
     semanticMeaning: string;
 }
 
-export interface G3DInferenceStep {
+export interface InferenceStep {
     rule: string;
-    premises: G3DKnowledgeNode[];
-    conclusion: G3DKnowledgeNode;
+    premises: KnowledgeNode[];
+    conclusion: KnowledgeNode;
     confidence: number;
     reasoning: string;
 }
 
-export interface G3DClinicalRule {
+export interface ClinicalRule {
     id: string;
     name: string;
     description: string;
-    conditions: G3DRuleCondition[];
-    actions: G3DRuleAction[];
+    conditions: RuleCondition[];
+    actions: RuleAction[];
     priority: number;
     enabled: boolean;
-    evidence: G3DEvidence[];
+    evidence: Evidence[];
     lastValidated: Date;
 }
 
-export interface G3DRuleCondition {
+export interface RuleCondition {
     type: 'node_exists' | 'relationship_exists' | 'property_value' | 'path_exists';
-    nodeType?: G3DNodeType;
-    relationship?: G3DRelationshipType;
+    nodeType?: NodeType;
+    relationship?: RelationshipType;
     property?: string;
     value?: any;
     operator?: 'equals' | 'greater_than' | 'less_than' | 'contains';
     confidence?: number;
 }
 
-export interface G3DRuleAction {
+export interface RuleAction {
     type: 'infer_node' | 'infer_relationship' | 'recommend' | 'alert' | 'contraindicate';
     target?: string;
-    relationship?: G3DRelationshipType;
+    relationship?: RelationshipType;
     confidence: number;
     message: string;
     severity?: 'info' | 'warning' | 'error' | 'critical';
 }
 
-export interface G3DDrugInteraction {
+export interface DrugInteraction {
     id: string;
     drug1: string;
     drug2: string;
@@ -202,19 +202,19 @@ export interface G3DDrugInteraction {
     effect: string;
     clinicalSignificance: string;
     management: string;
-    evidence: G3DEvidence[];
+    evidence: Evidence[];
     frequency: 'common' | 'uncommon' | 'rare' | 'very_rare';
 }
 
-export interface G3DOntologyMapping {
+export interface OntologyMapping {
     sourceOntology: string;
     targetOntology: string;
-    mappings: G3DConceptMapping[];
+    mappings: ConceptMapping[];
     confidence: number;
     lastUpdated: Date;
 }
 
-export interface G3DConceptMapping {
+export interface ConceptMapping {
     sourceId: string;
     targetId: string;
     mappingType: 'exact' | 'broader' | 'narrower' | 'related' | 'approximate';
@@ -223,7 +223,7 @@ export interface G3DConceptMapping {
 }
 
 // Medical Ontologies
-export class G3DMedicalOntologies {
+export class MedicalOntologies {
     // Standard medical ontologies
     static readonly SNOMED_CT = {
         name: 'SNOMED CT',
@@ -267,19 +267,19 @@ export class G3DMedicalOntologies {
 }
 
 // Main Knowledge Graph System
-export class G3DKnowledgeGraph {
-    private config: G3DKnowledgeGraphConfig;
-    private nodes: Map<string, G3DKnowledgeNode> = new Map();
-    private edges: Map<string, G3DKnowledgeEdge> = new Map();
+export class KnowledgeGraph {
+    private config: KnowledgeGraphConfig;
+    private nodes: Map<string, KnowledgeNode> = new Map();
+    private edges: Map<string, KnowledgeEdge> = new Map();
     private nodeIndex: Map<string, Set<string>> = new Map(); // Type -> Node IDs
     private edgeIndex: Map<string, Set<string>> = new Map(); // Relationship -> Edge IDs
-    private clinicalRules: Map<string, G3DClinicalRule> = new Map();
-    private drugInteractions: Map<string, G3DDrugInteraction> = new Map();
-    private ontologyMappings: Map<string, G3DOntologyMapping> = new Map();
-    private inferenceCache: Map<string, G3DSemanticResult> = new Map();
+    private clinicalRules: Map<string, ClinicalRule> = new Map();
+    private drugInteractions: Map<string, DrugInteraction> = new Map();
+    private ontologyMappings: Map<string, OntologyMapping> = new Map();
+    private inferenceCache: Map<string, SemanticResult> = new Map();
     private isInitialized: boolean = false;
 
-    constructor(config: Partial<G3DKnowledgeGraphConfig> = {}) {
+    constructor(config: Partial<KnowledgeGraphConfig> = {}) {
         this.config = {
             enableSemanticReasoning: true,
             enableOntologyInference: true,
@@ -802,7 +802,7 @@ export class G3DKnowledgeGraph {
         }
     }
 
-    addNode(node: G3DKnowledgeNode): void {
+    addNode(node: KnowledgeNode): void {
         this.nodes.set(node.id, node);
 
         // Update index
@@ -812,7 +812,7 @@ export class G3DKnowledgeGraph {
         this.nodeIndex.get(node.type)!.add(node.id);
     }
 
-    addEdge(edge: G3DKnowledgeEdge): void {
+    addEdge(edge: KnowledgeEdge): void {
         this.edges.set(edge.id, edge);
 
         // Update index
@@ -822,13 +822,13 @@ export class G3DKnowledgeGraph {
         this.edgeIndex.get(edge.relationship)!.add(edge.id);
     }
 
-    async query(query: G3DSemanticQuery): Promise<G3DSemanticResult> {
+    async query(query: SemanticQuery): Promise<SemanticResult> {
         if (!this.isInitialized) {
             throw new Error('Knowledge graph not initialized');
         }
 
         const startTime = Date.now();
-        let results: G3DKnowledgeMatch[] = [];
+        let results: KnowledgeMatch[] = [];
 
         switch (query.queryType) {
             case 'concept':
@@ -853,7 +853,7 @@ export class G3DKnowledgeGraph {
             ? results.reduce((sum, r) => sum + r.confidence, 0) / results.length
             : 0;
 
-        const result: G3DSemanticResult = {
+        const result: SemanticResult = {
             queryId: query.id,
             timestamp: new Date(),
             results: results.slice(0, query.maxResults),
@@ -870,8 +870,8 @@ export class G3DKnowledgeGraph {
         return result;
     }
 
-    private async queryConcepts(query: G3DSemanticQuery): Promise<G3DKnowledgeMatch[]> {
-        const matches: G3DKnowledgeMatch[] = [];
+    private async queryConcepts(query: SemanticQuery): Promise<KnowledgeMatch[]> {
+        const matches: KnowledgeMatch[] = [];
         const searchTerm = query.query.toLowerCase();
 
         for (const [nodeId, node] of this.nodes) {
@@ -900,9 +900,9 @@ export class G3DKnowledgeGraph {
         return matches.sort((a, b) => b.relevance - a.relevance);
     }
 
-    private async queryRelationships(query: G3DSemanticQuery): Promise<G3DKnowledgeMatch[]> {
-        const matches: G3DKnowledgeMatch[] = [];
-        const relationshipType = query.parameters.relationship as G3DRelationshipType;
+    private async queryRelationships(query: SemanticQuery): Promise<KnowledgeMatch[]> {
+        const matches: KnowledgeMatch[] = [];
+        const relationshipType = query.parameters.relationship as RelationshipType;
 
         if (relationshipType && this.edgeIndex.has(relationshipType)) {
             const edgeIds = this.edgeIndex.get(relationshipType)!;
@@ -925,8 +925,8 @@ export class G3DKnowledgeGraph {
         return matches.sort((a, b) => b.relevance - a.relevance);
     }
 
-    private async queryPaths(query: G3DSemanticQuery): Promise<G3DKnowledgeMatch[]> {
-        const matches: G3DKnowledgeMatch[] = [];
+    private async queryPaths(query: SemanticQuery): Promise<KnowledgeMatch[]> {
+        const matches: KnowledgeMatch[] = [];
         const sourceId = query.parameters.source as string;
         const targetId = query.parameters.target as string;
         const maxDepth = query.parameters.maxDepth || this.config.maxInferenceDepth;
@@ -950,8 +950,8 @@ export class G3DKnowledgeGraph {
         return matches.sort((a, b) => b.relevance - a.relevance);
     }
 
-    private async performInference(query: G3DSemanticQuery): Promise<G3DKnowledgeMatch[]> {
-        const matches: G3DKnowledgeMatch[] = [];
+    private async performInference(query: SemanticQuery): Promise<KnowledgeMatch[]> {
+        const matches: KnowledgeMatch[] = [];
 
         if (this.config.enableSemanticReasoning) {
             // Apply clinical rules
@@ -966,8 +966,8 @@ export class G3DKnowledgeGraph {
         return matches.sort((a, b) => b.relevance - a.relevance);
     }
 
-    private async querySimilarity(query: G3DSemanticQuery): Promise<G3DKnowledgeMatch[]> {
-        const matches: G3DKnowledgeMatch[] = [];
+    private async querySimilarity(query: SemanticQuery): Promise<KnowledgeMatch[]> {
+        const matches: KnowledgeMatch[] = [];
         const targetNodeId = query.parameters.nodeId as string;
         const targetNode = this.nodes.get(targetNodeId);
 
@@ -992,11 +992,11 @@ export class G3DKnowledgeGraph {
         return matches.sort((a, b) => b.relevance - a.relevance);
     }
 
-    private findPaths(sourceId: string, targetId: string, maxDepth: number): G3DKnowledgePath[] {
-        const paths: G3DKnowledgePath[] = [];
+    private findPaths(sourceId: string, targetId: string, maxDepth: number): KnowledgePath[] {
+        const paths: KnowledgePath[] = [];
         const visited = new Set<string>();
 
-        const dfs = (currentId: string, path: G3DKnowledgeNode[], edges: G3DKnowledgeEdge[], depth: number) => {
+        const dfs = (currentId: string, path: KnowledgeNode[], edges: KnowledgeEdge[], depth: number) => {
             if (depth > maxDepth || visited.has(currentId)) return;
 
             const currentNode = this.nodes.get(currentId);
@@ -1038,7 +1038,7 @@ export class G3DKnowledgeGraph {
         return paths.slice(0, 10); // Limit results
     }
 
-    private calculateSimilarity(node1: G3DKnowledgeNode, node2: G3DKnowledgeNode): number {
+    private calculateSimilarity(node1: KnowledgeNode, node2: KnowledgeNode): number {
         let similarity = 0;
 
         // Type similarity
@@ -1066,7 +1066,7 @@ export class G3DKnowledgeGraph {
         return union.size > 0 ? intersection.size / union.size : 0;
     }
 
-    private evaluateRuleConditions(rule: G3DClinicalRule, query: G3DSemanticQuery): boolean {
+    private evaluateRuleConditions(rule: ClinicalRule, query: SemanticQuery): boolean {
         // Simplified rule evaluation
         return rule.conditions.every(condition => {
             switch (condition.type) {
@@ -1082,8 +1082,8 @@ export class G3DKnowledgeGraph {
         });
     }
 
-    private applyRuleActions(rule: G3DClinicalRule, query: G3DSemanticQuery): G3DKnowledgeMatch[] {
-        const matches: G3DKnowledgeMatch[] = [];
+    private applyRuleActions(rule: ClinicalRule, query: SemanticQuery): KnowledgeMatch[] {
+        const matches: KnowledgeMatch[] = [];
 
         for (const action of rule.actions) {
             if (action.type === 'recommend' && action.target) {
@@ -1103,7 +1103,7 @@ export class G3DKnowledgeGraph {
         return matches;
     }
 
-    private generatePathMeaning(nodes: G3DKnowledgeNode[], edges: G3DKnowledgeEdge[]): string {
+    private generatePathMeaning(nodes: KnowledgeNode[], edges: KnowledgeEdge[]): string {
         if (nodes.length < 2) return '';
 
         let meaning = nodes[0].label;
@@ -1114,30 +1114,30 @@ export class G3DKnowledgeGraph {
         return meaning;
     }
 
-    getNode(nodeId: string): G3DKnowledgeNode | undefined {
+    getNode(nodeId: string): KnowledgeNode | undefined {
         return this.nodes.get(nodeId);
     }
 
-    getEdge(edgeId: string): G3DKnowledgeEdge | undefined {
+    getEdge(edgeId: string): KnowledgeEdge | undefined {
         return this.edges.get(edgeId);
     }
 
-    getNodesByType(type: G3DNodeType): G3DKnowledgeNode[] {
+    getNodesByType(type: NodeType): KnowledgeNode[] {
         const nodeIds = this.nodeIndex.get(type) || new Set();
         return Array.from(nodeIds).map(id => this.nodes.get(id)!).filter(Boolean);
     }
 
-    getEdgesByRelationship(relationship: G3DRelationshipType): G3DKnowledgeEdge[] {
+    getEdgesByRelationship(relationship: RelationshipType): KnowledgeEdge[] {
         const edgeIds = this.edgeIndex.get(relationship) || new Set();
         return Array.from(edgeIds).map(id => this.edges.get(id)!).filter(Boolean);
     }
 
-    getDrugInteractions(drugId: string): G3DDrugInteraction[] {
+    getDrugInteractions(drugId: string): DrugInteraction[] {
         return Array.from(this.drugInteractions.values())
             .filter(interaction => interaction.drug1 === drugId || interaction.drug2 === drugId);
     }
 
-    getClinicalRules(): G3DClinicalRule[] {
+    getClinicalRules(): ClinicalRule[] {
         return Array.from(this.clinicalRules.values()).filter(rule => rule.enabled);
     }
 
@@ -1174,4 +1174,4 @@ export class G3DKnowledgeGraph {
     }
 }
 
-export default G3DKnowledgeGraph;
+export default KnowledgeGraph;

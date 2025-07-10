@@ -3,7 +3,7 @@
  * Global deployment, scaling, and geographic distribution
  */
 
-export interface G3DGlobalConfig {
+export interface GlobalConfig {
     enableGlobalDeployment: boolean;
     enableMultiRegion: boolean;
     enableCDN: boolean;
@@ -16,7 +16,7 @@ export interface G3DGlobalConfig {
     complianceRegions: Record<string, string[]>;
 }
 
-export interface G3DRegionStatus {
+export interface RegionStatus {
     region: string;
     status: 'active' | 'inactive' | 'maintenance' | 'degraded';
     health: number;
@@ -27,17 +27,17 @@ export interface G3DRegionStatus {
     lastUpdate: number;
 }
 
-export interface G3DScalingMetrics {
+export interface ScalingMetrics {
     globalUsers: number;
     totalRequests: number;
     averageLatency: number;
     globalThroughput: number;
     regionDistribution: Record<string, number>;
-    scalingEvents: G3DScalingEvent[];
+    scalingEvents: ScalingEvent[];
     lastUpdated: number;
 }
 
-export interface G3DScalingEvent {
+export interface ScalingEvent {
     id: string;
     type: 'scale_up' | 'scale_down' | 'failover' | 'region_switch';
     region: string;
@@ -47,13 +47,13 @@ export interface G3DScalingEvent {
     success: boolean;
 }
 
-export class G3DGlobalScaling {
-    private config: G3DGlobalConfig;
+export class GlobalScaling {
+    private config: GlobalConfig;
     private isInitialized: boolean = false;
-    private regionStatus: Map<string, G3DRegionStatus> = new Map();
-    private scalingMetrics: G3DScalingMetrics;
+    private regionStatus: Map<string, RegionStatus> = new Map();
+    private scalingMetrics: ScalingMetrics;
 
-    constructor(config: Partial<G3DGlobalConfig> = {}) {
+    constructor(config: Partial<GlobalConfig> = {}) {
         this.config = {
             enableGlobalDeployment: true,
             enableMultiRegion: true,
@@ -151,7 +151,7 @@ export class G3DGlobalScaling {
             throw new Error(`Region ${region} not found`);
         }
 
-        const scalingEvent: G3DScalingEvent = {
+        const scalingEvent: ScalingEvent = {
             id: `scale_${Date.now()}`,
             type: targetCapacity > regionData.capacity ? 'scale_up' : 'scale_down',
             region,
@@ -168,18 +168,18 @@ export class G3DGlobalScaling {
         console.log(`Region ${region} scaled to capacity: ${targetCapacity}`);
     }
 
-    public getRegionStatus(): G3DRegionStatus[] {
+    public getRegionStatus(): RegionStatus[] {
         return Array.from(this.regionStatus.values());
     }
 
-    public getScalingMetrics(): G3DScalingMetrics {
+    public getScalingMetrics(): ScalingMetrics {
         return { ...this.scalingMetrics };
     }
 
     public async performFailover(fromRegion: string, toRegion: string): Promise<void> {
         console.log(`Performing failover from ${fromRegion} to ${toRegion}`);
 
-        const scalingEvent: G3DScalingEvent = {
+        const scalingEvent: ScalingEvent = {
             id: `failover_${Date.now()}`,
             type: 'failover',
             region: toRegion,
@@ -199,4 +199,4 @@ export class G3DGlobalScaling {
     }
 }
 
-export default G3DGlobalScaling;
+export default GlobalScaling;

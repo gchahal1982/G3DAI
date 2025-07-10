@@ -3,17 +3,17 @@
  * Intelligent optimization strategies for medical 3D applications
  */
 
-export interface G3DOptimizationConfig {
+export interface OptimizationConfig {
     enableAutoOptimization: boolean;
     optimizationInterval: number;
-    performanceThresholds: G3DPerformanceThresholds;
-    medicalPriorityWeights: G3DMedicalPriorityWeights;
+    performanceThresholds: PerformanceThresholds;
+    medicalPriorityWeights: MedicalPriorityWeights;
     enableMachineLearning: boolean;
     enablePredictiveOptimization: boolean;
     maxOptimizationIterations: number;
 }
 
-export interface G3DPerformanceThresholds {
+export interface PerformanceThresholds {
     minFrameRate: number;
     maxFrameTime: number;
     maxMemoryUsage: number;
@@ -22,7 +22,7 @@ export interface G3DPerformanceThresholds {
     maxNetworkLatency: number;
 }
 
-export interface G3DMedicalPriorityWeights {
+export interface MedicalPriorityWeights {
     emergency: number;
     critical: number;
     urgent: number;
@@ -32,26 +32,26 @@ export interface G3DMedicalPriorityWeights {
     research: number;
 }
 
-export interface G3DOptimizationStrategy {
+export interface OptimizationStrategy {
     id: string;
     name: string;
     category: 'rendering' | 'memory' | 'compute' | 'network' | 'medical';
     priority: 'low' | 'medium' | 'high' | 'critical';
     description: string;
-    implementation: () => Promise<G3DOptimizationResult>;
-    conditions: G3DOptimizationCondition[];
+    implementation: () => Promise<OptimizationResult>;
+    conditions: OptimizationCondition[];
     estimatedImpact: number; // 0-100
     medicalSafety: 'safe' | 'caution' | 'risk';
 }
 
-export interface G3DOptimizationCondition {
+export interface OptimizationCondition {
     metric: string;
     operator: 'gt' | 'lt' | 'eq' | 'gte' | 'lte' | 'ne';
     value: number;
     medicalContext?: string[];
 }
 
-export interface G3DOptimizationResult {
+export interface OptimizationResult {
     strategyId: string;
     success: boolean;
     performanceGain: number;
@@ -62,7 +62,7 @@ export interface G3DOptimizationResult {
     error?: string;
 }
 
-export interface G3DMedicalOptimizationContext {
+export interface MedicalOptimizationContext {
     patientId: string;
     studyType: string;
     modality: string;
@@ -72,27 +72,27 @@ export interface G3DMedicalOptimizationContext {
     timeConstraints: number; // milliseconds
 }
 
-export interface G3DOptimizationPlan {
+export interface OptimizationPlan {
     id: string;
-    strategies: G3DOptimizationStrategy[];
+    strategies: OptimizationStrategy[];
     estimatedTotalImpact: number;
     estimatedDuration: number;
     medicalRiskAssessment: string;
     executionOrder: string[];
 }
 
-export class G3DOptimizationEngine {
-    private config: G3DOptimizationConfig;
-    private strategies: Map<string, G3DOptimizationStrategy> = new Map();
-    private optimizationHistory: G3DOptimizationResult[] = [];
-    private currentPlan: G3DOptimizationPlan | null = null;
+export class OptimizationEngine {
+    private config: OptimizationConfig;
+    private strategies: Map<string, OptimizationStrategy> = new Map();
+    private optimizationHistory: OptimizationResult[] = [];
+    private currentPlan: OptimizationPlan | null = null;
     private isOptimizing: boolean = false;
     private intervalId: number | null = null;
 
     private performanceData: any[] = [];
-    private medicalContext: G3DMedicalOptimizationContext | null = null;
+    private medicalContext: MedicalOptimizationContext | null = null;
 
-    constructor(config: Partial<G3DOptimizationConfig> = {}) {
+    constructor(config: Partial<OptimizationConfig> = {}) {
         this.config = {
             enableAutoOptimization: true,
             optimizationInterval: 5000, // 5 seconds
@@ -287,12 +287,12 @@ export class G3DOptimizationEngine {
         console.log(`Initialized ${this.strategies.size} optimization strategies`);
     }
 
-    private addStrategy(strategy: G3DOptimizationStrategy): void {
+    private addStrategy(strategy: OptimizationStrategy): void {
         this.strategies.set(strategy.id, strategy);
     }
 
     // Strategy implementations
-    private async reduceRenderQuality(): Promise<G3DOptimizationResult> {
+    private async reduceRenderQuality(): Promise<OptimizationResult> {
         const startTime = Date.now();
 
         try {
@@ -322,7 +322,7 @@ export class G3DOptimizationEngine {
         }
     }
 
-    private async enableLevelOfDetail(): Promise<G3DOptimizationResult> {
+    private async enableLevelOfDetail(): Promise<OptimizationResult> {
         const startTime = Date.now();
 
         try {
@@ -352,7 +352,7 @@ export class G3DOptimizationEngine {
         }
     }
 
-    private async optimizeShaders(): Promise<G3DOptimizationResult> {
+    private async optimizeShaders(): Promise<OptimizationResult> {
         const startTime = Date.now();
 
         try {
@@ -382,7 +382,7 @@ export class G3DOptimizationEngine {
         }
     }
 
-    private async compressTextures(): Promise<G3DOptimizationResult> {
+    private async compressTextures(): Promise<OptimizationResult> {
         const startTime = Date.now();
 
         try {
@@ -412,7 +412,7 @@ export class G3DOptimizationEngine {
         }
     }
 
-    private async enableMemoryPooling(): Promise<G3DOptimizationResult> {
+    private async enableMemoryPooling(): Promise<OptimizationResult> {
         const startTime = Date.now();
 
         try {
@@ -442,7 +442,7 @@ export class G3DOptimizationEngine {
         }
     }
 
-    private async forceGarbageCollection(): Promise<G3DOptimizationResult> {
+    private async forceGarbageCollection(): Promise<OptimizationResult> {
         const startTime = Date.now();
 
         try {
@@ -475,7 +475,7 @@ export class G3DOptimizationEngine {
         }
     }
 
-    private async enableGPUCompute(): Promise<G3DOptimizationResult> {
+    private async enableGPUCompute(): Promise<OptimizationResult> {
         const startTime = Date.now();
 
         try {
@@ -505,7 +505,7 @@ export class G3DOptimizationEngine {
         }
     }
 
-    private async optimizeAlgorithms(): Promise<G3DOptimizationResult> {
+    private async optimizeAlgorithms(): Promise<OptimizationResult> {
         const startTime = Date.now();
 
         try {
@@ -535,7 +535,7 @@ export class G3DOptimizationEngine {
         }
     }
 
-    private async prioritizeMedicalData(): Promise<G3DOptimizationResult> {
+    private async prioritizeMedicalData(): Promise<OptimizationResult> {
         const startTime = Date.now();
 
         try {
@@ -565,7 +565,7 @@ export class G3DOptimizationEngine {
         }
     }
 
-    private async adaptiveQualityControl(): Promise<G3DOptimizationResult> {
+    private async adaptiveQualityControl(): Promise<OptimizationResult> {
         const startTime = Date.now();
 
         try {
@@ -598,8 +598,8 @@ export class G3DOptimizationEngine {
     }
 
     // Optimization planning and execution
-    public async createOptimizationPlan(performanceMetrics: any): Promise<G3DOptimizationPlan> {
-        const applicableStrategies: G3DOptimizationStrategy[] = [];
+    public async createOptimizationPlan(performanceMetrics: any): Promise<OptimizationPlan> {
+        const applicableStrategies: OptimizationStrategy[] = [];
 
         // Find applicable strategies based on current conditions
         for (const strategy of this.strategies.values()) {
@@ -631,7 +631,7 @@ export class G3DOptimizationEngine {
         // Create execution order
         const executionOrder = applicableStrategies.map(strategy => strategy.id);
 
-        const plan: G3DOptimizationPlan = {
+        const plan: OptimizationPlan = {
             id: `plan_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
             strategies: applicableStrategies,
             estimatedTotalImpact: Math.min(100, totalImpact),
@@ -643,7 +643,7 @@ export class G3DOptimizationEngine {
         return plan;
     }
 
-    private evaluateConditions(conditions: G3DOptimizationCondition[], metrics: any): boolean {
+    private evaluateConditions(conditions: OptimizationCondition[], metrics: any): boolean {
         for (const condition of conditions) {
             const value = metrics[condition.metric];
             if (value === undefined) continue;
@@ -673,7 +673,7 @@ export class G3DOptimizationEngine {
         return true;
     }
 
-    private isMedicallySafe(strategy: G3DOptimizationStrategy): boolean {
+    private isMedicallySafe(strategy: OptimizationStrategy): boolean {
         if (!this.medicalContext) return true;
 
         // Critical medical contexts require safer strategies
@@ -690,7 +690,7 @@ export class G3DOptimizationEngine {
         return strategy.medicalSafety !== 'risk';
     }
 
-    private assessMedicalRisk(strategies: G3DOptimizationStrategy[]): string {
+    private assessMedicalRisk(strategies: OptimizationStrategy[]): string {
         const riskStrategies = strategies.filter(s => s.medicalSafety === 'risk').length;
         const cautionStrategies = strategies.filter(s => s.medicalSafety === 'caution').length;
 
@@ -703,14 +703,14 @@ export class G3DOptimizationEngine {
         }
     }
 
-    public async executeOptimizationPlan(plan: G3DOptimizationPlan): Promise<G3DOptimizationResult[]> {
+    public async executeOptimizationPlan(plan: OptimizationPlan): Promise<OptimizationResult[]> {
         if (this.isOptimizing) {
             throw new Error('Optimization already in progress');
         }
 
         this.isOptimizing = true;
         this.currentPlan = plan;
-        const results: G3DOptimizationResult[] = [];
+        const results: OptimizationResult[] = [];
 
         try {
             console.log(`Executing optimization plan: ${plan.id}`);
@@ -788,30 +788,30 @@ export class G3DOptimizationEngine {
     }
 
     // Public API
-    public setMedicalContext(context: G3DMedicalOptimizationContext): void {
+    public setMedicalContext(context: MedicalOptimizationContext): void {
         this.medicalContext = context;
         console.log(`Medical context updated: ${context.urgency} ${context.clinicalPurpose}`);
     }
 
     public async optimizeForMedicalContext(
-        context: G3DMedicalOptimizationContext,
+        context: MedicalOptimizationContext,
         performanceMetrics: any
-    ): Promise<G3DOptimizationResult[]> {
+    ): Promise<OptimizationResult[]> {
         this.setMedicalContext(context);
 
         const plan = await this.createOptimizationPlan(performanceMetrics);
         return await this.executeOptimizationPlan(plan);
     }
 
-    public getOptimizationHistory(): G3DOptimizationResult[] {
+    public getOptimizationHistory(): OptimizationResult[] {
         return [...this.optimizationHistory];
     }
 
-    public getAvailableStrategies(): G3DOptimizationStrategy[] {
+    public getAvailableStrategies(): OptimizationStrategy[] {
         return Array.from(this.strategies.values());
     }
 
-    public getCurrentPlan(): G3DOptimizationPlan | null {
+    public getCurrentPlan(): OptimizationPlan | null {
         return this.currentPlan;
     }
 
@@ -882,4 +882,4 @@ declare global {
     }
 }
 
-export default G3DOptimizationEngine;
+export default OptimizationEngine;

@@ -4,8 +4,8 @@
  * for realistic motion, collisions, and dynamics simulation
  */
 
-import { G3DGPUCompute } from '../../g3d-performance/G3DGPUCompute';
-import { PhysicsIntegration } from '../../g3d-3d/PhysicsIntegration';
+import { GPUCompute } from '../../performance/G3DGPUCompute';
+import { PhysicsIntegration } from '../../core/PhysicsIntegration';
 
 export interface PhysicsSimulationConfig {
     simulationType: 'rigid-body' | 'soft-body' | 'fluid' | 'particle' | 'cloth';
@@ -126,8 +126,8 @@ export interface EnergyAnnotation {
     energyLoss: number;
 }
 
-export class G3DPhysicsSimulator {
-    private gpuCompute: G3DGPUCompute;
+export class PhysicsSimulator {
+    private gpuCompute: GPUCompute;
     private physics: PhysicsIntegration;
     private world: any;
     private objects: Map<string, any>;
@@ -136,7 +136,7 @@ export class G3DPhysicsSimulator {
     private performanceMetrics: Map<string, number>;
 
     constructor() {
-        this.gpuCompute = new G3DGPUCompute();
+        this.gpuCompute = new GPUCompute();
         this.physics = new PhysicsIntegration();
         this.objects = new Map();
         this.constraints = [];
@@ -875,4 +875,4 @@ export class G3DPhysicsSimulator {
     }
 }
 
-export default G3DPhysicsSimulator;
+export default PhysicsSimulator;

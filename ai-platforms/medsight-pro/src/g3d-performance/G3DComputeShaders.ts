@@ -11,7 +11,7 @@
  * - Medical-specific compute algorithms
  */
 
-export interface G3DComputeConfig {
+export interface ComputeConfig {
     enableWebGPU: boolean;
     enableWebGL2Compute: boolean;
     maxBufferSize: number;
@@ -20,7 +20,7 @@ export interface G3DComputeConfig {
     enableDebug: boolean;
 }
 
-export interface G3DComputeBuffer {
+export interface ComputeBuffer {
     id: string;
     buffer: any | WebGLBuffer | null; // GPUBuffer when available
     size: number;
@@ -29,7 +29,7 @@ export interface G3DComputeBuffer {
     mapped: boolean;
 }
 
-export interface G3DComputeShader {
+export interface ComputeShader {
     id: string;
     source: string;
     pipeline: any | WebGLProgram | null; // GPUComputePipeline when available
@@ -38,19 +38,19 @@ export interface G3DComputeShader {
     compiled: boolean;
 }
 
-export interface G3DComputeKernel {
+export interface ComputeKernel {
     id: string;
     name: string;
-    shader: G3DComputeShader;
-    inputs: G3DComputeBuffer[];
-    outputs: G3DComputeBuffer[];
-    uniforms: G3DComputeBuffer[];
+    shader: ComputeShader;
+    inputs: ComputeBuffer[];
+    outputs: ComputeBuffer[];
+    uniforms: ComputeBuffer[];
     dispatchSize: [number, number, number];
 }
 
-export interface G3DMedicalComputeOperation {
+export interface MedicalComputeOperation {
     type: 'filter' | 'segmentation' | 'registration' | 'reconstruction' | 'analysis';
-    kernel: G3DComputeKernel;
+    kernel: ComputeKernel;
     parameters: Map<string, any>;
     priority: 'low' | 'medium' | 'high' | 'critical';
     medicalContext: {
@@ -60,17 +60,17 @@ export interface G3DMedicalComputeOperation {
     };
 }
 
-export class G3DComputeShaders {
-    private config: G3DComputeConfig;
+export class ComputeShaders {
+    private config: ComputeConfig;
     private device: any | null = null; // GPUDevice when available
     private gl: WebGL2RenderingContext | null = null;
     private isWebGPUSupported: boolean = false;
     private isWebGL2ComputeSupported: boolean = false;
 
-    private bufferPool: Map<string, G3DComputeBuffer[]> = new Map();
-    private shaderCache: Map<string, G3DComputeShader> = new Map();
-    private kernelRegistry: Map<string, G3DComputeKernel> = new Map();
-    private activeOperations: G3DMedicalComputeOperation[] = [];
+    private bufferPool: Map<string, ComputeBuffer[]> = new Map();
+    private shaderCache: Map<string, ComputeShader> = new Map();
+    private kernelRegistry: Map<string, ComputeKernel> = new Map();
+    private activeOperations: MedicalComputeOperation[] = [];
 
     private performanceMetrics: {
         totalOperations: number;
@@ -84,7 +84,7 @@ export class G3DComputeShaders {
             gpuUtilization: 0
         };
 
-    constructor(config: Partial<G3DComputeConfig> = {}) {
+    constructor(config: Partial<ComputeConfig> = {}) {
         this.config = {
             enableWebGPU: true,
             enableWebGL2Compute: true,
@@ -165,7 +165,7 @@ export class G3DComputeShaders {
         size: number,
         usage: number,
         data?: ArrayBuffer
-    ): G3DComputeBuffer {
+    ): ComputeBuffer {
         let buffer: any | WebGLBuffer | null = null;
 
         if (this.isWebGPUSupported && this.device) {
@@ -188,7 +188,7 @@ export class G3DComputeShaders {
             }
         }
 
-        const computeBuffer: G3DComputeBuffer = {
+        const computeBuffer: ComputeBuffer = {
             id,
             buffer,
             size,
@@ -206,7 +206,7 @@ export class G3DComputeShaders {
         return computeBuffer;
     }
 
-    public releaseBuffer(buffer: G3DComputeBuffer): void {
+    public releaseBuffer(buffer: ComputeBuffer): void {
         if (this.isWebGPUSupported && buffer.buffer) {
             buffer.buffer.destroy();
         } else if (this.isWebGL2ComputeSupported && this.gl && buffer.buffer) {
@@ -222,7 +222,7 @@ export class G3DComputeShaders {
         id: string,
         source: string,
         workgroupSize: [number, number, number] = this.config.workgroupSize
-    ): Promise<G3DComputeShader> {
+    ): Promise<ComputeShader> {
         let pipeline: any | WebGLProgram | null = null;
         let bindGroup: any | null = null;
         let compiled = false;
@@ -251,7 +251,7 @@ export class G3DComputeShaders {
             }
         }
 
-        const shader: G3DComputeShader = {
+        const shader: ComputeShader = {
             id,
             source,
             pipeline,
@@ -318,7 +318,7 @@ export class G3DComputeShaders {
 
         const shader = await this.createComputeShader('gaussian_blur', shaderSource);
 
-        const kernel: G3DComputeKernel = {
+        const kernel: ComputeKernel = {
             id: 'gaussian_blur',
             name: 'Gaussian Blur Filter',
             shader,
@@ -397,7 +397,7 @@ export class G3DComputeShaders {
 
         const shader = await this.createComputeShader('edge_detection', shaderSource);
 
-        const kernel: G3DComputeKernel = {
+        const kernel: ComputeKernel = {
             id: 'edge_detection',
             name: 'Edge Detection Filter',
             shader,
@@ -483,7 +483,7 @@ export class G3DComputeShaders {
 
         const shader = await this.createComputeShader('noise_reduction', shaderSource);
 
-        const kernel: G3DComputeKernel = {
+        const kernel: ComputeKernel = {
             id: 'noise_reduction',
             name: 'Noise Reduction Filter',
             shader,
@@ -562,7 +562,7 @@ export class G3DComputeShaders {
 
         const shader = await this.createComputeShader('thresholding', shaderSource);
 
-        const kernel: G3DComputeKernel = {
+        const kernel: ComputeKernel = {
             id: 'thresholding',
             name: 'Image Thresholding',
             shader,
@@ -651,7 +651,7 @@ export class G3DComputeShaders {
 
         const shader = await this.createComputeShader('region_growing', shaderSource);
 
-        const kernel: G3DComputeKernel = {
+        const kernel: ComputeKernel = {
             id: 'region_growing',
             name: 'Region Growing Segmentation',
             shader,
@@ -735,7 +735,7 @@ export class G3DComputeShaders {
 
         const shader = await this.createComputeShader('watershed', shaderSource);
 
-        const kernel: G3DComputeKernel = {
+        const kernel: ComputeKernel = {
             id: 'watershed',
             name: 'Watershed Segmentation',
             shader,
@@ -787,7 +787,7 @@ export class G3DComputeShaders {
 
         const shader = await this.createComputeShader('histogram', shaderSource);
 
-        const kernel: G3DComputeKernel = {
+        const kernel: ComputeKernel = {
             id: 'histogram',
             name: 'Image Histogram Analysis',
             shader,
@@ -880,7 +880,7 @@ export class G3DComputeShaders {
 
         const shader = await this.createComputeShader('statistics', shaderSource);
 
-        const kernel: G3DComputeKernel = {
+        const kernel: ComputeKernel = {
             id: 'statistics',
             name: 'Statistical Analysis',
             shader,
@@ -983,7 +983,7 @@ export class G3DComputeShaders {
 
         const shader = await this.createComputeShader('measurement', shaderSource);
 
-        const kernel: G3DComputeKernel = {
+        const kernel: ComputeKernel = {
             id: 'measurement',
             name: 'Medical Measurements',
             shader,
@@ -999,9 +999,9 @@ export class G3DComputeShaders {
     // Execution Methods
     public async executeKernel(
         kernelId: string,
-        inputs: G3DComputeBuffer[],
-        outputs: G3DComputeBuffer[],
-        uniforms: G3DComputeBuffer[],
+        inputs: ComputeBuffer[],
+        outputs: ComputeBuffer[],
+        uniforms: ComputeBuffer[],
         dispatchSize: [number, number, number]
     ): Promise<void> {
         const kernel = this.kernelRegistry.get(kernelId);
@@ -1022,10 +1022,10 @@ export class G3DComputeShaders {
     }
 
     private async executeWebGPUKernel(
-        kernel: G3DComputeKernel,
-        inputs: G3DComputeBuffer[],
-        outputs: G3DComputeBuffer[],
-        uniforms: G3DComputeBuffer[],
+        kernel: ComputeKernel,
+        inputs: ComputeBuffer[],
+        outputs: ComputeBuffer[],
+        uniforms: ComputeBuffer[],
         dispatchSize: [number, number, number]
     ): Promise<void> {
         if (!this.device || !kernel.shader.pipeline) return;
@@ -1051,10 +1051,10 @@ export class G3DComputeShaders {
     }
 
     private async executeWebGL2Kernel(
-        kernel: G3DComputeKernel,
-        inputs: G3DComputeBuffer[],
-        outputs: G3DComputeBuffer[],
-        uniforms: G3DComputeBuffer[],
+        kernel: ComputeKernel,
+        inputs: ComputeBuffer[],
+        outputs: ComputeBuffer[],
+        uniforms: ComputeBuffer[],
         dispatchSize: [number, number, number]
     ): Promise<void> {
         // WebGL2 compute execution would go here
@@ -1063,7 +1063,7 @@ export class G3DComputeShaders {
     }
 
     // Medical Operation Management
-    public async executeMedicalOperation(operation: G3DMedicalComputeOperation): Promise<void> {
+    public async executeMedicalOperation(operation: MedicalComputeOperation): Promise<void> {
         console.log(`Executing medical operation: ${operation.type}`);
 
         this.activeOperations.push(operation);
@@ -1096,7 +1096,7 @@ export class G3DComputeShaders {
         return { ...this.performanceMetrics };
     }
 
-    public getKernelRegistry(): Map<string, G3DComputeKernel> {
+    public getKernelRegistry(): Map<string, ComputeKernel> {
         return new Map(this.kernelRegistry);
     }
 
@@ -1125,4 +1125,4 @@ export class G3DComputeShaders {
     }
 }
 
-export default G3DComputeShaders;
+export default ComputeShaders;

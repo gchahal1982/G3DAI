@@ -14,7 +14,7 @@
 import { vec3, mat4 } from 'gl-matrix';
 
 // Medical AI Types
-export interface G3DMedicalAIConfig {
+export interface MedicalAIConfig {
     enablePathologyDetection: boolean;
     enableMeasurementAutomation: boolean;
     enableDiagnosticAssistance: boolean;
@@ -24,20 +24,20 @@ export interface G3DMedicalAIConfig {
     regulatoryMode: 'FDA' | 'CE' | 'research' | 'experimental';
 }
 
-export interface G3DPathologyDetection {
+export interface PathologyDetection {
     id: string;
     type: 'lesion' | 'tumor' | 'fracture' | 'inflammation' | 'abnormality' | 'artifact';
-    location: G3DAnatomicalLocation;
+    location: AnatomicalLocation;
     severity: 'minimal' | 'mild' | 'moderate' | 'severe' | 'critical';
     confidence: number;
-    characteristics: G3DPathologyCharacteristics;
-    measurements: G3DMedicalMeasurement[];
-    classification: G3DPathologyClassification;
-    recommendations: G3DClinicalRecommendation[];
+    characteristics: PathologyCharacteristics;
+    measurements: MedicalMeasurement[];
+    classification: PathologyClassification;
+    recommendations: ClinicalRecommendation[];
     timestamp: Date;
 }
 
-export interface G3DAnatomicalLocation {
+export interface AnatomicalLocation {
     organ: string;
     region: string;
     coordinates: vec3;
@@ -47,7 +47,7 @@ export interface G3DAnatomicalLocation {
     quadrant?: string;
 }
 
-export interface G3DPathologyCharacteristics {
+export interface PathologyCharacteristics {
     shape: 'round' | 'oval' | 'irregular' | 'linear' | 'complex';
     margin: 'smooth' | 'lobulated' | 'irregular' | 'spiculated';
     density: 'hypodense' | 'isodense' | 'hyperdense' | 'mixed';
@@ -59,7 +59,7 @@ export interface G3DPathologyCharacteristics {
     hemorrhage: boolean;
 }
 
-export interface G3DMedicalMeasurement {
+export interface MedicalMeasurement {
     type: 'length' | 'width' | 'height' | 'diameter' | 'area' | 'volume' | 'angle' | 'density';
     value: number;
     unit: string;
@@ -70,7 +70,7 @@ export interface G3DMedicalMeasurement {
     metadata?: object;
 }
 
-export interface G3DPathologyClassification {
+export interface PathologyClassification {
     primaryDiagnosis: string;
     differentialDiagnoses: string[];
     malignancyRisk: 'benign' | 'probably_benign' | 'indeterminate' | 'suspicious' | 'malignant';
@@ -81,7 +81,7 @@ export interface G3DPathologyClassification {
     evidenceBased: string[];
 }
 
-export interface G3DClinicalRecommendation {
+export interface ClinicalRecommendation {
     type: 'follow_up' | 'biopsy' | 'surgery' | 'treatment' | 'monitoring' | 'referral';
     urgency: 'routine' | 'urgent' | 'emergent' | 'stat';
     timeframe: string;
@@ -91,11 +91,11 @@ export interface G3DClinicalRecommendation {
     confidence: number;
 }
 
-export interface G3DAutomatedMeasurement {
+export interface AutomatedMeasurement {
     id: string;
     category: 'cardiac' | 'pulmonary' | 'vascular' | 'skeletal' | 'abdominal' | 'neurological';
-    measurements: G3DMedicalMeasurement[];
-    normalRanges: G3DNormalRange[];
+    measurements: MedicalMeasurement[];
+    normalRanges: NormalRange[];
     abnormalFindings: string[];
     clinicalSignificance: string;
     methodology: string;
@@ -103,7 +103,7 @@ export interface G3DAutomatedMeasurement {
     timestamp: Date;
 }
 
-export interface G3DNormalRange {
+export interface NormalRange {
     parameter: string;
     normalMin: number;
     normalMax: number;
@@ -113,20 +113,20 @@ export interface G3DNormalRange {
     population?: string;
 }
 
-export interface G3DDiagnosticAssistance {
+export interface DiagnosticAssistance {
     id: string;
     clinicalQuestion: string;
-    findings: G3DPathologyDetection[];
-    measurements: G3DAutomatedMeasurement[];
-    differentialDiagnoses: G3DDifferentialDiagnosis[];
-    recommendedWorkup: G3DClinicalRecommendation[];
-    riskAssessment: G3DRiskAssessment;
-    prognosis: G3DPrognosticAssessment;
+    findings: PathologyDetection[];
+    measurements: AutomatedMeasurement[];
+    differentialDiagnoses: DifferentialDiagnosis[];
+    recommendedWorkup: ClinicalRecommendation[];
+    riskAssessment: RiskAssessment;
+    prognosis: PrognosticAssessment;
     confidence: number;
     evidenceLevel: string;
 }
 
-export interface G3DDifferentialDiagnosis {
+export interface DifferentialDiagnosis {
     diagnosis: string;
     probability: number;
     supportingFindings: string[];
@@ -135,22 +135,22 @@ export interface G3DDifferentialDiagnosis {
     clinicalContext: string;
 }
 
-export interface G3DRiskAssessment {
+export interface RiskAssessment {
     overallRisk: 'low' | 'intermediate' | 'high' | 'very_high';
-    specificRisks: G3DSpecificRisk[];
+    specificRisks: SpecificRisk[];
     riskFactors: string[];
     protectiveFactors: string[];
     recommendations: string[];
 }
 
-export interface G3DSpecificRisk {
+export interface SpecificRisk {
     type: 'malignancy' | 'recurrence' | 'progression' | 'complications' | 'mortality';
     probability: number;
     timeframe: string;
     confidence: number;
 }
 
-export interface G3DPrognosticAssessment {
+export interface PrognosticAssessment {
     shortTermOutlook: string;
     longTermOutlook: string;
     survivalEstimate?: number;
@@ -160,7 +160,7 @@ export interface G3DPrognosticAssessment {
 }
 
 // Specialized Medical AI Models
-export class G3DMedicalAIModels {
+export class MedicalAIModels {
     // Chest X-Ray AI Models
     static readonly CHEST_PATHOLOGY_DETECTION = {
         modelId: 'chest-pathology-v2',
@@ -221,14 +221,14 @@ export class G3DMedicalAIModels {
 }
 
 // Main Medical AI System
-export class G3DMedicalAI {
-    private config: G3DMedicalAIConfig;
-    private pathologyDetectors: Map<string, G3DPathologyDetector> = new Map();
-    private measurementAnalyzers: Map<string, G3DMeasurementAnalyzer> = new Map();
-    private diagnosticAssistants: Map<string, G3DDiagnosticAssistant> = new Map();
+export class MedicalAI {
+    private config: MedicalAIConfig;
+    private pathologyDetectors: Map<string, PathologyDetector> = new Map();
+    private measurementAnalyzers: Map<string, MeasurementAnalyzer> = new Map();
+    private diagnosticAssistants: Map<string, DiagnosticAssistant> = new Map();
     private isInitialized: boolean = false;
 
-    constructor(config: Partial<G3DMedicalAIConfig> = {}) {
+    constructor(config: Partial<MedicalAIConfig> = {}) {
         this.config = {
             enablePathologyDetection: true,
             enableMeasurementAutomation: true,
@@ -267,8 +267,8 @@ export class G3DMedicalAI {
 
     private async initializePathologyDetectors(): Promise<void> {
         // Chest X-Ray Pathology Detector
-        const chestDetector = new G3DPathologyDetector({
-            modelId: G3DMedicalAIModels.CHEST_PATHOLOGY_DETECTION.modelId,
+        const chestDetector = new PathologyDetector({
+            modelId: MedicalAIModels.CHEST_PATHOLOGY_DETECTION.modelId,
             modality: 'XR',
             bodyPart: 'chest',
             pathologyTypes: ['pneumonia', 'pneumothorax', 'pleural_effusion', 'cardiomegaly'],
@@ -277,8 +277,8 @@ export class G3DMedicalAI {
         this.pathologyDetectors.set('chest-xray', chestDetector);
 
         // Lung Nodule Detector
-        const lungNoduleDetector = new G3DPathologyDetector({
-            modelId: G3DMedicalAIModels.LUNG_NODULE_ANALYSIS.modelId,
+        const lungNoduleDetector = new PathologyDetector({
+            modelId: MedicalAIModels.LUNG_NODULE_ANALYSIS.modelId,
             modality: 'CT',
             bodyPart: 'chest',
             pathologyTypes: ['nodule', 'mass'],
@@ -287,8 +287,8 @@ export class G3DMedicalAI {
         this.pathologyDetectors.set('lung-nodule', lungNoduleDetector);
 
         // Brain Hemorrhage Detector
-        const brainHemorrhageDetector = new G3DPathologyDetector({
-            modelId: G3DMedicalAIModels.BRAIN_HEMORRHAGE_DETECTION.modelId,
+        const brainHemorrhageDetector = new PathologyDetector({
+            modelId: MedicalAIModels.BRAIN_HEMORRHAGE_DETECTION.modelId,
             modality: 'CT',
             bodyPart: 'head',
             pathologyTypes: ['hemorrhage'],
@@ -299,7 +299,7 @@ export class G3DMedicalAI {
 
     private async initializeMeasurementAnalyzers(): Promise<void> {
         // Cardiac Measurement Analyzer
-        const cardiacAnalyzer = new G3DMeasurementAnalyzer({
+        const cardiacAnalyzer = new MeasurementAnalyzer({
             category: 'cardiac',
             measurements: ['ejection_fraction', 'wall_thickness', 'chamber_volume'],
             modality: 'MRI',
@@ -308,7 +308,7 @@ export class G3DMedicalAI {
         this.measurementAnalyzers.set('cardiac', cardiacAnalyzer);
 
         // Pulmonary Measurement Analyzer
-        const pulmonaryAnalyzer = new G3DMeasurementAnalyzer({
+        const pulmonaryAnalyzer = new MeasurementAnalyzer({
             category: 'pulmonary',
             measurements: ['lung_volume', 'airway_diameter', 'nodule_size'],
             modality: 'CT',
@@ -317,7 +317,7 @@ export class G3DMedicalAI {
         this.measurementAnalyzers.set('pulmonary', pulmonaryAnalyzer);
 
         // Skeletal Measurement Analyzer
-        const skeletalAnalyzer = new G3DMeasurementAnalyzer({
+        const skeletalAnalyzer = new MeasurementAnalyzer({
             category: 'skeletal',
             measurements: ['bone_density', 'fracture_displacement', 'joint_space'],
             modality: 'XR',
@@ -328,7 +328,7 @@ export class G3DMedicalAI {
 
     private async initializeDiagnosticAssistants(): Promise<void> {
         // Radiology Diagnostic Assistant
-        const radiologyAssistant = new G3DDiagnosticAssistant({
+        const radiologyAssistant = new DiagnosticAssistant({
             specialty: 'radiology',
             modalities: ['CT', 'MRI', 'XR', 'US'],
             knowledgeBase: 'radiology-guidelines-2024',
@@ -339,7 +339,7 @@ export class G3DMedicalAI {
 
         // Cardiology Diagnostic Assistant
         if (this.config.clinicalSpecialty === 'cardiology') {
-            const cardiologyAssistant = new G3DDiagnosticAssistant({
+            const cardiologyAssistant = new DiagnosticAssistant({
                 specialty: 'cardiology',
                 modalities: ['MRI', 'CT', 'US'],
                 knowledgeBase: 'cardiology-guidelines-2024',
@@ -350,12 +350,12 @@ export class G3DMedicalAI {
         }
     }
 
-    async analyzeImage(imageData: ArrayBuffer, metadata: object): Promise<G3DMedicalAnalysisResult> {
+    async analyzeImage(imageData: ArrayBuffer, metadata: object): Promise<MedicalAnalysisResult> {
         if (!this.isInitialized) {
             throw new Error('Medical AI system not initialized');
         }
 
-        const analysisResult: G3DMedicalAnalysisResult = {
+        const analysisResult: MedicalAnalysisResult = {
             id: `analysis_${Date.now()}_${Math.random()}`,
             timestamp: new Date(),
             pathologies: [],
@@ -404,8 +404,8 @@ export class G3DMedicalAI {
         }
     }
 
-    private async detectPathologies(imageData: ArrayBuffer, modality: string, bodyPart: string): Promise<G3DPathologyDetection[]> {
-        const pathologies: G3DPathologyDetection[] = [];
+    private async detectPathologies(imageData: ArrayBuffer, modality: string, bodyPart: string): Promise<PathologyDetection[]> {
+        const pathologies: PathologyDetection[] = [];
 
         // Select appropriate detector based on modality and body part
         let detectorKey = '';
@@ -426,8 +426,8 @@ export class G3DMedicalAI {
         return pathologies.filter(p => p.confidence >= this.config.confidenceThreshold);
     }
 
-    private async performMeasurements(imageData: ArrayBuffer, modality: string, bodyPart: string): Promise<G3DAutomatedMeasurement[]> {
-        const measurements: G3DAutomatedMeasurement[] = [];
+    private async performMeasurements(imageData: ArrayBuffer, modality: string, bodyPart: string): Promise<AutomatedMeasurement[]> {
+        const measurements: AutomatedMeasurement[] = [];
 
         // Select appropriate measurement analyzer
         let analyzerKey = '';
@@ -449,10 +449,10 @@ export class G3DMedicalAI {
     }
 
     private async generateDiagnosticAssessment(
-        pathologies: G3DPathologyDetection[],
-        measurements: G3DAutomatedMeasurement[],
+        pathologies: PathologyDetection[],
+        measurements: AutomatedMeasurement[],
         metadata: object
-    ): Promise<G3DDiagnosticAssistance | null> {
+    ): Promise<DiagnosticAssistance | null> {
         const assistant = this.diagnosticAssistants.get(this.config.clinicalSpecialty);
         if (!assistant) {
             return null;
@@ -469,7 +469,7 @@ export class G3DMedicalAI {
         return metadata.bodyPart || metadata.BodyPartExamined || 'Unknown';
     }
 
-    private calculateOverallConfidence(result: G3DMedicalAnalysisResult): number {
+    private calculateOverallConfidence(result: MedicalAnalysisResult): number {
         let totalConfidence = 0;
         let count = 0;
 
@@ -494,7 +494,7 @@ export class G3DMedicalAI {
         return count > 0 ? totalConfidence / count : 0;
     }
 
-    private getCardiacNormalRanges(): G3DNormalRange[] {
+    private getCardiacNormalRanges(): NormalRange[] {
         return [
             { parameter: 'ejection_fraction', normalMin: 50, normalMax: 70, unit: '%', gender: 'both' },
             { parameter: 'left_ventricular_mass', normalMin: 67, normalMax: 162, unit: 'g', gender: 'male' },
@@ -503,7 +503,7 @@ export class G3DMedicalAI {
         ];
     }
 
-    private getPulmonaryNormalRanges(): G3DNormalRange[] {
+    private getPulmonaryNormalRanges(): NormalRange[] {
         return [
             { parameter: 'total_lung_capacity', normalMin: 5800, normalMax: 6000, unit: 'ml', gender: 'male' },
             { parameter: 'total_lung_capacity', normalMin: 4200, normalMax: 4400, unit: 'ml', gender: 'female' },
@@ -511,22 +511,22 @@ export class G3DMedicalAI {
         ];
     }
 
-    private getSkeletalNormalRanges(): G3DNormalRange[] {
+    private getSkeletalNormalRanges(): NormalRange[] {
         return [
             { parameter: 'bone_density', normalMin: -1.0, normalMax: 1.0, unit: 'T-score', gender: 'both' },
             { parameter: 'joint_space_width', normalMin: 2, normalMax: 4, unit: 'mm', gender: 'both' }
         ];
     }
 
-    getPathologyDetector(key: string): G3DPathologyDetector | undefined {
+    getPathologyDetector(key: string): PathologyDetector | undefined {
         return this.pathologyDetectors.get(key);
     }
 
-    getMeasurementAnalyzer(key: string): G3DMeasurementAnalyzer | undefined {
+    getMeasurementAnalyzer(key: string): MeasurementAnalyzer | undefined {
         return this.measurementAnalyzers.get(key);
     }
 
-    getDiagnosticAssistant(key: string): G3DDiagnosticAssistant | undefined {
+    getDiagnosticAssistant(key: string): DiagnosticAssistant | undefined {
         return this.diagnosticAssistants.get(key);
     }
 
@@ -553,16 +553,16 @@ export class G3DMedicalAI {
 }
 
 // Supporting Classes
-class G3DPathologyDetector {
+class PathologyDetector {
     private config: any;
 
     constructor(config: any) {
         this.config = config;
     }
 
-    async detect(imageData: ArrayBuffer): Promise<G3DPathologyDetection[]> {
+    async detect(imageData: ArrayBuffer): Promise<PathologyDetection[]> {
         // Simplified pathology detection - in real implementation, would use actual AI models
-        const pathologies: G3DPathologyDetection[] = [];
+        const pathologies: PathologyDetection[] = [];
 
         // Mock detection based on model type
         if (this.config.pathologyTypes.includes('pneumonia')) {
@@ -618,16 +618,16 @@ class G3DPathologyDetector {
     }
 }
 
-class G3DMeasurementAnalyzer {
+class MeasurementAnalyzer {
     private config: any;
 
     constructor(config: any) {
         this.config = config;
     }
 
-    async analyze(imageData: ArrayBuffer): Promise<G3DAutomatedMeasurement[]> {
+    async analyze(imageData: ArrayBuffer): Promise<AutomatedMeasurement[]> {
         // Simplified measurement analysis
-        const measurements: G3DAutomatedMeasurement[] = [];
+        const measurements: AutomatedMeasurement[] = [];
 
         if (this.config.category === 'cardiac') {
             measurements.push({
@@ -654,7 +654,7 @@ class G3DMeasurementAnalyzer {
     }
 }
 
-class G3DDiagnosticAssistant {
+class DiagnosticAssistant {
     private config: any;
 
     constructor(config: any) {
@@ -662,10 +662,10 @@ class G3DDiagnosticAssistant {
     }
 
     async generateAssessment(
-        pathologies: G3DPathologyDetection[],
-        measurements: G3DAutomatedMeasurement[],
+        pathologies: PathologyDetection[],
+        measurements: AutomatedMeasurement[],
         metadata: object
-    ): Promise<G3DDiagnosticAssistance> {
+    ): Promise<DiagnosticAssistance> {
         // Simplified diagnostic assessment generation
         return {
             id: `diagnostic_${Date.now()}`,
@@ -714,15 +714,15 @@ class G3DDiagnosticAssistant {
     }
 }
 
-interface G3DMedicalAnalysisResult {
+interface MedicalAnalysisResult {
     id: string;
     timestamp: Date;
-    pathologies: G3DPathologyDetection[];
-    measurements: G3DAutomatedMeasurement[];
-    diagnosticAssessment: G3DDiagnosticAssistance | null;
+    pathologies: PathologyDetection[];
+    measurements: AutomatedMeasurement[];
+    diagnosticAssessment: DiagnosticAssistance | null;
     confidence: number;
     processingTime: number;
     error?: string;
 }
 
-export default G3DMedicalAI;
+export default MedicalAI;

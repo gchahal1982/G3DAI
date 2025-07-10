@@ -11,61 +11,61 @@
  */
 
 // Core medical rendering exports
-export { default as G3DMedicalRenderer } from './G3DMedicalRenderer';
-export { default as G3DVolumeRenderer } from './G3DVolumeRenderer';
-export { default as G3DMedicalMaterialManager } from './G3DMedicalMaterials';
-export { default as G3DAnatomyVisualization } from './G3DAnatomyVisualization';
-export { default as G3DClinicalWorkflowManager } from './G3DClinicalWorkflow';
+export { default as MedicalRenderer } from './MedicalRenderer';
+export { default as VolumeRenderer } from './VolumeRenderer';
+export { default as MedicalMaterialManager } from './MedicalMaterials';
+export { default as AnatomyVisualization } from './AnatomyVisualization';
+export { default as ClinicalWorkflowManager } from './ClinicalWorkflow';
 
 // Type exports
 export type {
-    G3DMedicalRenderingConfig,
-    G3DMedicalViewport
-} from './G3DMedicalRenderer';
+    MedicalRenderingConfig,
+    MedicalViewport
+} from './MedicalRenderer';
 
 export type {
-    G3DVolumeRenderingConfig,
-    G3DVolumeData,
-    G3DTransferFunction
-} from './G3DVolumeRenderer';
+    VolumeRenderingConfig,
+    VolumeData,
+    TransferFunction
+} from './VolumeRenderer';
 
 export type {
-    G3DMedicalMaterialConfig,
-    G3DMedicalProperties,
-    G3DRenderingProperties,
-    G3DClinicalSettings,
-    G3DMaterialPreset,
-    G3DTransferFunctionData
-} from './G3DMedicalMaterials';
+    MedicalMaterialConfig,
+    MedicalProperties,
+    RenderingProperties,
+    ClinicalSettings,
+    MaterialPreset,
+    TransferFunctionData
+} from './MedicalMaterials';
 
 export type {
-    G3DAnatomyConfig,
-    G3DAnatomicalStructure,
-    G3DAnatomyGeometry,
-    G3DAnatomicalProperties,
-    G3DVisualizationSettings,
-    G3DAnatomyAnnotation,
-    G3DAnatomySystem
-} from './G3DAnatomyVisualization';
+    AnatomyConfig,
+    AnatomicalStructure,
+    AnatomyGeometry,
+    AnatomicalProperties,
+    VisualizationSettings,
+    AnatomyAnnotation,
+    AnatomySystem
+} from './AnatomyVisualization';
 
 export type {
-    G3DClinicalWorkflowConfig,
-    G3DDICOMData,
-    G3DPatientInfo,
-    G3DStudyInfo,
-    G3DClinicalReport,
-    G3DClinicalFinding,
-    G3DQualityAssurance
-} from './G3DClinicalWorkflow';
+    ClinicalWorkflowConfig,
+    DICOMData,
+    PatientInfo,
+    StudyInfo,
+    ClinicalReport,
+    ClinicalFinding,
+    QualityAssurance
+} from './ClinicalWorkflow';
 
-import G3DMedicalRenderer from './G3DMedicalRenderer';
-import G3DVolumeRenderer from './G3DVolumeRenderer';
-import G3DMedicalMaterialManager from './G3DMedicalMaterials';
-import G3DAnatomyVisualization from './G3DAnatomyVisualization';
-import G3DClinicalWorkflowManager from './G3DClinicalWorkflow';
+import MedicalRenderer from './MedicalRenderer';
+import VolumeRenderer from './VolumeRenderer';
+import MedicalMaterialManager from './MedicalMaterials';
+import AnatomyVisualization from './AnatomyVisualization';
+import ClinicalWorkflowManager from './ClinicalWorkflow';
 
 // Main Medical Engine Configuration
-export interface G3DMedicalEngineConfig {
+export interface MedicalEngineConfig {
     // Rendering configuration
     rendering: {
         enableWebGPU: boolean;
@@ -106,7 +106,7 @@ export interface G3DMedicalEngineConfig {
 }
 
 // Default configuration
-export const DEFAULT_MEDICAL_ENGINE_CONFIG: G3DMedicalEngineConfig = {
+export const DEFAULT_MEDICAL_ENGINE_CONFIG: MedicalEngineConfig = {
     rendering: {
         enableWebGPU: true,
         enableVolumeRendering: true,
@@ -140,24 +140,24 @@ export const DEFAULT_MEDICAL_ENGINE_CONFIG: G3DMedicalEngineConfig = {
 };
 
 // Main G3D Medical Engine
-export class G3DMedicalEngine {
-    private config: G3DMedicalEngineConfig;
+export class MedicalEngine {
+    private config: MedicalEngineConfig;
     private gl: WebGL2RenderingContext;
     private canvas: HTMLCanvasElement;
 
     // Core components
-    private medicalRenderer: G3DMedicalRenderer | null = null;
-    private volumeRenderer: G3DVolumeRenderer | null = null;
-    private materialManager: G3DMedicalMaterialManager | null = null;
-    private anatomyVisualization: G3DAnatomyVisualization | null = null;
-    private clinicalWorkflow: G3DClinicalWorkflowManager | null = null;
+    private medicalRenderer: MedicalRenderer | null = null;
+    private volumeRenderer: VolumeRenderer | null = null;
+    private materialManager: MedicalMaterialManager | null = null;
+    private anatomyVisualization: AnatomyVisualization | null = null;
+    private clinicalWorkflow: ClinicalWorkflowManager | null = null;
 
     // State
     private isInitialized: boolean = false;
     private currentStudy: string | null = null;
     private renderLoop: number | null = null;
 
-    constructor(canvas: HTMLCanvasElement, config: Partial<G3DMedicalEngineConfig> = {}) {
+    constructor(canvas: HTMLCanvasElement, config: Partial<MedicalEngineConfig> = {}) {
         this.canvas = canvas;
         this.config = { ...DEFAULT_MEDICAL_ENGINE_CONFIG, ...config };
 
@@ -184,7 +184,7 @@ export class G3DMedicalEngine {
             console.log('Initializing G3D Medical Engine...');
 
             // Initialize core medical renderer
-            this.medicalRenderer = new G3DMedicalRenderer(this.canvas, {
+            this.medicalRenderer = new MedicalRenderer(this.canvas, {
                 enableHDR: this.config.rendering.enableHDR,
                 enableMSAA: this.config.rendering.enableMSAA,
                 msaaSamples: this.config.rendering.msaaSamples,
@@ -194,7 +194,7 @@ export class G3DMedicalEngine {
 
             // Initialize volume renderer if enabled
             if (this.config.rendering.enableVolumeRendering) {
-                this.volumeRenderer = new G3DVolumeRenderer(this.gl, {
+                this.volumeRenderer = new VolumeRenderer(this.gl, {
                     maxTextureSize: this.config.rendering.maxTextureSize,
                     memoryLimit: this.config.performance.maxMemoryUsage * 1024 * 1024,
                     qualityPreset: 'high'
@@ -203,11 +203,11 @@ export class G3DMedicalEngine {
             }
 
             // Initialize material manager
-            this.materialManager = new G3DMedicalMaterialManager(this.gl);
+            this.materialManager = new MedicalMaterialManager(this.gl);
 
             // Initialize anatomy visualization if enabled
             if (this.config.rendering.enableAnatomyVisualization) {
-                this.anatomyVisualization = new G3DAnatomyVisualization(this.gl, {
+                this.anatomyVisualization = new AnatomyVisualization(this.gl, {
                     renderingMode: 'realistic',
                     detailLevel: 'organ',
                     interactionMode: 'exploration',
@@ -218,7 +218,7 @@ export class G3DMedicalEngine {
 
             // Initialize clinical workflow if enabled
             if (this.config.medical.enableClinicalWorkflow) {
-                this.clinicalWorkflow = new G3DClinicalWorkflowManager({
+                this.clinicalWorkflow = new ClinicalWorkflowManager({
                     workflowType: this.config.clinical.workflowType,
                     clinicalSpecialty: this.config.clinical.specialty,
                     complianceLevel: this.config.medical.complianceLevel,
@@ -423,4 +423,4 @@ export class G3DMedicalEngine {
     }
 }
 
-export default G3DMedicalEngine;
+export default MedicalEngine;

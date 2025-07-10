@@ -13,7 +13,7 @@
 
 import { vec3, mat4 } from 'gl-matrix';
 
-export interface G3DGeometryConfig {
+export interface GeometryConfig {
     enableOptimization: boolean;
     enableMedicalProcessing: boolean;
     maxVertices: number;
@@ -22,7 +22,7 @@ export interface G3DGeometryConfig {
     qualityThreshold: number;
 }
 
-export interface G3DMesh {
+export interface Mesh {
     id: string;
     name: string;
     vertices: Float32Array;
@@ -34,11 +34,11 @@ export interface G3DMesh {
     vertexCount: number;
     triangleCount: number;
     medicalType?: 'anatomy' | 'pathology' | 'implant' | 'measurement';
-    bounds: G3DBounds;
+    bounds: Bounds;
     quality: number;
 }
 
-export interface G3DBounds {
+export interface Bounds {
     min: vec3;
     max: vec3;
     center: vec3;
@@ -46,7 +46,7 @@ export interface G3DBounds {
     radius: number;
 }
 
-export interface G3DSurfaceReconstructionConfig {
+export interface SurfaceReconstructionConfig {
     algorithm: 'marching_cubes' | 'dual_contouring' | 'surface_nets' | 'flying_edges';
     isoValue: number;
     smoothing: boolean;
@@ -55,7 +55,7 @@ export interface G3DSurfaceReconstructionConfig {
     preserveFeatures: boolean;
 }
 
-export interface G3DMeshSimplificationConfig {
+export interface MeshSimplificationConfig {
     targetVertices: number;
     targetTriangles: number;
     preserveBoundaries: boolean;
@@ -65,7 +65,7 @@ export interface G3DMeshSimplificationConfig {
     aggressiveness: number;
 }
 
-export interface G3DMedicalGeometryOperation {
+export interface MedicalGeometryOperation {
     type: 'segmentation' | 'registration' | 'measurement' | 'planning' | 'analysis';
     parameters: Map<string, any>;
     medicalContext: string;
@@ -73,13 +73,13 @@ export interface G3DMedicalGeometryOperation {
     validated: boolean;
 }
 
-export class G3DGeometryProcessing {
-    private config: G3DGeometryConfig;
-    private meshes: Map<string, G3DMesh> = new Map();
-    private operations: Map<string, G3DMedicalGeometryOperation> = new Map();
+export class GeometryProcessing {
+    private config: GeometryConfig;
+    private meshes: Map<string, Mesh> = new Map();
+    private operations: Map<string, MedicalGeometryOperation> = new Map();
     private isInitialized: boolean = false;
 
-    constructor(config: Partial<G3DGeometryConfig> = {}) {
+    constructor(config: Partial<GeometryConfig> = {}) {
         this.config = {
             enableOptimization: true,
             enableMedicalProcessing: true,
@@ -116,9 +116,9 @@ export class G3DGeometryProcessing {
         volumeData: Float32Array,
         dimensions: [number, number, number],
         spacing: [number, number, number],
-        config: Partial<G3DSurfaceReconstructionConfig> = {}
-    ): G3DMesh {
-        const reconstructionConfig: G3DSurfaceReconstructionConfig = {
+        config: Partial<SurfaceReconstructionConfig> = {}
+    ): Mesh {
+        const reconstructionConfig: SurfaceReconstructionConfig = {
             algorithm: 'marching_cubes',
             isoValue: 0.5,
             smoothing: true,
@@ -148,8 +148,8 @@ export class G3DGeometryProcessing {
         volumeData: Float32Array,
         dimensions: [number, number, number],
         spacing: [number, number, number],
-        config: G3DSurfaceReconstructionConfig
-    ): G3DMesh {
+        config: SurfaceReconstructionConfig
+    ): Mesh {
         const vertices: number[] = [];
         const normals: number[] = [];
         const indices: number[] = [];
@@ -243,7 +243,7 @@ export class G3DGeometryProcessing {
             }
         }
 
-        const mesh: G3DMesh = {
+        const mesh: Mesh = {
             id: `marching_cubes_${Date.now()}`,
             name: 'Marching Cubes Surface',
             vertices: new Float32Array(vertices),
@@ -268,8 +268,8 @@ export class G3DGeometryProcessing {
         volumeData: Float32Array,
         dimensions: [number, number, number],
         spacing: [number, number, number],
-        config: G3DSurfaceReconstructionConfig
-    ): G3DMesh {
+        config: SurfaceReconstructionConfig
+    ): Mesh {
         // Simplified dual contouring implementation
         console.log('Dual contouring not fully implemented, falling back to marching cubes');
         return this.marchingCubes(volumeData, dimensions, spacing, config);
@@ -279,8 +279,8 @@ export class G3DGeometryProcessing {
         volumeData: Float32Array,
         dimensions: [number, number, number],
         spacing: [number, number, number],
-        config: G3DSurfaceReconstructionConfig
-    ): G3DMesh {
+        config: SurfaceReconstructionConfig
+    ): Mesh {
         // Simplified surface nets implementation
         console.log('Surface nets not fully implemented, falling back to marching cubes');
         return this.marchingCubes(volumeData, dimensions, spacing, config);
@@ -290,19 +290,19 @@ export class G3DGeometryProcessing {
         volumeData: Float32Array,
         dimensions: [number, number, number],
         spacing: [number, number, number],
-        config: G3DSurfaceReconstructionConfig
-    ): G3DMesh {
+        config: SurfaceReconstructionConfig
+    ): Mesh {
         // Simplified flying edges implementation
         console.log('Flying edges not fully implemented, falling back to marching cubes');
         return this.marchingCubes(volumeData, dimensions, spacing, config);
     }
 
     // Mesh Simplification
-    public simplifyMesh(meshId: string, config: Partial<G3DMeshSimplificationConfig> = {}): G3DMesh | null {
+    public simplifyMesh(meshId: string, config: Partial<MeshSimplificationConfig> = {}): Mesh | null {
         const mesh = this.meshes.get(meshId);
         if (!mesh) return null;
 
-        const simplificationConfig: G3DMeshSimplificationConfig = {
+        const simplificationConfig: MeshSimplificationConfig = {
             targetVertices: Math.floor(mesh.vertexCount * 0.5),
             targetTriangles: Math.floor(mesh.triangleCount * 0.5),
             preserveBoundaries: true,
@@ -317,7 +317,7 @@ export class G3DGeometryProcessing {
         return this.quadricErrorMetrics(mesh, simplificationConfig);
     }
 
-    private quadricErrorMetrics(mesh: G3DMesh, config: G3DMeshSimplificationConfig): G3DMesh {
+    private quadricErrorMetrics(mesh: Mesh, config: MeshSimplificationConfig): Mesh {
         // Simplified quadric error metrics implementation
         const vertices = Array.from(mesh.vertices);
         const indices = Array.from(mesh.indices);
@@ -341,7 +341,7 @@ export class G3DGeometryProcessing {
             currentTriangles--;
         }
 
-        const simplifiedMesh: G3DMesh = {
+        const simplifiedMesh: Mesh = {
             id: `${mesh.id}_simplified`,
             name: `${mesh.name} (Simplified)`,
             vertices: new Float32Array(vertices),
@@ -363,13 +363,13 @@ export class G3DGeometryProcessing {
         meshId: string,
         structureType: 'bone' | 'organ' | 'vessel' | 'tumor',
         threshold: number = 0.5
-    ): G3DMesh[] {
+    ): Mesh[] {
         const mesh = this.meshes.get(meshId);
         if (!mesh || !mesh.medicalData) return [];
 
         console.log(`Segmenting ${structureType} from mesh ${meshId}...`);
 
-        const segments: G3DMesh[] = [];
+        const segments: Mesh[] = [];
         const medicalData = mesh.medicalData;
 
         // Simple threshold-based segmentation
@@ -425,7 +425,7 @@ export class G3DGeometryProcessing {
         // Create segment meshes
         for (let i = 0; i < segmentedVertices.length; i++) {
             if (segmentedVertices[i] && segmentedVertices[i].length > 0) {
-                const segment: G3DMesh = {
+                const segment: Mesh = {
                     id: `${meshId}_segment_${i}`,
                     name: `${structureType} Segment ${i}`,
                     vertices: new Float32Array(segmentedVertices[i]),
@@ -516,7 +516,7 @@ export class G3DGeometryProcessing {
         return normal;
     }
 
-    private calculateMeshBounds(vertices: Float32Array): G3DBounds {
+    private calculateMeshBounds(vertices: Float32Array): Bounds {
         if (vertices.length === 0) {
             return {
                 min: vec3.create(),
@@ -558,7 +558,7 @@ export class G3DGeometryProcessing {
         };
     }
 
-    private smoothMesh(mesh: G3DMesh, iterations: number): void {
+    private smoothMesh(mesh: Mesh, iterations: number): void {
         for (let iter = 0; iter < iterations; iter++) {
             const newVertices = new Float32Array(mesh.vertices);
 
@@ -589,7 +589,7 @@ export class G3DGeometryProcessing {
         this.recalculateNormals(mesh);
     }
 
-    private findVertexNeighbors(mesh: G3DMesh, vertexIndex: number): number[] {
+    private findVertexNeighbors(mesh: Mesh, vertexIndex: number): number[] {
         const neighbors: Set<number> = new Set();
 
         for (let i = 0; i < mesh.triangleCount; i++) {
@@ -612,7 +612,7 @@ export class G3DGeometryProcessing {
         return Array.from(neighbors);
     }
 
-    private recalculateNormals(mesh: G3DMesh): void {
+    private recalculateNormals(mesh: Mesh): void {
         const normals = new Float32Array(mesh.vertexCount * 3);
 
         // Calculate face normals and accumulate
@@ -655,7 +655,7 @@ export class G3DGeometryProcessing {
         mesh.normals = normals;
     }
 
-    private projectPointOntoMesh(mesh: G3DMesh, point: vec3): vec3 {
+    private projectPointOntoMesh(mesh: Mesh, point: vec3): vec3 {
         // Simplified projection - find closest vertex
         let closestDistance = Infinity;
         let closestVertex = vec3.create();
@@ -706,7 +706,7 @@ export class G3DGeometryProcessing {
         return vertices.map(() => ({ error: 0 }));
     }
 
-    private findBestEdgeToCollapse(vertices: number[], indices: number[], quadrics: any[], config: G3DMeshSimplificationConfig): any {
+    private findBestEdgeToCollapse(vertices: number[], indices: number[], quadrics: any[], config: MeshSimplificationConfig): any {
         // Simplified edge finding
         return null;
     }
@@ -715,11 +715,11 @@ export class G3DGeometryProcessing {
         // Simplified edge collapse
     }
 
-    public getMesh(meshId: string): G3DMesh | null {
+    public getMesh(meshId: string): Mesh | null {
         return this.meshes.get(meshId) || null;
     }
 
-    public getAllMeshes(): G3DMesh[] {
+    public getAllMeshes(): Mesh[] {
         return Array.from(this.meshes.values());
     }
 
@@ -772,4 +772,4 @@ export class G3DGeometryProcessing {
     }
 }
 
-export default G3DGeometryProcessing;
+export default GeometryProcessing;

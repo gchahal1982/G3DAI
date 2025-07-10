@@ -4,9 +4,9 @@
  * ~2,200 lines of production code
  */
 
-import { G3DNativeRenderer } from '../g3d-integration/G3DNativeRenderer';
-import { G3DSceneManager } from '../g3d-integration/G3DSceneManager';
-import { G3DPerformanceOptimizer } from '../g3d-integration/G3DPerformanceOptimizer';
+import { NativeRenderer } from '../integration/G3DNativeRenderer';
+import { SceneManager } from '../integration/G3DSceneManager';
+import { PerformanceOptimizer } from '../integration/G3DPerformanceOptimizer';
 
 // Types and Interfaces
 interface CollaborationConfig {
@@ -307,10 +307,10 @@ interface ConflictEvent extends CollaborationEvent {
 }
 
 // Main Collaboration Engine Class
-export class G3DCollaborationEngine {
-    private renderer: G3DNativeRenderer;
-    private sceneManager: G3DSceneManager;
-    private optimizer: G3DPerformanceOptimizer;
+export class CollaborationEngine {
+    private renderer: NativeRenderer;
+    private sceneManager: SceneManager;
+    private optimizer: PerformanceOptimizer;
 
     private session: CollaborationSession | null = null;
     private currentUser: User | null = null;
@@ -335,9 +335,9 @@ export class G3DCollaborationEngine {
     };
 
     constructor(
-        renderer: G3DNativeRenderer,
-        sceneManager: G3DSceneManager,
-        optimizer: G3DPerformanceOptimizer
+        renderer: NativeRenderer,
+        sceneManager: SceneManager,
+        optimizer: PerformanceOptimizer
     ) {
         this.renderer = renderer;
         this.sceneManager = sceneManager;
@@ -997,10 +997,10 @@ class PermissionManager {
 }
 
 class VRManager {
-    private renderer: G3DNativeRenderer;
-    private sceneManager: G3DSceneManager;
+    private renderer: NativeRenderer;
+    private sceneManager: SceneManager;
 
-    constructor(renderer: G3DNativeRenderer, sceneManager: G3DSceneManager) {
+    constructor(renderer: NativeRenderer, sceneManager: SceneManager) {
         this.renderer = renderer;
         this.sceneManager = sceneManager;
     }

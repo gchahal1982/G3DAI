@@ -14,7 +14,7 @@
 import { vec3, mat4 } from 'gl-matrix';
 
 // Predictive Analytics Types
-export interface G3DPredictiveAnalyticsConfig {
+export interface PredictiveAnalyticsConfig {
     enableLongitudinalAnalysis: boolean;
     enableRiskPrediction: boolean;
     enableTreatmentPrediction: boolean;
@@ -25,20 +25,20 @@ export interface G3DPredictiveAnalyticsConfig {
     modelValidationMethod: 'cross_validation' | 'holdout' | 'time_series_split';
 }
 
-export interface G3DPredictiveModel {
+export interface PredictiveModel {
     id: string;
     name: string;
     type: 'progression' | 'outcome' | 'risk' | 'survival' | 'response';
     algorithm: 'linear_regression' | 'random_forest' | 'neural_network' | 'survival_analysis' | 'time_series';
-    inputFeatures: G3DFeatureDefinition[];
-    outputTargets: G3DTargetDefinition[];
-    trainingData: G3DTrainingDataset;
-    performance: G3DModelPerformance;
+    inputFeatures: FeatureDefinition[];
+    outputTargets: TargetDefinition[];
+    trainingData: TrainingDataset;
+    performance: ModelPerformance;
     lastUpdated: Date;
-    validationResults: G3DValidationResults;
+    validationResults: ValidationResults;
 }
 
-export interface G3DFeatureDefinition {
+export interface FeatureDefinition {
     name: string;
     type: 'numerical' | 'categorical' | 'temporal' | 'imaging' | 'clinical';
     source: 'imaging' | 'clinical' | 'laboratory' | 'demographics' | 'genetic';
@@ -48,7 +48,7 @@ export interface G3DFeatureDefinition {
     categories?: string[];
 }
 
-export interface G3DTargetDefinition {
+export interface TargetDefinition {
     name: string;
     type: 'binary' | 'multiclass' | 'regression' | 'survival' | 'time_to_event';
     description: string;
@@ -56,23 +56,23 @@ export interface G3DTargetDefinition {
     clinicalSignificance: string;
 }
 
-export interface G3DTrainingDataset {
+export interface TrainingDataset {
     size: number;
     timeRange: { start: Date; end: Date };
-    demographics: G3DDemographics;
-    dataQuality: G3DDataQuality;
+    demographics: Demographics;
+    dataQuality: DataQuality;
     followUpPeriod: number; // days
     outcomeRate: number;
 }
 
-export interface G3DDemographics {
+export interface Demographics {
     ageDistribution: { mean: number; std: number; min: number; max: number };
     genderDistribution: { male: number; female: number; other: number };
     ethnicityDistribution: Record<string, number>;
     comorbidityPrevalence: Record<string, number>;
 }
 
-export interface G3DDataQuality {
+export interface DataQuality {
     completeness: number; // percentage
     accuracy: number; // percentage
     consistency: number; // percentage
@@ -81,7 +81,7 @@ export interface G3DDataQuality {
     outlierDetection: string;
 }
 
-export interface G3DModelPerformance {
+export interface ModelPerformance {
     accuracy: number;
     precision: number;
     recall: number;
@@ -89,32 +89,32 @@ export interface G3DModelPerformance {
     auc: number;
     calibration: number;
     discrimination: number;
-    clinicalUtility: G3DClinicalUtility;
-    temporalStability: G3DTemporalStability;
+    clinicalUtility: ClinicalUtility;
+    temporalStability: TemporalStability;
 }
 
-export interface G3DClinicalUtility {
+export interface ClinicalUtility {
     netBenefit: number;
-    decisionCurveAnalysis: G3DDecisionCurve[];
-    costEffectiveness: G3DCostEffectiveness;
-    clinicalImpact: G3DClinicalImpact;
+    decisionCurveAnalysis: DecisionCurve[];
+    costEffectiveness: CostEffectiveness;
+    clinicalImpact: ClinicalImpact;
 }
 
-export interface G3DDecisionCurve {
+export interface DecisionCurve {
     threshold: number;
     netBenefit: number;
     treatAll: number;
     treatNone: number;
 }
 
-export interface G3DCostEffectiveness {
+export interface CostEffectiveness {
     costPerQALY: number; // Quality-Adjusted Life Years
     incrementalCost: number;
     incrementalEffectiveness: number;
     probabilityOfCostEffectiveness: number;
 }
 
-export interface G3DClinicalImpact {
+export interface ClinicalImpact {
     patientsAffected: number;
     preventedEvents: number;
     reducedMortality: number;
@@ -122,21 +122,21 @@ export interface G3DClinicalImpact {
     resourceSavings: number;
 }
 
-export interface G3DTemporalStability {
-    performanceOverTime: G3DTimeSeriesMetric[];
-    driftDetection: G3DDriftDetection;
+export interface TemporalStability {
+    performanceOverTime: TimeSeriesMetric[];
+    driftDetection: DriftDetection;
     recalibrationNeeded: boolean;
     lastRecalibration: Date;
 }
 
-export interface G3DTimeSeriesMetric {
+export interface TimeSeriesMetric {
     timestamp: Date;
     metric: string;
     value: number;
     confidence: number;
 }
 
-export interface G3DDriftDetection {
+export interface DriftDetection {
     detected: boolean;
     type: 'covariate_shift' | 'concept_drift' | 'label_shift';
     severity: 'low' | 'medium' | 'high';
@@ -145,42 +145,42 @@ export interface G3DDriftDetection {
     pValue: number;
 }
 
-export interface G3DValidationResults {
-    crossValidation: G3DCrossValidationResults;
-    externalValidation?: G3DExternalValidationResults;
-    temporalValidation?: G3DTemporalValidationResults;
-    fairnessAssessment: G3DFairnessAssessment;
+export interface ValidationResults {
+    crossValidation: CrossValidationResults;
+    externalValidation?: ExternalValidationResults;
+    temporalValidation?: TemporalValidationResults;
+    fairnessAssessment: FairnessAssessment;
 }
 
-export interface G3DCrossValidationResults {
+export interface CrossValidationResults {
     folds: number;
-    meanPerformance: G3DModelPerformance;
-    standardDeviation: G3DModelPerformance;
-    confidenceInterval: { lower: G3DModelPerformance; upper: G3DModelPerformance };
+    meanPerformance: ModelPerformance;
+    standardDeviation: ModelPerformance;
+    confidenceInterval: { lower: ModelPerformance; upper: ModelPerformance };
 }
 
-export interface G3DExternalValidationResults {
+export interface ExternalValidationResults {
     dataset: string;
     sampleSize: number;
-    performance: G3DModelPerformance;
+    performance: ModelPerformance;
     calibrationSlope: number;
     calibrationIntercept: number;
 }
 
-export interface G3DTemporalValidationResults {
-    timeWindows: G3DTimeWindow[];
+export interface TemporalValidationResults {
+    timeWindows: TimeWindow[];
     performanceTrend: 'stable' | 'declining' | 'improving' | 'fluctuating';
-    significantChanges: G3DSignificantChange[];
+    significantChanges: SignificantChange[];
 }
 
-export interface G3DTimeWindow {
+export interface TimeWindow {
     start: Date;
     end: Date;
-    performance: G3DModelPerformance;
+    performance: ModelPerformance;
     sampleSize: number;
 }
 
-export interface G3DSignificantChange {
+export interface SignificantChange {
     timestamp: Date;
     metric: string;
     oldValue: number;
@@ -189,15 +189,15 @@ export interface G3DSignificantChange {
     clinicalSignificance: boolean;
 }
 
-export interface G3DFairnessAssessment {
+export interface FairnessAssessment {
     overallFairness: number;
     demographicParity: Record<string, number>;
     equalizedOdds: Record<string, number>;
     calibrationByGroup: Record<string, number>;
-    biasMetrics: G3DBiasMetric[];
+    biasMetrics: BiasMetric[];
 }
 
-export interface G3DBiasMetric {
+export interface BiasMetric {
     group: string;
     metric: string;
     value: number;
@@ -206,7 +206,7 @@ export interface G3DBiasMetric {
     recommendation: string;
 }
 
-export interface G3DPredictionRequest {
+export interface PredictionRequest {
     patientId: string;
     features: Record<string, any>;
     predictionType: 'progression' | 'outcome' | 'risk' | 'survival' | 'response';
@@ -215,18 +215,18 @@ export interface G3DPredictionRequest {
     includeExplanation: boolean;
 }
 
-export interface G3DPredictionResult {
+export interface PredictionResult {
     predictionId: string;
     patientId: string;
     timestamp: Date;
-    predictions: G3DPrediction[];
-    uncertainty: G3DUncertaintyQuantification;
-    explanation: G3DPredictionExplanation;
-    clinicalRecommendations: G3DClinicalRecommendation[];
-    followUpSchedule: G3DFollowUpSchedule;
+    predictions: Prediction[];
+    uncertainty: UncertaintyQuantification;
+    explanation: PredictionExplanation;
+    clinicalRecommendations: ClinicalRecommendation[];
+    followUpSchedule: FollowUpSchedule;
 }
 
-export interface G3DPrediction {
+export interface Prediction {
     target: string;
     value: number | string;
     probability?: number;
@@ -235,7 +235,7 @@ export interface G3DPrediction {
     riskCategory: 'low' | 'moderate' | 'high' | 'very_high';
 }
 
-export interface G3DUncertaintyQuantification {
+export interface UncertaintyQuantification {
     aleatoric: number; // Data uncertainty
     epistemic: number; // Model uncertainty
     total: number;
@@ -244,15 +244,15 @@ export interface G3DUncertaintyQuantification {
     calibrationQuality: number;
 }
 
-export interface G3DPredictionExplanation {
+export interface PredictionExplanation {
     method: 'shap' | 'lime' | 'integrated_gradients' | 'attention' | 'counterfactual';
-    featureImportances: G3DFeatureImportance[];
-    localExplanations: G3DLocalExplanation[];
-    globalExplanations: G3DGlobalExplanation[];
-    counterfactuals?: G3DCounterfactual[];
+    featureImportances: FeatureImportance[];
+    localExplanations: LocalExplanation[];
+    globalExplanations: GlobalExplanation[];
+    counterfactuals?: Counterfactual[];
 }
 
-export interface G3DFeatureImportance {
+export interface FeatureImportance {
     feature: string;
     importance: number;
     direction: 'positive' | 'negative';
@@ -260,7 +260,7 @@ export interface G3DFeatureImportance {
     clinicalInterpretation: string;
 }
 
-export interface G3DLocalExplanation {
+export interface LocalExplanation {
     feature: string;
     value: any;
     contribution: number;
@@ -268,7 +268,7 @@ export interface G3DLocalExplanation {
     description: string;
 }
 
-export interface G3DGlobalExplanation {
+export interface GlobalExplanation {
     pattern: string;
     description: string;
     prevalence: number;
@@ -276,7 +276,7 @@ export interface G3DGlobalExplanation {
     examples: string[];
 }
 
-export interface G3DCounterfactual {
+export interface Counterfactual {
     scenario: string;
     changedFeatures: Record<string, any>;
     newPrediction: number;
@@ -284,7 +284,7 @@ export interface G3DCounterfactual {
     clinicalPlausibility: number;
 }
 
-export interface G3DClinicalRecommendation {
+export interface ClinicalRecommendation {
     type: 'monitoring' | 'intervention' | 'referral' | 'lifestyle' | 'medication';
     priority: 'low' | 'medium' | 'high' | 'urgent';
     description: string;
@@ -295,53 +295,53 @@ export interface G3DClinicalRecommendation {
     riskBenefitRatio: number;
 }
 
-export interface G3DFollowUpSchedule {
+export interface FollowUpSchedule {
     nextAppointment: Date;
     frequency: 'weekly' | 'monthly' | 'quarterly' | 'biannually' | 'annually';
     monitoringParameters: string[];
-    imagingSchedule?: G3DImagingSchedule[];
-    laboratorySchedule?: G3DLaboratorySchedule[];
+    imagingSchedule?: ImagingSchedule[];
+    laboratorySchedule?: LaboratorySchedule[];
 }
 
-export interface G3DImagingSchedule {
+export interface ImagingSchedule {
     modality: string;
     frequency: string;
     indication: string;
     urgency: 'routine' | 'urgent' | 'emergent';
 }
 
-export interface G3DLaboratorySchedule {
+export interface LaboratorySchedule {
     tests: string[];
     frequency: string;
     indication: string;
 }
 
 // Longitudinal Analysis Types
-export interface G3DLongitudinalAnalysis {
+export interface LongitudinalAnalysis {
     patientId: string;
-    timePoints: G3DTimePoint[];
-    trends: G3DTrend[];
-    changePoints: G3DChangePoint[];
-    projections: G3DProjection[];
-    riskTrajectory: G3DRiskTrajectory;
+    timePoints: TimePoint[];
+    trends: Trend[];
+    changePoints: ChangePoint[];
+    projections: Projection[];
+    riskTrajectory: RiskTrajectory;
 }
 
-export interface G3DTimePoint {
+export interface TimePoint {
     timestamp: Date;
     measurements: Record<string, number>;
-    clinicalEvents: G3DClinicalEvent[];
-    interventions: G3DIntervention[];
+    clinicalEvents: ClinicalEvent[];
+    interventions: Intervention[];
     riskScore: number;
 }
 
-export interface G3DClinicalEvent {
+export interface ClinicalEvent {
     type: string;
     severity: 'mild' | 'moderate' | 'severe' | 'critical';
     outcome: 'resolved' | 'ongoing' | 'worsened' | 'stable';
     impact: number;
 }
 
-export interface G3DIntervention {
+export interface Intervention {
     type: string;
     startDate: Date;
     endDate?: Date;
@@ -349,7 +349,7 @@ export interface G3DIntervention {
     sideEffects: string[];
 }
 
-export interface G3DTrend {
+export interface Trend {
     parameter: string;
     direction: 'increasing' | 'decreasing' | 'stable' | 'fluctuating';
     slope: number;
@@ -357,7 +357,7 @@ export interface G3DTrend {
     clinicalRelevance: string;
 }
 
-export interface G3DChangePoint {
+export interface ChangePoint {
     timestamp: Date;
     parameter: string;
     beforeValue: number;
@@ -366,7 +366,7 @@ export interface G3DChangePoint {
     likelyCause: string;
 }
 
-export interface G3DProjection {
+export interface Projection {
     parameter: string;
     timeHorizon: number; // days
     projectedValue: number;
@@ -374,21 +374,21 @@ export interface G3DProjection {
     assumptions: string[];
 }
 
-export interface G3DRiskTrajectory {
+export interface RiskTrajectory {
     currentRisk: number;
-    projectedRisk: G3DProjectedRisk[];
-    riskFactors: G3DRiskFactor[];
-    modifiableFactors: G3DModifiableRiskFactor[];
+    projectedRisk: ProjectedRisk[];
+    riskFactors: RiskFactor[];
+    modifiableFactors: ModifiableRiskFactor[];
 }
 
-export interface G3DProjectedRisk {
+export interface ProjectedRisk {
     timeHorizon: number; // days
     risk: number;
     confidence: number;
     scenario: 'best_case' | 'expected' | 'worst_case';
 }
 
-export interface G3DRiskFactor {
+export interface RiskFactor {
     factor: string;
     contribution: number;
     modifiable: boolean;
@@ -396,7 +396,7 @@ export interface G3DRiskFactor {
     evidence: string;
 }
 
-export interface G3DModifiableRiskFactor {
+export interface ModifiableRiskFactor {
     factor: string;
     currentValue: number;
     targetValue: number;
@@ -406,14 +406,14 @@ export interface G3DModifiableRiskFactor {
 }
 
 // Main Predictive Analytics System
-export class G3DPredictiveAnalytics {
-    private config: G3DPredictiveAnalyticsConfig;
-    private models: Map<string, G3DPredictiveModel> = new Map();
-    private predictions: Map<string, G3DPredictionResult> = new Map();
-    private longitudinalData: Map<string, G3DLongitudinalAnalysis> = new Map();
+export class PredictiveAnalytics {
+    private config: PredictiveAnalyticsConfig;
+    private models: Map<string, PredictiveModel> = new Map();
+    private predictions: Map<string, PredictionResult> = new Map();
+    private longitudinalData: Map<string, LongitudinalAnalysis> = new Map();
     private isInitialized: boolean = false;
 
-    constructor(config: Partial<G3DPredictiveAnalyticsConfig> = {}) {
+    constructor(config: Partial<PredictiveAnalyticsConfig> = {}) {
         this.config = {
             enableLongitudinalAnalysis: true,
             enableRiskPrediction: true,
@@ -447,7 +447,7 @@ export class G3DPredictiveAnalytics {
 
     private async loadPredictiveModels(): Promise<void> {
         // Disease progression model
-        const progressionModel: G3DPredictiveModel = {
+        const progressionModel: PredictiveModel = {
             id: 'disease_progression_v1',
             name: 'Disease Progression Predictor',
             type: 'progression',
@@ -550,9 +550,9 @@ export class G3DPredictiveAnalytics {
             validationResults: {
                 crossValidation: {
                     folds: 5,
-                    meanPerformance: {} as G3DModelPerformance,
-                    standardDeviation: {} as G3DModelPerformance,
-                    confidenceInterval: { lower: {} as G3DModelPerformance, upper: {} as G3DModelPerformance }
+                    meanPerformance: {} as ModelPerformance,
+                    standardDeviation: {} as ModelPerformance,
+                    confidenceInterval: { lower: {} as ModelPerformance, upper: {} as ModelPerformance }
                 },
                 fairnessAssessment: {
                     overallFairness: 0.85,
@@ -567,7 +567,7 @@ export class G3DPredictiveAnalytics {
         this.models.set(progressionModel.id, progressionModel);
 
         // Treatment outcome model
-        const outcomeModel: G3DPredictiveModel = {
+        const outcomeModel: PredictiveModel = {
             id: 'treatment_outcome_v1',
             name: 'Treatment Outcome Predictor',
             type: 'outcome',
@@ -662,9 +662,9 @@ export class G3DPredictiveAnalytics {
             validationResults: {
                 crossValidation: {
                     folds: 5,
-                    meanPerformance: {} as G3DModelPerformance,
-                    standardDeviation: {} as G3DModelPerformance,
-                    confidenceInterval: { lower: {} as G3DModelPerformance, upper: {} as G3DModelPerformance }
+                    meanPerformance: {} as ModelPerformance,
+                    standardDeviation: {} as ModelPerformance,
+                    confidenceInterval: { lower: {} as ModelPerformance, upper: {} as ModelPerformance }
                 },
                 fairnessAssessment: {
                     overallFairness: 0.88,
@@ -691,7 +691,7 @@ export class G3DPredictiveAnalytics {
         }
     }
 
-    async makePrediction(request: G3DPredictionRequest): Promise<G3DPredictionResult> {
+    async makePrediction(request: PredictionRequest): Promise<PredictionResult> {
         if (!this.isInitialized) {
             throw new Error('Predictive analytics system not initialized');
         }
@@ -710,12 +710,12 @@ export class G3DPredictiveAnalytics {
         const uncertainty = await this.quantifyUncertainty(model, request.features);
         const explanation = request.includeExplanation
             ? await this.generateExplanation(model, request.features, predictions)
-            : {} as G3DPredictionExplanation;
+            : {} as PredictionExplanation;
 
         const clinicalRecommendations = await this.generateClinicalRecommendations(predictions, model);
         const followUpSchedule = await this.generateFollowUpSchedule(predictions, request.timeHorizon);
 
-        const result: G3DPredictionResult = {
+        const result: PredictionResult = {
             predictionId,
             patientId: request.patientId,
             timestamp: new Date(),
@@ -730,7 +730,7 @@ export class G3DPredictiveAnalytics {
         return result;
     }
 
-    async performLongitudinalAnalysis(patientId: string, timePoints: G3DTimePoint[]): Promise<G3DLongitudinalAnalysis> {
+    async performLongitudinalAnalysis(patientId: string, timePoints: TimePoint[]): Promise<LongitudinalAnalysis> {
         if (!this.config.enableLongitudinalAnalysis) {
             throw new Error('Longitudinal analysis not enabled');
         }
@@ -740,7 +740,7 @@ export class G3DPredictiveAnalytics {
         const projections = await this.generateProjections(timePoints, this.config.predictionHorizon);
         const riskTrajectory = await this.calculateRiskTrajectory(timePoints);
 
-        const analysis: G3DLongitudinalAnalysis = {
+        const analysis: LongitudinalAnalysis = {
             patientId,
             timePoints,
             trends,
@@ -767,11 +767,11 @@ export class G3DPredictiveAnalytics {
     }
 
     private async computePredictions(
-        model: G3DPredictiveModel,
+        model: PredictiveModel,
         features: Record<string, any>,
         timeHorizon?: number
-    ): Promise<G3DPrediction[]> {
-        const predictions: G3DPrediction[] = [];
+    ): Promise<Prediction[]> {
+        const predictions: Prediction[] = [];
 
         for (const target of model.outputTargets) {
             // Simulate prediction computation
@@ -804,9 +804,9 @@ export class G3DPredictiveAnalytics {
     }
 
     private async quantifyUncertainty(
-        model: G3DPredictiveModel,
+        model: PredictiveModel,
         features: Record<string, any>
-    ): Promise<G3DUncertaintyQuantification> {
+    ): Promise<UncertaintyQuantification> {
         // Simulate uncertainty quantification
         const aleatoric = 0.1 + Math.random() * 0.2;
         const epistemic = 0.05 + Math.random() * 0.15;
@@ -823,11 +823,11 @@ export class G3DPredictiveAnalytics {
     }
 
     private async generateExplanation(
-        model: G3DPredictiveModel,
+        model: PredictiveModel,
         features: Record<string, any>,
-        predictions: G3DPrediction[]
-    ): Promise<G3DPredictionExplanation> {
-        const featureImportances: G3DFeatureImportance[] = model.inputFeatures.map(feature => ({
+        predictions: Prediction[]
+    ): Promise<PredictionExplanation> {
+        const featureImportances: FeatureImportance[] = model.inputFeatures.map(feature => ({
             feature: feature.name,
             importance: feature.importance + (Math.random() - 0.5) * 0.2,
             direction: Math.random() > 0.5 ? 'positive' : 'negative',
@@ -835,7 +835,7 @@ export class G3DPredictiveAnalytics {
             clinicalInterpretation: `${feature.description} contributes to the prediction`
         }));
 
-        const localExplanations: G3DLocalExplanation[] = Object.entries(features).map(([key, value]) => ({
+        const localExplanations: LocalExplanation[] = Object.entries(features).map(([key, value]) => ({
             feature: key,
             value,
             contribution: (Math.random() - 0.5) * 0.4,
@@ -853,10 +853,10 @@ export class G3DPredictiveAnalytics {
     }
 
     private async generateClinicalRecommendations(
-        predictions: G3DPrediction[],
-        model: G3DPredictiveModel
-    ): Promise<G3DClinicalRecommendation[]> {
-        const recommendations: G3DClinicalRecommendation[] = [];
+        predictions: Prediction[],
+        model: PredictiveModel
+    ): Promise<ClinicalRecommendation[]> {
+        const recommendations: ClinicalRecommendation[] = [];
 
         for (const prediction of predictions) {
             if (prediction.riskCategory === 'high' || prediction.riskCategory === 'very_high') {
@@ -890,9 +890,9 @@ export class G3DPredictiveAnalytics {
     }
 
     private async generateFollowUpSchedule(
-        predictions: G3DPrediction[],
+        predictions: Prediction[],
         timeHorizon?: number
-    ): Promise<G3DFollowUpSchedule> {
+    ): Promise<FollowUpSchedule> {
         const highRiskPredictions = predictions.filter(p =>
             p.riskCategory === 'high' || p.riskCategory === 'very_high'
         );
@@ -926,8 +926,8 @@ export class G3DPredictiveAnalytics {
         return 'very_high';
     }
 
-    private async analyzeTrends(timePoints: G3DTimePoint[]): Promise<G3DTrend[]> {
-        const trends: G3DTrend[] = [];
+    private async analyzeTrends(timePoints: TimePoint[]): Promise<Trend[]> {
+        const trends: Trend[] = [];
 
         // Analyze trends for each measurement parameter
         const parameters = new Set<string>();
@@ -964,8 +964,8 @@ export class G3DPredictiveAnalytics {
         return trends;
     }
 
-    private async detectChangePoints(timePoints: G3DTimePoint[]): Promise<G3DChangePoint[]> {
-        const changePoints: G3DChangePoint[] = [];
+    private async detectChangePoints(timePoints: TimePoint[]): Promise<ChangePoint[]> {
+        const changePoints: ChangePoint[] = [];
 
         // Simplified change point detection
         for (let i = 1; i < timePoints.length - 1; i++) {
@@ -994,10 +994,10 @@ export class G3DPredictiveAnalytics {
     }
 
     private async generateProjections(
-        timePoints: G3DTimePoint[],
+        timePoints: TimePoint[],
         timeHorizon: number
-    ): Promise<G3DProjection[]> {
-        const projections: G3DProjection[] = [];
+    ): Promise<Projection[]> {
+        const projections: Projection[] = [];
 
         // Generate projections based on trends
         const trends = await this.analyzeTrends(timePoints);
@@ -1022,17 +1022,17 @@ export class G3DPredictiveAnalytics {
         return projections;
     }
 
-    private async calculateRiskTrajectory(timePoints: G3DTimePoint[]): Promise<G3DRiskTrajectory> {
+    private async calculateRiskTrajectory(timePoints: TimePoint[]): Promise<RiskTrajectory> {
         const currentRisk = timePoints[timePoints.length - 1]?.riskScore || 0.5;
 
-        const projectedRisk: G3DProjectedRisk[] = [
+        const projectedRisk: ProjectedRisk[] = [
             { timeHorizon: 30, risk: currentRisk + 0.05, confidence: 0.8, scenario: 'expected' },
             { timeHorizon: 90, risk: currentRisk + 0.12, confidence: 0.7, scenario: 'expected' },
             { timeHorizon: 180, risk: currentRisk + 0.20, confidence: 0.6, scenario: 'expected' },
             { timeHorizon: 365, risk: currentRisk + 0.35, confidence: 0.5, scenario: 'expected' }
         ];
 
-        const riskFactors: G3DRiskFactor[] = [
+        const riskFactors: RiskFactor[] = [
             {
                 factor: 'Age',
                 contribution: 0.3,
@@ -1048,7 +1048,7 @@ export class G3DPredictiveAnalytics {
             }
         ];
 
-        const modifiableFactors: G3DModifiableRiskFactor[] = [
+        const modifiableFactors: ModifiableRiskFactor[] = [
             {
                 factor: 'Smoking status',
                 currentValue: 1, // Current smoker
@@ -1067,19 +1067,19 @@ export class G3DPredictiveAnalytics {
         };
     }
 
-    getPrediction(predictionId: string): G3DPredictionResult | undefined {
+    getPrediction(predictionId: string): PredictionResult | undefined {
         return this.predictions.get(predictionId);
     }
 
-    getModel(modelId: string): G3DPredictiveModel | undefined {
+    getModel(modelId: string): PredictiveModel | undefined {
         return this.models.get(modelId);
     }
 
-    getAllModels(): G3DPredictiveModel[] {
+    getAllModels(): PredictiveModel[] {
         return Array.from(this.models.values());
     }
 
-    getLongitudinalAnalysis(patientId: string): G3DLongitudinalAnalysis | undefined {
+    getLongitudinalAnalysis(patientId: string): LongitudinalAnalysis | undefined {
         return this.longitudinalData.get(patientId);
     }
 
@@ -1093,4 +1093,4 @@ export class G3DPredictiveAnalytics {
     }
 }
 
-export default G3DPredictiveAnalytics;
+export default PredictiveAnalytics;

@@ -4,10 +4,10 @@
  * with G3D GPU acceleration and advanced conditioning capabilities
  */
 
-import { G3DGPUCompute } from '../../g3d-performance/G3DGPUCompute';
-import { G3DModelRunner, G3DPrecision, G3DModelType } from '../../g3d-ai/G3DModelRunner';
-import { G3DMemoryManager } from '../../g3d-performance/G3DMemoryManager';
-import { G3DProfiler } from '../../g3d-performance/G3DProfiler';
+import { GPUCompute } from '../../performance/G3DGPUCompute';
+import { ModelRunner, Precision, ModelType } from '../../ai/G3DModelRunner';
+import { MemoryManager } from '../../performance/G3DMemoryManager';
+import { Profiler } from '../../performance/G3DProfiler';
 
 export interface DiffusionConfig {
     modelType: 'stable-diffusion' | 'dalle3' | 'midjourney' | 'custom';
@@ -83,11 +83,11 @@ export interface Keypoint {
     visible: boolean;
 }
 
-export class G3DDiffusionGenerator {
-    private gpuCompute: G3DGPUCompute;
-    private modelRunner: G3DModelRunner;
-    private memoryManager: G3DMemoryManager;
-    private profiler: G3DProfiler;
+export class DiffusionGenerator {
+    private gpuCompute: GPUCompute;
+    private modelRunner: ModelRunner;
+    private memoryManager: MemoryManager;
+    private profiler: Profiler;
     private diffusionModels: Map<string, any>;
     private controlNetModels: Map<string, any>;
     private preprocessors: Map<string, any>;
@@ -96,10 +96,10 @@ export class G3DDiffusionGenerator {
     private performanceMetrics: Map<string, number>;
 
     constructor() {
-        this.gpuCompute = new G3DGPUCompute();
-        this.modelRunner = new G3DModelRunner();
-        this.memoryManager = new G3DMemoryManager();
-        this.profiler = new G3DProfiler();
+        this.gpuCompute = new GPUCompute();
+        this.modelRunner = new ModelRunner();
+        this.memoryManager = new MemoryManager();
+        this.profiler = new Profiler();
         this.diffusionModels = new Map();
         this.controlNetModels = new Map();
         this.preprocessors = new Map();
@@ -119,13 +119,13 @@ export class G3DDiffusionGenerator {
             // Load primary diffusion models
             await this.loadDiffusionModel('stable-diffusion-xl', {
                 variant: 'base',
-                precision: 'float16' as G3DPrecision,
+                precision: 'float16' as Precision,
                 optimizations: ['xformers', 'flash-attention', 'g3d-acceleration']
             });
 
             await this.loadDiffusionModel('stable-diffusion-inpainting', {
                 variant: 'inpainting',
-                precision: 'float16' as G3DPrecision,
+                precision: 'float16' as Precision,
                 optimizations: ['memory-efficient', 'g3d-compute']
             });
 
@@ -181,7 +181,7 @@ export class G3DDiffusionGenerator {
                 id: modelId,
                 name: modelId,
                 version: '1.0.0',
-                type: G3DModelType.CUSTOM,
+                type: ModelType.CUSTOM,
                 modelPath: `models/${modelId}`,
                 modelId,
                 framework: 'diffusers',
@@ -218,12 +218,12 @@ export class G3DDiffusionGenerator {
                 id: `controlnet-${controlType}`,
                 name: `controlnet-${controlType}`,
                 version: '1.0.0',
-                type: G3DModelType.CUSTOM,
+                type: ModelType.CUSTOM,
                 modelPath: `models/controlnet-${controlType}`,
                 modelId: `controlnet-${controlType}`,
                 framework: 'diffusers',
                 device: 'cuda',
-                precision: 'float16' as G3DPrecision,
+                precision: 'float16' as Precision,
                 g3dAcceleration: config.g3dAccelerated
             });
 
@@ -335,7 +335,7 @@ export class G3DDiffusionGenerator {
                     id: 'midas-depth-estimation',
                     name: 'midas-depth-estimation',
                     version: '1.0.0',
-                    type: G3DModelType.CUSTOM,
+                    type: ModelType.CUSTOM,
                     modelPath: 'models/midas-depth-estimation',
                     modelId: 'midas-depth-estimation',
                     framework: 'pytorch',
@@ -365,7 +365,7 @@ export class G3DDiffusionGenerator {
                     id: 'openpose-body-25',
                     name: 'openpose-body-25',
                     version: '1.0.0',
-                    type: G3DModelType.CUSTOM,
+                    type: ModelType.CUSTOM,
                     modelPath: 'models/openpose-body-25',
                     modelId: 'openpose-body-25',
                     framework: 'pytorch',
@@ -395,7 +395,7 @@ export class G3DDiffusionGenerator {
                     id: 'segformer-b5-ade',
                     name: 'segformer-b5-ade',
                     version: '1.0.0',
-                    type: G3DModelType.CUSTOM,
+                    type: ModelType.CUSTOM,
                     modelPath: 'models/segformer-b5-ade',
                     modelId: 'segformer-b5-ade',
                     framework: 'pytorch',
@@ -426,7 +426,7 @@ export class G3DDiffusionGenerator {
                 modelId: config.model,
                 framework: 'pytorch',
                 device: 'cuda',
-                precision: 'float16' as G3DPrecision,
+                precision: 'float16' as Precision,
                 g3dAcceleration: true
             });
 

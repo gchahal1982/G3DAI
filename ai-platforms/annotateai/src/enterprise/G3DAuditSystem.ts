@@ -4,8 +4,8 @@
  * with real-time monitoring and forensic analysis
  */
 
-import { G3DGPUCompute } from '../g3d-performance/G3DGPUCompute';
-import { G3DModelRunner } from '../g3d-ai/G3DModelRunner';
+import { GPUCompute } from '../performance/G3DGPUCompute';
+import { ModelRunner } from '../ai/G3DModelRunner';
 
 export interface AuditConfig {
     logLevel: 'debug' | 'info' | 'warn' | 'error' | 'critical';
@@ -337,17 +337,17 @@ export interface Attachment {
     path: string;
 }
 
-export class G3DAuditSystem {
-    private gpuCompute: G3DGPUCompute;
-    private modelRunner: G3DModelRunner;
+export class AuditSystem {
+    private gpuCompute: GPUCompute;
+    private modelRunner: ModelRunner;
     private config: AuditConfig;
     private eventBuffer: AuditEvent[];
     private alertRules: Map<string, AlertRule>;
     private anomalyDetectors: Map<string, any>;
 
     constructor(config: AuditConfig) {
-        this.gpuCompute = new G3DGPUCompute();
-        this.modelRunner = new G3DModelRunner();
+        this.gpuCompute = new GPUCompute();
+        this.modelRunner = new ModelRunner();
         this.config = config;
         this.eventBuffer = [];
         this.alertRules = new Map();
@@ -1086,4 +1086,4 @@ export class G3DAuditSystem {
     }
 }
 
-export default G3DAuditSystem;
+export default AuditSystem;

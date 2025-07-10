@@ -14,7 +14,7 @@
 import { vec3, mat4 } from 'gl-matrix';
 
 // Spatial Index Types
-export interface G3DSpatialIndexConfig {
+export interface SpatialIndexConfig {
     maxDepth: number;
     maxObjectsPerNode: number;
     enableGPUAcceleration: boolean;
@@ -24,7 +24,7 @@ export interface G3DSpatialIndexConfig {
     indexType: 'octree' | 'rtree' | 'kdtree' | 'spatial_hash' | 'hybrid';
 }
 
-export interface G3DBoundingBox {
+export interface BoundingBox {
     min: vec3;
     max: vec3;
     center: vec3;
@@ -32,18 +32,18 @@ export interface G3DBoundingBox {
     volume: number;
 }
 
-export interface G3DSpatialObject {
+export interface SpatialObject {
     id: string;
     type: 'voxel' | 'mesh' | 'annotation' | 'roi' | 'vessel' | 'organ' | 'lesion';
-    boundingBox: G3DBoundingBox;
+    boundingBox: BoundingBox;
     position: vec3;
     data: any;
-    metadata: G3DSpatialMetadata;
+    metadata: SpatialMetadata;
     priority: number;
     lastAccessed: Date;
 }
 
-export interface G3DSpatialMetadata {
+export interface SpatialMetadata {
     medicalType: 'anatomy' | 'pathology' | 'annotation' | 'measurement' | 'roi';
     organSystem: string;
     tissueType: string;
@@ -54,27 +54,27 @@ export interface G3DSpatialMetadata {
     tags: string[];
 }
 
-export interface G3DSpatialQuery {
+export interface SpatialQuery {
     type: 'point' | 'range' | 'radius' | 'frustum' | 'ray' | 'nearest' | 'overlap';
     position?: vec3;
     radius?: number;
-    range?: G3DBoundingBox;
+    range?: BoundingBox;
     direction?: vec3;
     count?: number;
-    filters?: G3DSpatialFilter[];
+    filters?: SpatialFilter[];
     sortBy?: 'distance' | 'priority' | 'size' | 'relevance';
     maxResults?: number;
 }
 
-export interface G3DSpatialFilter {
+export interface SpatialFilter {
     property: string;
     operator: 'equals' | 'contains' | 'greater' | 'less' | 'range';
     value: any;
     weight?: number;
 }
 
-export interface G3DSpatialQueryResult {
-    objects: G3DSpatialObject[];
+export interface SpatialQueryResult {
+    objects: SpatialObject[];
     distances?: number[];
     intersections?: vec3[];
     totalCount: number;
@@ -83,17 +83,17 @@ export interface G3DSpatialQueryResult {
 }
 
 // Octree Implementation for Medical Volumes
-export class G3DOctreeNode {
-    public bounds: G3DBoundingBox;
-    public objects: G3DSpatialObject[] = [];
-    public children: G3DOctreeNode[] = [];
+export class OctreeNode {
+    public bounds: BoundingBox;
+    public objects: SpatialObject[] = [];
+    public children: OctreeNode[] = [];
     public isLeaf: boolean = true;
     public depth: number;
     public objectCount: number = 0;
     public medicalDensity: number = 0;
     public lastUpdated: Date = new Date();
 
-    constructor(bounds: G3DBoundingBox, depth: number = 0) {
+    constructor(bounds: BoundingBox, depth: number = 0) {
         this.bounds = bounds;
         this.depth = depth;
     }
@@ -106,7 +106,7 @@ export class G3DOctreeNode {
         vec3.subtract(halfSize, max, center);
 
         // Create 8 child nodes
-        const childBounds: G3DBoundingBox[] = [
+        const childBounds: BoundingBox[] = [
             // Bottom level (z = min.z to center.z)
             {
                 min: vec3.fromValues(min[0], min[1], min[2]),
@@ -176,7 +176,7 @@ export class G3DOctreeNode {
         }
 
         // Create child nodes
-        this.children = childBounds.map(bounds => new G3DOctreeNode(bounds, this.depth + 1));
+        this.children = childBounds.map(bounds => new OctreeNode(bounds, this.depth + 1));
         this.isLeaf = false;
 
         // Redistribute objects to children
@@ -192,7 +192,7 @@ export class G3DOctreeNode {
         }
     }
 
-    public insert(object: G3DSpatialObject): boolean {
+    public insert(object: SpatialObject): boolean {
         if (!this.intersectsBoundingBox(object.boundingBox, this.bounds)) {
             return false;
         }
@@ -220,8 +220,8 @@ export class G3DOctreeNode {
         return inserted;
     }
 
-    public query(query: G3DSpatialQuery): G3DSpatialObject[] {
-        const results: G3DSpatialObject[] = [];
+    public query(query: SpatialQuery): SpatialObject[] {
+        const results: SpatialObject[] = [];
 
         if (!this.intersectsQuery(query)) {
             return results;
@@ -281,7 +281,7 @@ export class G3DOctreeNode {
         };
     }
 
-    private intersectsBoundingBox(box1: G3DBoundingBox, box2: G3DBoundingBox): boolean {
+    private intersectsBoundingBox(box1: BoundingBox, box2: BoundingBox): boolean {
         return (
             box1.min[0] <= box2.max[0] && box1.max[0] >= box2.min[0] &&
             box1.min[1] <= box2.max[1] && box1.max[1] >= box2.min[1] &&
@@ -289,7 +289,7 @@ export class G3DOctreeNode {
         );
     }
 
-    private intersectsQuery(query: G3DSpatialQuery): boolean {
+    private intersectsQuery(query: SpatialQuery): boolean {
         switch (query.type) {
             case 'point':
                 return this.containsPoint(query.position!);
@@ -322,7 +322,7 @@ export class G3DOctreeNode {
         return distance <= radius;
     }
 
-    private objectMatchesQuery(object: G3DSpatialObject, query: G3DSpatialQuery): boolean {
+    private objectMatchesQuery(object: SpatialObject, query: SpatialQuery): boolean {
         // Apply filters if present
         if (query.filters) {
             for (const filter of query.filters) {
@@ -350,7 +350,7 @@ export class G3DOctreeNode {
         }
     }
 
-    private applyFilter(object: G3DSpatialObject, filter: G3DSpatialFilter): boolean {
+    private applyFilter(object: SpatialObject, filter: SpatialFilter): boolean {
         const value = this.getObjectProperty(object, filter.property);
 
         switch (filter.operator) {
@@ -370,7 +370,7 @@ export class G3DOctreeNode {
         }
     }
 
-    private getObjectProperty(object: G3DSpatialObject, property: string): any {
+    private getObjectProperty(object: SpatialObject, property: string): any {
         const parts = property.split('.');
         let value: any = object;
 
@@ -381,7 +381,7 @@ export class G3DOctreeNode {
         return value;
     }
 
-    private updateMedicalDensity(object: G3DSpatialObject): void {
+    private updateMedicalDensity(object: SpatialObject): void {
         // Update medical density based on object properties
         const objectDensity = object.metadata.density || 1.0;
         const relevanceWeight = this.getRelevanceWeight(object.metadata.clinicalRelevance);
@@ -433,19 +433,19 @@ export class G3DOctreeNode {
 }
 
 // R-tree Implementation for Anatomical Structures
-export class G3DRTreeNode {
-    public boundingBox: G3DBoundingBox;
-    public children: G3DRTreeNode[] = [];
-    public objects: G3DSpatialObject[] = [];
+export class RTreeNode {
+    public boundingBox: BoundingBox;
+    public children: RTreeNode[] = [];
+    public objects: SpatialObject[] = [];
     public isLeaf: boolean = true;
     public maxChildren: number = 8;
     public minChildren: number = 4;
 
-    constructor(boundingBox?: G3DBoundingBox) {
+    constructor(boundingBox?: BoundingBox) {
         this.boundingBox = boundingBox || this.createEmptyBoundingBox();
     }
 
-    public insert(object: G3DSpatialObject): void {
+    public insert(object: SpatialObject): void {
         if (this.isLeaf) {
             this.objects.push(object);
             this.expandBoundingBox(object.boundingBox);
@@ -460,8 +460,8 @@ export class G3DRTreeNode {
         }
     }
 
-    public search(query: G3DSpatialQuery): G3DSpatialObject[] {
-        const results: G3DSpatialObject[] = [];
+    public search(query: SpatialQuery): SpatialObject[] {
+        const results: SpatialObject[] = [];
 
         if (!this.intersectsQuery(query)) {
             return results;
@@ -490,8 +490,8 @@ export class G3DRTreeNode {
         const splitPosition = this.chooseSplitPosition(splitAxis);
 
         // Create two new children
-        const leftChild = new G3DRTreeNode();
-        const rightChild = new G3DRTreeNode();
+        const leftChild = new RTreeNode();
+        const rightChild = new RTreeNode();
 
         // Distribute objects
         for (const obj of this.objects) {
@@ -506,7 +506,7 @@ export class G3DRTreeNode {
         this.objects = [];
     }
 
-    private chooseBestChild(boundingBox: G3DBoundingBox): G3DRTreeNode {
+    private chooseBestChild(boundingBox: BoundingBox): RTreeNode {
         let bestChild = this.children[0];
         let minEnlargement = this.calculateEnlargement(bestChild.boundingBox, boundingBox);
 
@@ -523,7 +523,7 @@ export class G3DRTreeNode {
         return bestChild;
     }
 
-    private calculateEnlargement(existing: G3DBoundingBox, newBox: G3DBoundingBox): number {
+    private calculateEnlargement(existing: BoundingBox, newBox: BoundingBox): number {
         const expandedMin = vec3.create();
         const expandedMax = vec3.create();
 
@@ -569,7 +569,7 @@ export class G3DRTreeNode {
         return positions[Math.floor(positions.length / 2)];
     }
 
-    private expandBoundingBox(newBox: G3DBoundingBox): void {
+    private expandBoundingBox(newBox: BoundingBox): void {
         vec3.min(this.boundingBox.min, this.boundingBox.min, newBox.min);
         vec3.max(this.boundingBox.max, this.boundingBox.max, newBox.max);
         vec3.add(this.boundingBox.center, this.boundingBox.min, this.boundingBox.max);
@@ -578,7 +578,7 @@ export class G3DRTreeNode {
         this.boundingBox.volume = this.boundingBox.size[0] * this.boundingBox.size[1] * this.boundingBox.size[2];
     }
 
-    private createEmptyBoundingBox(): G3DBoundingBox {
+    private createEmptyBoundingBox(): BoundingBox {
         return {
             min: vec3.fromValues(Infinity, Infinity, Infinity),
             max: vec3.fromValues(-Infinity, -Infinity, -Infinity),
@@ -588,7 +588,7 @@ export class G3DRTreeNode {
         };
     }
 
-    private intersectsQuery(query: G3DSpatialQuery): boolean {
+    private intersectsQuery(query: SpatialQuery): boolean {
         switch (query.type) {
             case 'range':
                 return this.intersectsBoundingBox(this.boundingBox, query.range!);
@@ -599,7 +599,7 @@ export class G3DRTreeNode {
         }
     }
 
-    private intersectsBoundingBox(box1: G3DBoundingBox, box2: G3DBoundingBox): boolean {
+    private intersectsBoundingBox(box1: BoundingBox, box2: BoundingBox): boolean {
         return (
             box1.min[0] <= box2.max[0] && box1.max[0] >= box2.min[0] &&
             box1.min[1] <= box2.max[1] && box1.max[1] >= box2.min[1] &&
@@ -616,7 +616,7 @@ export class G3DRTreeNode {
         return distance <= radius;
     }
 
-    private objectMatchesQuery(object: G3DSpatialObject, query: G3DSpatialQuery): boolean {
+    private objectMatchesQuery(object: SpatialObject, query: SpatialQuery): boolean {
         switch (query.type) {
             case 'radius':
                 const distance = vec3.distance(object.position, query.position!);
@@ -630,17 +630,17 @@ export class G3DRTreeNode {
 }
 
 // Main Spatial Index System
-export class G3DSpatialIndex {
-    private config: G3DSpatialIndexConfig;
-    private octree: G3DOctreeNode | null = null;
-    private rtree: G3DRTreeNode | null = null;
-    private spatialHash: Map<string, G3DSpatialObject[]> = new Map();
-    private objectRegistry: Map<string, G3DSpatialObject> = new Map();
-    private queryCache: Map<string, G3DSpatialQueryResult> = new Map();
+export class SpatialIndex {
+    private config: SpatialIndexConfig;
+    private octree: OctreeNode | null = null;
+    private rtree: RTreeNode | null = null;
+    private spatialHash: Map<string, SpatialObject[]> = new Map();
+    private objectRegistry: Map<string, SpatialObject> = new Map();
+    private queryCache: Map<string, SpatialQueryResult> = new Map();
     private isInitialized: boolean = false;
-    private bounds: G3DBoundingBox;
+    private bounds: BoundingBox;
 
-    constructor(bounds: G3DBoundingBox, config: Partial<G3DSpatialIndexConfig> = {}) {
+    constructor(bounds: BoundingBox, config: Partial<SpatialIndexConfig> = {}) {
         this.bounds = bounds;
         this.config = {
             maxDepth: 8,
@@ -660,11 +660,11 @@ export class G3DSpatialIndex {
 
             // Initialize primary index structure
             if (this.config.indexType === 'octree' || this.config.indexType === 'hybrid') {
-                this.octree = new G3DOctreeNode(this.bounds);
+                this.octree = new OctreeNode(this.bounds);
             }
 
             if (this.config.indexType === 'rtree' || this.config.indexType === 'hybrid') {
-                this.rtree = new G3DRTreeNode(this.bounds);
+                this.rtree = new RTreeNode(this.bounds);
             }
 
             if (this.config.indexType === 'spatial_hash' || this.config.indexType === 'hybrid') {
@@ -692,7 +692,7 @@ export class G3DSpatialIndex {
         }
     }
 
-    public insert(object: G3DSpatialObject): boolean {
+    public insert(object: SpatialObject): boolean {
         if (!this.isInitialized) {
             throw new Error('Spatial index not initialized');
         }
@@ -723,7 +723,7 @@ export class G3DSpatialIndex {
         return inserted;
     }
 
-    public query(query: G3DSpatialQuery): G3DSpatialQueryResult {
+    public query(query: SpatialQuery): SpatialQueryResult {
         if (!this.isInitialized) {
             throw new Error('Spatial index not initialized');
         }
@@ -742,7 +742,7 @@ export class G3DSpatialIndex {
             };
         }
 
-        let results: G3DSpatialObject[] = [];
+        let results: SpatialObject[] = [];
 
         // Query appropriate index structures
         if (this.config.indexType === 'octree' && this.octree) {
@@ -760,7 +760,7 @@ export class G3DSpatialIndex {
         results = this.sortAndLimitResults(results, query);
 
         const queryTime = Date.now() - startTime;
-        const result: G3DSpatialQueryResult = {
+        const result: SpatialQueryResult = {
             objects: results,
             distances: this.calculateDistances(results, query),
             totalCount: results.length,
@@ -801,7 +801,7 @@ export class G3DSpatialIndex {
         return removed;
     }
 
-    public update(object: G3DSpatialObject): boolean {
+    public update(object: SpatialObject): boolean {
         // Remove old version and insert new
         this.remove(object.id);
         return this.insert(object);
@@ -812,7 +812,7 @@ export class G3DSpatialIndex {
         indexType: string;
         memoryUsage: number;
         cacheSize: number;
-        bounds: G3DBoundingBox;
+        bounds: BoundingBox;
     } {
         return {
             totalObjects: this.objectRegistry.size,
@@ -839,7 +839,7 @@ export class G3DSpatialIndex {
         console.log('Spatial index optimization complete');
     }
 
-    private insertIntoSpatialHash(object: G3DSpatialObject): void {
+    private insertIntoSpatialHash(object: SpatialObject): void {
         const gridPositions = this.getGridPositions(object.boundingBox);
 
         for (const pos of gridPositions) {
@@ -851,7 +851,7 @@ export class G3DSpatialIndex {
         }
     }
 
-    private removeFromSpatialHash(object: G3DSpatialObject): void {
+    private removeFromSpatialHash(object: SpatialObject): void {
         const gridPositions = this.getGridPositions(object.boundingBox);
 
         for (const pos of gridPositions) {
@@ -866,7 +866,7 @@ export class G3DSpatialIndex {
         }
     }
 
-    private getGridPositions(boundingBox: G3DBoundingBox): { x: number; y: number; z: number }[] {
+    private getGridPositions(boundingBox: BoundingBox): { x: number; y: number; z: number }[] {
         const gridSize = this.config.spatialHashGridSize;
         const cellSize = vec3.create();
         vec3.subtract(cellSize, this.bounds.max, this.bounds.min);
@@ -896,8 +896,8 @@ export class G3DSpatialIndex {
         return positions;
     }
 
-    private querySpatialHash(query: G3DSpatialQuery): G3DSpatialObject[] {
-        const results: G3DSpatialObject[] = [];
+    private querySpatialHash(query: SpatialQuery): SpatialObject[] {
+        const results: SpatialObject[] = [];
         const processed = new Set<string>();
 
         let gridPositions: { x: number; y: number; z: number }[] = [];
@@ -933,7 +933,7 @@ export class G3DSpatialIndex {
         return results;
     }
 
-    private queryHybrid(query: G3DSpatialQuery): G3DSpatialObject[] {
+    private queryHybrid(query: SpatialQuery): SpatialObject[] {
         // Choose best index based on query type
         switch (query.type) {
             case 'point':
@@ -949,7 +949,7 @@ export class G3DSpatialIndex {
         }
     }
 
-    private objectMatchesQuery(object: G3DSpatialObject, query: G3DSpatialQuery): boolean {
+    private objectMatchesQuery(object: SpatialObject, query: SpatialQuery): boolean {
         // Apply filters if present
         if (query.filters) {
             for (const filter of query.filters) {
@@ -962,7 +962,7 @@ export class G3DSpatialIndex {
         return true;
     }
 
-    private applyFilter(object: G3DSpatialObject, filter: G3DSpatialFilter): boolean {
+    private applyFilter(object: SpatialObject, filter: SpatialFilter): boolean {
         const value = this.getObjectProperty(object, filter.property);
 
         switch (filter.operator) {
@@ -982,7 +982,7 @@ export class G3DSpatialIndex {
         }
     }
 
-    private getObjectProperty(object: G3DSpatialObject, property: string): any {
+    private getObjectProperty(object: SpatialObject, property: string): any {
         const parts = property.split('.');
         let value: any = object;
 
@@ -993,7 +993,7 @@ export class G3DSpatialIndex {
         return value;
     }
 
-    private sortAndLimitResults(results: G3DSpatialObject[], query: G3DSpatialQuery): G3DSpatialObject[] {
+    private sortAndLimitResults(results: SpatialObject[], query: SpatialQuery): SpatialObject[] {
         // Sort results if requested
         if (query.sortBy) {
             results.sort((a, b) => {
@@ -1027,7 +1027,7 @@ export class G3DSpatialIndex {
         return results;
     }
 
-    private calculateDistances(results: G3DSpatialObject[], query: G3DSpatialQuery): number[] | undefined {
+    private calculateDistances(results: SpatialObject[], query: SpatialQuery): number[] | undefined {
         if (!query.position) return undefined;
 
         return results.map(obj => vec3.distance(obj.position, query.position!));
@@ -1043,7 +1043,7 @@ export class G3DSpatialIndex {
         }
     }
 
-    private generateCacheKey(query: G3DSpatialQuery): string {
+    private generateCacheKey(query: SpatialQuery): string {
         return JSON.stringify({
             type: query.type,
             position: query.position,
@@ -1099,4 +1099,4 @@ export class G3DSpatialIndex {
     }
 }
 
-export default G3DSpatialIndex;
+export default SpatialIndex;

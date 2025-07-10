@@ -4,9 +4,9 @@
  * with G3D-accelerated domain alignment algorithms
  */
 
-import { G3DGPUCompute } from '../../g3d-performance/G3DGPUCompute';
-import { G3DModelRunner } from '../../g3d-ai/G3DModelRunner';
-import { G3DMemoryManager } from '../../g3d-performance/G3DMemoryManager';
+import { GPUCompute } from '../../performance/G3DGPUCompute';
+import { ModelRunner } from '../../ai/G3DModelRunner';
+import { MemoryManager } from '../../performance/G3DMemoryManager';
 
 export interface DomainConfig {
     sourceDomain: DomainDescription;
@@ -86,18 +86,18 @@ export interface FeatureExtractor {
     outputDimensions: number[];
 }
 
-export class G3DDomainAdaptation {
-    private gpuCompute: G3DGPUCompute;
-    private modelRunner: G3DModelRunner;
-    private memoryManager: G3DMemoryManager;
+export class DomainAdaptation {
+    private gpuCompute: GPUCompute;
+    private modelRunner: ModelRunner;
+    private memoryManager: MemoryManager;
     private featureExtractors: Map<string, FeatureExtractor>;
     private adaptationModels: Map<string, any>;
     private performanceMetrics: Map<string, number>;
 
     constructor() {
-        this.gpuCompute = new G3DGPUCompute();
-        this.modelRunner = new G3DModelRunner();
-        this.memoryManager = new G3DMemoryManager();
+        this.gpuCompute = new GPUCompute();
+        this.modelRunner = new ModelRunner();
+        this.memoryManager = new MemoryManager();
         this.featureExtractors = new Map();
         this.adaptationModels = new Map();
         this.performanceMetrics = new Map();
@@ -1116,4 +1116,4 @@ export class G3DDomainAdaptation {
     }
 }
 
-export default G3DDomainAdaptation;
+export default DomainAdaptation;

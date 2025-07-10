@@ -14,7 +14,7 @@
 import { vec3, mat4, quat } from 'gl-matrix';
 
 // Geometry Types
-export interface G3DGeometryConfig {
+export interface GeometryConfig {
     enableGPUAcceleration: boolean;
     precision: 'single' | 'double';
     simplificationLevel: 'none' | 'low' | 'medium' | 'high';
@@ -24,19 +24,19 @@ export interface G3DGeometryConfig {
     enableTopologyValidation: boolean;
 }
 
-export interface G3DMesh {
+export interface Mesh {
     id: string;
     vertices: Float32Array;
     indices: Uint32Array;
     normals?: Float32Array;
     uvs?: Float32Array;
     colors?: Float32Array;
-    boundingBox: G3DBoundingBox;
-    topology: G3DTopology;
-    metadata: G3DMeshMetadata;
+    boundingBox: BoundingBox;
+    topology: Topology;
+    metadata: MeshMetadata;
 }
 
-export interface G3DBoundingBox {
+export interface BoundingBox {
     min: vec3;
     max: vec3;
     center: vec3;
@@ -45,7 +45,7 @@ export interface G3DBoundingBox {
     surfaceArea: number;
 }
 
-export interface G3DTopology {
+export interface Topology {
     vertexCount: number;
     triangleCount: number;
     edgeCount: number;
@@ -56,7 +56,7 @@ export interface G3DTopology {
     components: number;
 }
 
-export interface G3DMeshMetadata {
+export interface MeshMetadata {
     medicalType: 'organ' | 'vessel' | 'bone' | 'tissue' | 'lesion' | 'implant';
     organSystem: string;
     tissueType: string;
@@ -69,7 +69,7 @@ export interface G3DMeshMetadata {
     timestamp: Date;
 }
 
-export interface G3DVolume {
+export interface Volume {
     id: string;
     dimensions: vec3;
     spacing: vec3;
@@ -77,10 +77,10 @@ export interface G3DVolume {
     data: Float32Array | Uint16Array | Uint8Array;
     dataType: 'float32' | 'uint16' | 'uint8';
     intensityRange: { min: number; max: number };
-    metadata: G3DVolumeMetadata;
+    metadata: VolumeMetadata;
 }
 
-export interface G3DVolumeMetadata {
+export interface VolumeMetadata {
     modality: 'CT' | 'MRI' | 'PET' | 'SPECT' | 'US' | 'XR';
     bodyPart: string;
     studyDate: Date;
@@ -94,15 +94,15 @@ export interface G3DVolumeMetadata {
     rescaleIntercept: number;
 }
 
-export interface G3DIsosurface {
+export interface Isosurface {
     isovalue: number;
-    mesh: G3DMesh;
-    quality: G3DSurfaceQuality;
+    mesh: Mesh;
+    quality: SurfaceQuality;
     extractionTime: number;
     algorithm: 'marching_cubes' | 'dual_contouring' | 'surface_nets';
 }
 
-export interface G3DSurfaceQuality {
+export interface SurfaceQuality {
     triangleQuality: number;
     aspectRatio: number;
     edgeLength: { min: number; max: number; avg: number };
@@ -111,7 +111,7 @@ export interface G3DSurfaceQuality {
     manifoldness: number;
 }
 
-export interface G3DRaycastResult {
+export interface RaycastResult {
     hit: boolean;
     distance: number;
     point: vec3;
@@ -121,7 +121,7 @@ export interface G3DRaycastResult {
     material?: any;
 }
 
-export interface G3DIntersectionResult {
+export interface IntersectionResult {
     intersects: boolean;
     points: vec3[];
     normals: vec3[];
@@ -130,7 +130,7 @@ export interface G3DIntersectionResult {
 }
 
 // Marching Cubes Implementation
-export class G3DMarchingCubes {
+export class MarchingCubes {
     private static readonly EDGE_TABLE = new Uint16Array([
         0x0, 0x109, 0x203, 0x30a, 0x406, 0x50f, 0x605, 0x70c,
         0x80c, 0x905, 0xa0f, 0xb06, 0xc0a, 0xd03, 0xe09, 0xf00,
@@ -144,7 +144,7 @@ export class G3DMarchingCubes {
         // ... (full triangle table would be 256 entries)
     ];
 
-    public static extractIsosurface(volume: G3DVolume, isovalue: number): G3DIsosurface {
+    public static extractIsosurface(volume: Volume, isovalue: number): Isosurface {
         const startTime = Date.now();
 
         const vertices: number[] = [];
@@ -170,7 +170,7 @@ export class G3DMarchingCubes {
             }
         }
 
-        const mesh: G3DMesh = {
+        const mesh: Mesh = {
             id: `isosurface_${Date.now()}`,
             vertices: new Float32Array(vertices),
             indices: new Uint32Array(indices),
@@ -208,7 +208,7 @@ export class G3DMarchingCubes {
 
     private static processCube(
         x: number, y: number, z: number,
-        volume: G3DVolume,
+        volume: Volume,
         isovalue: number,
         vertices: number[],
         indices: number[],
@@ -251,7 +251,7 @@ export class G3DMarchingCubes {
         // Get edge intersections
         const edgeVertices: vec3[] = [];
         for (let i = 0; i < 12; i++) {
-            if (G3DMarchingCubes.EDGE_TABLE[cubeIndex] & (1 << i)) {
+            if (MarchingCubes.EDGE_TABLE[cubeIndex] & (1 << i)) {
                 const edge = this.getEdgeVertices(i);
                 const v1 = cubeVertices[edge[0]];
                 const v2 = cubeVertices[edge[1]];
@@ -267,7 +267,7 @@ export class G3DMarchingCubes {
         }
 
         // Generate triangles
-        const triangles = G3DMarchingCubes.TRIANGLE_TABLE[cubeIndex];
+        const triangles = MarchingCubes.TRIANGLE_TABLE[cubeIndex];
         for (let i = 0; triangles[i] !== -1; i += 3) {
             const v1 = edgeVertices[triangles[i]];
             const v2 = edgeVertices[triangles[i + 1]];
@@ -315,7 +315,7 @@ export class G3DMarchingCubes {
         return normal;
     }
 
-    private static calculateBoundingBox(vertices: number[]): G3DBoundingBox {
+    private static calculateBoundingBox(vertices: number[]): BoundingBox {
         let minX = Infinity, minY = Infinity, minZ = Infinity;
         let maxX = -Infinity, maxY = -Infinity, maxZ = -Infinity;
 
@@ -354,7 +354,7 @@ export class G3DMarchingCubes {
         };
     }
 
-    private static analyzeTopology(vertices: number[], indices: number[]): G3DTopology {
+    private static analyzeTopology(vertices: number[], indices: number[]): Topology {
         const vertexCount = vertices.length / 3;
         const triangleCount = indices.length / 3;
 
@@ -374,7 +374,7 @@ export class G3DMarchingCubes {
         };
     }
 
-    private static calculateMeshVolume(mesh: G3DMesh): number {
+    private static calculateMeshVolume(mesh: Mesh): number {
         const { vertices, indices } = mesh;
         let volume = 0;
 
@@ -396,7 +396,7 @@ export class G3DMarchingCubes {
         return Math.abs(volume);
     }
 
-    private static calculateSurfaceArea(mesh: G3DMesh): number {
+    private static calculateSurfaceArea(mesh: Mesh): number {
         const { vertices, indices } = mesh;
         let area = 0;
 
@@ -423,7 +423,7 @@ export class G3DMarchingCubes {
         return area;
     }
 
-    private static assessSurfaceQuality(mesh: G3DMesh): G3DSurfaceQuality {
+    private static assessSurfaceQuality(mesh: Mesh): SurfaceQuality {
         const { vertices, indices } = mesh;
         let totalQuality = 0;
         let totalAspectRatio = 0;
@@ -493,11 +493,11 @@ export class G3DMarchingCubes {
 }
 
 // Main Geometry Utilities System
-export class G3DGeometryUtils {
-    private config: G3DGeometryConfig;
+export class GeometryUtils {
+    private config: GeometryConfig;
     private isInitialized: boolean = false;
 
-    constructor(config: Partial<G3DGeometryConfig> = {}) {
+    constructor(config: Partial<GeometryConfig> = {}) {
         this.config = {
             enableGPUAcceleration: true,
             precision: 'single',
@@ -523,7 +523,7 @@ export class G3DGeometryUtils {
     }
 
     // Mesh Operations
-    public simplifyMesh(mesh: G3DMesh, targetReduction: number): G3DMesh {
+    public simplifyMesh(mesh: Mesh, targetReduction: number): Mesh {
         if (!this.isInitialized) {
             throw new Error('Geometry utils not initialized');
         }
@@ -541,12 +541,12 @@ export class G3DGeometryUtils {
             id: `${mesh.id}_simplified`,
             vertices: simplifiedVertices,
             indices: simplifiedIndices,
-            boundingBox: G3DMarchingCubes['calculateBoundingBox'](Array.from(simplifiedVertices)),
-            topology: G3DMarchingCubes['analyzeTopology'](Array.from(simplifiedVertices), Array.from(simplifiedIndices))
+            boundingBox: MarchingCubes['calculateBoundingBox'](Array.from(simplifiedVertices)),
+            topology: MarchingCubes['analyzeTopology'](Array.from(simplifiedVertices), Array.from(simplifiedIndices))
         };
     }
 
-    public smoothMesh(mesh: G3DMesh, iterations: number = 5, lambda: number = 0.5): G3DMesh {
+    public smoothMesh(mesh: Mesh, iterations: number = 5, lambda: number = 0.5): Mesh {
         const { vertices, indices } = mesh;
         const smoothedVertices = new Float32Array(vertices);
 
@@ -591,11 +591,11 @@ export class G3DGeometryUtils {
             ...mesh,
             id: `${mesh.id}_smoothed`,
             vertices: smoothedVertices,
-            boundingBox: G3DMarchingCubes['calculateBoundingBox'](Array.from(smoothedVertices))
+            boundingBox: MarchingCubes['calculateBoundingBox'](Array.from(smoothedVertices))
         };
     }
 
-    public calculateMeshNormals(mesh: G3DMesh): Float32Array {
+    public calculateMeshNormals(mesh: Mesh): Float32Array {
         const { vertices, indices } = mesh;
         const normals = new Float32Array(vertices.length);
 
@@ -612,7 +612,7 @@ export class G3DGeometryUtils {
             const v2 = vec3.fromValues(vertices[i2], vertices[i2 + 1], vertices[i2 + 2]);
             const v3 = vec3.fromValues(vertices[i3], vertices[i3 + 1], vertices[i3 + 2]);
 
-            const normal = G3DMarchingCubes['calculateTriangleNormal'](v1, v2, v3);
+            const normal = MarchingCubes['calculateTriangleNormal'](v1, v2, v3);
 
             // Accumulate normals for each vertex
             normals[i1] += normal[0];
@@ -642,13 +642,13 @@ export class G3DGeometryUtils {
 
     // Ray-Mesh Intersection
     public raycastMesh(
-        mesh: G3DMesh,
+        mesh: Mesh,
         rayOrigin: vec3,
         rayDirection: vec3,
         maxDistance: number = Infinity
-    ): G3DRaycastResult {
+    ): RaycastResult {
         const { vertices, indices } = mesh;
-        let closestHit: G3DRaycastResult = {
+        let closestHit: RaycastResult = {
             hit: false,
             distance: Infinity,
             point: vec3.create(),
@@ -686,7 +686,7 @@ export class G3DGeometryUtils {
         v1: vec3,
         v2: vec3,
         v3: vec3
-    ): G3DRaycastResult {
+    ): RaycastResult {
         const edge1 = vec3.create();
         const edge2 = vec3.create();
         const h = vec3.create();
@@ -772,15 +772,15 @@ export class G3DGeometryUtils {
     }
 
     // Volume Operations
-    public extractIsosurface(volume: G3DVolume, isovalue: number): G3DIsosurface {
-        return G3DMarchingCubes.extractIsosurface(volume, isovalue);
+    public extractIsosurface(volume: Volume, isovalue: number): Isosurface {
+        return MarchingCubes.extractIsosurface(volume, isovalue);
     }
 
     public resampleVolume(
-        volume: G3DVolume,
+        volume: Volume,
         newDimensions: vec3,
         interpolation: 'nearest' | 'linear' | 'cubic' = 'linear'
-    ): G3DVolume {
+    ): Volume {
         const { dimensions, data, dataType } = volume;
         const [oldWidth, oldHeight, oldDepth] = dimensions;
         const [newWidth, newHeight, newDepth] = newDimensions;
@@ -922,16 +922,16 @@ export class G3DGeometryUtils {
         return Array.from(neighbors);
     }
 
-    public calculateMeshStatistics(mesh: G3DMesh): {
+    public calculateMeshStatistics(mesh: Mesh): {
         volume: number;
         surfaceArea: number;
         averageEdgeLength: number;
         boundingBoxVolume: number;
         triangleQuality: number;
     } {
-        const volume = G3DMarchingCubes['calculateMeshVolume'](mesh);
-        const surfaceArea = G3DMarchingCubes['calculateSurfaceArea'](mesh);
-        const quality = G3DMarchingCubes['assessSurfaceQuality'](mesh);
+        const volume = MarchingCubes['calculateMeshVolume'](mesh);
+        const surfaceArea = MarchingCubes['calculateSurfaceArea'](mesh);
+        const quality = MarchingCubes['assessSurfaceQuality'](mesh);
 
         return {
             volume,
@@ -942,7 +942,7 @@ export class G3DGeometryUtils {
         };
     }
 
-    public validateMeshTopology(mesh: G3DMesh): {
+    public validateMeshTopology(mesh: Mesh): {
         isValid: boolean;
         errors: string[];
         warnings: string[];
@@ -961,7 +961,7 @@ export class G3DGeometryUtils {
             const v2 = vec3.fromValues(vertices[i2], vertices[i2 + 1], vertices[i2 + 2]);
             const v3 = vec3.fromValues(vertices[i3], vertices[i3 + 1], vertices[i3 + 2]);
 
-            const area = G3DMarchingCubes['calculateTriangleArea'](v1, v2, v3);
+            const area = MarchingCubes['calculateTriangleArea'](v1, v2, v3);
             if (area < 1e-10) {
                 errors.push(`Degenerate triangle at index ${i / 3}`);
             }
@@ -989,4 +989,4 @@ export class G3DGeometryUtils {
     }
 }
 
-export default G3DGeometryUtils;
+export default GeometryUtils;

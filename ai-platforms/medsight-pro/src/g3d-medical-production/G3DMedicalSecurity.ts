@@ -3,7 +3,7 @@
  * Enterprise-grade security for medical production environments
  */
 
-export interface G3DMedicalSecurityConfig {
+export interface MedicalSecurityConfig {
     enableAdvancedThreatProtection: boolean;
     enableZeroTrustArchitecture: boolean;
     enableBiometricAuthentication: boolean;
@@ -16,7 +16,7 @@ export interface G3DMedicalSecurityConfig {
     emergencyAccess: boolean;
 }
 
-export interface G3DSecurityThreat {
+export interface SecurityThreat {
     id: string;
     type: 'malware' | 'phishing' | 'intrusion' | 'data_breach' | 'dos' | 'insider';
     severity: 'low' | 'medium' | 'high' | 'critical';
@@ -30,7 +30,7 @@ export interface G3DSecurityThreat {
     mitigationSteps: string[];
 }
 
-export interface G3DSecurityIncident {
+export interface SecurityIncident {
     id: string;
     threatId: string;
     impact: 'minimal' | 'moderate' | 'significant' | 'severe';
@@ -43,7 +43,7 @@ export interface G3DSecurityIncident {
     lessons: string[];
 }
 
-export interface G3DAccessControl {
+export interface AccessControl {
     userId: string;
     role: string;
     permissions: string[];
@@ -56,7 +56,7 @@ export interface G3DAccessControl {
     multiFactorRequired: boolean;
 }
 
-export interface G3DSecurityMetrics {
+export interface SecurityMetrics {
     threatsDetected: number;
     threatsBlocked: number;
     incidentsResolved: number;
@@ -69,15 +69,15 @@ export interface G3DSecurityMetrics {
     emergencyResponseTime: number; // minutes
 }
 
-export class G3DMedicalSecurity {
-    private config: G3DMedicalSecurityConfig;
-    private threats: Map<string, G3DSecurityThreat> = new Map();
-    private incidents: Map<string, G3DSecurityIncident> = new Map();
-    private accessControls: Map<string, G3DAccessControl> = new Map();
+export class MedicalSecurity {
+    private config: MedicalSecurityConfig;
+    private threats: Map<string, SecurityThreat> = new Map();
+    private incidents: Map<string, SecurityIncident> = new Map();
+    private accessControls: Map<string, AccessControl> = new Map();
     private isMonitoring: boolean = false;
-    private metrics: G3DSecurityMetrics;
+    private metrics: SecurityMetrics;
 
-    constructor(config: Partial<G3DMedicalSecurityConfig> = {}) {
+    constructor(config: Partial<MedicalSecurityConfig> = {}) {
         this.config = {
             enableAdvancedThreatProtection: true,
             enableZeroTrustArchitecture: true,
@@ -106,10 +106,10 @@ export class G3DMedicalSecurity {
         console.log('G3D Medical Security System initialized successfully');
     }
 
-    async detectThreat(threat: Partial<G3DSecurityThreat>): Promise<string> {
+    async detectThreat(threat: Partial<SecurityThreat>): Promise<string> {
         const threatId = `threat_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
-        const securityThreat: G3DSecurityThreat = {
+        const securityThreat: SecurityThreat = {
             id: threatId,
             type: threat.type || 'intrusion',
             severity: threat.severity || 'medium',
@@ -132,10 +132,10 @@ export class G3DMedicalSecurity {
         return threatId;
     }
 
-    async createIncident(incidentData: Partial<G3DSecurityIncident>): Promise<string> {
+    async createIncident(incidentData: Partial<SecurityIncident>): Promise<string> {
         const incidentId = `incident_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
-        const incident: G3DSecurityIncident = {
+        const incident: SecurityIncident = {
             id: incidentId,
             threatId: incidentData.threatId || '',
             impact: incidentData.impact || 'moderate',
@@ -155,8 +155,8 @@ export class G3DMedicalSecurity {
         return incidentId;
     }
 
-    async configureUserAccess(userId: string, accessData: Partial<G3DAccessControl>): Promise<void> {
-        const accessControl: G3DAccessControl = {
+    async configureUserAccess(userId: string, accessData: Partial<AccessControl>): Promise<void> {
+        const accessControl: AccessControl = {
             userId,
             role: accessData.role || 'user',
             permissions: accessData.permissions || [],
@@ -173,15 +173,15 @@ export class G3DMedicalSecurity {
         console.log(`Access control configured for user: ${userId}`);
     }
 
-    getSecurityMetrics(): G3DSecurityMetrics {
+    getSecurityMetrics(): SecurityMetrics {
         return this.metrics;
     }
 
-    getThreats(): G3DSecurityThreat[] {
+    getThreats(): SecurityThreat[] {
         return Array.from(this.threats.values());
     }
 
-    getIncidents(): G3DSecurityIncident[] {
+    getIncidents(): SecurityIncident[] {
         return Array.from(this.incidents.values());
     }
 
@@ -220,7 +220,7 @@ export class G3DMedicalSecurity {
         }
     }
 
-    private initializeMetrics(): G3DSecurityMetrics {
+    private initializeMetrics(): SecurityMetrics {
         return {
             threatsDetected: 0,
             threatsBlocked: 0,
@@ -244,4 +244,4 @@ export class G3DMedicalSecurity {
     }
 }
 
-export default G3DMedicalSecurity;
+export default MedicalSecurity;

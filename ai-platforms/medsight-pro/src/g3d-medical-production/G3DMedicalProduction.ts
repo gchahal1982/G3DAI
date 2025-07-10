@@ -3,7 +3,7 @@
  * Production-ready deployment and optimization for medical environments
  */
 
-export interface G3DMedicalProductionConfig {
+export interface MedicalProductionConfig {
     environment: 'development' | 'staging' | 'production' | 'dr';
     enableHighAvailability: boolean;
     enableAutoScaling: boolean;
@@ -15,18 +15,18 @@ export interface G3DMedicalProductionConfig {
     targetUptime: number; // percentage
 }
 
-export interface G3DProductionMetrics {
+export interface ProductionMetrics {
     uptime: number;
     responseTime: number;
     throughput: number;
     errorRate: number;
-    resourceUtilization: G3DResourceUtilization;
-    medicalCompliance: G3DMedicalCompliance;
-    securityMetrics: G3DSecurityMetrics;
-    performanceMetrics: G3DPerformanceMetrics;
+    resourceUtilization: ResourceUtilization;
+    medicalCompliance: MedicalCompliance;
+    securityMetrics: SecurityMetrics;
+    performanceMetrics: PerformanceMetrics;
 }
 
-export interface G3DResourceUtilization {
+export interface ResourceUtilization {
     cpu: number;
     memory: number;
     storage: number;
@@ -34,7 +34,7 @@ export interface G3DResourceUtilization {
     gpu: number;
 }
 
-export interface G3DMedicalCompliance {
+export interface MedicalCompliance {
     hipaaCompliance: number;
     fdaCompliance: number;
     auditScore: number;
@@ -42,7 +42,7 @@ export interface G3DMedicalCompliance {
     accessControl: number;
 }
 
-export interface G3DSecurityMetrics {
+export interface SecurityMetrics {
     threats: number;
     vulnerabilities: number;
     incidents: number;
@@ -50,7 +50,7 @@ export interface G3DSecurityMetrics {
     encryptionCoverage: number;
 }
 
-export interface G3DPerformanceMetrics {
+export interface PerformanceMetrics {
     latency: number;
     availability: number;
     scalability: number;
@@ -58,12 +58,12 @@ export interface G3DPerformanceMetrics {
     efficiency: number;
 }
 
-export class G3DMedicalProduction {
-    private config: G3DMedicalProductionConfig;
+export class MedicalProduction {
+    private config: MedicalProductionConfig;
     private isDeployed: boolean = false;
-    private metrics: G3DProductionMetrics;
+    private metrics: ProductionMetrics;
 
-    constructor(config: Partial<G3DMedicalProductionConfig> = {}) {
+    constructor(config: Partial<MedicalProductionConfig> = {}) {
         this.config = {
             environment: 'production',
             enableHighAvailability: true,
@@ -102,7 +102,7 @@ export class G3DMedicalProduction {
         // Auto-scaling logic
     }
 
-    getMetrics(): G3DProductionMetrics {
+    getMetrics(): ProductionMetrics {
         return this.metrics;
     }
 
@@ -122,7 +122,7 @@ export class G3DMedicalProduction {
         console.log('Enabling production security...');
     }
 
-    private initializeMetrics(): G3DProductionMetrics {
+    private initializeMetrics(): ProductionMetrics {
         return {
             uptime: 99.9,
             responseTime: 150,
@@ -165,4 +165,4 @@ export class G3DMedicalProduction {
     }
 }
 
-export default G3DMedicalProduction;
+export default MedicalProduction;

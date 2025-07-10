@@ -5,10 +5,10 @@
  */
 
 import React, { useRef, useEffect, useState, useCallback } from 'react';
-import { G3DNativeRenderer } from '../../g3d-integration/G3DNativeRenderer';
-import { G3DSceneManager } from '../../g3d-integration/G3DSceneManager';
-import { G3DMaterialSystem } from '../../g3d-integration/G3DMaterialSystem';
-import { G3DXRAnnotation } from '../../g3d-3d/G3DXRAnnotation';
+import { NativeRenderer } from '../../integration/G3DNativeRenderer';
+import { SceneManager } from '../../integration/G3DSceneManager';
+import { MaterialSystem } from '../../integration/G3DMaterialSystem';
+import { XRAnnotation } from '../../core/G3DXRAnnotation';
 
 // Core Types
 interface CollaborativeSession {
@@ -241,7 +241,7 @@ interface AnnotationMetadata {
 }
 
 // Props Interface
-interface G3DCollaborativeEditorProps {
+interface CollaborativeEditorProps {
     sessionId: string;
     userId: string;
     userName: string;
@@ -265,7 +265,7 @@ interface CollaborativeSettings {
 }
 
 // Main Component
-export const G3DCollaborativeEditor: React.FC<G3DCollaborativeEditorProps> = ({
+export const G3DCollaborativeEditor: React.FC<CollaborativeEditorProps> = ({
     sessionId,
     userId,
     userName,
@@ -277,10 +277,10 @@ export const G3DCollaborativeEditor: React.FC<G3DCollaborativeEditorProps> = ({
     settings
 }) => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
-    const rendererRef = useRef<G3DNativeRenderer | null>(null);
-    const sceneRef = useRef<G3DSceneManager | null>(null);
-    const materialsRef = useRef<G3DMaterialSystem | null>(null);
-    const xrRef = useRef<G3DXRAnnotation | null>(null);
+    const rendererRef = useRef<NativeRenderer | null>(null);
+    const sceneRef = useRef<SceneManager | null>(null);
+    const materialsRef = useRef<MaterialSystem | null>(null);
+    const xrRef = useRef<XRAnnotation | null>(null);
     const wsRef = useRef<WebSocket | null>(null);
 
 
@@ -400,13 +400,13 @@ export const G3DCollaborativeEditor: React.FC<G3DCollaborativeEditorProps> = ({
     const initialize3D = async () => {
         if (!canvasRef.current) return;
 
-        const renderer = new G3DNativeRenderer(canvasRef.current, { antialias: true, alpha: true });
+        const renderer = new NativeRenderer(canvasRef.current, { antialias: true, alpha: true });
         rendererRef.current = renderer;
 
-        const scene = new G3DSceneManager(rendererRef.current || new G3DNativeRenderer(canvasRef.current!, { antialias: true, alpha: true }));
+        const scene = new SceneManager(rendererRef.current || new NativeRenderer(canvasRef.current!, { antialias: true, alpha: true }));
         sceneRef.current = scene;
 
-        const materials = new G3DMaterialSystem();
+        const materials = new MaterialSystem();
         materialsRef.current = materials;
 
         // Setup scene
@@ -800,7 +800,7 @@ export const G3DCollaborativeEditor: React.FC<G3DCollaborativeEditorProps> = ({
     const initializeXR = async () => {
         if (!settings.enableXR) return;
 
-        const xr = new G3DXRAnnotation();
+        const xr = new XRAnnotation();
         await (xr as any).init?.();
         xrRef.current = xr;
 

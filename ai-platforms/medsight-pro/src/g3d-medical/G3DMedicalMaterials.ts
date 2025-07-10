@@ -14,16 +14,16 @@
 import { vec3, vec4 } from 'gl-matrix';
 
 // Medical Material Types
-export interface G3DMedicalMaterialConfig {
+export interface MedicalMaterialConfig {
     name: string;
     type: 'tissue' | 'bone' | 'vessel' | 'organ' | 'pathology' | 'contrast' | 'implant';
-    medicalProperties: G3DMedicalProperties;
-    renderingProperties: G3DRenderingProperties;
-    clinicalSettings: G3DClinicalSettings;
+    medicalProperties: MedicalProperties;
+    renderingProperties: RenderingProperties;
+    clinicalSettings: ClinicalSettings;
     shaderVariant: string;
 }
 
-export interface G3DMedicalProperties {
+export interface MedicalProperties {
     hounsfield: { min: number; max: number };
     density: number;
     attenuation: number;
@@ -35,7 +35,7 @@ export interface G3DMedicalProperties {
     conductivity?: number;
 }
 
-export interface G3DRenderingProperties {
+export interface RenderingProperties {
     albedo: vec3;
     metallic: number;
     roughness: number;
@@ -47,7 +47,7 @@ export interface G3DRenderingProperties {
     translucency: number;
 }
 
-export interface G3DClinicalSettings {
+export interface ClinicalSettings {
     diagnosticRelevance: 'critical' | 'important' | 'moderate' | 'low';
     contrastEnhancement: number;
     edgeEnhancement: number;
@@ -57,24 +57,24 @@ export interface G3DClinicalSettings {
     visualizationPriority: number;
 }
 
-export interface G3DMaterialPreset {
+export interface MaterialPreset {
     id: string;
     name: string;
     category: 'anatomy' | 'pathology' | 'contrast' | 'surgical' | 'diagnostic';
-    materials: G3DMedicalMaterialConfig[];
-    transferFunction: G3DTransferFunctionData;
+    materials: MedicalMaterialConfig[];
+    transferFunction: TransferFunctionData;
     renderingMode: 'volume' | 'surface' | 'hybrid';
     clinicalUseCase: string;
 }
 
-export interface G3DTransferFunctionData {
+export interface TransferFunctionData {
     colorPoints: Array<{ value: number; color: vec4 }>;
     opacityPoints: Array<{ value: number; opacity: number }>;
     gradientPoints: Array<{ value: number; gradient: number }>;
 }
 
 // Advanced Medical Shader Templates
-export class G3DMedicalShaderTemplates {
+export class MedicalShaderTemplates {
     static readonly TISSUE_VERTEX_SHADER = `#version 300 es
     precision highp float;
     
@@ -370,9 +370,9 @@ export class G3DMedicalShaderTemplates {
 }
 
 // Medical Material Manager
-export class G3DMedicalMaterialManager {
-    private materials: Map<string, G3DMedicalMaterialConfig> = new Map();
-    private presets: Map<string, G3DMaterialPreset> = new Map();
+export class MedicalMaterialManager {
+    private materials: Map<string, MedicalMaterialConfig> = new Map();
+    private presets: Map<string, MaterialPreset> = new Map();
     private shaderPrograms: Map<string, WebGLProgram> = new Map();
     private currentPreset: string | null = null;
     private gl: WebGL2RenderingContext;
@@ -666,22 +666,22 @@ export class G3DMedicalMaterialManager {
         try {
             // Compile tissue shader
             const tissueProgram = this.createShaderProgram(
-                G3DMedicalShaderTemplates.TISSUE_VERTEX_SHADER,
-                G3DMedicalShaderTemplates.TISSUE_FRAGMENT_SHADER
+                MedicalShaderTemplates.TISSUE_VERTEX_SHADER,
+                MedicalShaderTemplates.TISSUE_FRAGMENT_SHADER
             );
             this.shaderPrograms.set('tissue', tissueProgram);
 
             // Compile bone shader
             const boneProgram = this.createShaderProgram(
-                G3DMedicalShaderTemplates.TISSUE_VERTEX_SHADER,
-                G3DMedicalShaderTemplates.BONE_FRAGMENT_SHADER
+                MedicalShaderTemplates.TISSUE_VERTEX_SHADER,
+                MedicalShaderTemplates.BONE_FRAGMENT_SHADER
             );
             this.shaderPrograms.set('bone', boneProgram);
 
             // Compile vessel shader
             const vesselProgram = this.createShaderProgram(
-                G3DMedicalShaderTemplates.TISSUE_VERTEX_SHADER,
-                G3DMedicalShaderTemplates.VESSEL_FRAGMENT_SHADER
+                MedicalShaderTemplates.TISSUE_VERTEX_SHADER,
+                MedicalShaderTemplates.VESSEL_FRAGMENT_SHADER
             );
             this.shaderPrograms.set('vessel', vesselProgram);
 
@@ -731,15 +731,15 @@ export class G3DMedicalMaterialManager {
         return true;
     }
 
-    getMaterial(materialId: string): G3DMedicalMaterialConfig | undefined {
+    getMaterial(materialId: string): MedicalMaterialConfig | undefined {
         return this.materials.get(materialId);
     }
 
-    getPreset(presetId: string): G3DMaterialPreset | undefined {
+    getPreset(presetId: string): MaterialPreset | undefined {
         return this.presets.get(presetId);
     }
 
-    getCurrentPreset(): G3DMaterialPreset | null {
+    getCurrentPreset(): MaterialPreset | null {
         return this.currentPreset ? this.presets.get(this.currentPreset) || null : null;
     }
 
@@ -747,13 +747,13 @@ export class G3DMedicalMaterialManager {
         return this.shaderPrograms.get(shaderVariant);
     }
 
-    createCustomMaterial(config: G3DMedicalMaterialConfig): string {
+    createCustomMaterial(config: MedicalMaterialConfig): string {
         const materialId = `custom_${Date.now()}_${Math.random()}`;
         this.materials.set(materialId, config);
         return materialId;
     }
 
-    updateMaterial(materialId: string, updates: Partial<G3DMedicalMaterialConfig>): boolean {
+    updateMaterial(materialId: string, updates: Partial<MedicalMaterialConfig>): boolean {
         const material = this.materials.get(materialId);
         if (!material) {
             return false;
@@ -825,4 +825,4 @@ export class G3DMedicalMaterialManager {
     }
 }
 
-export default G3DMedicalMaterialManager;
+export default MedicalMaterialManager;

@@ -4,8 +4,8 @@
  * with G3D-accelerated metrics computation
  */
 
-import { G3DGPUCompute } from '../../g3d-performance/G3DGPUCompute';
-import { G3DModelRunner, G3DModelType } from '../../g3d-ai/G3DModelRunner';
+import { GPUCompute } from '../../performance/G3DGPUCompute';
+import { ModelRunner, ModelType } from '../../ai/G3DModelRunner';
 
 export interface QualityConfig {
     metrics: QualityMetricType[];
@@ -57,15 +57,15 @@ export interface QualitySummary {
     confidence: number;
 }
 
-export class G3DQualityMetrics {
-    private gpuCompute: G3DGPUCompute;
-    private modelRunner: G3DModelRunner;
+export class QualityMetrics {
+    private gpuCompute: GPUCompute;
+    private modelRunner: ModelRunner;
     private inceptionModel: any;
     private lpipsModel: any;
 
     constructor() {
-        this.gpuCompute = new G3DGPUCompute();
-        this.modelRunner = new G3DModelRunner();
+        this.gpuCompute = new GPUCompute();
+        this.modelRunner = new ModelRunner();
         this.initializeKernels();
         this.loadModels();
     }
@@ -135,14 +135,14 @@ export class G3DQualityMetrics {
             id: 'inception_v3',
             name: 'inception_v3',
             version: '1.0.0',
-            type: G3DModelType.CUSTOM,
+            type: ModelType.CUSTOM,
             modelPath: 'models/inception_v3'
         });
         this.lpipsModel = await this.modelRunner.loadModel({
             id: 'lpips_alex',
             name: 'lpips_alex',
             version: '1.0.0',
-            type: G3DModelType.CUSTOM,
+            type: ModelType.CUSTOM,
             modelPath: 'models/lpips_alex'
         });
     }
@@ -696,4 +696,4 @@ export class G3DQualityMetrics {
     }
 }
 
-export default G3DQualityMetrics;
+export default QualityMetrics;

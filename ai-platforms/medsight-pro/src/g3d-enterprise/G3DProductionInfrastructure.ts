@@ -3,7 +3,7 @@
  * Enterprise-grade infrastructure and deployment management
  */
 
-export interface G3DInfrastructureConfig {
+export interface InfrastructureConfig {
     environment: 'development' | 'staging' | 'production' | 'dr';
     cloudProvider: 'aws' | 'azure' | 'gcp' | 'hybrid' | 'on-premise';
     region: string;
@@ -21,7 +21,7 @@ export interface G3DInfrastructureConfig {
     medicalGrade: boolean;
 }
 
-export interface G3DInfrastructureMetrics {
+export interface InfrastructureMetrics {
     uptime: number;
     availability: number;
     responseTime: number;
@@ -36,12 +36,12 @@ export interface G3DInfrastructureMetrics {
     lastUpdated: number;
 }
 
-export class G3DProductionInfrastructure {
-    private config: G3DInfrastructureConfig;
+export class ProductionInfrastructure {
+    private config: InfrastructureConfig;
     private isInitialized: boolean = false;
-    private metrics: G3DInfrastructureMetrics;
+    private metrics: InfrastructureMetrics;
 
-    constructor(config: Partial<G3DInfrastructureConfig> = {}) {
+    constructor(config: Partial<InfrastructureConfig> = {}) {
         this.config = {
             environment: 'production',
             cloudProvider: 'aws',
@@ -122,7 +122,7 @@ export class G3DProductionInfrastructure {
         // Security controls setup
     }
 
-    public getMetrics(): G3DInfrastructureMetrics {
+    public getMetrics(): InfrastructureMetrics {
         return { ...this.metrics };
     }
 
@@ -142,4 +142,4 @@ export class G3DProductionInfrastructure {
     }
 }
 
-export default G3DProductionInfrastructure;
+export default ProductionInfrastructure;

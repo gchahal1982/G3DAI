@@ -11,7 +11,7 @@
  * - Compliance and governance frameworks
  */
 
-export interface G3DEnterpriseConfig {
+export interface EnterpriseConfig {
     enableMultiTenant: boolean;
     enableEnterpriseSSO: boolean;
     enableAdvancedSecurity: boolean;
@@ -25,38 +25,38 @@ export interface G3DEnterpriseConfig {
     securityLevel: 'standard' | 'enhanced' | 'maximum' | 'government';
 }
 
-export interface G3DTenant {
+export interface Tenant {
     id: string;
     name: string;
     displayName: string;
     type: 'hospital' | 'clinic' | 'research' | 'enterprise' | 'government';
     status: 'active' | 'suspended' | 'pending' | 'terminated';
-    subscription: G3DSubscription;
-    configuration: G3DTenantConfiguration;
-    users: G3DEnterpriseUser[];
-    facilities: G3DMedicalFacility[];
-    compliance: G3DComplianceProfile;
-    limits: G3DTenantLimits;
+    subscription: Subscription;
+    configuration: TenantConfiguration;
+    users: EnterpriseUser[];
+    facilities: MedicalFacility[];
+    compliance: ComplianceProfile;
+    limits: TenantLimits;
     createdAt: number;
     lastActivity: number;
     parentTenant?: string;
     childTenants: string[];
 }
 
-export interface G3DSubscription {
+export interface Subscription {
     id: string;
     plan: 'basic' | 'professional' | 'enterprise' | 'government' | 'custom';
     status: 'active' | 'trial' | 'expired' | 'suspended' | 'cancelled';
     features: string[];
-    limits: G3DSubscriptionLimits;
-    billing: G3DBillingInfo;
+    limits: SubscriptionLimits;
+    billing: BillingInfo;
     startDate: number;
     endDate: number;
     autoRenewal: boolean;
     customTerms?: string;
 }
 
-export interface G3DSubscriptionLimits {
+export interface SubscriptionLimits {
     maxUsers: number;
     maxStorage: number; // GB
     maxAPIRequests: number; // per month
@@ -68,19 +68,19 @@ export interface G3DSubscriptionLimits {
     enabledFeatures: string[];
 }
 
-export interface G3DBillingInfo {
-    billingContact: G3DContact;
+export interface BillingInfo {
+    billingContact: Contact;
     paymentMethod: 'credit_card' | 'invoice' | 'purchase_order' | 'contract';
     billingCycle: 'monthly' | 'quarterly' | 'annual' | 'custom';
     currency: string;
     amount: number;
     taxRate: number;
-    discounts: G3DDiscount[];
+    discounts: Discount[];
     lastPayment: number;
     nextBilling: number;
 }
 
-export interface G3DDiscount {
+export interface Discount {
     type: 'percentage' | 'fixed' | 'volume' | 'academic' | 'government';
     value: number;
     description: string;
@@ -88,17 +88,17 @@ export interface G3DDiscount {
     conditions?: string[];
 }
 
-export interface G3DTenantConfiguration {
-    branding: G3DBrandingConfig;
-    features: G3DFeatureConfig;
-    integrations: G3DIntegrationConfig;
-    security: G3DSecurityConfig;
-    workflow: G3DWorkflowConfig;
-    notifications: G3DNotificationConfig;
-    customization: G3DCustomizationConfig;
+export interface TenantConfiguration {
+    branding: BrandingConfig;
+    features: FeatureConfig;
+    integrations: IntegrationConfig;
+    security: SecurityConfig;
+    workflow: WorkflowConfig;
+    notifications: NotificationConfig;
+    customization: CustomizationConfig;
 }
 
-export interface G3DBrandingConfig {
+export interface BrandingConfig {
     logo: string;
     primaryColor: string;
     secondaryColor: string;
@@ -108,7 +108,7 @@ export interface G3DBrandingConfig {
     customStyling?: string;
 }
 
-export interface G3DFeatureConfig {
+export interface FeatureConfig {
     enabledModules: string[];
     enabledModalities: string[];
     enabledAIFeatures: string[];
@@ -117,32 +117,32 @@ export interface G3DFeatureConfig {
     customFeatures: string[];
 }
 
-export interface G3DIntegrationConfig {
+export interface IntegrationConfig {
     enabledAPIs: string[];
-    externalSystems: G3DExternalSystem[];
-    dataExchange: G3DDataExchangeConfig;
-    webhooks: G3DWebhookConfig[];
-    ssoProviders: G3DSSOProvider[];
+    externalSystems: ExternalSystem[];
+    dataExchange: DataExchangeConfig;
+    webhooks: WebhookConfig[];
+    ssoProviders: SSOProvider[];
 }
 
-export interface G3DExternalSystem {
+export interface ExternalSystem {
     id: string;
     name: string;
     type: 'PACS' | 'EMR' | 'HIS' | 'RIS' | 'LIS' | 'custom';
     endpoint: string;
-    authentication: G3DAuthConfig;
+    authentication: AuthConfig;
     dataMapping: Record<string, string>;
     enabled: boolean;
 }
 
-export interface G3DDataExchangeConfig {
+export interface DataExchangeConfig {
     enabledFormats: string[];
-    transformationRules: G3DTransformationRule[];
-    validationRules: G3DValidationRule[];
+    transformationRules: TransformationRule[];
+    validationRules: ValidationRule[];
     encryptionRequired: boolean;
 }
 
-export interface G3DTransformationRule {
+export interface TransformationRule {
     id: string;
     sourceFormat: string;
     targetFormat: string;
@@ -150,7 +150,7 @@ export interface G3DTransformationRule {
     conditions?: string[];
 }
 
-export interface G3DValidationRule {
+export interface ValidationRule {
     id: string;
     field: string;
     type: 'required' | 'format' | 'range' | 'custom';
@@ -158,23 +158,23 @@ export interface G3DValidationRule {
     errorMessage: string;
 }
 
-export interface G3DWebhookConfig {
+export interface WebhookConfig {
     id: string;
     name: string;
     url: string;
     events: string[];
-    authentication: G3DAuthConfig;
+    authentication: AuthConfig;
     enabled: boolean;
-    retryPolicy: G3DRetryPolicy;
+    retryPolicy: RetryPolicy;
 }
 
-export interface G3DRetryPolicy {
+export interface RetryPolicy {
     maxRetries: number;
     retryDelay: number;
     exponentialBackoff: boolean;
 }
 
-export interface G3DSSOProvider {
+export interface SSOProvider {
     id: string;
     name: string;
     type: 'SAML' | 'OAuth2' | 'OpenID' | 'LDAP' | 'Active Directory';
@@ -184,21 +184,21 @@ export interface G3DSSOProvider {
     attributeMapping: Record<string, string>;
 }
 
-export interface G3DAuthConfig {
+export interface AuthConfig {
     type: 'none' | 'basic' | 'bearer' | 'oauth2' | 'certificate';
     credentials: any;
     refreshable: boolean;
 }
 
-export interface G3DSecurityConfig {
-    passwordPolicy: G3DPasswordPolicy;
-    sessionPolicy: G3DSessionPolicy;
-    accessControl: G3DAccessControlConfig;
-    auditSettings: G3DAuditSettings;
-    encryptionSettings: G3DEncryptionSettings;
+export interface SecurityConfig {
+    passwordPolicy: PasswordPolicy;
+    sessionPolicy: SessionPolicy;
+    accessControl: AccessControlConfig;
+    auditSettings: AuditSettings;
+    encryptionSettings: EncryptionSettings;
 }
 
-export interface G3DPasswordPolicy {
+export interface PasswordPolicy {
     minLength: number;
     requireUppercase: boolean;
     requireLowercase: boolean;
@@ -210,34 +210,34 @@ export interface G3DPasswordPolicy {
     lockoutDuration: number; // minutes
 }
 
-export interface G3DSessionPolicy {
+export interface SessionPolicy {
     maxDuration: number; // minutes
     idleTimeout: number; // minutes
     maxConcurrentSessions: number;
     requireReauth: boolean;
-    medicalSessionRules: G3DMedicalSessionRule[];
+    medicalSessionRules: MedicalSessionRule[];
 }
 
-export interface G3DMedicalSessionRule {
+export interface MedicalSessionRule {
     context: 'diagnostic' | 'surgical' | 'emergency' | 'research';
     maxDuration: number;
     requireSecondaryAuth: boolean;
     auditLevel: 'basic' | 'detailed' | 'comprehensive';
 }
 
-export interface G3DAccessControlConfig {
+export interface AccessControlConfig {
     defaultRole: string;
-    roleHierarchy: G3DRoleHierarchy;
+    roleHierarchy: RoleHierarchy;
     permissionModel: 'RBAC' | 'ABAC' | 'hybrid';
-    resourceProtection: G3DResourceProtection[];
+    resourceProtection: ResourceProtection[];
 }
 
-export interface G3DRoleHierarchy {
-    roles: G3DRole[];
+export interface RoleHierarchy {
+    roles: Role[];
     inheritance: Record<string, string[]>;
 }
 
-export interface G3DRole {
+export interface Role {
     id: string;
     name: string;
     description: string;
@@ -247,37 +247,37 @@ export interface G3DRole {
     systemAccess: string[];
 }
 
-export interface G3DResourceProtection {
+export interface ResourceProtection {
     resource: string;
     requiredPermissions: string[];
     medicalContext: boolean;
     auditRequired: boolean;
 }
 
-export interface G3DAuditSettings {
+export interface AuditSettings {
     enabled: boolean;
     retentionPeriod: number; // days
     logLevel: 'minimal' | 'standard' | 'detailed' | 'comprehensive';
     realTimeMonitoring: boolean;
-    alerting: G3DAuditAlerting;
-    medicalAuditRules: G3DMedicalAuditRule[];
+    alerting: AuditAlerting;
+    medicalAuditRules: MedicalAuditRule[];
 }
 
-export interface G3DAuditAlerting {
+export interface AuditAlerting {
     enabled: boolean;
-    thresholds: G3DAuditThreshold[];
+    thresholds: AuditThreshold[];
     recipients: string[];
     medicalOfficerNotification: boolean;
 }
 
-export interface G3DAuditThreshold {
+export interface AuditThreshold {
     event: string;
     frequency: number;
     timeWindow: number; // minutes
     severity: 'low' | 'medium' | 'high' | 'critical';
 }
 
-export interface G3DMedicalAuditRule {
+export interface MedicalAuditRule {
     id: string;
     description: string;
     trigger: string;
@@ -285,7 +285,7 @@ export interface G3DMedicalAuditRule {
     medicalSignificance: 'routine' | 'important' | 'critical';
 }
 
-export interface G3DEncryptionSettings {
+export interface EncryptionSettings {
     algorithm: 'AES256' | 'RSA2048' | 'ECC' | 'custom';
     keyRotationPeriod: number; // days
     medicalDataEncryption: boolean;
@@ -293,24 +293,24 @@ export interface G3DEncryptionSettings {
     backupEncryption: boolean;
 }
 
-export interface G3DWorkflowConfig {
-    defaultWorkflows: G3DWorkflowTemplate[];
-    customWorkflows: G3DWorkflowTemplate[];
-    approvalProcesses: G3DApprovalProcess[];
-    escalationRules: G3DEscalationRule[];
+export interface WorkflowConfig {
+    defaultWorkflows: WorkflowTemplate[];
+    customWorkflows: WorkflowTemplate[];
+    approvalProcesses: ApprovalProcess[];
+    escalationRules: EscalationRule[];
 }
 
-export interface G3DWorkflowTemplate {
+export interface WorkflowTemplate {
     id: string;
     name: string;
     description: string;
     type: 'diagnostic' | 'treatment' | 'research' | 'administrative';
-    steps: G3DWorkflowStep[];
+    steps: WorkflowStep[];
     medicalContext: boolean;
     complianceRequired: boolean;
 }
 
-export interface G3DWorkflowStep {
+export interface WorkflowStep {
     id: string;
     name: string;
     type: 'manual' | 'automated' | 'approval' | 'medical_review';
@@ -320,23 +320,23 @@ export interface G3DWorkflowStep {
     medicalSignificance: 'routine' | 'important' | 'critical';
 }
 
-export interface G3DApprovalProcess {
+export interface ApprovalProcess {
     id: string;
     name: string;
     triggers: string[];
-    approvers: G3DApprover[];
+    approvers: Approver[];
     medicalOfficerRequired: boolean;
     timeLimit: number;
 }
 
-export interface G3DApprover {
+export interface Approver {
     role: string;
     required: boolean;
     medicalLicense?: string;
     escalationTime?: number;
 }
 
-export interface G3DEscalationRule {
+export interface EscalationRule {
     id: string;
     condition: string;
     escalationPath: string[];
@@ -344,21 +344,21 @@ export interface G3DEscalationRule {
     medicalUrgency: 'routine' | 'urgent' | 'emergency';
 }
 
-export interface G3DNotificationConfig {
-    channels: G3DNotificationChannel[];
-    templates: G3DNotificationTemplate[];
-    rules: G3DNotificationRule[];
-    medicalAlerts: G3DMedicalAlert[];
+export interface NotificationConfig {
+    channels: NotificationChannel[];
+    templates: NotificationTemplate[];
+    rules: NotificationRule[];
+    medicalAlerts: MedicalAlert[];
 }
 
-export interface G3DNotificationChannel {
+export interface NotificationChannel {
     type: 'email' | 'sms' | 'push' | 'webhook' | 'medical_pager';
     configuration: any;
     enabled: boolean;
     medicalPriority: boolean;
 }
 
-export interface G3DNotificationTemplate {
+export interface NotificationTemplate {
     id: string;
     name: string;
     type: string;
@@ -368,7 +368,7 @@ export interface G3DNotificationTemplate {
     urgencyLevel: 'low' | 'medium' | 'high' | 'critical';
 }
 
-export interface G3DNotificationRule {
+export interface NotificationRule {
     id: string;
     event: string;
     conditions: string[];
@@ -377,37 +377,37 @@ export interface G3DNotificationRule {
     medicalRelevance: boolean;
 }
 
-export interface G3DMedicalAlert {
+export interface MedicalAlert {
     id: string;
     type: 'clinical' | 'safety' | 'compliance' | 'system';
     severity: 'info' | 'warning' | 'error' | 'critical';
     condition: string;
     recipients: string[];
-    escalation: G3DEscalationRule;
+    escalation: EscalationRule;
 }
 
-export interface G3DCustomizationConfig {
-    uiCustomizations: G3DUICustomization[];
-    reportTemplates: G3DReportTemplate[];
-    dashboardLayouts: G3DDashboardLayout[];
-    medicalProtocols: G3DMedicalProtocol[];
+export interface CustomizationConfig {
+    uiCustomizations: UICustomization[];
+    reportTemplates: ReportTemplate[];
+    dashboardLayouts: DashboardLayout[];
+    medicalProtocols: MedicalProtocol[];
 }
 
-export interface G3DUICustomization {
+export interface UICustomization {
     component: string;
     properties: Record<string, any>;
     medicalWorkflowOptimized: boolean;
 }
 
-export interface G3DReportTemplate {
+export interface ReportTemplate {
     id: string;
     name: string;
     type: 'clinical' | 'administrative' | 'compliance' | 'research';
-    sections: G3DReportSection[];
+    sections: ReportSection[];
     medicalStandards: string[];
 }
 
-export interface G3DReportSection {
+export interface ReportSection {
     id: string;
     title: string;
     content: string;
@@ -415,15 +415,15 @@ export interface G3DReportSection {
     medicalRelevance: boolean;
 }
 
-export interface G3DDashboardLayout {
+export interface DashboardLayout {
     id: string;
     name: string;
     role: string;
-    widgets: G3DWidgetConfig[];
+    widgets: WidgetConfig[];
     medicalFocus: string[];
 }
 
-export interface G3DWidgetConfig {
+export interface WidgetConfig {
     id: string;
     type: string;
     position: { x: number; y: number };
@@ -432,34 +432,34 @@ export interface G3DWidgetConfig {
     medicalContext: boolean;
 }
 
-export interface G3DMedicalProtocol {
+export interface MedicalProtocol {
     id: string;
     name: string;
     type: 'imaging' | 'analysis' | 'reporting' | 'workflow';
-    steps: G3DProtocolStep[];
+    steps: ProtocolStep[];
     medicalStandard: string;
     complianceLevel: 'basic' | 'enhanced' | 'strict';
 }
 
-export interface G3DProtocolStep {
+export interface ProtocolStep {
     id: string;
     description: string;
     parameters: any;
-    validation: G3DValidationRule[];
+    validation: ValidationRule[];
     medicalSignificance: 'routine' | 'important' | 'critical';
 }
 
-export interface G3DTenantLimits {
+export interface TenantLimits {
     maxUsers: number;
     maxStorage: number;
     maxAPIRequests: number;
     maxConcurrentSessions: number;
     maxMedicalStudies: number;
-    currentUsage: G3DUsageMetrics;
-    warnings: G3DLimitWarning[];
+    currentUsage: UsageMetrics;
+    warnings: LimitWarning[];
 }
 
-export interface G3DUsageMetrics {
+export interface UsageMetrics {
     users: number;
     storage: number;
     apiRequests: number;
@@ -468,7 +468,7 @@ export interface G3DUsageMetrics {
     lastUpdated: number;
 }
 
-export interface G3DLimitWarning {
+export interface LimitWarning {
     metric: string;
     threshold: number;
     currentValue: number;
@@ -476,7 +476,7 @@ export interface G3DLimitWarning {
     notificationSent: boolean;
 }
 
-export interface G3DEnterpriseUser {
+export interface EnterpriseUser {
     id: string;
     email: string;
     name: string;
@@ -487,12 +487,12 @@ export interface G3DEnterpriseUser {
     facilities: string[];
     permissions: string[];
     lastLogin: number;
-    loginHistory: G3DLoginRecord[];
+    loginHistory: LoginRecord[];
     mfaEnabled: boolean;
-    profile: G3DUserProfile;
+    profile: UserProfile;
 }
 
-export interface G3DLoginRecord {
+export interface LoginRecord {
     timestamp: number;
     ipAddress: string;
     userAgent: string;
@@ -501,17 +501,17 @@ export interface G3DLoginRecord {
     medicalContext?: string;
 }
 
-export interface G3DUserProfile {
+export interface UserProfile {
     firstName: string;
     lastName: string;
     title: string;
     department: string;
     phone?: string;
-    preferences: G3DUserPreferences;
-    medicalCredentials: G3DMedicalCredentials;
+    preferences: UserPreferences;
+    medicalCredentials: MedicalCredentials;
 }
 
-export interface G3DUserPreferences {
+export interface UserPreferences {
     language: string;
     timezone: string;
     dateFormat: string;
@@ -520,7 +520,7 @@ export interface G3DUserPreferences {
     medicalWorkflowPreferences: Record<string, any>;
 }
 
-export interface G3DMedicalCredentials {
+export interface MedicalCredentials {
     licenseNumber?: string;
     licenseState?: string;
     licenseExpiry?: number;
@@ -532,20 +532,20 @@ export interface G3DMedicalCredentials {
     fellowship?: string;
 }
 
-export interface G3DMedicalFacility {
+export interface MedicalFacility {
     id: string;
     name: string;
     type: 'hospital' | 'clinic' | 'imaging_center' | 'research' | 'other';
-    address: G3DAddress;
-    contact: G3DContact;
+    address: Address;
+    contact: Contact;
     accreditations: string[];
-    equipment: G3DMedicalEquipment[];
-    departments: G3DDepartment[];
-    compliance: G3DComplianceProfile;
-    operatingHours: G3DOperatingHours;
+    equipment: MedicalEquipment[];
+    departments: Department[];
+    compliance: ComplianceProfile;
+    operatingHours: OperatingHours;
 }
 
-export interface G3DAddress {
+export interface Address {
     street: string;
     city: string;
     state: string;
@@ -554,14 +554,14 @@ export interface G3DAddress {
     coordinates?: { lat: number; lng: number };
 }
 
-export interface G3DContact {
+export interface Contact {
     name: string;
     email: string;
     phone: string;
     title?: string;
 }
 
-export interface G3DMedicalEquipment {
+export interface MedicalEquipment {
     id: string;
     name: string;
     type: string;
@@ -575,7 +575,7 @@ export interface G3DMedicalEquipment {
     capabilities: string[];
 }
 
-export interface G3DDepartment {
+export interface Department {
     id: string;
     name: string;
     type: 'radiology' | 'cardiology' | 'oncology' | 'emergency' | 'surgery' | 'other';
@@ -585,17 +585,17 @@ export interface G3DDepartment {
     specializations: string[];
 }
 
-export interface G3DComplianceProfile {
+export interface ComplianceProfile {
     standards: string[];
-    certifications: G3DCertification[];
-    audits: G3DAuditRecord[];
-    policies: G3DPolicy[];
+    certifications: Certification[];
+    audits: AuditRecord[];
+    policies: Policy[];
     lastReview: number;
     nextReview: number;
     complianceScore: number;
 }
 
-export interface G3DCertification {
+export interface Certification {
     name: string;
     issuer: string;
     number: string;
@@ -605,18 +605,18 @@ export interface G3DCertification {
     scope: string[];
 }
 
-export interface G3DAuditRecord {
+export interface AuditRecord {
     id: string;
     type: 'internal' | 'external' | 'regulatory';
     auditor: string;
     date: number;
     scope: string[];
-    findings: G3DAuditFinding[];
+    findings: AuditFinding[];
     recommendations: string[];
     status: 'open' | 'closed' | 'in_progress';
 }
 
-export interface G3DAuditFinding {
+export interface AuditFinding {
     id: string;
     severity: 'low' | 'medium' | 'high' | 'critical';
     description: string;
@@ -626,7 +626,7 @@ export interface G3DAuditFinding {
     status: 'open' | 'in_progress' | 'resolved';
 }
 
-export interface G3DPolicy {
+export interface Policy {
     id: string;
     name: string;
     type: 'security' | 'privacy' | 'clinical' | 'administrative';
@@ -638,45 +638,45 @@ export interface G3DPolicy {
     applicableRoles: string[];
 }
 
-export interface G3DOperatingHours {
-    monday: G3DHours;
-    tuesday: G3DHours;
-    wednesday: G3DHours;
-    thursday: G3DHours;
-    friday: G3DHours;
-    saturday: G3DHours;
-    sunday: G3DHours;
-    holidays: G3DHoliday[];
-    emergencyContact: G3DContact;
+export interface OperatingHours {
+    monday: Hours;
+    tuesday: Hours;
+    wednesday: Hours;
+    thursday: Hours;
+    friday: Hours;
+    saturday: Hours;
+    sunday: Hours;
+    holidays: Holiday[];
+    emergencyContact: Contact;
 }
 
-export interface G3DHours {
+export interface Hours {
     open: string; // HH:MM format
     close: string; // HH:MM format
     closed: boolean;
 }
 
-export interface G3DHoliday {
+export interface Holiday {
     name: string;
     date: number;
     closed: boolean;
-    modifiedHours?: G3DHours;
+    modifiedHours?: Hours;
 }
 
-export class G3DEnterpriseManagement {
-    private config: G3DEnterpriseConfig;
-    private tenants: Map<string, G3DTenant> = new Map();
-    private users: Map<string, G3DEnterpriseUser> = new Map();
-    private facilities: Map<string, G3DMedicalFacility> = new Map();
+export class EnterpriseManagement {
+    private config: EnterpriseConfig;
+    private tenants: Map<string, Tenant> = new Map();
+    private users: Map<string, EnterpriseUser> = new Map();
+    private facilities: Map<string, MedicalFacility> = new Map();
     private isInitialized: boolean = false;
 
-    private tenantManager: G3DTenantManager | null = null;
-    private userManager: G3DUserManager | null = null;
-    private licenseManager: G3DLicenseManager | null = null;
-    private complianceManager: G3DEnterpriseComplianceManager | null = null;
-    private securityManager: G3DEnterpriseSecurityManager | null = null;
+    private tenantManager: TenantManager | null = null;
+    private userManager: UserManager | null = null;
+    private licenseManager: LicenseManager | null = null;
+    private complianceManager: EnterpriseComplianceManager | null = null;
+    private securityManager: EnterpriseSecurityManager | null = null;
 
-    constructor(config: Partial<G3DEnterpriseConfig> = {}) {
+    constructor(config: Partial<EnterpriseConfig> = {}) {
         this.config = {
             enableMultiTenant: true,
             enableEnterpriseSSO: true,
@@ -698,28 +698,28 @@ export class G3DEnterpriseManagement {
             console.log('Initializing G3D Enterprise Management System...');
 
             // Initialize tenant manager
-            this.tenantManager = new G3DTenantManager(this.config);
+            this.tenantManager = new TenantManager(this.config);
             await this.tenantManager.initialize();
 
             // Initialize user manager
-            this.userManager = new G3DUserManager(this.config);
+            this.userManager = new UserManager(this.config);
             await this.userManager.initialize();
 
             // Initialize license manager
             if (this.config.enableLicenseManagement) {
-                this.licenseManager = new G3DLicenseManager(this.config);
+                this.licenseManager = new LicenseManager(this.config);
                 await this.licenseManager.initialize();
             }
 
             // Initialize compliance manager
             if (this.config.enableGovernance) {
-                this.complianceManager = new G3DEnterpriseComplianceManager(this.config);
+                this.complianceManager = new EnterpriseComplianceManager(this.config);
                 await this.complianceManager.initialize();
             }
 
             // Initialize security manager
             if (this.config.enableAdvancedSecurity) {
-                this.securityManager = new G3DEnterpriseSecurityManager(this.config);
+                this.securityManager = new EnterpriseSecurityManager(this.config);
                 await this.securityManager.initialize();
             }
 
@@ -748,7 +748,7 @@ export class G3DEnterpriseManagement {
     }
 
     private async createDefaultTenant(): Promise<void> {
-        const defaultTenant: G3DTenant = {
+        const defaultTenant: Tenant = {
             id: 'default',
             name: 'Default Organization',
             displayName: 'Default Medical Organization',
@@ -825,7 +825,7 @@ export class G3DEnterpriseManagement {
         this.tenants.set(defaultTenant.id, defaultTenant);
     }
 
-    private getDefaultTenantConfiguration(): G3DTenantConfiguration {
+    private getDefaultTenantConfiguration(): TenantConfiguration {
         return {
             branding: {
                 logo: '',
@@ -1013,7 +1013,7 @@ export class G3DEnterpriseManagement {
     }
 
     // Public API
-    public async createTenant(tenantData: Partial<G3DTenant>): Promise<string> {
+    public async createTenant(tenantData: Partial<Tenant>): Promise<string> {
         if (!this.isInitialized) {
             throw new Error('Enterprise management not initialized');
         }
@@ -1024,7 +1024,7 @@ export class G3DEnterpriseManagement {
 
         const tenantId = `tenant_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
-        const tenant: G3DTenant = {
+        const tenant: Tenant = {
             id: tenantId,
             name: tenantData.name || `Tenant ${tenantId}`,
             displayName: tenantData.displayName || tenantData.name || `Tenant ${tenantId}`,
@@ -1052,7 +1052,7 @@ export class G3DEnterpriseManagement {
         return tenantId;
     }
 
-    private getDefaultSubscription(): G3DSubscription {
+    private getDefaultSubscription(): Subscription {
         return {
             id: `subscription_${Date.now()}`,
             plan: 'professional',
@@ -1090,7 +1090,7 @@ export class G3DEnterpriseManagement {
         };
     }
 
-    private getDefaultCompliance(): G3DComplianceProfile {
+    private getDefaultCompliance(): ComplianceProfile {
         return {
             standards: ['HIPAA'],
             certifications: [],
@@ -1102,7 +1102,7 @@ export class G3DEnterpriseManagement {
         };
     }
 
-    private getDefaultLimits(): G3DTenantLimits {
+    private getDefaultLimits(): TenantLimits {
         return {
             maxUsers: 100,
             maxStorage: 1000,
@@ -1121,7 +1121,7 @@ export class G3DEnterpriseManagement {
         };
     }
 
-    public async createUser(tenantId: string, userData: Partial<G3DEnterpriseUser>): Promise<string> {
+    public async createUser(tenantId: string, userData: Partial<EnterpriseUser>): Promise<string> {
         const tenant = this.tenants.get(tenantId);
         if (!tenant) {
             throw new Error('Tenant not found');
@@ -1133,7 +1133,7 @@ export class G3DEnterpriseManagement {
 
         const userId = `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
-        const user: G3DEnterpriseUser = {
+        const user: EnterpriseUser = {
             id: userId,
             email: userData.email || `user${userId}@tenant.com`,
             name: userData.name || `User ${userId}`,
@@ -1176,15 +1176,15 @@ export class G3DEnterpriseManagement {
         return userId;
     }
 
-    public getTenants(): G3DTenant[] {
+    public getTenants(): Tenant[] {
         return Array.from(this.tenants.values());
     }
 
-    public getTenant(tenantId: string): G3DTenant | null {
+    public getTenant(tenantId: string): Tenant | null {
         return this.tenants.get(tenantId) || null;
     }
 
-    public getUsers(tenantId?: string): G3DEnterpriseUser[] {
+    public getUsers(tenantId?: string): EnterpriseUser[] {
         if (tenantId) {
             const tenant = this.tenants.get(tenantId);
             return tenant ? tenant.users : [];
@@ -1192,7 +1192,7 @@ export class G3DEnterpriseManagement {
         return Array.from(this.users.values());
     }
 
-    public async updateTenantStatus(tenantId: string, status: G3DTenant['status']): Promise<void> {
+    public async updateTenantStatus(tenantId: string, status: Tenant['status']): Promise<void> {
         const tenant = this.tenants.get(tenantId);
         if (!tenant) {
             throw new Error('Tenant not found');
@@ -1208,7 +1208,7 @@ export class G3DEnterpriseManagement {
         console.log(`Tenant ${tenantId} status updated to: ${status}`);
     }
 
-    public async getEnterpriseMetrics(): Promise<G3DEnterpriseMetrics> {
+    public async getEnterpriseMetrics(): Promise<EnterpriseMetrics> {
         const activeTenants = Array.from(this.tenants.values()).filter(t => t.status === 'active');
         const totalUsers = Array.from(this.users.values()).filter(u => u.status === 'active');
 
@@ -1273,7 +1273,7 @@ export class G3DEnterpriseManagement {
 }
 
 // Supporting interfaces
-interface G3DEnterpriseMetrics {
+interface EnterpriseMetrics {
     totalTenants: number;
     activeTenants: number;
     totalUsers: number;
@@ -1287,18 +1287,18 @@ interface G3DEnterpriseMetrics {
 }
 
 // Supporting classes (simplified implementations)
-class G3DTenantManager {
-    constructor(private config: G3DEnterpriseConfig) { }
+class TenantManager {
+    constructor(private config: EnterpriseConfig) { }
 
     async initialize(): Promise<void> {
         console.log('Tenant Manager initialized');
     }
 
-    async provisionTenant(tenant: G3DTenant): Promise<void> {
+    async provisionTenant(tenant: Tenant): Promise<void> {
         console.log(`Provisioning tenant: ${tenant.name}`);
     }
 
-    async updateTenantStatus(tenant: G3DTenant, status: string): Promise<void> {
+    async updateTenantStatus(tenant: Tenant, status: string): Promise<void> {
         console.log(`Updating tenant ${tenant.id} status to: ${status}`);
     }
 
@@ -1307,14 +1307,14 @@ class G3DTenantManager {
     }
 }
 
-class G3DUserManager {
-    constructor(private config: G3DEnterpriseConfig) { }
+class UserManager {
+    constructor(private config: EnterpriseConfig) { }
 
     async initialize(): Promise<void> {
         console.log('User Manager initialized');
     }
 
-    async provisionUser(user: G3DEnterpriseUser, tenant: G3DTenant): Promise<void> {
+    async provisionUser(user: EnterpriseUser, tenant: Tenant): Promise<void> {
         console.log(`Provisioning user: ${user.email} for tenant: ${tenant.name}`);
     }
 
@@ -1323,8 +1323,8 @@ class G3DUserManager {
     }
 }
 
-class G3DLicenseManager {
-    constructor(private config: G3DEnterpriseConfig) { }
+class LicenseManager {
+    constructor(private config: EnterpriseConfig) { }
 
     async initialize(): Promise<void> {
         console.log('License Manager initialized');
@@ -1335,8 +1335,8 @@ class G3DLicenseManager {
     }
 }
 
-class G3DEnterpriseComplianceManager {
-    constructor(private config: G3DEnterpriseConfig) { }
+class EnterpriseComplianceManager {
+    constructor(private config: EnterpriseConfig) { }
 
     async initialize(): Promise<void> {
         console.log('Enterprise Compliance Manager initialized');
@@ -1347,8 +1347,8 @@ class G3DEnterpriseComplianceManager {
     }
 }
 
-class G3DEnterpriseSecurityManager {
-    constructor(private config: G3DEnterpriseConfig) { }
+class EnterpriseSecurityManager {
+    constructor(private config: EnterpriseConfig) { }
 
     async initialize(): Promise<void> {
         console.log('Enterprise Security Manager initialized');
@@ -1359,4 +1359,4 @@ class G3DEnterpriseSecurityManager {
     }
 }
 
-export default G3DEnterpriseManagement;
+export default EnterpriseManagement;

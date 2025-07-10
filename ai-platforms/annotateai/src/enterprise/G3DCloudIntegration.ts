@@ -5,18 +5,18 @@
  */
 
 // Mock G3D classes for cloud integration
-class G3DGPUCompute {
+class GPUCompute {
     private kernels: Map<string, any> = new Map();
     private initialized = false;
 
     async init(): Promise<void> {
         this.initialized = true;
-        console.log('G3DGPUCompute initialized for cloud integration');
+        console.log('GPUCompute initialized for cloud integration');
     }
 
     async createKernel(source: string, name: string): Promise<void> {
         if (!this.initialized) {
-            throw new Error('G3DGPUCompute not initialized');
+            throw new Error('GPUCompute not initialized');
         }
         
         // Mock kernel creation
@@ -44,7 +44,7 @@ class G3DGPUCompute {
 
     async executeKernel(kernel: any, buffers: Float32Array[], params: any): Promise<Float32Array> {
         if (!this.initialized) {
-            throw new Error('G3DGPUCompute not initialized');
+            throw new Error('GPUCompute not initialized');
         }
         
         // Mock execution
@@ -54,16 +54,16 @@ class G3DGPUCompute {
     async cleanup(): Promise<void> {
         this.kernels.clear();
         this.initialized = false;
-        console.log('G3DGPUCompute cleaned up');
+        console.log('GPUCompute cleaned up');
     }
 }
 
-class G3DModelRunner {
+class ModelRunner {
     private initialized = false;
 
     async init(): Promise<void> {
         this.initialized = true;
-        console.log('G3DModelRunner initialized for cloud integration');
+        console.log('ModelRunner initialized for cloud integration');
     }
 
     async loadModel(modelPath: string): Promise<any> {
@@ -78,7 +78,7 @@ class G3DModelRunner {
 
     async cleanup(): Promise<void> {
         this.initialized = false;
-        console.log('G3DModelRunner cleaned up');
+        console.log('ModelRunner cleaned up');
     }
 }
 
@@ -746,9 +746,9 @@ interface CostAnalysis {
     recommendations: CostRecommendation[];
 }
 
-export class G3DCloudIntegration {
-    private gpuCompute: G3DGPUCompute;
-    private modelRunner: G3DModelRunner;
+export class CloudIntegration {
+    private gpuCompute: GPUCompute;
+    private modelRunner: ModelRunner;
     private config: CloudConfig;
     private providers: Map<string, CloudProvider>;
     private deployments: Map<string, CloudDeployment>;
@@ -756,8 +756,8 @@ export class G3DCloudIntegration {
     private initialized = false;
 
     constructor(config: CloudConfig) {
-        this.gpuCompute = new G3DGPUCompute();
-        this.modelRunner = new G3DModelRunner();
+        this.gpuCompute = new GPUCompute();
+        this.modelRunner = new ModelRunner();
         this.config = config;
         this.providers = new Map();
         this.deployments = new Map();
@@ -1513,4 +1513,4 @@ export class G3DCloudIntegration {
     }
 }
 
-export default G3DCloudIntegration;
+export default CloudIntegration;
