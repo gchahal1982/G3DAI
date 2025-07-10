@@ -9,13 +9,13 @@ G3DAI is a comprehensive suite of AI platforms and services extracted from the G
 #### **🟢 Tier 1: Production-Ready Platforms (3)**
 These platforms are fully implemented with comprehensive features and production-ready codebases:
 
-- **`annotateai/`** - AI-powered annotation and labeling platform (~250,000 lines)
+- **`annotateai/`** - AI-powered annotation and labeling platform (~100,234 lines)
   - Complete computer vision data labeling platform
   - Real-time collaboration and WebSocket integration
   - Advanced quality control and validation
   - Multi-modal annotation (images, videos, 3D)
   
-- **`medsight-pro/`** - Medical imaging and analysis platform
+- **`medsight-pro/`** - Medical imaging and analysis platform (~43,854 lines)
   - Comprehensive medical imaging suite
   - DICOM processing and visualization
   - Advanced AI-powered diagnostics

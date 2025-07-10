@@ -16,9 +16,10 @@
     "baseUrl": ".",
     "paths": {
       "@shared/*": ["shared/*"],
-      "@shared/ui/*": ["shared/ui/src/*"],
-      "@shared/api/*": ["shared/api-gateway/src/*"],
-      "@backend/*": ["backend/src/*"],
+      "@shared/ui": ["shared/components/ui"],
+      "@shared/ui/*": ["shared/components/ui/*"],
+      "@shared/components/*": ["shared/components/*"],
+      "@shared/api/*": ["shared/api-gateway/*"],
       "@infrastructure/*": ["infrastructure/*"],
       "@deployment/*": ["deployment/*"],
       "@core/*": ["core/*"]
@@ -29,8 +30,6 @@
     "ai-platforms/**/*.tsx",
     "shared/**/*.ts",
     "shared/**/*.tsx",
-    "backend/**/*.ts",
-    "backend/**/*.tsx",
     "infrastructure/**/*.ts",
     "infrastructure/**/*.tsx",
     "core/**/*.ts",

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 
 
 
-// G3D SpaceAI - Satellite Imagery and Space Data Analysis Platform
+// SpaceAI - Satellite Imagery and Space Data Analysis Platform
 export const SpaceAIDashboard: React.FC = () => {
     const [activeTab, setActiveTab] = useState<'satellites' | 'imagery' | 'missions' | 'analytics'>('satellites');
     const [selectedSatellite, setSelectedSatellite] = useState<Satellite | null>(null);
@@ -133,7 +133,7 @@ export const SpaceAIDashboard: React.FC = () => {
                 <div className="flex items-center justify-between">
                     <div>
                         <h1 className="text-3xl font-bold text-white mb-2">
-                            🚀 G3D SpaceAI
+                            🚀 SpaceAI
                         </h1>
                         <p className="text-indigo-200">Satellite Imagery and Space Data Analysis Platform - Monitor Earth from space</p>
                     </div>

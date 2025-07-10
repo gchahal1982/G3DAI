@@ -228,9 +228,9 @@ export class PredictiveOptimization {
             this.initializeOptimizationState();
             
             this.isInitialized = true;
-            console.log('G3DPredictiveOptimization initialized successfully');
+            console.log('PredictiveOptimization initialized successfully');
         } catch (error) {
-            console.error('Failed to initialize G3DPredictiveOptimization:', error);
+            console.error('Failed to initialize PredictiveOptimization:', error);
             throw error;
         }
     }
@@ -246,7 +246,7 @@ export class PredictiveOptimization {
             timestamp: Date.now(),
             metadata: {
                 version: '1.0',
-                source: 'G3DPredictiveOptimization'
+                source: 'PredictiveOptimization'
             }
         };
     }

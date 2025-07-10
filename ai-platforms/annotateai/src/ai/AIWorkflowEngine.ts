@@ -1,5 +1,5 @@
 /**
- * G3DAIWorkflowEngine.ts
+ * AIWorkflowEngine.ts
  * 
  * Advanced AI workflow orchestration engine for G3D AnnotateAI.
  * Provides automated pipeline management, task scheduling, dependency resolution,

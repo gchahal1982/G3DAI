@@ -6,7 +6,6 @@
   "workspaces": [
     "ai-platforms/*",
     "shared/*",
-    "backend/*",
     "infrastructure/*"
   ],
   "scripts": {

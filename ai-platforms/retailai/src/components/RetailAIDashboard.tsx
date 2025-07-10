@@ -3,7 +3,7 @@ import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, Cart
 
 
 
-// G3D RetailAI - Retail Intelligence Suite
+// RetailAI - Retail Intelligence Suite
 export const RetailAIDashboard: React.FC = () => {
     const [activeTab, setActiveTab] = useState<'inventory' | 'customers' | 'sales' | 'insights'>('inventory');
     const [timeRange, setTimeRange] = useState<'24h' | '7d' | '30d' | '90d'>('7d');
@@ -61,7 +61,7 @@ export const RetailAIDashboard: React.FC = () => {
                 <div className="flex items-center justify-between">
                     <div>
                         <h1 className="text-3xl font-bold text-white mb-2">
-                            🛍️ G3D RetailAI
+                            🛍️ RetailAI
                         </h1>
                         <p className="text-emerald-200">Retail Intelligence Suite - Optimize inventory, understand customers, boost sales</p>
                     </div>

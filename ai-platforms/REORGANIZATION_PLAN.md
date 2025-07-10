@@ -3,8 +3,8 @@
 ## 📊 Current State Assessment
 
 ### **Tier 1: Production-Ready Platforms (3)**
-- **`annotateai/`** - Complete annotation platform (~250,000 lines)
-- **`medsight-pro/`** - Comprehensive medical imaging platform
+- **`annotateai/`** - Complete annotation platform (~100,234 lines)
+- **`medsight-pro/`** - Comprehensive medical imaging platform (~43,854 lines)
 - **`bioai/`** - Well-developed bioinformatics platform
 
 ### **Tier 2: MVP Platforms (6)**

@@ -1,4 +1,4 @@
-# G3D AnnotateAI MVP - Comprehensive Documentation
+# AnnotateAI Platform - Comprehensive Documentation
 
 **Version**: 1.0  
 **Date**: January 2025  
@@ -21,9 +21,9 @@
 
 ## 🚀 **OVERVIEW & GETTING STARTED**
 
-### **What is G3D AnnotateAI MVP?**
+### **What is AnnotateAI Platform?**
 
-G3D AnnotateAI MVP is a cutting-edge 3D annotation platform that combines advanced 3D rendering, artificial intelligence, and collaborative tools to enable precise, intelligent annotation of 3D models, scenes, and environments.
+AnnotateAI Platform is a cutting-edge 3D annotation platform that combines advanced 3D rendering, artificial intelligence, and collaborative tools to enable precise, intelligent annotation of 3D models, scenes, and environments.
 
 ### **Key Features**
 - **AI-Powered Annotation**: Intelligent object detection and automatic annotation suggestions
@@ -49,7 +49,7 @@ G3D AnnotateAI MVP is a cutting-edge 3D annotation platform that combines advanc
 
 ### **Quick Start Guide**
 
-1. **Access the Platform**: Navigate to your G3D AnnotateAI instance
+1. **Access the Platform**: Navigate to your AnnotateAI instance
 2. **Login**: Use your enterprise credentials or create an account
 3. **Upload 3D Model**: Drag and drop your 3D file (.obj, .fbx, .gltf, .ply)
 4. **Start Annotating**: Use AI suggestions or manual tools to create annotations
@@ -643,28 +643,28 @@ npm run dev
 
 #### **Project Structure**
 ```
-g3d-annotateai-mvp/
+annotateai/
 ├── src/
-│   ├── g3d-3d/              # Phase 0.3 - Advanced 3D Systems
-│   │   ├── G3DXRAnnotation.ts
-│   │   ├── G3DSceneGraph.ts
-│   │   └── ...
-│   ├── g3d-performance/     # Phase 0.4 - Performance & Compute
-│   │   ├── G3DCacheSystem.ts
-│   │   ├── G3DGPUCompute.ts
-│   │   └── ...
-│   ├── g3d-integration/     # Phase 0.1 - Native Rendering
-│   │   └── ...
-│   ├── ai/                  # Phase 0.2 - AI/ML Integration
-│   │   └── ...
+│   ├── ai/                  # AI/ML Integration
+│   │   ├── ActiveLearning.ts
+│   │   ├── AIAssistedCoding.ts
+│   │   ├── AIWorkflowEngine.ts
+│   │   └── synthetic/       # Synthetic data generation
+│   ├── annotation/          # Core annotation engines
+│   │   ├── ImageAnnotationEngine.ts
+│   │   └── VideoAnnotationEngine.ts
 │   ├── components/          # React components
-│   ├── services/           # Business logic services
-│   ├── utils/              # Utility functions
-│   └── types/              # TypeScript type definitions
-├── public/                 # Static assets
+│   │   ├── annotation/      # Annotation tools
+│   │   ├── ai-models/       # AI model components
+│   │   └── ui/              # UI components
+│   ├── core/               # Core 3D systems
+│   ├── enterprise/         # Enterprise features
+│   ├── integration/        # Integration utilities
+│   ├── performance/        # Performance optimization
+│   └── utils.ts            # Utility functions
 ├── docs/                   # Documentation
-├── tests/                  # Test files
-└── docker/                 # Docker configuration
+├── package.json            # Dependencies
+└── tsconfig.json           # TypeScript configuration
 ```
 
 ### **Core APIs Usage Examples**

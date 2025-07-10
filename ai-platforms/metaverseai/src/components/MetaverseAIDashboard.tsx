@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 
 
-// G3D MetaverseAI - Immersive Virtual World Builder Platform
+// MetaverseAI - Immersive Virtual World Builder Platform
 export const MetaverseAIDashboard: React.FC = () => {
     const [activeTab, setActiveTab] = useState<'worlds' | 'avatars' | 'economy' | 'analytics'>('worlds');
 
@@ -60,7 +60,7 @@ export const MetaverseAIDashboard: React.FC = () => {
                 <div className="flex items-center justify-between">
                     <div>
                         <h1 className="text-3xl font-bold text-white mb-2">
-                            🌐 G3D MetaverseAI
+                            🌐 MetaverseAI
                         </h1>
                         <p className="text-violet-200">Immersive Virtual World Builder Platform - Create infinite digital universes</p>
                     </div>

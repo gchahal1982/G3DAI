@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 
 
-// G3D BioAI - Bioinformatics and Drug Discovery Platform
+// BioAI - Bioinformatics and Drug Discovery Platform
 export const BioAIDashboard: React.FC = () => {
     const [activeTab, setActiveTab] = useState<'discovery' | 'analysis' | 'visualization' | 'simulation'>('discovery');
     const [selectedMolecule, setSelectedMolecule] = useState<Molecule | null>(null);
@@ -75,7 +75,7 @@ export const BioAIDashboard: React.FC = () => {
                 <div className="flex items-center justify-between">
                     <div>
                         <h1 className="text-3xl font-bold text-white mb-2">
-                            🧬 G3D BioAI
+                            🧬 BioAI
                         </h1>
                         <p className="text-emerald-200">Bioinformatics and Drug Discovery Platform - Accelerate therapeutic innovation</p>
                     </div>

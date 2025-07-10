@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 
 
 
-// G3D QuantumAI - Quantum-Classical Hybrid Computing Platform
+// QuantumAI - Quantum-Classical Hybrid Computing Platform
 export const QuantumAIDashboard: React.FC = () => {
     const [activeTab, setActiveTab] = useState<'circuits' | 'algorithms' | 'simulation' | 'hardware'>('circuits');
     const [quantumCircuit, setQuantumCircuit] = useState<QuantumCircuit | null>(null);
@@ -42,7 +42,7 @@ export const QuantumAIDashboard: React.FC = () => {
                 <div className="flex items-center justify-between">
                     <div>
                         <h1 className="text-3xl font-bold text-white mb-2">
-                            ⚛️ G3D QuantumAI
+                            ⚛️ QuantumAI
                         </h1>
                         <p className="text-violet-200">Quantum-Classical Hybrid Computing Platform - Unleash quantum advantage</p>
                     </div>

@@ -47,7 +47,7 @@ import {
     TabsContent,
     TabsList,
     TabsTrigger
-} from '../components/ui';
+} from '../../../../shared/components/ui';
 
 // Icons
 import {

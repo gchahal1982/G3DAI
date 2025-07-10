@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 
 
 
-// G3D NeuroAI - Brain-Computer Interface Applications Platform
+// NeuroAI - Brain-Computer Interface Applications Platform
 export const NeuroAIDashboard: React.FC = () => {
     const [activeTab, setActiveTab] = useState<'signals' | 'interfaces' | 'training' | 'applications'>('signals');
     const [selectedDevice, setSelectedDevice] = useState<BCIDevice | null>(null);
@@ -176,7 +176,7 @@ export const NeuroAIDashboard: React.FC = () => {
                 <div className="flex items-center justify-between">
                     <div>
                         <h1 className="text-3xl font-bold text-white mb-2">
-                            🧠 G3D NeuroAI
+                            🧠 NeuroAI
                         </h1>
                         <p className="text-pink-200">Brain-Computer Interface Applications Platform - Connect minds with technology</p>
                     </div>

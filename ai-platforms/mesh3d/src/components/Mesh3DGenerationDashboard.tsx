@@ -1,5 +1,5 @@
 /**
- * G3D Mesh3D - 3D Model Generation Dashboard
+ * Mesh3D - 3D Model Generation Dashboard
  * Complete 3D asset generation platform with AI-powered mesh and texture creation
  */
 
@@ -744,7 +744,7 @@ export const Mesh3DGenerationDashboard: React.FC = () => {
             <Header>
                 <Logo>
                     <div className="icon">🎲</div>
-                    <h1>G3D Mesh3D Generation</h1>
+                    <h1>Mesh3D Generation</h1>
                 </Logo>
                 <GenerationStatus>
                     <div className={`status-indicator ${isGenerating ? 'generating' : 'ready'}`}>

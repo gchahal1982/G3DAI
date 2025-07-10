@@ -3,11 +3,11 @@
  * Main entry point for G3D medical imaging capabilities
  * 
  * Phase 0.1: G3D Medical Rendering Engine - Complete
- * - G3DMedicalRenderer: Advanced medical rendering with G3D optimization
- * - G3DVolumeRenderer: GPU-accelerated volumetric medical imaging
- * - G3DMedicalMaterials: Medical-specific materials and shaders
- * - G3DAnatomyVisualization: 3D anatomy rendering and visualization
- * - G3DClinicalWorkflow: Clinical workflow integration and DICOM processing
+ * - MedicalRenderer: Advanced medical rendering with G3D optimization
+ * - VolumeRenderer: GPU-accelerated volumetric medical imaging
+ * - MedicalMaterials: Medical-specific materials and shaders
+ * - AnatomyVisualization: 3D anatomy rendering and visualization
+ * - ClinicalWorkflow: Clinical workflow integration and DICOM processing
  */
 
 // Core medical rendering exports

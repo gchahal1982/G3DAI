@@ -10,7 +10,7 @@ After comprehensive analysis of all 27 AI platforms in the `/ai-platforms` direc
 
 | Tier | Status | Count | Examples | Lines of Code |
 |------|--------|-------|----------|---------------|
-| **Tier 1** | Production-Ready | 3 | `annotateai`, `medsight-pro`, `bioai` | ~250,000+ |
+| **Tier 1** | Production-Ready | 3 | `annotateai`, `medsight-pro`, `bioai` | ~144,088+ |
 | **Tier 2** | MVP Status | 6 | `neuroai`, `mesh3d`, `renderai` | ~5,000-10,000 |
 | **Tier 3** | Prototype | 8 | `climateai`, `retailai`, `vision-pro` | ~1,000-3,000 |
 | **Tier 4** | Placeholder | 10 | `automl`, `codeforge`, `chatbuilder` | <500 |
