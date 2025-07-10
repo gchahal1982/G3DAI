@@ -1,0 +1,155 @@
+/** @type {import('tailwindcss').Config} */
+module.exports = {
+  content: [
+    './src/pages/**/*.{js,ts,jsx,tsx,mdx}',
+    './src/components/**/*.{js,ts,jsx,tsx,mdx}',
+    './src/app/**/*.{js,ts,jsx,tsx,mdx}',
+    './src/**/*.{js,ts,jsx,tsx,mdx}',
+  ],
+  theme: {
+    extend: {
+      colors: {
+        // G3DAI Universal Colors
+        'g3d-primary': {
+          50: '#f0f9ff',
+          100: '#e0f2fe',
+          200: '#bae6fd',
+          300: '#7dd3fc',
+          400: '#38bdf8',
+          500: '#0ea5e9',
+          600: '#0284c7',
+          700: '#0369a1',
+          800: '#075985',
+          900: '#0c4a6e',
+        },
+        // AnnotateAI Primary Colors
+        'annotate-primary': {
+          50: '#eef2ff',
+          100: '#e0e7ff',
+          200: '#c7d2fe',
+          300: '#a5b4fc',
+          400: '#818cf8',
+          500: '#6366f1',
+          600: '#4f46e5',
+          700: '#4338ca',
+          800: '#3730a3',
+          900: '#312e81',
+        },
+        // AnnotateAI Accent Colors
+        'annotate-accent': {
+          purple: '#8b5cf6',
+          cyan: '#06b6d4',
+          green: '#10b981',
+          orange: '#f59e0b',
+        },
+        // Universal Semantic Colors
+        'g3d-success': {
+          light: '#d1fae5',
+          DEFAULT: '#10b981',
+          dark: '#047857',
+        },
+        'g3d-warning': {
+          light: '#fef3c7',
+          DEFAULT: '#f59e0b',
+          dark: '#d97706',
+        },
+        'g3d-error': {
+          light: '#fee2e2',
+          DEFAULT: '#ef4444',
+          dark: '#dc2626',
+        },
+      },
+      fontFamily: {
+        primary: ['Inter Variable', 'Inter', 'system-ui', 'sans-serif'],
+        display: ['Geist', 'Inter Variable', 'Inter', 'system-ui', 'sans-serif'],
+        mono: ['Geist Mono', 'SF Mono', 'Consolas', 'monospace'],
+      },
+      fontSize: {
+        '9xl': '8rem',
+        '8xl': '6rem',
+        '7xl': '4.5rem',
+        '6xl': '3.75rem',
+        '5xl': '3rem',
+        '4xl': '2.25rem',
+        '3xl': '1.875rem',
+        '2xl': '1.5rem',
+        'xl': '1.25rem',
+        'lg': '1.125rem',
+        'base': '1rem',
+        'sm': '0.875rem',
+        'xs': '0.75rem',
+      },
+      spacing: {
+        'px': '1px',
+        '0': '0',
+        '1': '0.25rem',
+        '2': '0.5rem',
+        '3': '0.75rem',
+        '4': '1rem',
+        '5': '1.25rem',
+        '6': '1.5rem',
+        '8': '2rem',
+        '10': '2.5rem',
+        '12': '3rem',
+        '16': '4rem',
+        '20': '5rem',
+        '24': '6rem',
+        '32': '8rem',
+        '40': '10rem',
+        '48': '12rem',
+        '56': '14rem',
+        '64': '16rem',
+      },
+      borderRadius: {
+        'lg': '12px',
+        'xl': '16px',
+        '2xl': '20px',
+        '3xl': '24px',
+      },
+      backdropBlur: {
+        'xs': '2px',
+        'sm': '4px',
+        'md': '8px',
+        'lg': '12px',
+        'xl': '16px',
+        '2xl': '20px',
+        '3xl': '24px',
+        '4xl': '32px',
+        '5xl': '40px',
+      },
+      animation: {
+        'fade-in': 'fadeIn 0.3s ease-out',
+        'slide-up': 'slideUp 0.3s ease-out',
+        'slide-down': 'slideDown 0.3s ease-out',
+        'scale-in': 'scaleIn 0.2s ease-out',
+        'glass-shimmer': 'glassShimmer 2s infinite',
+      },
+      keyframes: {
+        fadeIn: {
+          '0%': { opacity: '0' },
+          '100%': { opacity: '1' },
+        },
+        slideUp: {
+          '0%': { transform: 'translateY(10px)', opacity: '0' },
+          '100%': { transform: 'translateY(0)', opacity: '1' },
+        },
+        slideDown: {
+          '0%': { transform: 'translateY(-10px)', opacity: '0' },
+          '100%': { transform: 'translateY(0)', opacity: '1' },
+        },
+        scaleIn: {
+          '0%': { transform: 'scale(0.95)', opacity: '0' },
+          '100%': { transform: 'scale(1)', opacity: '1' },
+        },
+        glassShimmer: {
+          '0%': { transform: 'translateX(-100%)' },
+          '100%': { transform: 'translateX(100%)' },
+        },
+      },
+    },
+  },
+  plugins: [
+    require('@tailwindcss/forms'),
+    require('@tailwindcss/typography'),
+  ],
+};
