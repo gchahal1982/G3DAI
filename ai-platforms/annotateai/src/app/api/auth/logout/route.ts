@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import jwt from 'jsonwebtoken';
-
-// In production, you'd want to maintain a blacklist of tokens in Redis or database
-const tokenBlacklist = new Set<string>();
+import { addTokenToBlacklist } from '../../../../lib/auth/token-blacklist';
 
 export async function POST(request: NextRequest) {
   try {
@@ -24,7 +22,7 @@ export async function POST(request: NextRequest) {
         userEmail = decoded.email;
         
         // Add token to blacklist (in production, use Redis with expiration)
-        tokenBlacklist.add(accessToken);
+        addTokenToBlacklist(accessToken);
       } catch (error) {
         // Token might be expired or invalid, that's okay for logout
         console.warn('Invalid token during logout:', error);
@@ -34,7 +32,7 @@ export async function POST(request: NextRequest) {
     if (refreshToken) {
       try {
         // Also blacklist the refresh token
-        tokenBlacklist.add(refreshToken);
+        addTokenToBlacklist(refreshToken);
       } catch (error) {
         console.warn('Error blacklisting refresh token:', error);
       }
@@ -151,29 +149,4 @@ export async function OPTIONS(request: NextRequest) {
   });
 }
 
-// Utility function to check if a token is blacklisted
-export function isTokenBlacklisted(token: string): boolean {
-  return tokenBlacklist.has(token);
-}
-
-// Utility function to clean expired tokens from blacklist
-// In production, this would be handled by Redis TTL
-export function cleanExpiredTokens() {
-  // This is a simple implementation
-  // In production, you'd use Redis with automatic expiration
-  const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
-  
-  for (const token of tokenBlacklist) {
-    try {
-      jwt.verify(token, JWT_SECRET);
-    } catch (error) {
-      // Token is expired or invalid, remove from blacklist
-      tokenBlacklist.delete(token);
-    }
-  }
-}
-
-// Clean expired tokens periodically (in production, use a cron job)
-if (typeof window === 'undefined') {
-  setInterval(cleanExpiredTokens, 60 * 60 * 1000); // Every hour
-} 
+// Utility functions are now available from the token-blacklist module 

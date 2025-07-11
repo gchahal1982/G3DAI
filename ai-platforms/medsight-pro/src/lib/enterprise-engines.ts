@@ -523,11 +523,4 @@ export class MedicalNetworkOptimizer extends NetworkOptimizer {
 }
 
 // Export all medical enterprise engines
-export {
-  MedicalMemoryManager,
-  MedicalAnalytics,
-  MedicalSecurityManager,
-  MedicalStreamProcessor,
-  MedicalComputeCluster,
-  MedicalNetworkOptimizer
-}; 
+// All classes are already exported when declared above 

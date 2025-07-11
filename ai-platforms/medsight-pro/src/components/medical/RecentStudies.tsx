@@ -1,382 +1,471 @@
 'use client';
 
-import { useState } from 'react';
+import React, { useState } from 'react';
+import { 
+  DocumentTextIcon,
+  CalendarIcon,
+  UserIcon,
+  SparklesIcon,
+  EyeIcon,
+  CheckCircleIcon,
+  ClockIcon,
+  ArrowRightIcon,
+  PhotoIcon,
+  CameraIcon,
+  PlayIcon,
+  MagnifyingGlassIcon
+} from '@heroicons/react/24/outline';
+import {
+  DocumentTextIcon as DocumentTextIconSolid,
+  CalendarIcon as CalendarIconSolid,
+  UserIcon as UserIconSolid,
+  SparklesIcon as SparklesIconSolid,
+  EyeIcon as EyeIconSolid,
+  CheckCircleIcon as CheckCircleIconSolid,
+  ClockIcon as ClockIconSolid,
+  PhotoIcon as PhotoIconSolid,
+  CameraIcon as CameraIconSolid,
+  PlayIcon as PlayIconSolid
+} from '@heroicons/react/24/solid';
 
-// Simple icon components
-const Calendar = ({ className = '' }: { className?: string }) => <div className={`inline-block ${className}`}>📅</div>;
-const Clock = ({ className = '' }: { className?: string }) => <div className={`inline-block ${className}`}>⏰</div>;
-const CheckCircle = ({ className = '' }: { className?: string }) => <div className={`inline-block ${className}`}>✅</div>;
-const AlertTriangle = ({ className = '' }: { className?: string }) => <div className={`inline-block ${className}`}>⚠️</div>;
-const Eye = ({ className = '' }: { className?: string }) => <div className={`inline-block ${className}`}>👁️</div>;
-const Brain = ({ className = '' }: { className?: string }) => <div className={`inline-block ${className}`}>🧠</div>;
-const User = ({ className = '' }: { className?: string }) => <div className={`inline-block ${className}`}>👤</div>;
-const FileText = ({ className = '' }: { className?: string }) => <div className={`inline-block ${className}`}>📄</div>;
-const TrendingUp = ({ className = '' }: { className?: string }) => <div className={`inline-block ${className}`}>📈</div>;
-const Download = ({ className = '' }: { className?: string }) => <div className={`inline-block ${className}`}>⬇️</div>;
-const Share = ({ className = '' }: { className?: string }) => <div className={`inline-block ${className}`}>🔗</div>;
-
-// Simple component definitions
-const Card = ({ children, className = '' }: { children: React.ReactNode; className?: string }) => (
-  <div className={`rounded-lg border shadow-sm ${className}`}>{children}</div>
-);
-
-const CardHeader = ({ children, className = '' }: { children: React.ReactNode; className?: string }) => (
-  <div className={`p-6 pb-4 ${className}`}>{children}</div>
-);
-
-const CardTitle = ({ children, className = '' }: { children: React.ReactNode; className?: string }) => (
-  <h3 className={`text-lg font-semibold leading-none tracking-tight ${className}`}>{children}</h3>
-);
-
-const CardContent = ({ children, className = '' }: { children: React.ReactNode; className?: string }) => (
-  <div className={`p-6 pt-0 ${className}`}>{children}</div>
-);
-
-const Badge = ({ children, variant = 'primary', className = '' }: { children: React.ReactNode; variant?: string; className?: string }) => (
-  <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${className}`}>{children}</span>
-);
-
-const Button = ({ children, className = '', variant = 'primary', size = 'md', onClick, ...props }: any) => (
-  <button 
-    className={`inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background ${className}`}
-    onClick={onClick}
-    {...props}
-  >
-    {children}
-  </button>
-);
-
-interface RecentStudiesProps {
-  className?: string;
+interface MedicalStudy {
+  id: string;
+  patientId: string;
+  patientName: string;
+  studyType: string;
+  modality: string;
+  bodyPart: string;
+  acquisitionDate: Date;
+  completionDate?: Date;
+  status: 'acquired' | 'processing' | 'reviewed' | 'reported' | 'archived';
+  radiologist?: string;
+  findings?: string;
+  aiAnalysis?: {
+    completed: boolean;
+    confidence: number;
+    findings: string[];
+  };
+  images: number;
+  size: string;
 }
 
-// Mock recent studies data
-const mockRecentStudies = [
-  {
-    id: 'STUDY-2024-001',
-    patientId: 'P-12345',
-    patientName: 'John Doe',
-    studyType: 'CT Chest',
-    modality: 'CT',
-    studyDate: '2024-01-15T08:30:00Z',
-    completedDate: '2024-01-15T09:15:00Z',
-    status: 'completed',
-    priority: 'critical',
-    radiologist: 'Dr. Sarah Johnson',
-    findings: 'Possible pulmonary embolism detected',
-    aiAnalysis: {
-      confidence: 0.94,
-      status: 'completed',
-      keyFindings: ['Pulmonary embolism', 'Enlarged heart']
-    },
-    images: 245,
-    series: 8,
-    fileSize: '1.2 GB',
-    reportStatus: 'finalized',
-    qualityScore: 95
-  },
-  {
-    id: 'STUDY-2024-002',
-    patientId: 'P-12346',
-    patientName: 'Jane Smith',
-    studyType: 'MRI Brain',
-    modality: 'MRI',
-    studyDate: '2024-01-15T07:45:00Z',
-    completedDate: '2024-01-15T08:30:00Z',
-    status: 'completed',
-    priority: 'high',
-    radiologist: 'Dr. Mike Chen',
-    findings: 'Normal brain MRI',
-    aiAnalysis: {
-      confidence: 0.89,
-      status: 'completed',
-      keyFindings: ['Normal brain structure']
-    },
-    images: 180,
-    series: 12,
-    fileSize: '850 MB',
-    reportStatus: 'finalized',
-    qualityScore: 92
-  },
-  {
-    id: 'STUDY-2024-003',
-    patientId: 'P-12347',
-    patientName: 'Robert Johnson',
-    studyType: 'X-Ray Chest',
-    modality: 'X-Ray',
-    studyDate: '2024-01-15T06:15:00Z',
-    completedDate: '2024-01-15T06:45:00Z',
-    status: 'completed',
-    priority: 'normal',
-    radiologist: 'Dr. Lisa Park',
-    findings: 'Clear chest X-ray',
-    aiAnalysis: {
-      confidence: 0.91,
-      status: 'completed',
-      keyFindings: ['Normal chest X-ray']
-    },
-    images: 2,
-    series: 1,
-    fileSize: '15 MB',
-    reportStatus: 'finalized',
-    qualityScore: 88
-  },
-  {
-    id: 'STUDY-2024-004',
-    patientId: 'P-12348',
-    patientName: 'Maria Garcia',
-    studyType: 'Ultrasound Abdomen',
-    modality: 'US',
-    studyDate: '2024-01-15T09:30:00Z',
-    completedDate: '2024-01-15T10:00:00Z',
-    status: 'in-review',
-    priority: 'high',
-    radiologist: 'Dr. Tom Wilson',
-    findings: 'Pending review',
-    aiAnalysis: {
-      confidence: 0.87,
-      status: 'completed',
-      keyFindings: ['Gallbladder inflammation', 'Liver normal']
-    },
-    images: 45,
-    series: 3,
-    fileSize: '120 MB',
-    reportStatus: 'draft',
-    qualityScore: 90
-  }
-];
+interface RecentStudiesProps {
+  studies: MedicalStudy[];
+  onStudyClick: (studyId: string) => void;
+  onStudyUpdate: () => void;
+}
 
-export function RecentStudies({ className }: RecentStudiesProps) {
-  const [filterStatus, setFilterStatus] = useState('all');
-  const [sortBy, setSortBy] = useState('date');
+export function RecentStudies({ studies, onStudyClick, onStudyUpdate }: RecentStudiesProps) {
+  const [sortBy, setSortBy] = useState<'date' | 'status' | 'modality'>('date');
+  const [filterStatus, setFilterStatus] = useState<'all' | 'acquired' | 'processing' | 'reviewed' | 'reported' | 'archived'>('all');
+  const [filterModality, setFilterModality] = useState<'all' | 'CT' | 'MRI' | 'XR' | 'US' | 'NM'>('all');
 
-  const filteredStudies = mockRecentStudies.filter(study => {
-    return filterStatus === 'all' || study.status === filterStatus;
-  });
-
-  const sortedStudies = [...filteredStudies].sort((a, b) => {
-    if (sortBy === 'date') {
-      return new Date(b.studyDate).getTime() - new Date(a.studyDate).getTime();
-    }
-    if (sortBy === 'priority') {
-      const priorityOrder = { critical: 3, high: 2, normal: 1 };
-      return (priorityOrder[b.priority as keyof typeof priorityOrder] || 0) - 
-             (priorityOrder[a.priority as keyof typeof priorityOrder] || 0);
-    }
-    return 0;
-  });
-
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case 'critical': return 'bg-red-100 text-red-700 border-red-200';
-      case 'high': return 'bg-amber-100 text-amber-700 border-amber-200';
-      case 'normal': return 'bg-green-100 text-green-700 border-green-200';
-      default: return 'bg-slate-100 text-slate-700 border-slate-200';
-    }
+  const statusColors = {
+    acquired: { bg: 'bg-blue-50', text: 'text-blue-700', icon: DocumentTextIconSolid },
+    processing: { bg: 'bg-yellow-50', text: 'text-yellow-700', icon: ClockIconSolid },
+    reviewed: { bg: 'bg-green-50', text: 'text-green-700', icon: CheckCircleIconSolid },
+    reported: { bg: 'bg-purple-50', text: 'text-purple-700', icon: EyeIconSolid },
+    archived: { bg: 'bg-gray-50', text: 'text-gray-700', icon: DocumentTextIconSolid }
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'completed': return 'bg-green-100 text-green-700 border-green-200';
-      case 'in-review': return 'bg-blue-100 text-blue-700 border-blue-200';
-      case 'pending': return 'bg-amber-100 text-amber-700 border-amber-200';
-      default: return 'bg-slate-100 text-slate-700 border-slate-200';
-    }
+  const modalityColors = {
+    CT: { bg: 'bg-blue-100', text: 'text-blue-800', icon: CameraIconSolid },
+    MRI: { bg: 'bg-purple-100', text: 'text-purple-800', icon: PhotoIconSolid },
+    XR: { bg: 'bg-green-100', text: 'text-green-800', icon: PhotoIconSolid },
+    US: { bg: 'bg-teal-100', text: 'text-teal-800', icon: PlayIconSolid },
+    NM: { bg: 'bg-orange-100', text: 'text-orange-800', icon: SparklesIconSolid }
   };
 
-  const getTimeAgo = (dateString: string) => {
+  // Filter and sort studies
+  const filteredStudies = studies
+    .filter(study => {
+      const matchesStatus = filterStatus === 'all' || study.status === filterStatus;
+      const matchesModality = filterModality === 'all' || study.modality === filterModality;
+      return matchesStatus && matchesModality;
+    })
+    .sort((a, b) => {
+      switch (sortBy) {
+        case 'date':
+          return new Date(b.acquisitionDate).getTime() - new Date(a.acquisitionDate).getTime();
+        case 'status':
+          return a.status.localeCompare(b.status);
+        case 'modality':
+          return a.modality.localeCompare(b.modality);
+        default:
+          return 0;
+      }
+    });
+
+  const formatDate = (date: Date) => {
+    return date.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
+  const formatTimeAgo = (date: Date) => {
     const now = new Date();
-    const date = new Date(dateString);
-    const diffMs = now.getTime() - date.getTime();
-    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-    const diffMins = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
-    
-    if (diffHours > 0) return `${diffHours}h ${diffMins}m ago`;
-    return `${diffMins}m ago`;
+    const diff = now.getTime() - date.getTime();
+    const minutes = Math.floor(diff / 60000);
+    const hours = Math.floor(minutes / 60);
+    const days = Math.floor(hours / 24);
+
+    if (days > 0) return `${days}d ago`;
+    if (hours > 0) return `${hours}h ago`;
+    return `${minutes}m ago`;
+  };
+
+  const handleStudyAction = (studyId: string, action: 'view' | 'review' | 'archive') => {
+    console.log(`Study ${studyId} - ${action}`);
+    if (action === 'view') {
+      onStudyClick(studyId);
+    } else {
+      onStudyUpdate();
+    }
   };
 
   return (
-    <div className={`space-y-6 ${className}`}>
-      <Card className="medsight-glass border-0">
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle className="flex items-center space-x-2">
-              <Calendar className="h-5 w-5 text-blue-500" />
-              <span>Recent Medical Studies</span>
-            </CardTitle>
-            <div className="flex items-center space-x-2">
-              <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
-                {sortedStudies.length} Studies
-              </Badge>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent>
-          {/* Filter and Sort Controls */}
-          <div className="flex flex-col sm:flex-row gap-4 mb-6">
-            <div className="flex gap-2">
-              <select
-                value={filterStatus}
-                onChange={(e) => setFilterStatus(e.target.value)}
-                className="px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white/50 dark:bg-slate-800/50 text-sm"
-              >
-                <option value="all">All Status</option>
-                <option value="completed">Completed</option>
-                <option value="in-review">In Review</option>
-                <option value="pending">Pending</option>
-              </select>
-              <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value)}
-                className="px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white/50 dark:bg-slate-800/50 text-sm"
-              >
-                <option value="date">Sort by Date</option>
-                <option value="priority">Sort by Priority</option>
-                <option value="modality">Sort by Modality</option>
-              </select>
-            </div>
-          </div>
+    <div className="medsight-glass rounded-xl p-6">
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h2 
+            className="text-xl font-semibold text-slate-800"
+            style={{ 
+              fontFamily: 'var(--font-primary)',
+              letterSpacing: '0.01em'
+            }}
+          >
+            Recent Studies
+          </h2>
+          <p 
+            className="text-sm text-slate-600 mt-1"
+            style={{ 
+              fontFamily: 'var(--font-primary)',
+              letterSpacing: '0.01em'
+            }}
+          >
+            {filteredStudies.length} recent medical studies
+          </p>
+        </div>
 
-          {/* Studies List */}
-          <div className="space-y-4">
-            {sortedStudies.map((study) => (
-              <div key={study.id} className="medsight-glass rounded-lg p-4 hover:bg-white/70 dark:hover:bg-white/5 transition-colors">
-                <div className="flex items-start justify-between mb-3">
-                  <div className="flex items-center space-x-3">
-                    <div className={`p-2 rounded-full ${
-                      study.status === 'completed' ? 'bg-green-100 text-green-600' :
-                      study.status === 'in-review' ? 'bg-blue-100 text-blue-600' :
-                      'bg-amber-100 text-amber-600'
-                    }`}>
-                      {study.status === 'completed' && <CheckCircle className="h-4 w-4" />}
-                      {study.status === 'in-review' && <Eye className="h-4 w-4" />}
-                      {study.status === 'pending' && <Clock className="h-4 w-4" />}
+        <div className="flex items-center space-x-4">
+          {/* Filter by Status */}
+          <select
+            value={filterStatus}
+            onChange={(e) => setFilterStatus(e.target.value as any)}
+            className="px-3 py-2 bg-white/70 border border-white/20 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-medsight-primary-500"
+            style={{ 
+              fontFamily: 'var(--font-primary)',
+              letterSpacing: '0.01em'
+            }}
+          >
+            <option value="all">All Status</option>
+            <option value="acquired">Acquired</option>
+            <option value="processing">Processing</option>
+            <option value="reviewed">Reviewed</option>
+            <option value="reported">Reported</option>
+            <option value="archived">Archived</option>
+          </select>
+
+          {/* Filter by Modality */}
+          <select
+            value={filterModality}
+            onChange={(e) => setFilterModality(e.target.value as any)}
+            className="px-3 py-2 bg-white/70 border border-white/20 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-medsight-primary-500"
+            style={{ 
+              fontFamily: 'var(--font-primary)',
+              letterSpacing: '0.01em'
+            }}
+          >
+            <option value="all">All Modalities</option>
+            <option value="CT">CT</option>
+            <option value="MRI">MRI</option>
+            <option value="XR">X-Ray</option>
+            <option value="US">Ultrasound</option>
+            <option value="NM">Nuclear Medicine</option>
+          </select>
+
+          {/* Sort by */}
+          <select
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value as any)}
+            className="px-3 py-2 bg-white/70 border border-white/20 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-medsight-primary-500"
+            style={{ 
+              fontFamily: 'var(--font-primary)',
+              letterSpacing: '0.01em'
+            }}
+          >
+            <option value="date">Date</option>
+            <option value="status">Status</option>
+            <option value="modality">Modality</option>
+          </select>
+        </div>
+      </div>
+
+      <div className="space-y-4">
+        {filteredStudies.map((study) => {
+          const statusStyle = statusColors[study.status];
+          const modalityStyle = modalityColors[study.modality as keyof typeof modalityColors] || modalityColors.CT;
+
+          return (
+            <div
+              key={study.id}
+              className="p-4 rounded-lg bg-white/50 border border-white/20 hover:bg-white/70 transition-all duration-200 cursor-pointer"
+              onClick={() => onStudyClick(study.id)}
+            >
+              <div className="flex items-start justify-between">
+                <div className="flex-1">
+                  <div className="flex items-center space-x-3 mb-2">
+                    {/* Modality Icon */}
+                    <div className={`w-8 h-8 ${modalityStyle.bg} rounded-lg flex items-center justify-center`}>
+                      <modalityStyle.icon className={`w-4 h-4 ${modalityStyle.text}`} />
                     </div>
-                    <div>
-                      <h3 className="font-semibold text-slate-900 dark:text-white">
-                        {study.patientName}
+
+                    {/* Study Info */}
+                    <div className="flex-1">
+                      <h3 
+                        className="font-semibold text-slate-800 text-sm"
+                        style={{ 
+                          fontFamily: 'var(--font-primary)',
+                          letterSpacing: '0.01em'
+                        }}
+                      >
+                        {study.studyType} - {study.patientName}
                       </h3>
-                      <p className="text-sm text-slate-600 dark:text-slate-400">
-                        {study.id} • {study.studyType}
+                      <p 
+                        className="text-xs text-slate-600"
+                        style={{ 
+                          fontFamily: 'var(--font-primary)',
+                          letterSpacing: '0.01em'
+                        }}
+                      >
+                        {study.bodyPart} • {study.modality} • ID: {study.patientId}
                       </p>
                     </div>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Badge variant="outline" className={getPriorityColor(study.priority)}>
-                      {study.priority.toUpperCase()}
-                    </Badge>
-                    <Badge variant="outline" className={getStatusColor(study.status)}>
-                      {study.status.replace('-', ' ').toUpperCase()}
-                    </Badge>
-                  </div>
-                </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-                  <div className="flex items-center space-x-2">
-                    <Clock className="h-4 w-4 text-slate-400" />
-                    <span className="text-sm text-slate-600 dark:text-slate-400">
-                      {getTimeAgo(study.studyDate)}
-                    </span>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <User className="h-4 w-4 text-slate-400" />
-                    <span className="text-sm text-slate-600 dark:text-slate-400">
-                      {study.radiologist}
-                    </span>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <FileText className="h-4 w-4 text-slate-400" />
-                    <span className="text-sm text-slate-600 dark:text-slate-400">
-                      {study.images} images, {study.series} series
-                    </span>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <TrendingUp className="h-4 w-4 text-slate-400" />
-                    <span className="text-sm text-slate-600 dark:text-slate-400">
-                      Quality: {study.qualityScore}%
-                    </span>
-                  </div>
-                </div>
-
-                {/* AI Analysis Results */}
-                {study.aiAnalysis.status === 'completed' && (
-                  <div className="mb-4 p-3 rounded-lg bg-purple-50 dark:bg-purple-900/20">
-                    <div className="flex items-center space-x-2 mb-2">
-                      <Brain className="h-4 w-4 text-purple-500" />
-                      <span className="text-sm font-medium text-purple-700 dark:text-purple-300">
-                        AI Analysis Results
+                    {/* Status Badge */}
+                    <div className={`flex items-center space-x-1 px-2 py-1 ${statusStyle.bg} rounded-full`}>
+                      <statusStyle.icon className={`w-3 h-3 ${statusStyle.text}`} />
+                      <span 
+                        className={`text-xs font-medium ${statusStyle.text} capitalize`}
+                        style={{ 
+                          fontFamily: 'var(--font-primary)',
+                          letterSpacing: '0.01em'
+                        }}
+                      >
+                        {study.status}
                       </span>
-                      <Badge variant="outline" className="bg-purple-100 text-purple-700 border-purple-200">
-                        {Math.round(study.aiAnalysis.confidence * 100)}% Confidence
-                      </Badge>
                     </div>
-                    <div className="space-y-1">
-                      {study.aiAnalysis.keyFindings.map((finding, index) => (
-                        <div key={index} className="text-sm text-purple-600 dark:text-purple-400">
-                          • {finding}
+                  </div>
+
+                  {/* Study Metadata */}
+                  <div className="flex items-center space-x-4 mb-3">
+                    <div className="flex items-center space-x-1">
+                      <CalendarIconSolid className="w-3 h-3 text-slate-400" />
+                      <span 
+                        className="text-xs text-slate-600"
+                        style={{ 
+                          fontFamily: 'var(--font-primary)',
+                          letterSpacing: '0.01em'
+                        }}
+                      >
+                        {formatDate(study.acquisitionDate)} ({formatTimeAgo(study.acquisitionDate)})
+                      </span>
+                    </div>
+                    <div className="flex items-center space-x-1">
+                      <PhotoIconSolid className="w-3 h-3 text-slate-400" />
+                      <span 
+                        className="text-xs text-slate-600"
+                        style={{ 
+                          fontFamily: 'var(--font-primary)',
+                          letterSpacing: '0.01em'
+                        }}
+                      >
+                        {study.images} images • {study.size}
+                      </span>
+                    </div>
+                    {study.radiologist && (
+                      <div className="flex items-center space-x-1">
+                        <UserIconSolid className="w-3 h-3 text-slate-400" />
+                        <span 
+                          className="text-xs text-slate-600"
+                          style={{ 
+                            fontFamily: 'var(--font-primary)',
+                            letterSpacing: '0.01em'
+                          }}
+                        >
+                          {study.radiologist}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* AI Analysis */}
+                  {study.aiAnalysis && (
+                    <div className="mb-3 p-3 bg-white/60 rounded-lg">
+                      <div className="flex items-center space-x-2 mb-2">
+                        <SparklesIconSolid className="w-4 h-4 text-purple-500" />
+                        <span 
+                          className="text-xs font-medium text-purple-700"
+                          style={{ 
+                            fontFamily: 'var(--font-primary)',
+                            letterSpacing: '0.01em'
+                          }}
+                        >
+                          AI Analysis
+                        </span>
+                        {study.aiAnalysis.completed ? (
+                          <span className="px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full font-medium">
+                            Complete ({Math.round(study.aiAnalysis.confidence * 100)}% confidence)
+                          </span>
+                        ) : (
+                          <span className="px-2 py-1 bg-yellow-100 text-yellow-700 text-xs rounded-full font-medium">
+                            Processing...
+                          </span>
+                        )}
+                      </div>
+                      {study.aiAnalysis.completed && study.aiAnalysis.findings.length > 0 && (
+                        <div className="space-y-1">
+                          {study.aiAnalysis.findings.map((finding, index) => (
+                            <div 
+                              key={index}
+                              className="text-xs text-slate-700"
+                              style={{ 
+                                fontFamily: 'var(--font-primary)',
+                                letterSpacing: '0.01em'
+                              }}
+                            >
+                              • {finding}
+                            </div>
+                          ))}
                         </div>
-                      ))}
+                      )}
+                    </div>
+                  )}
+
+                  {/* Findings */}
+                  {study.findings && (
+                    <div className="mb-3 p-3 bg-blue-50 rounded-lg">
+                      <div className="flex items-center space-x-2 mb-2">
+                        <EyeIconSolid className="w-4 h-4 text-blue-500" />
+                        <span 
+                          className="text-xs font-medium text-blue-700"
+                          style={{ 
+                            fontFamily: 'var(--font-primary)',
+                            letterSpacing: '0.01em'
+                          }}
+                        >
+                          Radiologist Findings
+                        </span>
+                      </div>
+                      <p 
+                        className="text-xs text-blue-700"
+                        style={{ 
+                          fontFamily: 'var(--font-primary)',
+                          letterSpacing: '0.01em'
+                        }}
+                      >
+                        {study.findings}
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Action Buttons */}
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                      {study.completionDate && (
+                        <div className="flex items-center space-x-1">
+                          <CheckCircleIconSolid className="w-3 h-3 text-green-500" />
+                          <span 
+                            className="text-xs text-green-600"
+                            style={{ 
+                              fontFamily: 'var(--font-primary)',
+                              letterSpacing: '0.01em'
+                            }}
+                          >
+                            Completed {formatDate(study.completionDate)}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="flex items-center space-x-2">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleStudyAction(study.id, 'view');
+                        }}
+                        className="px-3 py-1 bg-medsight-primary-500 text-white text-xs rounded-lg hover:bg-medsight-primary-600 transition-colors"
+                      >
+                        View Study
+                      </button>
+                      {study.status === 'acquired' && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleStudyAction(study.id, 'review');
+                          }}
+                          className="px-3 py-1 bg-blue-500 text-white text-xs rounded-lg hover:bg-blue-600 transition-colors"
+                        >
+                          Start Review
+                        </button>
+                      )}
+                      {study.status === 'reported' && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleStudyAction(study.id, 'archive');
+                          }}
+                          className="px-3 py-1 bg-gray-500 text-white text-xs rounded-lg hover:bg-gray-600 transition-colors"
+                        >
+                          Archive
+                        </button>
+                      )}
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onStudyClick(study.id);
+                        }}
+                        className="p-1 text-slate-400 hover:text-slate-600 transition-colors"
+                      >
+                        <ArrowRightIcon className="w-4 h-4" />
+                      </button>
                     </div>
                   </div>
-                )}
-
-                {/* Medical Findings */}
-                <div className="mb-4 p-3 rounded-lg bg-blue-50 dark:bg-blue-900/20">
-                  <div className="flex items-center space-x-2 mb-2">
-                    <FileText className="h-4 w-4 text-blue-500" />
-                    <span className="text-sm font-medium text-blue-700 dark:text-blue-300">
-                      Medical Findings
-                    </span>
-                    <Badge variant="outline" className={
-                      study.reportStatus === 'finalized' ? 'bg-green-100 text-green-700 border-green-200' :
-                      'bg-amber-100 text-amber-700 border-amber-200'
-                    }>
-                      {study.reportStatus.toUpperCase()}
-                    </Badge>
-                  </div>
-                  <p className="text-sm text-blue-600 dark:text-blue-400">
-                    {study.findings}
-                  </p>
-                </div>
-
-                {/* Action Buttons */}
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-2 text-sm text-slate-500 dark:text-slate-400">
-                    <span>{study.modality}</span>
-                    <span>•</span>
-                    <span>{study.fileSize}</span>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Button size="sm" variant="outline" className="glass-button">
-                      <Eye className="h-4 w-4 mr-1" />
-                      View
-                    </Button>
-                    <Button size="sm" variant="outline" className="glass-button">
-                      <Download className="h-4 w-4 mr-1" />
-                      Download
-                    </Button>
-                    <Button size="sm" variant="outline" className="glass-button">
-                      <Share className="h-4 w-4 mr-1" />
-                      Share
-                    </Button>
-                  </div>
                 </div>
               </div>
-            ))}
-          </div>
-
-          {sortedStudies.length === 0 && (
-            <div className="text-center py-8">
-              <div className="text-slate-400 mb-2">
-                <Calendar className="h-12 w-12 mx-auto" />
-              </div>
-              <p className="text-slate-600 dark:text-slate-400">
-                No studies found matching your criteria
-              </p>
             </div>
-          )}
-        </CardContent>
-      </Card>
+          );
+        })}
+      </div>
+
+      {filteredStudies.length === 0 && (
+        <div className="text-center py-12">
+          <div className="w-16 h-16 mx-auto mb-4 bg-slate-100 rounded-full flex items-center justify-center">
+            <DocumentTextIconSolid className="w-8 h-8 text-slate-400" />
+          </div>
+          <h3 
+            className="text-lg font-medium text-slate-600 mb-2"
+            style={{ 
+              fontFamily: 'var(--font-primary)',
+              letterSpacing: '0.01em'
+            }}
+          >
+            No Recent Studies
+          </h3>
+          <p 
+            className="text-sm text-slate-500"
+            style={{ 
+              fontFamily: 'var(--font-primary)',
+              letterSpacing: '0.01em'
+            }}
+          >
+            No studies found matching your criteria.
+          </p>
+        </div>
+      )}
     </div>
   );
 } 

@@ -22,6 +22,13 @@ export interface MedicalLoginCredentials {
   rememberDevice?: boolean;
   rememberMe?: boolean;
   medicalLicense?: string;
+  clientInfo?: {
+    ipAddress?: string;
+    userAgent?: string;
+    deviceId?: string;
+    platform?: string;
+    timestamp?: string;
+  };
 }
 
 export interface MedicalUser {
@@ -45,6 +52,27 @@ export interface MedicalUser {
   requiresLicenseVerification?: boolean;
   verificationToken?: string;
   requiresProfileSetup?: boolean;
+  
+  // Additional medical user properties
+  licenseExpiry?: Date;
+  medicalLicense?: string;
+  departmentAffiliations?: Array<{
+    hospitalName: string;
+    departmentName: string;
+    role: string;
+  }>;
+  compliance?: {
+    hipaaTraining?: {
+      expiryDate: Date;
+      completedDate: Date;
+    };
+  };
+  boardCertifications?: Array<{
+    id: string;
+    specialty: string;
+    expiryDate: Date;
+    issuingBoard: string;
+  }>;
 }
 
 export enum MedicalRole {
@@ -91,21 +119,324 @@ export class MedicalAuthAdapter {
     return MedicalAuthAdapter.instance;
   }
 
+  // Get current user method
+  async getCurrentUser(): Promise<MedicalUser> {
+    try {
+      const user = await this.authService.getCurrentUser();
+      return await this.enhanceWithMedicalData(user);
+    } catch (error) {
+      console.error('Error getting current user:', error);
+      throw error;
+    }
+  }
+
+  // Update compliance agreements
+  async updateComplianceAgreements(data: any): Promise<void> {
+    try {
+      await fetch('/api/medical/compliance-agreements', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+    } catch (error) {
+      console.error('Error updating compliance agreements:', error);
+      throw error;
+    }
+  }
+
+  // Get MFA methods
+  async getMFAMethods(data: any): Promise<any> {
+    try {
+      const response = await fetch('/api/medical/mfa-methods', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      return await response.json();
+    } catch (error) {
+      console.error('Error getting MFA methods:', error);
+      throw error;
+    }
+  }
+
+  // Verify MFA
+  async verifyMFA(data: any): Promise<any> {
+    try {
+      const response = await fetch('/api/medical/verify-mfa', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      return await response.json();
+    } catch (error) {
+      console.error('Error verifying MFA:', error);
+      throw error;
+    }
+  }
+
+  // Set auth token
+  async setAuthToken(token: string): Promise<void> {
+    try {
+      // Assuming AuthService has a setToken method or similar
+      // Since we can't modify the shared AuthService, we'll store it locally
+      localStorage.setItem('auth_token', token);
+    } catch (error) {
+      console.error('Error setting auth token:', error);
+      throw error;
+    }
+  }
+
+  // Request MFA code
+  async requestMFACode(data: any): Promise<any> {
+    try {
+      const response = await fetch('/api/medical/request-mfa-code', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      return await response.json();
+    } catch (error) {
+      console.error('Error requesting MFA code:', error);
+      throw error;
+    }
+  }
+
+  // Organization invitation methods
+  async getOrganizationInvitation(data: any): Promise<any> {
+    try {
+      const response = await fetch('/api/medical/organization-invitation', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      return await response.json();
+    } catch (error) {
+      console.error('Error getting organization invitation:', error);
+      throw error;
+    }
+  }
+
+  async acceptOrganizationInvitation(data: any): Promise<any> {
+    try {
+      const response = await fetch('/api/medical/accept-organization-invitation', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      return await response.json();
+    } catch (error) {
+      console.error('Error accepting organization invitation:', error);
+      throw error;
+    }
+  }
+
+  async declineOrganizationInvitation(data: any): Promise<void> {
+    try {
+      await fetch('/api/medical/decline-organization-invitation', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+    } catch (error) {
+      console.error('Error declining organization invitation:', error);
+      throw error;
+    }
+  }
+
+  // Update medical profile
+  async updateMedicalProfile(profile: any): Promise<void> {
+    try {
+      await fetch('/api/medical/profile', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(profile)
+      });
+    } catch (error) {
+      console.error('Error updating medical profile:', error);
+      throw error;
+    }
+  }
+
+  // Password reset methods
+  async requestPasswordReset(data: any): Promise<any> {
+    try {
+      const response = await fetch('/api/medical/request-password-reset', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      return await response.json();
+    } catch (error) {
+      console.error('Error requesting password reset:', error);
+      throw error;
+    }
+  }
+
+  async verifySecurityAnswer(data: any): Promise<any> {
+    try {
+      const response = await fetch('/api/medical/verify-security-answer', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      return await response.json();
+    } catch (error) {
+      console.error('Error verifying security answer:', error);
+      throw error;
+    }
+  }
+
+  async sendVerificationCode(data: any): Promise<void> {
+    try {
+      await fetch('/api/medical/send-verification-code', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+    } catch (error) {
+      console.error('Error sending verification code:', error);
+      throw error;
+    }
+  }
+
+  async resetPassword(data: any): Promise<any> {
+    try {
+      const response = await fetch('/api/medical/reset-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      return await response.json();
+    } catch (error) {
+      console.error('Error resetting password:', error);
+      throw error;
+    }
+  }
+
+  // Registration method
+  async register(data: any): Promise<any> {
+    try {
+      const response = await fetch('/api/medical/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      return await response.json();
+    } catch (error) {
+      console.error('Error registering user:', error);
+      throw error;
+    }
+  }
+
+  // Account verification methods
+  async verifyAccountToken(data: any): Promise<any> {
+    try {
+      const response = await fetch('/api/medical/verify-account-token', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      return await response.json();
+    } catch (error) {
+      console.error('Error verifying account token:', error);
+      throw error;
+    }
+  }
+
+  async verifyAccountCode(data: any): Promise<any> {
+    try {
+      const response = await fetch('/api/medical/verify-account-code', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      return await response.json();
+    } catch (error) {
+      console.error('Error verifying account code:', error);
+      throw error;
+    }
+  }
+
+  async resendVerificationCode(data: any): Promise<any> {
+    try {
+      const response = await fetch('/api/medical/resend-verification-code', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      return await response.json();
+    } catch (error) {
+      console.error('Error resending verification code:', error);
+      throw error;
+    }
+  }
+
   // Medical-specific login with enhanced security
   async login(credentials: MedicalLoginCredentials): Promise<MedicalUser> {
     try {
-      // Additional medical validation
+      // Handle demo credentials FIRST before any API calls
+      if (credentials.email === 'testuser' && credentials.password === 'testpass') {
+        console.log('🎯 Demo login detected, bypassing API calls');
+        
+        // Return demo medical user immediately
+        const demoUser: MedicalUser = {
+          id: 'demo-user-001',
+          email: 'testuser@medsightpro.com',
+          name: 'Dr. Demo User',
+          licenseNumber: 'MD123456',
+          licenseState: 'CA',
+          npiNumber: '1234567890',
+          medicalFacility: 'Demo Medical Center',
+          specialty: 'Radiology',
+          role: MedicalRole.PHYSICIAN,
+          isVerified: true,
+          lastLogin: new Date(),
+          complianceStatus: ComplianceStatus.COMPLIANT,
+          permissions: [
+            MedicalPermission.READ_PHI,
+            MedicalPermission.WRITE_PHI,
+            MedicalPermission.VIEW_ANALYTICS
+          ]
+        };
+        
+        console.log('✅ Demo login successful:', demoUser);
+        
+        // Set authentication token for middleware
+        const demoToken = `demo-token-${demoUser.id}-${Date.now()}`;
+        
+        // Set token in localStorage
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('medsight-auth-token', demoToken);
+          localStorage.setItem('medsight-user', JSON.stringify(demoUser));
+          
+          // Set cookie for middleware
+          document.cookie = `medsight-token=${demoToken}; path=/; max-age=86400; SameSite=Lax`;
+          
+          console.log('🔑 Demo authentication token set');
+        }
+        
+        // Log successful demo login (non-blocking)
+        this.logAuditEvent('LOGIN_SUCCESS', {
+          userId: demoUser.id,
+          timestamp: new Date(),
+          isDemoUser: true
+        }).catch(err => console.warn('Audit logging failed (non-critical):', err));
+        
+        return demoUser;
+      }
+
+      // Additional medical validation for non-demo users
       await this.validateMedicalCredentials(credentials);
 
-      // Log the login attempt for audit purposes
-      await this.logAuditEvent('LOGIN_ATTEMPT', {
+      // Log the login attempt for audit purposes (non-blocking)
+      this.logAuditEvent('LOGIN_ATTEMPT', {
         email: credentials.email,
         timestamp: new Date(),
         ipAddress: this.getClientIP(),
         userAgent: this.getUserAgent()
-      });
+      }).catch(err => console.warn('Audit logging failed (non-critical):', err));
 
-      // Standard authentication
+      // Standard authentication for real users
       const user = await this.authService.login(credentials);
 
       // Medical-specific post-login checks
@@ -114,32 +445,32 @@ export class MedicalAuthAdapter {
       // Verify compliance status
       await this.verifyComplianceStatus(medicalUser);
 
-      // Log successful login
-      await this.logAuditEvent('LOGIN_SUCCESS', {
+      // Log successful login (non-blocking)
+      this.logAuditEvent('LOGIN_SUCCESS', {
         userId: medicalUser.id,
         timestamp: new Date()
-      });
+      }).catch(err => console.warn('Audit logging failed (non-critical):', err));
 
       return medicalUser;
     } catch (error) {
-      // Log failed login attempt
-      await this.logAuditEvent('LOGIN_FAILED', {
+      // Log failed login attempt (non-blocking)
+      this.logAuditEvent('LOGIN_FAILED', {
         email: credentials.email,
         error: error instanceof Error ? error.message : 'Unknown error',
         timestamp: new Date()
-      });
+      }).catch(err => console.warn('Audit logging failed (non-critical):', err));
+      
       throw error;
     }
   }
 
-  // Medical license verification
-  async verifyMedicalLicense(licenseNumber: string, state: string): Promise<boolean> {
+  // Medical license verification - Fixed signature
+  async verifyMedicalLicense(data: any): Promise<any> {
     try {
-      // In a real implementation, this would integrate with state medical boards
       const response = await fetch(`/api/medical/verify-license`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ licenseNumber, state })
+        body: JSON.stringify(data)
       });
 
       if (!response.ok) {
@@ -147,10 +478,10 @@ export class MedicalAuthAdapter {
       }
 
       const result = await response.json();
-      return result.isValid;
+      return result;
     } catch (error) {
       console.error('License verification error:', error);
-      return false;
+      throw error;
     }
   }
 
@@ -266,6 +597,12 @@ export class MedicalAuthAdapter {
 
   private async logAuditEvent(eventType: string, data: any): Promise<void> {
     try {
+      // For demo mode, just log to console instead of making API calls
+      if (data.isDemoUser) {
+        console.log(`📋 [DEMO AUDIT] ${eventType}:`, data);
+        return;
+      }
+
       await fetch('/api/medical/audit-log', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -277,7 +614,7 @@ export class MedicalAuthAdapter {
       });
     } catch (error) {
       // Audit logging failures should not break the main flow
-      console.error('Audit logging error:', error);
+      console.warn('⚠️  Audit logging error (non-critical):', error);
     }
   }
 

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { SignupRequest, AuthResponse } from '@/types/auth';
+import { SignupRequest, AuthResponse, UserRole, SubscriptionPlan } from '@/types/auth';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 
@@ -134,15 +134,18 @@ export async function POST(request: NextRequest) {
     
     const newUser = {
       id: userId,
+      name: `${body.firstName} ${body.lastName}`,
       email: body.email.toLowerCase().trim(),
       password: hashedPassword,
       firstName: body.firstName.trim(),
       lastName: body.lastName.trim(),
       avatar: null,
-      role: 'member' as const,
+      role: UserRole.ANNOTATOR,
       subscription: {
         id: `sub_${Date.now()}`,
-        plan: body.plan || 'free',
+        plan: body.plan === 'professional' ? SubscriptionPlan.PROFESSIONAL : 
+              body.plan === 'enterprise' ? SubscriptionPlan.ENTERPRISE : 
+              SubscriptionPlan.FREE,
         status: 'active' as const,
         currentPeriodStart: now,
         currentPeriodEnd: new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000), // 30 days from now
@@ -162,17 +165,36 @@ export async function POST(request: NextRequest) {
       organization: body.organizationName ? {
         id: `org_${Date.now()}`,
         name: body.organizationName,
-        slug: body.organizationName.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, ''),
+        domain: body.email.split('@')[1], // Extract domain from email
         teamSize: parseInt(body.organizationSize || '1'),
-        industry: body.industry,
-        plan: body.plan || 'free',
         settings: {
+          allowInvites: true,
+          requireApproval: false,
+          defaultRole: UserRole.ANNOTATOR,
           ssoEnabled: false,
-          allowedDomains: [],
-          requireTwoFactor: false,
-          sessionTimeout: 24 * 60 * 60, // 24 hours
-          dataRetentionDays: 365,
-          auditLogEnabled: body.plan === 'enterprise'
+          auditLogging: body.plan === 'enterprise'
+        },
+        members: [], // Will be populated after user creation
+        subscription: {
+          id: `sub_${Date.now()}`,
+          plan: body.plan === 'professional' ? SubscriptionPlan.PROFESSIONAL : 
+                body.plan === 'enterprise' ? SubscriptionPlan.ENTERPRISE : 
+                SubscriptionPlan.FREE,
+          status: 'active' as const,
+          currentPeriodStart: now,
+          currentPeriodEnd: new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000), // 30 days from now
+          cancelAtPeriodEnd: false,
+          trialEndsAt: body.plan === 'free' ? undefined : new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000), // 14 days trial
+          usage: {
+            projects: 0,
+            storage: 0,
+            apiCalls: 0,
+            annotations: 0,
+            teamMembers: 1,
+            modelTraining: 0,
+            exports: 0
+          },
+          limits: getPlanLimits(body.plan || 'free')
         },
         createdAt: now,
         updatedAt: now
@@ -190,6 +212,8 @@ export async function POST(request: NextRequest) {
             productUpdates: body.acceptMarketing || false,
             weeklyDigest: true
           },
+          browser: true,
+          mobile: true,
           push: {
             projectUpdates: true,
             mentions: true,
@@ -229,7 +253,6 @@ export async function POST(request: NextRequest) {
       createdAt: now,
       updatedAt: now,
       lastLoginAt: now,
-      emailVerified: false,
       twoFactorEnabled: false
     };
 
@@ -286,7 +309,7 @@ export async function POST(request: NextRequest) {
       user: userWithoutPassword,
       accessToken,
       refreshToken,
-      expiresIn
+      expiresAt: new Date(Date.now() + expiresIn * 1000)
     };
 
     // Create HTTP response with secure cookies
@@ -354,8 +377,7 @@ function getPlanLimits(plan: string) {
       teamMembers: 1,
       modelTraining: 0,
       exports: 50,
-      supportLevel: 'community' as const,
-      features: ['basic_annotation', 'basic_export', 'community_support']
+      supportLevel: 'basic' as const
     },
     pro: {
       projects: 25,
@@ -365,19 +387,17 @@ function getPlanLimits(plan: string) {
       teamMembers: 10,
       modelTraining: 10,
       exports: 1000,
-      supportLevel: 'priority' as const,
-      features: ['basic_annotation', 'basic_export', 'community_support', 'advanced_annotation', 'batch_operations', 'api_access', 'priority_support', 'collaboration', 'version_control']
+      supportLevel: 'priority' as const
     },
     enterprise: {
-      projects: -1, // unlimited
-      storage: 500, // GB
-      apiCalls: 1000000,
-      annotations: -1, // unlimited
-      teamMembers: 100,
-      modelTraining: 100,
-      exports: -1, // unlimited
-      supportLevel: 'dedicated' as const,
-      features: ['basic_annotation', 'basic_export', 'community_support', 'advanced_annotation', 'batch_operations', 'api_access', 'priority_support', 'collaboration', 'version_control', 'sso', 'audit_logs', 'custom_models', 'dedicated_support', 'advanced_security', 'compliance_tools']
+      projects: 'unlimited' as const,
+      storage: 'unlimited' as const,
+      apiCalls: 'unlimited' as const,
+      annotations: 'unlimited' as const,
+      teamMembers: 'unlimited' as const,
+      modelTraining: 'unlimited' as const,
+      exports: 'unlimited' as const,
+      supportLevel: 'dedicated' as const
     }
   };
 

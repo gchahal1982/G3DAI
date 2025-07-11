@@ -1,543 +1,517 @@
-/**
- * MedicalNavigation.tsx
- * Main navigation component for MedSight Pro with medical-themed glassmorphism design
- * 
- * Features:
- * - Role-based navigation filtering (Radiologist, Attending, Resident, Admin)
- * - Hierarchical navigation with collapsible medical workspaces
- * - Emergency access protocols with animated emergency buttons
- * - Medical compliance badges (HIPAA Compliant, DICOM Certified)
- * - Responsive mobile support with medical workflow optimization
- * - Real-time notification indicators for medical alerts
- * - Medical professional profile integration
- * - Session timeout warnings with medical safety protocols
- */
-
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
-import { 
-  HomeIcon, 
-  CubeIcon, 
-  ChartBarIcon, 
-  CogIcon, 
-  UserGroupIcon,
-  ExclamationTriangleIcon,
-  BellIcon,
-  ShieldCheckIcon,
-  AcademicCapIcon,
-  ClipboardDocumentListIcon,
-  EyeIcon,
-  BeakerIcon,
-  ComputerDesktopIcon,
-  BuildingOfficeIcon,
-  DocumentTextIcon,
-  UserCircleIcon,
-  ArrowRightOnRectangleIcon,
-  ChevronDownIcon,
-  ChevronRightIcon,
-  PlayIcon,
-  PauseIcon
-} from '@heroicons/react/24/outline';
-import { motion, AnimatePresence } from 'framer-motion';
-// Mock useAuth hook for now - will be replaced with actual auth context
-const useAuth = () => ({
-  user: {
-    name: 'Dr. Sarah Johnson',
-    role: 'radiologist',
-    specialization: 'Radiology',
-    medicalLicense: 'MD-12345',
-    licenseVerified: true,
-    hospitalAffiliation: 'General Hospital'
-  },
-  isAuthenticated: true
-});
-import { MedSightUI, medicalClasses, medicalUtils } from '@/lib/shared-ui';
+import Link from 'next/link';
+import { medicalServices } from '@/config/shared-config';
 
-// Medical navigation item interface
-interface MedicalNavItem {
-  id: string;
-  label: string;
-  icon: React.ComponentType<any>;
-  href: string;
-  roles: string[];
-  children?: MedicalNavItem[];
-  badge?: {
-    text: string;
-    variant: 'success' | 'warning' | 'error' | 'info';
+interface MedicalNavigationProps {
+  user?: {
+    id: string;
+    name: string;
+    email: string;
+    role: string;
+    specialization: string;
+    medicalLicense: string;
+    permissions: string[];
   };
-  emergency?: boolean;
-  requiresLicense?: boolean;
-  complianceLevel?: 'basic' | 'advanced' | 'enterprise';
+  onEmergencyAccess?: () => void;
+  onNotificationClick?: () => void;
+  className?: string;
+  collapsed?: boolean;
+  onToggleCollapse?: (collapsed: boolean) => void;
 }
 
-// Medical navigation configuration
-const medicalNavigation: MedicalNavItem[] = [
-  {
-    id: 'dashboard',
-    label: 'Medical Dashboard',
-    icon: HomeIcon,
-    href: '/dashboard/medical',
-    roles: ['radiologist', 'physician', 'technician', 'admin'],
-    badge: { text: 'Active', variant: 'success' }
-  },
-  {
-    id: 'workspaces',
-    label: 'Medical Workspaces',
-    icon: ComputerDesktopIcon,
-    href: '/workspace',
-    roles: ['radiologist', 'physician', 'technician'],
-    children: [
+export default function MedicalNavigation({ 
+  user, 
+  onEmergencyAccess, 
+  onNotificationClick,
+  className = '',
+  collapsed = false,
+  onToggleCollapse
+}: MedicalNavigationProps) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [notifications, setNotifications] = useState(0);
+  const [emergencyAlerts, setEmergencyAlerts] = useState(0);
+  const [systemHealth, setSystemHealth] = useState('normal');
+
+  // Simulated notifications and alerts
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setNotifications(prev => prev + Math.floor(Math.random() * 2));
+      setEmergencyAlerts(prev => Math.random() < 0.1 ? prev + 1 : prev);
+      setSystemHealth(Math.random() < 0.95 ? 'normal' : 'warning');
+    }, 30000); // Every 30 seconds
+
+    return () => clearInterval(interval);
+  }, []);
+
+  // Medical navigation items based on user role
+  const getNavigationItems = () => {
+    const baseItems = [
       {
-        id: 'imaging',
-        label: 'Medical Imaging',
-        icon: EyeIcon,
-        href: '/workspace/imaging',
-        roles: ['radiologist', 'physician'],
-        requiresLicense: true,
-        complianceLevel: 'advanced'
+        id: 'dashboard',
+        name: 'Medical Dashboard',
+        path: '/dashboard/medical',
+        icon: '🏥',
+        description: 'Main clinical workspace',
+        permissions: ['view-patient-data'],
+        badge: null
+      },
+      {
+        id: 'studies',
+        name: 'Medical Studies',
+        path: '/workspace/imaging',
+        icon: '🔬',
+        description: 'DICOM imaging workspace',
+        permissions: ['view-dicom-images'],
+        badge: null
       },
       {
         id: 'ai-analysis',
-        label: 'AI Analysis',
-        icon: BeakerIcon,
-        href: '/workspace/ai-analysis',
-        roles: ['radiologist', 'physician'],
-        requiresLicense: true,
-        complianceLevel: 'enterprise'
+        name: 'AI Analysis',
+        path: '/workspace/ai-analysis',
+        icon: '🤖',
+        description: 'Medical AI tools',
+        permissions: ['access-ai-tools'],
+        badge: 'AI'
       },
       {
         id: 'collaboration',
-        label: 'Collaboration',
-        icon: UserGroupIcon,
-        href: '/workspace/collaboration',
-        roles: ['radiologist', 'physician', 'technician'],
-        badge: { text: '3 Active', variant: 'info' }
+        name: 'Collaboration',
+        path: '/workspace/collaboration',
+        icon: '👥',
+        description: 'Multi-user review',
+        permissions: ['view-patient-data'],
+        badge: null
       },
       {
-        id: 'performance',
-        label: 'Performance Monitor',
-        icon: ChartBarIcon,
-        href: '/workspace/performance',
-        roles: ['admin', 'technician']
+        id: 'reports',
+        name: 'Medical Reports',
+        path: '/reports',
+        icon: '📋',
+        description: 'Generate clinical reports',
+        permissions: ['generate-reports'],
+        badge: null
       }
-    ]
-  },
-  {
-    id: 'studies',
-    label: 'Medical Studies',
-    icon: ClipboardDocumentListIcon,
-    href: '/medical/studies',
-    roles: ['radiologist', 'physician', 'technician'],
-    badge: { text: '12 Pending', variant: 'warning' }
-  },
-  {
-    id: 'patients',
-    label: 'Patient Management',
-    icon: UserCircleIcon,
-    href: '/medical/patients',
-    roles: ['radiologist', 'physician'],
-    requiresLicense: true,
-    complianceLevel: 'advanced'
-  },
-  {
-    id: 'workflow',
-    label: 'Clinical Workflow',
-    icon: DocumentTextIcon,
-    href: '/medical/workflow',
-    roles: ['radiologist', 'physician', 'technician'],
-    complianceLevel: 'basic'
-  },
-  {
-    id: 'analytics',
-    label: 'Medical Analytics',
-    icon: ChartBarIcon,
-    href: '/dashboard/analytics',
-    roles: ['admin', 'physician'],
-    complianceLevel: 'enterprise'
-  },
-  {
-    id: 'admin',
-    label: 'System Administration',
-    icon: CogIcon,
-    href: '/admin',
-    roles: ['admin'],
-    children: [
+    ];
+
+    const adminItems = [
+      {
+        id: 'admin',
+        name: 'System Admin',
+        path: '/dashboard/admin',
+        icon: '⚙️',
+        description: 'System administration',
+        permissions: ['system-administration'],
+        badge: 'Admin'
+      },
       {
         id: 'users',
-        label: 'User Management',
-        icon: UserGroupIcon,
-        href: '/admin/users',
-        roles: ['admin']
-      },
-      {
-        id: 'organizations',
-        label: 'Organizations',
-        icon: BuildingOfficeIcon,
-        href: '/admin/organizations',
-        roles: ['admin']
+        name: 'User Management',
+        path: '/admin/users',
+        icon: '👤',
+        description: 'Manage medical professionals',
+        permissions: ['manage-users'],
+        badge: null
       },
       {
         id: 'compliance',
-        label: 'Compliance Monitor',
-        icon: ShieldCheckIcon,
-        href: '/admin/compliance',
-        roles: ['admin'],
-        badge: { text: 'All Clear', variant: 'success' }
+        name: 'Compliance',
+        path: '/admin/compliance',
+        icon: '🛡️',
+        description: 'HIPAA & regulatory compliance',
+        permissions: ['compliance-access'],
+        badge: 'HIPAA'
       }
-    ]
-  }
-];
+    ];
 
-// Emergency navigation items
-const emergencyNavigation: MedicalNavItem[] = [
-  {
-    id: 'emergency-alert',
-    label: 'Emergency Alert',
-    icon: ExclamationTriangleIcon,
-    href: '/emergency/alert',
-    roles: ['radiologist', 'physician', 'technician', 'admin'],
-    emergency: true
-  },
-  {
-    id: 'emergency-access',
-    label: 'Emergency Access',
-    icon: ShieldCheckIcon,
-    href: '/emergency/access',
-    roles: ['radiologist', 'physician', 'admin'],
-    emergency: true
-  }
-];
+    const enterpriseItems = [
+      {
+        id: 'enterprise',
+        name: 'Enterprise',
+        path: '/dashboard/enterprise',
+        icon: '🏢',
+        description: 'Multi-tenant management',
+        permissions: ['system-administration'],
+        badge: 'Enterprise'
+      },
+      {
+        id: 'analytics',
+        name: 'Analytics',
+        path: '/dashboard/analytics',
+        icon: '📊',
+        description: 'Business intelligence',
+        permissions: ['system-administration'],
+        badge: null
+      }
+    ];
 
-export default function MedicalNavigation() {
-  const router = useRouter();
-  const pathname = usePathname();
-  const { user, isAuthenticated } = useAuth();
-  
-  // Navigation state
-  const [expandedItems, setExpandedItems] = useState<string[]>(['workspaces']);
-  const [notifications, setNotifications] = useState(5);
-  const [emergencyMode, setEmergencyMode] = useState(false);
-  const [sessionTimeout, setSessionTimeout] = useState(15 * 60); // 15 minutes in seconds
-  
-  // Session timeout countdown
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setSessionTimeout(prev => {
-        if (prev <= 1) {
-          // Session expired - redirect to login
-          router.push('/login?reason=session-expired');
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-    
-    return () => clearInterval(timer);
-  }, [router]);
-  
-  // Format session timeout display
-  const formatSessionTimeout = (seconds: number) => {
-    const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = seconds % 60;
-    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
-  };
-  
-  // Get session timeout color
-  const getSessionTimeoutColor = (seconds: number) => {
-    if (seconds <= 60) return 'text-medsight-critical'; // Red - Critical
-    if (seconds <= 300) return 'text-medsight-pending'; // Yellow - Warning
-    return 'text-medsight-normal'; // Green - Normal
-  };
-  
-  // Check if user has role access
-  const hasRoleAccess = (roles: string[]) => {
-    if (!user?.role) return false;
-    return roles.includes(user.role) || roles.includes('admin');
-  };
-  
-  // Check if user has license requirement
-  const hasLicenseAccess = (requiresLicense?: boolean) => {
-    if (!requiresLicense) return true;
-    return user?.medicalLicense && user?.licenseVerified;
-  };
-  
-  // Toggle expanded item
-  const toggleExpanded = (itemId: string) => {
-    setExpandedItems(prev => 
-      prev.includes(itemId) 
-        ? prev.filter(id => id !== itemId)
-        : [...prev, itemId]
+    // Filter items based on user permissions
+    const userPermissions = user?.permissions || [];
+    const filteredItems = [...baseItems];
+
+    if (userPermissions.includes('system-administration') || userPermissions.includes('manage-users')) {
+      filteredItems.push(...adminItems);
+    }
+
+    if (userPermissions.includes('system-administration')) {
+      filteredItems.push(...enterpriseItems);
+    }
+
+    return filteredItems.filter(item => 
+      item.permissions.some(permission => userPermissions.includes(permission))
     );
   };
-  
-  // Handle navigation
-  const handleNavigation = (item: MedicalNavItem) => {
-    // Check access permissions
-    if (!hasRoleAccess(item.roles)) {
-      console.warn('Access denied: Insufficient role permissions');
-      return;
-    }
-    
-    if (!hasLicenseAccess(item.requiresLicense)) {
-      console.warn('Access denied: Medical license required');
-      return;
-    }
-    
-    // Navigate to item
-    router.push(item.href);
+
+  const navigationItems = getNavigationItems();
+
+  const handleEmergencyAccess = () => {
+    medicalServices.auditMedicalAccess(user?.id || 'unknown', 'emergency-access', 'EMERGENCY_ACCESS_REQUESTED');
+    onEmergencyAccess?.();
   };
-  
-  // Handle emergency action
-  const handleEmergencyAction = (action: string) => {
-    setEmergencyMode(true);
-    
-    // Emergency actions
-    switch (action) {
-      case 'alert':
-        // Trigger emergency alert
-        console.log('Emergency alert triggered');
-        break;
-      case 'access':
-        // Activate emergency access
-        console.log('Emergency access activated');
-        break;
-    }
-    
-    // Reset emergency mode after 5 seconds
-    setTimeout(() => setEmergencyMode(false), 5000);
+
+  const handleNotificationClick = () => {
+    setNotifications(0);
+    onNotificationClick?.();
   };
-  
-  // Render navigation item
-  const renderNavItem = (item: MedicalNavItem, level: number = 0) => {
-    const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
-    const isExpanded = expandedItems.includes(item.id);
-    const hasChildren = item.children && item.children.length > 0;
-    const hasAccess = hasRoleAccess(item.roles) && hasLicenseAccess(item.requiresLicense);
-    
-    if (!hasAccess) return null;
-    
-    return (
-      <div key={item.id} className="mb-1">
-        <motion.div
-          className={`
-            relative flex items-center justify-between p-3 rounded-lg cursor-pointer
-            transition-all duration-200 group
-            ${isActive 
-              ? `${medicalClasses.glass.primary} bg-medsight-primary/20 border-medsight-primary/30` 
-              : 'hover:bg-medsight-primary/10 hover:border-medsight-primary/20'
-            }
-            ${level > 0 ? 'ml-4 border-l-2 border-medsight-primary/20' : ''}
-            ${item.emergency ? 'border-medsight-critical/50' : ''}
-          `}
-          onClick={() => hasChildren ? toggleExpanded(item.id) : handleNavigation(item)}
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-        >
-          <div className="flex items-center space-x-3">
-            <motion.div
-              className={`
-                p-2 rounded-lg
-                ${isActive 
-                  ? 'bg-medsight-primary text-white' 
-                  : 'bg-medsight-primary/10 text-medsight-primary group-hover:bg-medsight-primary/20'
-                }
-                ${item.emergency ? 'animate-pulse bg-medsight-critical text-white' : ''}
-              `}
-              animate={item.emergency && emergencyMode ? {
-                scale: [1, 1.2, 1],
-                rotate: [0, 5, -5, 0]
-              } : {}}
-              transition={{ duration: 0.5, repeat: item.emergency && emergencyMode ? Infinity : 0 }}
-            >
-              <item.icon className="w-5 h-5" />
-            </motion.div>
-            
-            <div className="flex-1">
-              <div className="flex items-center space-x-2">
-                <span className={`
-                  font-medium text-sm
-                  ${isActive ? 'text-medsight-primary' : 'text-gray-700 dark:text-gray-300'}
-                `}>
-                  {item.label}
-                </span>
-                
-                                 {item.badge && (
-                   <span className={`
-                     text-xs px-2 py-1 rounded-full font-medium
-                     ${item.badge.variant === 'success' ? 'bg-medsight-normal/20 text-medsight-normal' :
-                       item.badge.variant === 'warning' ? 'bg-medsight-pending/20 text-medsight-pending' :
-                       item.badge.variant === 'error' ? 'bg-medsight-critical/20 text-medsight-critical' :
-                       'bg-medsight-primary/20 text-medsight-primary'}
-                   `}>
-                     {item.badge.text}
-                   </span>
-                 )}
-                
-                {item.requiresLicense && (
-                  <AcademicCapIcon className="w-4 h-4 text-medsight-accent" title="Medical License Required" />
-                )}
-                
-                {item.complianceLevel && (
-                  <ShieldCheckIcon 
-                    className={`w-4 h-4 ${
-                      item.complianceLevel === 'enterprise' ? 'text-medsight-accent' :
-                      item.complianceLevel === 'advanced' ? 'text-medsight-primary' :
-                      'text-medsight-secondary'
-                    }`}
-                    title={`${item.complianceLevel.charAt(0).toUpperCase() + item.complianceLevel.slice(1)} Compliance`}
-                  />
-                )}
-              </div>
-              
-              {item.emergency && (
-                <div className="text-xs text-medsight-critical font-medium mt-1">
-                  Emergency Access
-                </div>
-              )}
-            </div>
-            
-            {hasChildren && (
-              <motion.div
-                animate={{ rotate: isExpanded ? 90 : 0 }}
-                transition={{ duration: 0.2 }}
-              >
-                <ChevronRightIcon className="w-4 h-4 text-gray-500" />
-              </motion.div>
-            )}
-          </div>
-        </motion.div>
-        
-        {/* Submenu */}
-        <AnimatePresence>
-          {hasChildren && isExpanded && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              transition={{ duration: 0.2 }}
-              className="mt-2 space-y-1"
-            >
-              {item.children?.map(child => renderNavItem(child, level + 1))}
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
-    );
+
+  const isActiveRoute = (path: string) => {
+    if (path === '/dashboard/medical' && pathname === '/dashboard') return true;
+    return pathname === path || pathname.startsWith(path + '/');
   };
-  
-  if (!isAuthenticated) return null;
-  
+
   return (
-    <nav className={`${medicalClasses.glass.sidebar} h-full flex flex-col`}>
-      {/* Header */}
-      <div className="p-4 border-b border-medsight-primary/20">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 bg-medsight-primary rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-sm">MS</span>
-            </div>
-            <div>
-              <h1 className="text-lg font-bold text-medsight-primary">MedSight Pro</h1>
-              <p className="text-xs text-gray-500">Medical Platform</p>
-            </div>
+    <nav 
+      className={`fixed top-0 left-0 right-0 z-50 ${className}`}
+      style={{
+        background: 'rgba(255, 255, 255, 0.08)',
+        backdropFilter: 'blur(24px) saturate(180%)',
+        borderBottom: '1px solid rgba(14, 165, 233, 0.12)',
+        boxShadow: '0 8px 32px rgba(14, 165, 233, 0.08)'
+      }}
+    >
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between items-center h-16">
+          {/* Logo and Brand */}
+          <div className="flex items-center">
+            <Link href="/dashboard" className="flex items-center space-x-3">
+              <div 
+                className="w-10 h-10 rounded-xl flex items-center justify-center"
+                style={{
+                  background: 'linear-gradient(135deg, var(--medsight-primary-500) 0%, var(--medsight-primary-600) 100%)',
+                  boxShadow: '0 4px 16px rgba(14, 165, 233, 0.3)'
+                }}
+              >
+                <span className="text-white font-bold text-xl">M</span>
+              </div>
+              <div className="hidden md:block">
+                <h1 
+                  className="text-xl font-bold text-medsight-primary-900"
+                  style={{ 
+                    fontFamily: 'var(--font-primary)',
+                    letterSpacing: 'var(--medsight-letter-spacing)'
+                  }}
+                >
+                  MedSight Pro
+                </h1>
+                <p 
+                  className="text-xs text-medsight-primary-600"
+                  style={{ letterSpacing: 'var(--medsight-letter-spacing)' }}
+                >
+                  Medical AI Platform
+                </p>
+              </div>
+            </Link>
           </div>
-          
-          {/* Notifications */}
-          <div className="relative">
-            <BellIcon className="w-6 h-6 text-gray-500 cursor-pointer hover:text-medsight-primary" />
-            {notifications > 0 && (
-              <span className="absolute -top-2 -right-2 bg-medsight-critical text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                {notifications}
+
+          {/* Main Navigation Items */}
+          <div className="hidden lg:flex items-center space-x-1">
+            {navigationItems.slice(0, 5).map((item) => (
+              <Link
+                key={item.id}
+                href={item.path}
+                className={`relative px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                  isActiveRoute(item.path)
+                    ? 'text-white shadow-lg'
+                    : 'text-medsight-primary-700 hover:text-medsight-primary-900'
+                }`}
+                style={{
+                  background: isActiveRoute(item.path)
+                    ? 'linear-gradient(135deg, var(--medsight-primary-500) 0%, var(--medsight-primary-600) 100%)'
+                    : 'transparent',
+                  boxShadow: isActiveRoute(item.path)
+                    ? '0 4px 12px rgba(14, 165, 233, 0.3)'
+                    : 'none',
+                  letterSpacing: 'var(--medsight-letter-spacing)'
+                }}
+                onMouseEnter={(e) => {
+                  if (!isActiveRoute(item.path)) {
+                    e.currentTarget.style.background = 'rgba(14, 165, 233, 0.08)';
+                    e.currentTarget.style.transform = 'translateY(-1px)';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (!isActiveRoute(item.path)) {
+                    e.currentTarget.style.background = 'transparent';
+                    e.currentTarget.style.transform = 'translateY(0)';
+                  }
+                }}
+                title={item.description}
+              >
+                <div className="flex items-center space-x-2">
+                  <span>{item.icon}</span>
+                  <span>{item.name}</span>
+                  {item.badge && (
+                    <span 
+                      className="px-2 py-1 rounded-full text-xs font-semibold"
+                      style={{
+                        background: 'rgba(16, 185, 129, 0.1)',
+                        color: 'var(--medsight-normal)',
+                        border: '1px solid rgba(16, 185, 129, 0.2)'
+                      }}
+                    >
+                      {item.badge}
+                    </span>
+                  )}
+                </div>
+              </Link>
+            ))}
+          </div>
+
+          {/* Right Side Actions */}
+          <div className="flex items-center space-x-4">
+            {/* System Health Indicator */}
+            <div 
+              className="flex items-center space-x-2 px-3 py-2 rounded-lg"
+              style={{
+                background: systemHealth === 'normal' 
+                  ? 'rgba(16, 185, 129, 0.1)' 
+                  : 'rgba(245, 158, 11, 0.1)',
+                border: systemHealth === 'normal' 
+                  ? '1px solid rgba(16, 185, 129, 0.2)' 
+                  : '1px solid rgba(245, 158, 11, 0.2)'
+              }}
+            >
+              <div 
+                className="w-2 h-2 rounded-full"
+                style={{
+                  background: systemHealth === 'normal' 
+                    ? 'var(--medsight-normal)' 
+                    : 'var(--medsight-pending)'
+                }}
+              />
+              <span 
+                className="text-xs font-medium"
+                style={{
+                  color: systemHealth === 'normal' 
+                    ? 'var(--medsight-normal)' 
+                    : 'var(--medsight-pending)',
+                  letterSpacing: 'var(--medsight-letter-spacing)'
+                }}
+              >
+                {systemHealth === 'normal' ? 'Healthy' : 'Warning'}
               </span>
-            )}
-          </div>
-        </div>
-        
-        {/* Session Timeout */}
-        <div className="mt-3 p-2 bg-gray-50 dark:bg-gray-800 rounded-lg">
-          <div className="flex items-center justify-between">
-            <span className="text-xs text-gray-600 dark:text-gray-400">Session Timeout</span>
-            <span className={`text-xs font-mono font-medium ${getSessionTimeoutColor(sessionTimeout)}`}>
-              {formatSessionTimeout(sessionTimeout)}
-            </span>
-          </div>
-        </div>
-      </div>
-      
-      {/* Medical Compliance Badges */}
-      <div className="p-4 border-b border-medsight-primary/20">
-        <div className="grid grid-cols-2 gap-2">
-          <div className="flex items-center space-x-2 p-2 bg-medsight-secondary/10 rounded-lg">
-            <ShieldCheckIcon className="w-4 h-4 text-medsight-secondary" />
-            <span className="text-xs font-medium text-medsight-secondary">HIPAA</span>
-          </div>
-          <div className="flex items-center space-x-2 p-2 bg-medsight-primary/10 rounded-lg">
-            <CubeIcon className="w-4 h-4 text-medsight-primary" />
-            <span className="text-xs font-medium text-medsight-primary">DICOM</span>
-          </div>
-          <div className="flex items-center space-x-2 p-2 bg-medsight-accent/10 rounded-lg">
-            <AcademicCapIcon className="w-4 h-4 text-medsight-accent" />
-            <span className="text-xs font-medium text-medsight-accent">FDA II</span>
-          </div>
-          <div className="flex items-center space-x-2 p-2 bg-medsight-secondary/10 rounded-lg">
-            <DocumentTextIcon className="w-4 h-4 text-medsight-secondary" />
-            <span className="text-xs font-medium text-medsight-secondary">HL7</span>
-          </div>
-        </div>
-      </div>
-      
-      {/* Navigation Items */}
-      <div className="flex-1 overflow-y-auto p-4">
-        <div className="space-y-2">
-          {medicalNavigation.map(item => renderNavItem(item))}
-        </div>
-        
-        {/* Emergency Section */}
-        <div className="mt-8 pt-4 border-t border-medsight-critical/20">
-          <h3 className="text-sm font-medium text-medsight-critical mb-3 flex items-center">
-            <ExclamationTriangleIcon className="w-4 h-4 mr-2" />
-            Emergency Access
-          </h3>
-          <div className="space-y-2">
-            {emergencyNavigation.map(item => renderNavItem(item))}
-          </div>
-        </div>
-      </div>
-      
-      {/* Medical Professional Info */}
-      <div className="p-4 border-t border-medsight-primary/20">
-        <div className="flex items-center space-x-3">
-          <div className="w-10 h-10 bg-medsight-primary/10 rounded-full flex items-center justify-center">
-            <UserCircleIcon className="w-6 h-6 text-medsight-primary" />
-          </div>
-          <div className="flex-1">
-            <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
-              {user?.name || 'Medical Professional'}
-            </p>
-            <p className="text-xs text-gray-500">
-              {user?.role || 'Role'} • {user?.specialization || 'General'}
-            </p>
-            {user?.medicalLicense && (
-              <p className="text-xs text-medsight-secondary">
-                License: {user.medicalLicense}
-              </p>
-            )}
-          </div>
-        </div>
-        
-        {/* Hospital Affiliation */}
-        {user?.hospitalAffiliation && (
-          <div className="mt-3 p-2 bg-medsight-primary/5 rounded-lg">
-            <div className="flex items-center space-x-2">
-              <BuildingOfficeIcon className="w-4 h-4 text-medsight-primary" />
-              <span className="text-xs text-medsight-primary font-medium">
-                {user.hospitalAffiliation}
-              </span>
             </div>
+
+            {/* Notifications */}
+            <button
+              onClick={handleNotificationClick}
+              className="relative p-2 rounded-lg transition-all duration-200 hover:bg-medsight-primary-50"
+              style={{
+                background: 'rgba(14, 165, 233, 0.08)',
+                border: '1px solid rgba(14, 165, 233, 0.12)'
+              }}
+            >
+              <svg className="w-5 h-5 text-medsight-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-3.5-3.5a1.414 1.414 0 010-2L19 9h-4V7a3 3 0 10-6 0v2H5l2.5 2.5a1.414 1.414 0 010 2L5 17h5m4 0v1a3 3 0 11-6 0v-1m6 0H9" />
+              </svg>
+              {notifications > 0 && (
+                <span 
+                  className="absolute -top-1 -right-1 bg-medsight-pending text-white text-xs rounded-full w-5 h-5 flex items-center justify-center"
+                  style={{ fontSize: '10px' }}
+                >
+                  {notifications > 9 ? '9+' : notifications}
+                </span>
+              )}
+            </button>
+
+            {/* Emergency Access */}
+            <button
+              onClick={handleEmergencyAccess}
+              className="relative p-2 rounded-lg transition-all duration-200 hover:bg-red-50"
+              style={{
+                background: emergencyAlerts > 0 
+                  ? 'rgba(220, 38, 38, 0.1)' 
+                  : 'rgba(239, 68, 68, 0.08)',
+                border: emergencyAlerts > 0 
+                  ? '1px solid rgba(220, 38, 38, 0.2)' 
+                  : '1px solid rgba(239, 68, 68, 0.12)'
+              }}
+              title="Emergency Access"
+            >
+              <svg className="w-5 h-5 text-medsight-critical" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+              </svg>
+              {emergencyAlerts > 0 && (
+                <span 
+                  className="absolute -top-1 -right-1 bg-medsight-critical text-white text-xs rounded-full w-5 h-5 flex items-center justify-center animate-pulse"
+                  style={{ fontSize: '10px' }}
+                >
+                  {emergencyAlerts}
+                </span>
+              )}
+            </button>
+
+            {/* User Info */}
+            {user && (
+              <div 
+                className="flex items-center space-x-3 px-3 py-2 rounded-lg"
+                style={{
+                  background: 'rgba(14, 165, 233, 0.06)',
+                  border: '1px solid rgba(14, 165, 233, 0.12)'
+                }}
+              >
+                <div className="hidden md:block text-right">
+                  <p 
+                    className="text-sm font-medium text-medsight-primary-900"
+                    style={{ letterSpacing: 'var(--medsight-letter-spacing)' }}
+                  >
+                    {user.name}
+                  </p>
+                  <p 
+                    className="text-xs text-medsight-primary-600"
+                    style={{ letterSpacing: 'var(--medsight-letter-spacing)' }}
+                  >
+                    {user.specialization} • {user.role}
+                  </p>
+                </div>
+                <div 
+                  className="w-8 h-8 bg-medsight-primary-500 rounded-full flex items-center justify-center"
+                  style={{
+                    background: 'linear-gradient(135deg, var(--medsight-primary-500) 0%, var(--medsight-primary-600) 100%)',
+                    boxShadow: '0 2px 8px rgba(14, 165, 233, 0.3)'
+                  }}
+                >
+                  <span className="text-white font-semibold text-sm">
+                    {user.name.split(' ').map(n => n[0]).join('')}
+                  </span>
+                </div>
+              </div>
+            )}
+
+            {/* Mobile Menu Toggle */}
+            <button
+              onClick={() => setIsExpanded(!isExpanded)}
+              className="lg:hidden p-2 rounded-lg"
+              style={{
+                background: 'rgba(14, 165, 233, 0.08)',
+                border: '1px solid rgba(14, 165, 233, 0.12)'
+              }}
+            >
+              <svg className="w-5 h-5 text-medsight-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        {/* Mobile Navigation Menu */}
+        {isExpanded && (
+          <div 
+            className="lg:hidden mt-4 pb-4 space-y-2"
+            style={{
+              borderTop: '1px solid rgba(14, 165, 233, 0.12)',
+              paddingTop: '1rem'
+            }}
+          >
+            {navigationItems.map((item) => (
+              <Link
+                key={item.id}
+                href={item.path}
+                className={`block px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200 ${
+                  isActiveRoute(item.path)
+                    ? 'text-white'
+                    : 'text-medsight-primary-700'
+                }`}
+                style={{
+                  background: isActiveRoute(item.path)
+                    ? 'linear-gradient(135deg, var(--medsight-primary-500) 0%, var(--medsight-primary-600) 100%)'
+                    : 'rgba(14, 165, 233, 0.04)',
+                  border: '1px solid rgba(14, 165, 233, 0.08)',
+                  letterSpacing: 'var(--medsight-letter-spacing)'
+                }}
+                onClick={() => setIsExpanded(false)}
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-3">
+                    <span>{item.icon}</span>
+                    <span>{item.name}</span>
+                  </div>
+                  {item.badge && (
+                    <span 
+                      className="px-2 py-1 rounded-full text-xs font-semibold"
+                      style={{
+                        background: 'rgba(16, 185, 129, 0.1)',
+                        color: 'var(--medsight-normal)',
+                        border: '1px solid rgba(16, 185, 129, 0.2)'
+                      }}
+                    >
+                      {item.badge}
+                    </span>
+                  )}
+                </div>
+                <p 
+                  className="text-xs mt-1 opacity-75"
+                  style={{ letterSpacing: 'var(--medsight-letter-spacing)' }}
+                >
+                  {item.description}
+                </p>
+              </Link>
+            ))}
           </div>
         )}
+      </div>
+
+      {/* Medical Compliance Badges */}
+      <div className="hidden md:flex absolute bottom-0 left-4 transform translate-y-full">
+        <div className="flex items-center space-x-2 mt-2">
+          <div 
+            className="px-2 py-1 rounded-md text-xs font-medium"
+            style={{
+              background: 'rgba(16, 185, 129, 0.1)',
+              color: 'var(--medsight-normal)',
+              border: '1px solid rgba(16, 185, 129, 0.2)',
+              letterSpacing: 'var(--medsight-letter-spacing)'
+            }}
+          >
+            HIPAA Compliant
+          </div>
+          <div 
+            className="px-2 py-1 rounded-md text-xs font-medium"
+            style={{
+              background: 'rgba(14, 165, 233, 0.1)',
+              color: 'var(--medsight-primary-600)',
+              border: '1px solid rgba(14, 165, 233, 0.2)',
+              letterSpacing: 'var(--medsight-letter-spacing)'
+            }}
+          >
+            DICOM Conformant
+          </div>
+          <div 
+            className="px-2 py-1 rounded-md text-xs font-medium"
+            style={{
+              background: 'rgba(245, 158, 11, 0.1)',
+              color: 'var(--medsight-pending)',
+              border: '1px solid rgba(245, 158, 11, 0.2)',
+              letterSpacing: 'var(--medsight-letter-spacing)'
+            }}
+          >
+            FDA Class II
+          </div>
+        </div>
       </div>
     </nav>
   );

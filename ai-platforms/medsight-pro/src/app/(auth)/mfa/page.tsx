@@ -5,8 +5,8 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { medicalAuth } from '@/lib/auth/medical-auth-adapter';
 import { 
-  GlassCard, 
-  GlassButton, 
+  Card, 
+  Button, 
   Input, 
   Alert 
 } from '@/components/ui';
@@ -349,7 +349,7 @@ export default function MFAPage() {
       
       {/* Main MFA form */}
       <div className="relative z-10 w-full max-w-md p-6">
-        <GlassCard 
+        <Card 
           className="medsight-glass p-8"
           style={{
             background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.06) 0%, rgba(14, 165, 233, 0.04) 100%)',
@@ -454,7 +454,7 @@ export default function MFAPage() {
           {availableMethods.length > 1 && (
             <div className="grid grid-cols-2 gap-2 mb-6">
               {availableMethods.map((method) => (
-                <GlassButton
+                <Button
                   key={method}
                   onClick={() => changeMFAMethod(method)}
                   className="text-xs p-3"
@@ -475,7 +475,7 @@ export default function MFAPage() {
                 >
                   <span className="text-lg">{MFA_METHODS[method].icon}</span>
                   <span>{MFA_METHODS[method].label}</span>
-                </GlassButton>
+                </Button>
               ))}
             </div>
           )}
@@ -534,7 +534,7 @@ export default function MFAPage() {
 
           {/* Action buttons */}
           <div className="space-y-3">
-            <GlassButton
+            <Button
               onClick={handleMFAVerification}
               disabled={isLoading || isLocked}
               className="w-full"
@@ -556,11 +556,11 @@ export default function MFAPage() {
                 `Locked for ${Math.floor(lockoutTime / 60)}:${(lockoutTime % 60).toString().padStart(2, '0')}` : 
                 'Verify & Continue'
               }
-            </GlassButton>
+            </Button>
 
             {/* Request new code button */}
             {mfaData.method !== MFAMethod.AUTHENTICATOR && mfaData.method !== MFAMethod.BACKUP_CODE && (
-              <GlassButton
+              <Button
                 onClick={requestNewCode}
                 disabled={isLoading || isLocked}
                 className="w-full"
@@ -576,7 +576,7 @@ export default function MFAPage() {
                 }}
               >
                 {isLoading ? 'Sending...' : 'Request New Code'}
-              </GlassButton>
+              </Button>
             )}
           </div>
 
@@ -608,7 +608,7 @@ export default function MFAPage() {
               ← Back to Sign In
             </Link>
           </div>
-        </GlassCard>
+        </Card>
       </div>
     </div>
   );

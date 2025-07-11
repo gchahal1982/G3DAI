@@ -17,7 +17,7 @@ const Navigation: React.FC = () => {
   const navigationItems: NavigationItem[] = [
     {
       name: 'Dashboard',
-      href: '/dashboard',
+      href: '/',
       icon: (
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z" />
@@ -63,14 +63,17 @@ const Navigation: React.FC = () => {
   ];
 
   return (
-    <nav className="bg-white shadow-sm border-r border-gray-200 w-64 h-screen overflow-y-auto">
+    <nav className="bg-gradient-to-b from-indigo-900/20 via-purple-900/10 to-gray-900/30 backdrop-blur-xl border-r border-indigo-500/20 w-full h-full overflow-y-auto annotate-glass">
       {/* Logo/Brand */}
-      <div className="p-6 border-b border-gray-200">
-        <Link href="/dashboard" className="flex items-center space-x-2">
-          <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-            <span className="text-white font-bold text-sm">A</span>
+      <div className="p-6 border-b border-indigo-500/30">
+                    <Link href="/" className="flex items-center space-x-3">
+          <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/25">
+            <span className="text-white font-bold text-lg">A</span>
           </div>
-          <span className="text-xl font-semibold text-gray-900">AnnotateAI</span>
+          <div className="flex flex-col">
+            <span className="text-xl font-bold text-white">AnnotateAI</span>
+            <span className="text-xs text-indigo-300">by G3DAI</span>
+          </div>
         </Link>
       </div>
 
@@ -81,7 +84,7 @@ const Navigation: React.FC = () => {
             <li key={item.name}>
               <Link
                 href={item.href}
-                className="flex items-center space-x-3 px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100 hover:text-gray-900 transition-colors"
+                className="flex items-center space-x-3 px-4 py-3 rounded-xl text-gray-300 hover:bg-white/5 hover:text-white hover:border-indigo-500/50 border border-transparent transition-all duration-200 group"
               >
                 {item.icon}
                 <span className="font-medium">{item.name}</span>
@@ -93,36 +96,21 @@ const Navigation: React.FC = () => {
 
       {/* User Section */}
       {user && (
-        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-200 bg-white">
-          <div className="flex items-center space-x-3 mb-3">
-            <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
-              <span className="text-gray-600 text-sm font-medium">
+        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-indigo-500/30 bg-gradient-to-t from-indigo-900/30 to-transparent backdrop-blur-xl">
+          <div className="flex items-center space-x-3">
+            <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center shadow-lg shadow-indigo-500/25">
+              <span className="text-white text-sm font-semibold">
                 {user.name.charAt(0).toUpperCase()}
               </span>
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-gray-900 truncate">
+              <p className="text-sm font-semibold text-white truncate">
                 {user.name}
               </p>
-              <p className="text-xs text-gray-500 truncate">
+              <p className="text-xs text-indigo-300 truncate">
                 {user.email}
               </p>
             </div>
-          </div>
-          
-          <div className="flex space-x-2">
-            <Link
-              href="/profile"
-              className="flex-1 text-center px-3 py-1 text-xs bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition-colors"
-            >
-              Profile
-            </Link>
-            <button
-              onClick={logout}
-              className="flex-1 text-center px-3 py-1 text-xs bg-red-100 text-red-700 rounded hover:bg-red-200 transition-colors"
-            >
-              Logout
-            </button>
           </div>
         </div>
       )}

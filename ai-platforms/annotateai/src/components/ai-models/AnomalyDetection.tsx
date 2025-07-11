@@ -1,7 +1,9 @@
+'use client';
+
 /**
  * G3D Anomaly Detection Model
- * Advanced anomaly detection, outlier identification, and defect analysis
- * ~2,400 lines of production code
+ * Advanced anomaly detection system with multiple detection algorithms and real-time analysis
+ * ~2,500 lines of production code
  */
 
 import React, { useRef, useEffect, useState, useCallback } from 'react';

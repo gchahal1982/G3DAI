@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * G3D Classification Model
  * Advanced image and scene classification with hierarchical labeling and confidence scoring

@@ -3,14 +3,8 @@
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { HeartIcon, EyeIcon, EyeSlashIcon, ShieldCheckIcon, LockClosedIcon } from '@heroicons/react/24/outline';
 import { medicalAuth, MedicalLoginCredentials } from '@/lib/auth/medical-auth-adapter';
-import { 
-  GlassCard, 
-  GlassButton, 
-  Input, 
-  Checkbox,
-  Alert 
-} from '@/components/ui';
 
 // Medical professional login form validation
 interface LoginFormErrors {
@@ -38,8 +32,6 @@ export default function MedicalLoginPage() {
   
   const emailInputRef = useRef<HTMLInputElement>(null);
   
-  // Use medical authentication adapter
-
   // Focus email input on mount
   useEffect(() => {
     emailInputRef.current?.focus();
@@ -67,17 +59,24 @@ export default function MedicalLoginPage() {
   const validateCredentials = (): boolean => {
     const newErrors: LoginFormErrors = {};
     
-    // Email validation
+    // Email validation - allow demo credentials
     if (!credentials.email.trim()) {
       newErrors.email = 'Email or Medical License is required';
-    } else if (!isValidEmail(credentials.email) && !isValidMedicalLicense(credentials.email)) {
+    } else if (
+      credentials.email !== 'testuser' && 
+      !isValidEmail(credentials.email) && 
+      !isValidMedicalLicense(credentials.email)
+    ) {
       newErrors.email = 'Please enter a valid email address or medical license number';
     }
     
-    // Password validation
+    // Password validation - allow demo credentials
     if (!credentials.password) {
       newErrors.password = 'Password is required';
-    } else if (credentials.password.length < 8) {
+    } else if (
+      credentials.password !== 'testpass' && 
+      credentials.password.length < 8
+    ) {
       newErrors.password = 'Password must be at least 8 characters';
     }
     
@@ -102,12 +101,18 @@ export default function MedicalLoginPage() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    console.log('🔐 Login attempt started:', { 
+      email: credentials.email, 
+      hasPassword: !!credentials.password 
+    });
+    
     if (isLocked) {
       setErrors({ general: `Account locked. Please wait ${Math.floor(lockoutTime / 60)}:${(lockoutTime % 60).toString().padStart(2, '0')} before trying again.` });
       return;
     }
     
     if (!validateCredentials()) {
+      console.log('❌ Validation failed');
       return;
     }
     
@@ -115,6 +120,8 @@ export default function MedicalLoginPage() {
     setErrors({});
     
     try {
+      console.log('🚀 Attempting medical authentication...');
+      
       // Attempt medical professional authentication
       const loginResult = await medicalAuth.login({
         email: credentials.email,
@@ -124,34 +131,41 @@ export default function MedicalLoginPage() {
         clientInfo: {
           userAgent: navigator.userAgent,
           timestamp: new Date().toISOString(),
-          ipAddress: 'client-detected', // Would be detected server-side
+          ipAddress: 'client-detected',
           platform: 'medsight-pro'
         }
       });
       
+      console.log('✅ Login successful:', loginResult);
+      
       if (loginResult.requiresMFA) {
-        // Redirect to MFA verification
+        console.log('🔒 MFA required, redirecting...');
         router.push('/mfa?token=' + encodeURIComponent(loginResult.mfaToken));
         return;
       }
       
       if (loginResult.requiresLicenseVerification) {
-        // Redirect to medical license verification
+        console.log('📋 License verification required, redirecting...');
         router.push('/license-verification?token=' + encodeURIComponent(loginResult.verificationToken));
         return;
       }
       
       if (loginResult.requiresProfileSetup) {
-        // Redirect to medical profile setup
+        console.log('👤 Profile setup required, redirecting...');
         router.push('/profile-setup');
         return;
       }
       
       // Successful login - redirect to medical dashboard
-      router.push('/dashboard/medical');
+      console.log('🏥 Redirecting to medical dashboard...');
+      
+      // Small delay to ensure token is set before redirect
+      setTimeout(() => {
+        router.push('/dashboard/medical');
+      }, 100);
       
     } catch (error: any) {
-      console.error('Medical login failed:', error);
+      console.error('💥 Medical login failed:', error);
       
       // Increment login attempts for security
       const newAttempts = loginAttempts + 1;
@@ -178,7 +192,7 @@ export default function MedicalLoginPage() {
           });
         } else {
           setErrors({ 
-            general: 'Login failed. Please check your credentials and try again.' 
+            general: `Login failed: ${error.message || 'Please check your credentials and try again.'}` 
           });
         }
       }
@@ -198,323 +212,186 @@ export default function MedicalLoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center relative overflow-hidden">
-      {/* Medical background gradient */}
-      <div 
-        className="absolute inset-0"
-        style={{
-          background: 'linear-gradient(135deg, var(--medsight-primary-900) 0%, var(--medsight-primary-700) 100%)',
-        }}
-      />
-      
-      {/* Medical particle overlay */}
-      <div 
-        className="absolute inset-0 opacity-30"
-        style={{
-          backgroundImage: `
-            radial-gradient(circle at 25% 25%, rgba(14, 165, 233, 0.1) 0%, transparent 50%),
-            radial-gradient(circle at 75% 75%, rgba(16, 185, 129, 0.1) 0%, transparent 50%)
-          `
-        }}
-      />
-      
-      {/* Main login form */}
-      <div className="relative z-10 w-full max-w-md p-6">
-        <GlassCard 
-          className="medsight-glass p-8"
-          style={{
-            background: 'linear-gradient(135deg, rgba(14, 165, 233, 0.06) 0%, rgba(16, 185, 129, 0.04) 100%)',
-            backdropFilter: 'blur(24px) saturate(180%)',
-            border: '1px solid rgba(14, 165, 233, 0.12)',
-            borderRadius: '16px',
-            boxShadow: '0 8px 32px rgba(14, 165, 233, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.1)'
-          }}
-        >
-          {/* Medical platform header */}
-          <div className="text-center mb-8">
-            <h1 
-              className="text-3xl font-bold mb-2"
-              style={{ 
-                color: 'var(--medsight-primary-50)',
-                fontFamily: 'var(--font-primary)',
-                lineHeight: 'var(--medsight-line-height)',
-                letterSpacing: 'var(--medsight-letter-spacing)'
-              }}
-            >
-              MedSight Pro
-            </h1>
-            <p 
-              className="text-lg"
-              style={{ 
-                color: 'rgba(255, 255, 255, 0.8)',
-                fontFamily: 'var(--font-primary)',
-                lineHeight: 'var(--medsight-line-height)',
-                letterSpacing: 'var(--medsight-letter-spacing)'
-              }}
-            >
-              Medical Professional Portal
-            </p>
-            <div 
-              className="text-sm mt-2 px-3 py-1 rounded-lg"
-              style={{
-                background: 'rgba(16, 185, 129, 0.1)',
-                border: '1px solid rgba(16, 185, 129, 0.2)',
-                color: 'rgba(255, 255, 255, 0.9)'
-              }}
-            >
-              HIPAA Compliant • Secure Medical Data Processing
-            </div>
-          </div>
+    <div className="min-h-screen relative">
+      {/* Glassmorphism Background - Same as Dashboard */}
+      <div className="fixed inset-0 -z-10 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+        <div className="absolute inset-0 bg-gradient-to-tr from-white/40 via-blue-50/30 to-indigo-100/20"></div>
+        <div className="absolute inset-0" style={{
+          backgroundImage: `radial-gradient(circle at 25% 25%, rgba(59, 130, 246, 0.1) 0%, transparent 50%),
+                           radial-gradient(circle at 75% 75%, rgba(147, 51, 234, 0.08) 0%, transparent 50%)`
+        }}></div>
+      </div>
 
-          {/* Login form */}
-          <form onSubmit={handleLogin} className="space-y-6" noValidate>
-            {/* General error alert */}
-            {errors.general && (
-              <Alert 
-                variant="error"
-                className="medsight-status-abnormal"
-                style={{
-                  background: 'rgba(239, 68, 68, 0.1)',
-                  border: '1px solid rgba(239, 68, 68, 0.2)',
-                  borderRadius: '8px',
-                  padding: '12px',
-                  color: 'white'
-                }}
-              >
-                {errors.general}
-              </Alert>
-            )}
-
-            {/* Email/License input */}
-            <div className="space-y-2">
-              <label 
-                htmlFor="email"
-                className="block text-sm font-semibold"
-                style={{ 
-                  color: 'rgba(255, 255, 255, 0.9)',
-                  lineHeight: 'var(--medsight-line-height)'
-                }}
-              >
-                Email or Medical License <span style={{ color: 'var(--medsight-abnormal)' }}>*</span>
-              </label>
-              <Input
-                ref={emailInputRef}
-                id="email"
-                type="text"
-                placeholder="Email address or medical license number"
-                value={credentials.email}
-                onChange={(e) => handleInputChange('email', e.target.value)}
-                disabled={isLoading || isLocked}
-                className="glass-input"
-                style={{
-                  background: 'rgba(255, 255, 255, 0.06)',
-                  backdropFilter: 'blur(16px)',
-                  border: errors.email ? '1px solid var(--medsight-abnormal)' : '1px solid rgba(255, 255, 255, 0.12)',
-                  borderRadius: '10px',
-                  padding: '12px 16px',
-                  fontSize: '14px',
-                  lineHeight: 'var(--medsight-line-height)',
-                  letterSpacing: 'var(--medsight-letter-spacing)',
-                  transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-                  color: 'white'
-                }}
-              />
-              {errors.email && (
-                <p className="text-sm" style={{ color: 'var(--medsight-abnormal)' }}>
-                  {errors.email}
-                </p>
-              )}
-            </div>
-
-            {/* Password input */}
-            <div className="space-y-2">
-              <label 
-                htmlFor="password"
-                className="block text-sm font-semibold"
-                style={{ 
-                  color: 'rgba(255, 255, 255, 0.9)',
-                  lineHeight: 'var(--medsight-line-height)'
-                }}
-              >
-                Password <span style={{ color: 'var(--medsight-abnormal)' }}>*</span>
-              </label>
-              <div className="relative">
-                <Input
-                  id="password"
-                  type={showPassword ? 'text' : 'password'}
-                  placeholder="Enter your secure password"
-                  value={credentials.password}
-                  onChange={(e) => handleInputChange('password', e.target.value)}
-                  disabled={isLoading || isLocked}
-                  className="glass-input pr-12"
-                  style={{
-                    background: 'rgba(255, 255, 255, 0.06)',
-                    backdropFilter: 'blur(16px)',
-                    border: errors.password ? '1px solid var(--medsight-abnormal)' : '1px solid rgba(255, 255, 255, 0.12)',
-                    borderRadius: '10px',
-                    padding: '12px 16px',
-                    fontSize: '14px',
-                    lineHeight: 'var(--medsight-line-height)',
-                    letterSpacing: 'var(--medsight-letter-spacing)',
-                    transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-                    color: 'white'
-                  }}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-sm"
-                  style={{ color: 'rgba(255, 255, 255, 0.6)' }}
-                  disabled={isLoading || isLocked}
-                >
-                  {showPassword ? 'Hide' : 'Show'}
-                </button>
-              </div>
-              {errors.password && (
-                <p className="text-sm" style={{ color: 'var(--medsight-abnormal)' }}>
-                  {errors.password}
-                </p>
-              )}
-            </div>
-
-            {/* Remember me checkbox */}
-            <div className="flex items-center space-x-3">
-              <Checkbox
-                id="remember"
-                checked={credentials.rememberMe}
-                onChange={(e) => handleInputChange('rememberMe', e.target.checked)}
-                disabled={isLoading || isLocked}
-                style={{
-                  accentColor: 'var(--medsight-primary-500)'
-                }}
-              />
-              <label 
-                htmlFor="remember" 
-                className="text-sm"
-                style={{ 
-                  color: 'rgba(255, 255, 255, 0.8)',
-                  lineHeight: 'var(--medsight-line-height)'
-                }}
-              >
-                Keep me signed in (secure session)
-              </label>
-            </div>
-
-            {/* Login button */}
-            <GlassButton
-              type="submit"
-              disabled={isLoading || isLocked}
-              className="w-full medical-action-button"
-              style={{
-                background: isLocked ? 
-                  'rgba(107, 114, 128, 0.5)' :
-                  'linear-gradient(135deg, var(--medsight-primary-500) 0%, var(--medsight-primary-600) 100%)',
-                color: 'white',
-                border: 'none',
-                borderRadius: '12px',
-                padding: '14px 24px',
-                fontWeight: '600',
-                fontSize: '16px',
-                lineHeight: 'var(--medsight-line-height)',
-                letterSpacing: 'var(--medsight-letter-spacing)',
-                transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-                boxShadow: isLocked ? 'none' : '0 4px 12px rgba(14, 165, 233, 0.2)',
-                cursor: isLocked ? 'not-allowed' : 'pointer',
-                opacity: isLocked ? 0.5 : 1
-              }}
-            >
-              {isLoading ? (
-                <div className="flex items-center justify-center space-x-2">
-                  <div 
-                    className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"
-                    style={{ animation: 'spin 1s linear infinite' }}
-                  />
-                  <span>Authenticating...</span>
+      <div className="min-h-screen flex items-center justify-center p-4">
+        <div className="w-full max-w-md">
+          {/* Login Card */}
+          <div className="bg-white/70 backdrop-blur-xl rounded-2xl shadow-xl border border-white/20 p-8">
+            {/* Header */}
+            <div className="text-center mb-8">
+              <div className="flex items-center justify-center mb-4">
+                <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg">
+                  <HeartIcon className="w-7 h-7 text-white" />
                 </div>
-              ) : isLocked ? (
-                `Locked for ${Math.floor(lockoutTime / 60)}:${(lockoutTime % 60).toString().padStart(2, '0')}`
-              ) : (
-                'Sign In Securely'
-              )}
-            </GlassButton>
+              </div>
+              <h1 className="text-2xl font-bold text-gray-900 mb-2">
+                Welcome to MedSight Pro
+              </h1>
+              <p className="text-gray-600 text-sm">
+                Advanced Medical AI Platform for Clinical Excellence
+              </p>
+            </div>
 
-            {/* Additional login options */}
-            <div className="space-y-4">
-              <div className="flex justify-between text-sm">
+            {/* HIPAA Compliance Badge */}
+            <div className="mb-6">
+              <div className="flex items-center justify-center space-x-2 p-3 rounded-xl bg-green-50/50 border border-green-200/50">
+                <ShieldCheckIcon className="w-5 h-5 text-green-600" />
+                <span className="text-green-800 text-sm font-medium">HIPAA Compliant Platform</span>
+              </div>
+            </div>
+
+            {/* Login Form */}
+            <form onSubmit={handleLogin} className="space-y-6">
+              {/* Error Alert */}
+              {errors.general && (
+                <div className="p-4 rounded-xl bg-red-50/50 border border-red-200/50">
+                  <div className="flex items-center space-x-2">
+                    <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                    <span className="text-red-700 text-sm">{errors.general}</span>
+                  </div>
+                </div>
+              )}
+
+              {/* Email/License Input */}
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">
+                  Email or Medical License
+                </label>
+                <input
+                  ref={emailInputRef}
+                  type="text"
+                  placeholder="Enter your email or medical license"
+                  value={credentials.email}
+                  onChange={(e) => handleInputChange('email', e.target.value)}
+                  disabled={isLoading || isLocked}
+                  className={`w-full px-4 py-3 rounded-xl bg-white/50 backdrop-blur-sm border ${
+                    errors.email ? 'border-red-300' : 'border-white/30'
+                  } text-gray-900 placeholder-gray-500 focus:border-blue-300 focus:ring-2 focus:ring-blue-200 focus:bg-white/70 transition-all`}
+                />
+                {errors.email && (
+                  <p className="text-red-600 text-sm">{errors.email}</p>
+                )}
+              </div>
+
+              {/* Password Input */}
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">
+                  Password
+                </label>
+                <div className="relative">
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    placeholder="Enter your password"
+                    value={credentials.password}
+                    onChange={(e) => handleInputChange('password', e.target.value)}
+                    disabled={isLoading || isLocked}
+                    className={`w-full px-4 py-3 pr-12 rounded-xl bg-white/50 backdrop-blur-sm border ${
+                      errors.password ? 'border-red-300' : 'border-white/30'
+                    } text-gray-900 placeholder-gray-500 focus:border-blue-300 focus:ring-2 focus:ring-blue-200 focus:bg-white/70 transition-all`}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                    disabled={isLoading || isLocked}
+                  >
+                    {showPassword ? (
+                      <EyeSlashIcon className="w-5 h-5" />
+                    ) : (
+                      <EyeIcon className="w-5 h-5" />
+                    )}
+                  </button>
+                </div>
+                {errors.password && (
+                  <p className="text-red-600 text-sm">{errors.password}</p>
+                )}
+              </div>
+
+              {/* Remember Me & Forgot Password */}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    id="remember"
+                    checked={credentials.rememberMe}
+                    onChange={(e) => handleInputChange('rememberMe', e.target.checked)}
+                    disabled={isLoading || isLocked}
+                    className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                  />
+                  <label htmlFor="remember" className="text-sm text-gray-700">
+                    Remember me
+                  </label>
+                </div>
                 <Link 
                   href="/reset-password"
-                  className="hover:underline transition-colors"
-                  style={{ 
-                    color: 'var(--medsight-primary-300)',
-                    lineHeight: 'var(--medsight-line-height)'
-                  }}
+                  className="text-sm text-blue-600 hover:text-blue-500 transition-colors"
                 >
-                  Forgot Password?
-                </Link>
-                <Link 
-                  href="/forgot-username"
-                  className="hover:underline transition-colors"
-                  style={{ 
-                    color: 'var(--medsight-primary-300)',
-                    lineHeight: 'var(--medsight-line-height)'
-                  }}
-                >
-                  Forgot Username?
+                  Forgot password?
                 </Link>
               </div>
-              
+
+              {/* Login Button */}
+              <button
+                type="submit"
+                disabled={isLoading || isLocked}
+                className={`w-full py-3 px-4 rounded-xl font-medium text-white transition-all duration-200 hover:scale-[1.02] ${
+                  isLocked 
+                    ? 'bg-gray-400 cursor-not-allowed' 
+                    : 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-lg hover:shadow-xl'
+                }`}
+              >
+                {isLoading ? (
+                  <div className="flex items-center justify-center space-x-2">
+                    <div className="w-5 h-5 border-2 border-white/70 border-t-white rounded-full animate-spin"></div>
+                    <span>Signing in...</span>
+                  </div>
+                ) : isLocked ? (
+                  `Locked ${Math.floor(lockoutTime / 60)}:${(lockoutTime % 60).toString().padStart(2, '0')}`
+                ) : (
+                  <div className="flex items-center justify-center space-x-2">
+                    <LockClosedIcon className="w-5 h-5" />
+                    <span>Sign In Securely</span>
+                  </div>
+                )}
+              </button>
+
+              {/* Sign Up Link */}
               <div className="text-center">
-                <span 
-                  className="text-sm"
-                  style={{ 
-                    color: 'rgba(255, 255, 255, 0.7)',
-                    lineHeight: 'var(--medsight-line-height)'
-                  }}
-                >
+                <span className="text-sm text-gray-600">
                   New to MedSight Pro?{' '}
                   <Link 
                     href="/signup"
-                    className="font-semibold hover:underline transition-colors"
-                    style={{ color: 'var(--medsight-primary-300)' }}
+                    className="text-blue-600 hover:text-blue-500 font-medium transition-colors"
                   >
-                    Create Account
+                    Create an account
                   </Link>
                 </span>
               </div>
-            </div>
+            </form>
+          </div>
 
-            {/* Security and compliance notice */}
-            <div 
-              className="text-xs text-center p-3 rounded-lg"
-              style={{
-                background: 'rgba(16, 185, 129, 0.05)',
-                border: '1px solid rgba(16, 185, 129, 0.1)',
-                color: 'rgba(255, 255, 255, 0.7)',
-                lineHeight: 'var(--medsight-line-height)'
-              }}
-            >
-              <p className="mb-1">🔒 End-to-end encrypted medical data</p>
-              <p className="mb-1">⚡ HIPAA compliant authentication</p>
-              <p>🏥 FDA Class II medical device software</p>
+          {/* Security Features */}
+          <div className="mt-6 grid grid-cols-2 gap-4">
+            <div className="bg-white/60 backdrop-blur-xl rounded-xl p-4 border border-white/20 text-center">
+              <div className="text-green-600 text-2xl mb-2">🔒</div>
+              <div className="text-sm font-medium text-gray-700">End-to-End Encryption</div>
             </div>
-          </form>
-        </GlassCard>
+            <div className="bg-white/60 backdrop-blur-xl rounded-xl p-4 border border-white/20 text-center">
+              <div className="text-blue-600 text-2xl mb-2">🏥</div>
+              <div className="text-sm font-medium text-gray-700">FDA Compliant</div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
-}
-
-// Add keyframe animations
-const styles = `
-  @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-  }
-`;
-
-// Inject styles
-if (typeof document !== 'undefined') {
-  const styleElement = document.createElement('style');
-  styleElement.textContent = styles;
-  document.head.appendChild(styleElement);
 } 

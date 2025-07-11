@@ -1,0 +1,35 @@
+{
+  "name": "annotateai-websocket",
+  "version": "1.0.0",
+  "description": "WebSocket server for AnnotateAI real-time collaboration",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js",
+    "test": "jest",
+    "lint": "eslint .",
+    "build:websocket": "echo 'No build needed for WebSocket server'"
+  },
+  "dependencies": {
+    "ws": "^8.14.2",
+    "ioredis": "^5.3.2",
+    "jsonwebtoken": "^9.0.2",
+    "uuid": "^9.0.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1",
+    "jest": "^29.7.0",
+    "eslint": "^8.52.0"
+  },
+  "keywords": [
+    "websocket",
+    "real-time",
+    "collaboration",
+    "annotation"
+  ],
+  "author": "AnnotateAI Team",
+  "license": "Proprietary",
+  "engines": {
+    "node": ">=18.0.0"
+  }
+} 

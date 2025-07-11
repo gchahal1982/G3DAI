@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { UserPreferences, User } from '@/types/auth';
+import { UserPreferences, User, UserRole, SubscriptionPlan } from '@/types/auth';
 
 interface TabButtonProps {
   isActive: boolean;
@@ -16,8 +16,8 @@ function TabButton({ isActive, onClick, children, icon }: TabButtonProps) {
       onClick={onClick}
       className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
         isActive
-          ? 'bg-annotate-primary-500 text-white shadow-lg'
-          : 'text-annotate-primary-600 hover:bg-annotate-primary-50 hover:text-annotate-primary-700'
+          ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg'
+          : 'text-white/70 hover:bg-white/10 hover:text-white'
       }`}
     >
       {icon && <span className="w-4 h-4">{icon}</span>}
@@ -34,11 +34,11 @@ interface SettingSectionProps {
 
 function SettingSection({ title, description, children }: SettingSectionProps) {
   return (
-    <div className="annotate-glass p-6 rounded-xl border border-annotate-primary-200">
+    <div className="bg-white/5 backdrop-blur-xl border border-white/10 p-6 rounded-xl">
       <div className="mb-4">
-        <h3 className="text-lg font-semibold text-annotate-primary-900">{title}</h3>
+        <h3 className="text-lg font-semibold text-white">{title}</h3>
         {description && (
-          <p className="text-sm text-annotate-primary-600 mt-1">{description}</p>
+          <p className="text-sm text-white/70 mt-1">{description}</p>
         )}
       </div>
       {children}
@@ -57,15 +57,15 @@ function Toggle({ enabled, onChange, label, description }: ToggleProps) {
   return (
     <div className="flex items-center justify-between py-2">
       <div>
-        <label className="text-sm font-medium text-annotate-primary-900">{label}</label>
+        <label className="text-sm font-medium text-white">{label}</label>
         {description && (
-          <p className="text-xs text-annotate-primary-600">{description}</p>
+          <p className="text-xs text-white/70">{description}</p>
         )}
       </div>
       <button
         onClick={() => onChange(!enabled)}
         className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-          enabled ? 'bg-annotate-primary-500' : 'bg-gray-300'
+          enabled ? 'bg-gradient-to-r from-indigo-600 to-purple-600' : 'bg-white/20'
         }`}
       >
         <span
@@ -89,17 +89,17 @@ interface SelectProps {
 function Select({ value, onChange, options, label, description }: SelectProps) {
   return (
     <div className="space-y-2">
-      <label className="text-sm font-medium text-annotate-primary-900">{label}</label>
+      <label className="text-sm font-medium text-white">{label}</label>
       {description && (
-        <p className="text-xs text-annotate-primary-600">{description}</p>
+        <p className="text-xs text-white/70">{description}</p>
       )}
       <select
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full px-3 py-2 border border-annotate-primary-200 rounded-lg bg-white text-annotate-primary-900 focus:border-annotate-primary-500 focus:ring-2 focus:ring-annotate-primary-200 transition-colors"
+        className="w-full px-3 py-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg text-white focus:border-indigo-500/50 focus:ring-2 focus:ring-indigo-500/30 transition-colors [&>option]:bg-gray-800 [&>option]:text-white [&>option]:px-3 [&>option]:py-2"
       >
         {options.map((option) => (
-          <option key={option.value} value={option.value}>
+          <option key={option.value} value={option.value} className="bg-gray-800 text-white">
             {option.label}
           </option>
         ))}
@@ -121,9 +121,9 @@ interface NumberInputProps {
 function NumberInput({ value, onChange, label, description, min, max, step = 1 }: NumberInputProps) {
   return (
     <div className="space-y-2">
-      <label className="text-sm font-medium text-annotate-primary-900">{label}</label>
+      <label className="text-sm font-medium text-white">{label}</label>
       {description && (
-        <p className="text-xs text-annotate-primary-600">{description}</p>
+        <p className="text-xs text-white/70">{description}</p>
       )}
       <input
         type="number"
@@ -132,7 +132,7 @@ function NumberInput({ value, onChange, label, description, min, max, step = 1 }
         min={min}
         max={max}
         step={step}
-        className="w-full px-3 py-2 border border-annotate-primary-200 rounded-lg bg-white text-annotate-primary-900 focus:border-annotate-primary-500 focus:ring-2 focus:ring-annotate-primary-200 transition-colors"
+        className="w-full px-3 py-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg text-white placeholder-white/50 focus:border-indigo-500/50 focus:ring-2 focus:ring-indigo-500/30 transition-colors"
       />
     </div>
   );
@@ -141,14 +141,15 @@ function NumberInput({ value, onChange, label, description, min, max, step = 1 }
 // Mock user for settings demo
 const mockUser: User = {
   id: '1',
+  name: 'Demo User',
   email: 'demo@annotateai.com',
   firstName: 'Demo',
   lastName: 'User',
   avatar: null,
-  role: 'admin',
+  role: UserRole.ADMIN,
   subscription: {
     id: 'sub-1',
-    plan: 'pro',
+    plan: SubscriptionPlan.PROFESSIONAL,
     status: 'active',
     currentPeriodStart: new Date('2024-01-01'),
     currentPeriodEnd: new Date('2024-12-31'),
@@ -170,8 +171,7 @@ const mockUser: User = {
       teamMembers: 10,
       modelTraining: 10,
       exports: 1000,
-      supportLevel: 'priority',
-      features: ['basic_annotation', 'advanced_annotation', 'collaboration', 'api_access']
+      supportLevel: 'priority'
     }
   },
   preferences: {
@@ -187,6 +187,8 @@ const mockUser: User = {
         productUpdates: false,
         weeklyDigest: true
       },
+      browser: true,
+      mobile: true,
       push: {
         projectUpdates: true,
         mentions: true,
@@ -226,7 +228,6 @@ const mockUser: User = {
   createdAt: new Date('2024-01-01'),
   updatedAt: new Date(),
   lastLoginAt: new Date(),
-  emailVerified: true,
   twoFactorEnabled: false
 };
 
@@ -296,9 +297,9 @@ export default function SettingsPage() {
   if (!user || !preferences) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="annotate-glass p-8 rounded-2xl border border-annotate-primary-200">
-          <div className="h-8 w-8 animate-spin rounded-full border-3 border-annotate-primary-200 border-t-annotate-primary-500 mx-auto" />
-          <p className="mt-4 text-annotate-primary-600 text-sm text-center">Loading settings...</p>
+        <div className="bg-white/5 backdrop-blur-xl border border-white/10 p-8 rounded-2xl">
+          <div className="h-8 w-8 animate-spin rounded-full border-3 border-white/20 border-t-indigo-500 mx-auto" />
+          <p className="mt-4 text-white/70 text-sm text-center">Loading settings...</p>
         </div>
       </div>
     );
@@ -366,7 +367,7 @@ export default function SettingsPage() {
   }
 
   // Add danger zone for owners/admins
-  if (user.role === 'owner' || user.role === 'admin') {
+  if (user.role === UserRole.ADMIN) {
     tabs.push({
       id: 'danger',
       label: 'Danger Zone',
@@ -379,12 +380,12 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-annotate-primary-50 to-annotate-primary-100 p-6">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-950 via-purple-950 to-gray-950 p-6">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-annotate-primary-900">Settings</h1>
-          <p className="text-annotate-primary-600 mt-2">
+          <h1 className="text-3xl font-bold text-white">Settings</h1>
+          <p className="text-white/70 mt-2">
             Manage your account preferences and workspace configuration
           </p>
           
@@ -392,10 +393,10 @@ export default function SettingsPage() {
           {(saving || saveMessage) && (
             <div className={`mt-4 px-4 py-2 rounded-lg text-sm ${
               saving
-                ? 'bg-blue-100 text-blue-800'
+                ? 'bg-blue-500/20 text-blue-300 border border-blue-500/30'
                 : saveMessage === 'Settings saved'
-                ? 'bg-green-100 text-green-800'
-                : 'bg-red-100 text-red-800'
+                ? 'bg-green-500/20 text-green-300 border border-green-500/30'
+                : 'bg-red-500/20 text-red-300 border border-red-500/30'
             }`}>
               {saving ? 'Saving...' : saveMessage}
             </div>
@@ -405,7 +406,7 @@ export default function SettingsPage() {
         <div className="flex flex-col lg:flex-row gap-6">
           {/* Sidebar Navigation */}
           <div className="lg:w-64">
-            <div className="annotate-glass p-4 rounded-xl border border-annotate-primary-200 sticky top-6">
+            <div className="bg-white/5 backdrop-blur-xl border border-white/10 p-4 rounded-xl sticky top-6">
               <nav className="space-y-2">
                 {tabs.map((tab) => (
                   <TabButton
@@ -497,97 +498,23 @@ export default function SettingsPage() {
                     <div className="space-y-4">
                       <Toggle
                         enabled={preferences.notifications.email.projectUpdates}
-                        onChange={(enabled) => updatePreference('notifications.email.projectUpdates', enabled)}
+                        onChange={(value) => updatePreference('notifications.email.projectUpdates', value)}
                         label="Project Updates"
-                        description="Get notified when projects are updated or completed"
+                        description="Get notified about project progress and changes"
                       />
+                      
                       <Toggle
                         enabled={preferences.notifications.email.teamInvites}
-                        onChange={(enabled) => updatePreference('notifications.email.teamInvites', enabled)}
+                        onChange={(value) => updatePreference('notifications.email.teamInvites', value)}
                         label="Team Invitations"
-                        description="Receive invitations to join teams and organizations"
+                        description="Receive email notifications for team invitations"
                       />
+                      
                       <Toggle
                         enabled={preferences.notifications.email.billingAlerts}
-                        onChange={(enabled) => updatePreference('notifications.email.billingAlerts', enabled)}
+                        onChange={(value) => updatePreference('notifications.email.billingAlerts', value)}
                         label="Billing Alerts"
                         description="Important billing and subscription notifications"
-                      />
-                      <Toggle
-                        enabled={preferences.notifications.email.securityAlerts}
-                        onChange={(enabled) => updatePreference('notifications.email.securityAlerts', enabled)}
-                        label="Security Alerts"
-                        description="Critical security notifications (cannot be disabled)"
-                      />
-                      <Toggle
-                        enabled={preferences.notifications.email.productUpdates}
-                        onChange={(enabled) => updatePreference('notifications.email.productUpdates', enabled)}
-                        label="Product Updates"
-                        description="New features and product announcements"
-                      />
-                      <Toggle
-                        enabled={preferences.notifications.email.weeklyDigest}
-                        onChange={(enabled) => updatePreference('notifications.email.weeklyDigest', enabled)}
-                        label="Weekly Digest"
-                        description="Weekly summary of your activity"
-                      />
-                    </div>
-                  </SettingSection>
-
-                  <SettingSection
-                    title="Push Notifications"
-                    description="Real-time notifications in your browser"
-                  >
-                    <div className="space-y-4">
-                      <Toggle
-                        enabled={preferences.notifications.push.projectUpdates}
-                        onChange={(enabled) => updatePreference('notifications.push.projectUpdates', enabled)}
-                        label="Project Updates"
-                        description="Real-time project notifications"
-                      />
-                      <Toggle
-                        enabled={preferences.notifications.push.mentions}
-                        onChange={(enabled) => updatePreference('notifications.push.mentions', enabled)}
-                        label="Mentions"
-                        description="When someone mentions you in comments"
-                      />
-                      <Toggle
-                        enabled={preferences.notifications.push.deadlines}
-                        onChange={(enabled) => updatePreference('notifications.push.deadlines', enabled)}
-                        label="Deadlines"
-                        description="Upcoming project deadlines"
-                      />
-                      <Toggle
-                        enabled={preferences.notifications.push.systemAlerts}
-                        onChange={(enabled) => updatePreference('notifications.push.systemAlerts', enabled)}
-                        label="System Alerts"
-                        description="System maintenance and status updates"
-                      />
-                    </div>
-                  </SettingSection>
-
-                  <SettingSection
-                    title="In-App Notifications"
-                    description="Notifications within the AnnotateAI interface"
-                  >
-                    <div className="space-y-4">
-                      <Toggle
-                        enabled={preferences.notifications.inApp.projectUpdates}
-                        onChange={(enabled) => updatePreference('notifications.inApp.projectUpdates', enabled)}
-                        label="Project Updates"
-                        description="Show in-app notifications for project changes"
-                      />
-                      <Toggle
-                        enabled={preferences.notifications.inApp.teamActivity}
-                        onChange={(enabled) => updatePreference('notifications.inApp.teamActivity', enabled)}
-                        label="Team Activity"
-                        description="Notifications about team member activity"
-                      />
-                      <Toggle
-                        enabled={preferences.notifications.inApp.systemNotifications}
-                        onChange={(enabled) => updatePreference('notifications.inApp.systemNotifications', enabled)}
-                        label="System Notifications"
-                        description="General system messages and updates"
                       />
                     </div>
                   </SettingSection>
@@ -851,16 +778,16 @@ export default function SettingsPage() {
               )}
 
               {/* Danger Zone (Admin/Owner only) */}
-              {activeTab === 'danger' && (user.role === 'owner' || user.role === 'admin') && (
+              {activeTab === 'danger' && (user.role === UserRole.ADMIN) && (
                 <>
                   <SettingSection
                     title="Danger Zone"
                     description="Irreversible and destructive actions"
                   >
                     <div className="space-y-4">
-                      <div className="border border-red-200 rounded-lg p-4 bg-red-50">
-                        <h4 className="font-medium text-red-900 mb-2">Export Account Data</h4>
-                        <p className="text-sm text-red-700 mb-4">
+                      <div className="border border-red-500/30 rounded-lg p-4 bg-red-500/10 backdrop-blur-sm">
+                        <h4 className="font-medium text-red-100 mb-2">Export Account Data</h4>
+                        <p className="text-sm text-red-200 mb-4">
                           Download all your account data including projects, annotations, and settings.
                         </p>
                         <button className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors">
@@ -868,9 +795,9 @@ export default function SettingsPage() {
                         </button>
                       </div>
 
-                      <div className="border border-red-200 rounded-lg p-4 bg-red-50">
-                        <h4 className="font-medium text-red-900 mb-2">Delete Account</h4>
-                        <p className="text-sm text-red-700 mb-4">
+                      <div className="border border-red-500/30 rounded-lg p-4 bg-red-500/10 backdrop-blur-sm">
+                        <h4 className="font-medium text-red-100 mb-2">Delete Account</h4>
+                        <p className="text-sm text-red-200 mb-4">
                           Permanently delete your account and all associated data. This action cannot be undone.
                         </p>
                         <button className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors">
@@ -878,10 +805,10 @@ export default function SettingsPage() {
                         </button>
                       </div>
 
-                      {user.role === 'owner' && (
-                        <div className="border border-red-200 rounded-lg p-4 bg-red-50">
-                          <h4 className="font-medium text-red-900 mb-2">Delete Organization</h4>
-                          <p className="text-sm text-red-700 mb-4">
+                      {user.role === UserRole.ADMIN && (
+                        <div className="border border-red-500/30 rounded-lg p-4 bg-red-500/10 backdrop-blur-sm">
+                          <h4 className="font-medium text-red-100 mb-2">Delete Organization</h4>
+                          <p className="text-sm text-red-200 mb-4">
                             Permanently delete your organization and all associated data, projects, and team members. 
                             This action cannot be undone.
                           </p>

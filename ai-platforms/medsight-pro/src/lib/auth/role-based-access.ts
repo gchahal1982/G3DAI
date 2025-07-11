@@ -1,786 +1,601 @@
 /**
- * MedSight Pro - Role-Based Access Control System
- * Medical professional role and permission management with HIPAA compliance
- * Comprehensive access control for clinical workflows and medical data
+ * Role-Based Access Control for Medical Professionals
+ * Hierarchical permission system with medical-specific access controls
  */
 
-// Medical permission interface
-interface MedicalPermission {
-  id: string;
-  name: string;
-  description: string;
-  category: 'medical_data' | 'system_admin' | 'clinical_workflow' | 'emergency' | 'compliance';
-  level: 'read' | 'write' | 'admin' | 'emergency';
-  hipaaLevel?: 'basic' | 'phi' | 'sensitive';
-  auditRequired: boolean;
+import { medicalServices } from '@/config/shared-config';
+import { MedicalUser, MedicalRole, Permission, ROLE_PERMISSIONS } from '@/types/medical-user';
+
+// Resource types for medical access control
+export type ResourceType = 
+  | 'patient-data'
+  | 'dicom-images'
+  | 'medical-reports'
+  | 'ai-analysis'
+  | 'system-config'
+  | 'user-management'
+  | 'audit-logs'
+  | 'compliance-data'
+  | 'emergency-access'
+  | 'billing-data';
+
+// Access level for resources
+export type AccessLevel = 'none' | 'read' | 'write' | 'admin' | 'owner';
+
+// Permission context for contextual access
+export interface PermissionContext {
+  patientId?: string;
+  studyId?: string;
+  departmentId?: string;
+  hospitalId?: string;
+  resourceType: ResourceType;
+  accessLevel: AccessLevel;
+  emergencyAccess?: boolean;
 }
 
-// Medical role interface
-interface MedicalRole {
-  id: string;
-  name: string;
-  displayName: string;
-  description: string;
-  hierarchy: number; // 1 = highest authority
-  permissions: string[]; // Permission IDs
-  inheritsFrom?: string[]; // Role IDs to inherit permissions from
-  restrictions?: {
-    timeRestrictions?: {
-      allowedHours?: { start: number; end: number }[];
-      emergencyOverride?: boolean;
-    };
-    locationRestrictions?: {
-      allowedDepartments?: string[];
-      emergencyOverride?: boolean;
-    };
-    dataRestrictions?: {
-      maxPatientAccess?: number;
-      auditFrequency?: 'real-time' | 'daily' | 'weekly';
-    };
-  };
-  complianceRequirements: {
-    hipaaTraining: boolean;
-    medicalLicense: boolean;
-    backgroundCheck: boolean;
-    continuingEducation?: boolean;
-  };
-}
-
-// Medical access context interface
-interface MedicalAccessContext {
-  userId: string;
-  roles: string[];
-  permissions: string[];
-  currentDepartment?: string;
-  currentShift?: 'day' | 'evening' | 'night' | 'weekend';
-  emergencyMode?: boolean;
-  supervisionLevel?: 'independent' | 'supervised' | 'trainee';
-  complianceStatus: {
-    hipaaValid: boolean;
-    licenseValid: boolean;
-    backgroundValid: boolean;
-  };
-}
-
-// Medical access request interface
-interface MedicalAccessRequest {
-  resource: string;
-  action: string;
-  context: MedicalAccessContext;
-  metadata?: {
-    patientId?: string;
-    studyId?: string;
-    emergencyJustification?: string;
-    supervisorApproval?: string;
-  };
-}
-
-// Medical access response interface
-interface MedicalAccessResponse {
-  granted: boolean;
+// Access control result
+export interface AccessResult {
+  allowed: boolean;
   reason?: string;
   conditions?: string[];
-  auditRequired: boolean;
-  timeLimit?: number;
-  supervisorNotification?: boolean;
+  auditRequired?: boolean;
+  emergencyOverride?: boolean;
 }
 
-// Medical permissions registry
-export const MEDICAL_PERMISSIONS: Record<string, MedicalPermission> = {
-  // Medical Data Permissions
-  PATIENT_DATA_READ: {
-    id: 'patient_data_read',
-    name: 'Read Patient Data',
-    description: 'View patient demographic and basic medical information',
-    category: 'medical_data',
-    level: 'read',
-    hipaaLevel: 'phi',
-    auditRequired: true
-  },
-  PATIENT_DATA_WRITE: {
-    id: 'patient_data_write',
-    name: 'Write Patient Data',
-    description: 'Create and modify patient medical records',
-    category: 'medical_data',
-    level: 'write',
-    hipaaLevel: 'phi',
-    auditRequired: true
-  },
-  MEDICAL_IMAGING_READ: {
-    id: 'medical_imaging_read',
-    name: 'Read Medical Images',
-    description: 'View DICOM images and medical studies',
-    category: 'medical_data',
-    level: 'read',
-    hipaaLevel: 'phi',
-    auditRequired: true
-  },
-  MEDICAL_IMAGING_WRITE: {
-    id: 'medical_imaging_write',
-    name: 'Write Medical Images',
-    description: 'Upload, modify, and annotate medical images',
-    category: 'medical_data',
-    level: 'write',
-    hipaaLevel: 'phi',
-    auditRequired: true
-  },
-  MEDICAL_REPORTS_READ: {
-    id: 'medical_reports_read',
-    name: 'Read Medical Reports',
-    description: 'View radiology and clinical reports',
-    category: 'medical_data',
-    level: 'read',
-    hipaaLevel: 'phi',
-    auditRequired: true
-  },
-  MEDICAL_REPORTS_WRITE: {
-    id: 'medical_reports_write',
-    name: 'Write Medical Reports',
-    description: 'Create and modify medical reports',
-    category: 'medical_data',
-    level: 'write',
-    hipaaLevel: 'phi',
-    auditRequired: true
-  },
-  SENSITIVE_DATA_ACCESS: {
-    id: 'sensitive_data_access',
-    name: 'Sensitive Data Access',
-    description: 'Access to highly sensitive medical data',
-    category: 'medical_data',
-    level: 'read',
-    hipaaLevel: 'sensitive',
-    auditRequired: true
-  },
-
-  // Clinical Workflow Permissions
-  AI_ANALYSIS_USE: {
-    id: 'ai_analysis_use',
-    name: 'Use AI Analysis',
-    description: 'Run AI-powered medical analysis tools',
-    category: 'clinical_workflow',
-    level: 'write',
-    auditRequired: true
-  },
-  COLLABORATION_ACCESS: {
-    id: 'collaboration_access',
-    name: 'Collaboration Access',
-    description: 'Participate in multi-user medical collaboration',
-    category: 'clinical_workflow',
-    level: 'read',
-    auditRequired: false
-  },
-  WORKFLOW_MANAGEMENT: {
-    id: 'workflow_management',
-    name: 'Workflow Management',
-    description: 'Manage clinical workflows and case assignments',
-    category: 'clinical_workflow',
-    level: 'admin',
-    auditRequired: true
-  },
-  PEER_REVIEW: {
-    id: 'peer_review',
-    name: 'Peer Review',
-    description: 'Review and approve colleague work',
-    category: 'clinical_workflow',
-    level: 'write',
-    auditRequired: true
-  },
-
-  // Emergency Permissions
-  EMERGENCY_ACCESS: {
-    id: 'emergency_access',
-    name: 'Emergency Access',
-    description: 'Access medical data in emergency situations',
-    category: 'emergency',
-    level: 'emergency',
-    hipaaLevel: 'phi',
-    auditRequired: true
-  },
-  EMERGENCY_OVERRIDE: {
-    id: 'emergency_override',
-    name: 'Emergency Override',
-    description: 'Override normal access restrictions in emergencies',
-    category: 'emergency',
-    level: 'emergency',
-    auditRequired: true
-  },
-
-  // System Administration Permissions
-  USER_MANAGEMENT: {
-    id: 'user_management',
-    name: 'User Management',
-    description: 'Manage medical professional accounts',
-    category: 'system_admin',
-    level: 'admin',
-    auditRequired: true
-  },
-  SYSTEM_CONFIGURATION: {
-    id: 'system_configuration',
-    name: 'System Configuration',
-    description: 'Configure medical system settings',
-    category: 'system_admin',
-    level: 'admin',
-    auditRequired: true
-  },
-  AUDIT_LOG_ACCESS: {
-    id: 'audit_log_access',
-    name: 'Audit Log Access',
-    description: 'View system audit logs and compliance reports',
-    category: 'compliance',
-    level: 'read',
-    auditRequired: true
-  },
-  COMPLIANCE_MANAGEMENT: {
-    id: 'compliance_management',
-    name: 'Compliance Management',
-    description: 'Manage HIPAA and regulatory compliance',
-    category: 'compliance',
-    level: 'admin',
-    auditRequired: true
-  }
-};
-
-// Medical roles registry
-export const MEDICAL_ROLES: Record<string, MedicalRole> = {
-  // System Roles
-  SYSTEM_ADMIN: {
-    id: 'system_admin',
-    name: 'system_admin',
-    displayName: 'System Administrator',
-    description: 'Full system access and administration',
-    hierarchy: 1,
-    permissions: Object.keys(MEDICAL_PERMISSIONS),
-    complianceRequirements: {
-      hipaaTraining: true,
-      medicalLicense: false,
-      backgroundCheck: true,
-      continuingEducation: true
-    }
-  },
-  ADMIN: {
-    id: 'admin',
-    name: 'admin',
-    displayName: 'Administrator',
-    description: 'Hospital/clinic system administration',
-    hierarchy: 2,
-    permissions: [
-      'patient_data_read', 'patient_data_write',
-      'medical_imaging_read', 'medical_imaging_write',
-      'medical_reports_read', 'medical_reports_write',
-      'user_management', 'workflow_management',
-      'audit_log_access', 'compliance_management'
-    ],
-    complianceRequirements: {
-      hipaaTraining: true,
-      medicalLicense: false,
-      backgroundCheck: true,
-      continuingEducation: true
-    }
-  },
-
-  // Medical Professional Roles
-  CHIEF_RADIOLOGIST: {
-    id: 'chief_radiologist',
-    name: 'chief_radiologist',
-    displayName: 'Chief Radiologist',
-    description: 'Senior radiologist with administrative responsibilities',
-    hierarchy: 3,
-    permissions: [
-      'patient_data_read', 'patient_data_write',
-      'medical_imaging_read', 'medical_imaging_write',
-      'medical_reports_read', 'medical_reports_write',
-      'sensitive_data_access', 'ai_analysis_use',
-      'collaboration_access', 'workflow_management',
-      'peer_review', 'emergency_access'
-    ],
-    complianceRequirements: {
-      hipaaTraining: true,
-      medicalLicense: true,
-      backgroundCheck: true,
-      continuingEducation: true
-    }
-  },
-  ATTENDING_RADIOLOGIST: {
-    id: 'attending_radiologist',
-    name: 'attending_radiologist',
-    displayName: 'Attending Radiologist',
-    description: 'Board-certified radiologist with full clinical privileges',
-    hierarchy: 4,
-    permissions: [
-      'patient_data_read', 'patient_data_write',
-      'medical_imaging_read', 'medical_imaging_write',
-      'medical_reports_read', 'medical_reports_write',
-      'ai_analysis_use', 'collaboration_access',
-      'peer_review', 'emergency_access'
-    ],
-    complianceRequirements: {
-      hipaaTraining: true,
-      medicalLicense: true,
-      backgroundCheck: true,
-      continuingEducation: true
-    }
-  },
-  RADIOLOGIST: {
-    id: 'radiologist',
-    name: 'radiologist',
-    displayName: 'Radiologist',
-    description: 'Licensed radiologist with clinical privileges',
-    hierarchy: 5,
-    permissions: [
-      'patient_data_read', 'medical_imaging_read', 'medical_imaging_write',
-      'medical_reports_read', 'medical_reports_write',
-      'ai_analysis_use', 'collaboration_access'
-    ],
-    complianceRequirements: {
-      hipaaTraining: true,
-      medicalLicense: true,
-      backgroundCheck: true,
-      continuingEducation: true
-    }
-  },
-  RADIOLOGY_RESIDENT: {
-    id: 'radiology_resident',
-    name: 'radiology_resident',
-    displayName: 'Radiology Resident',
-    description: 'Radiology resident in training',
-    hierarchy: 6,
-    permissions: [
-      'patient_data_read', 'medical_imaging_read',
-      'medical_reports_read', 'ai_analysis_use',
-      'collaboration_access'
-    ],
-    restrictions: {
-      dataRestrictions: {
-        maxPatientAccess: 50,
-        auditFrequency: 'real-time'
-      }
-    },
-    complianceRequirements: {
-      hipaaTraining: true,
-      medicalLicense: true,
-      backgroundCheck: true
-    }
-  },
-  ATTENDING_PHYSICIAN: {
-    id: 'attending_physician',
-    name: 'attending_physician',
-    displayName: 'Attending Physician',
-    description: 'Board-certified physician with clinical privileges',
-    hierarchy: 4,
-    permissions: [
-      'patient_data_read', 'patient_data_write',
-      'medical_imaging_read', 'medical_reports_read',
-      'collaboration_access', 'emergency_access'
-    ],
-    complianceRequirements: {
-      hipaaTraining: true,
-      medicalLicense: true,
-      backgroundCheck: true,
-      continuingEducation: true
-    }
-  },
-  RESIDENT: {
-    id: 'resident',
-    name: 'resident',
-    displayName: 'Medical Resident',
-    description: 'Medical resident in training',
-    hierarchy: 7,
-    permissions: [
-      'patient_data_read', 'medical_imaging_read',
-      'medical_reports_read', 'collaboration_access'
-    ],
-    restrictions: {
-      dataRestrictions: {
-        maxPatientAccess: 25,
-        auditFrequency: 'real-time'
-      }
-    },
-    complianceRequirements: {
-      hipaaTraining: true,
-      medicalLicense: true,
-      backgroundCheck: true
-    }
-  },
-
-  // Technical Roles
-  MEDICAL_TECHNOLOGIST: {
-    id: 'medical_technologist',
-    name: 'medical_technologist',
-    displayName: 'Medical Technologist',
-    description: 'Medical imaging technologist',
-    hierarchy: 8,
-    permissions: [
-      'patient_data_read', 'medical_imaging_read',
-      'medical_imaging_write', 'collaboration_access'
-    ],
-    complianceRequirements: {
-      hipaaTraining: true,
-      medicalLicense: false,
-      backgroundCheck: true
-    }
-  },
-  TECHNICIAN: {
-    id: 'technician',
-    name: 'technician',
-    displayName: 'Medical Technician',
-    description: 'Medical equipment technician',
-    hierarchy: 9,
-    permissions: [
-      'medical_imaging_read', 'collaboration_access'
-    ],
-    complianceRequirements: {
-      hipaaTraining: true,
-      medicalLicense: false,
-      backgroundCheck: true
-    }
-  },
-
-  // Support Roles
-  CLINICAL_COORDINATOR: {
-    id: 'clinical_coordinator',
-    name: 'clinical_coordinator',
-    displayName: 'Clinical Coordinator',
-    description: 'Clinical workflow coordinator',
-    hierarchy: 8,
-    permissions: [
-      'patient_data_read', 'workflow_management',
-      'collaboration_access'
-    ],
-    complianceRequirements: {
-      hipaaTraining: true,
-      medicalLicense: false,
-      backgroundCheck: true
-    }
-  },
-  VIEWER: {
-    id: 'viewer',
-    name: 'viewer',
-    displayName: 'Medical Viewer',
-    description: 'Read-only access to assigned cases',
-    hierarchy: 10,
-    permissions: [
-      'patient_data_read', 'medical_imaging_read',
-      'medical_reports_read'
-    ],
-    restrictions: {
-      dataRestrictions: {
-        maxPatientAccess: 10,
-        auditFrequency: 'real-time'
-      }
-    },
-    complianceRequirements: {
-      hipaaTraining: true,
-      medicalLicense: false,
-      backgroundCheck: true
-    }
-  }
-};
-
-export class MedicalAccessControlManager {
+// Medical access control manager
+export class MedicalAccessControl {
+  private static instance: MedicalAccessControl;
   
+  private constructor() {}
+
+  public static getInstance(): MedicalAccessControl {
+    if (!MedicalAccessControl.instance) {
+      MedicalAccessControl.instance = new MedicalAccessControl();
+    }
+    return MedicalAccessControl.instance;
+  }
+
   // Check if user has permission
-  static hasPermission(context: MedicalAccessContext, permissionId: string): boolean {
-    return context.permissions.includes(permissionId);
+  public hasPermission(user: MedicalUser, permission: Permission): boolean {
+    return user.permissions.includes(permission);
   }
 
   // Check if user has role
-  static hasRole(context: MedicalAccessContext, roleId: string): boolean {
-    return context.roles.includes(roleId);
+  public hasRole(user: MedicalUser, role: MedicalRole): boolean {
+    return user.role === role || this.isRoleHierarchyMet(user.role, role);
   }
 
-  // Get user permissions from roles
-  static getUserPermissions(roles: string[]): string[] {
-    const permissions = new Set<string>();
-    
-    for (const roleId of roles) {
-      const role = MEDICAL_ROLES[roleId.toUpperCase()];
-      if (role) {
-        role.permissions.forEach(perm => permissions.add(perm));
-        
-        // Add inherited permissions
-        if (role.inheritsFrom) {
-          const inheritedPerms = this.getUserPermissions(role.inheritsFrom);
-          inheritedPerms.forEach(perm => permissions.add(perm));
-        }
-      }
-    }
-    
-    return Array.from(permissions);
-  }
-
-  // Validate access request
-  static validateAccess(request: MedicalAccessRequest): MedicalAccessResponse {
-    const { resource, action, context, metadata } = request;
-    
-    // Check compliance status
-    if (!context.complianceStatus.hipaaValid) {
+  // Check if user can access resource
+  public canAccessResource(user: MedicalUser, context: PermissionContext): AccessResult {
+    // Check emergency override first
+    if (context.emergencyAccess && user.emergencyAccess) {
+      medicalServices.auditMedicalAccess(user.id, 'emergency-access', 'EMERGENCY_OVERRIDE_USED');
       return {
-        granted: false,
-        reason: 'HIPAA training required',
+        allowed: true,
+        emergencyOverride: true,
+        auditRequired: true,
+        reason: 'Emergency access override'
+      };
+    }
+
+    // Check basic permissions
+    const requiredPermissions = this.getRequiredPermissions(context);
+    const hasRequiredPermission = requiredPermissions.some(perm => 
+      this.hasPermission(user, perm)
+    );
+
+    if (!hasRequiredPermission) {
+      return {
+        allowed: false,
+        reason: 'Insufficient permissions',
         auditRequired: true
       };
     }
 
-    // Determine required permission
-    const requiredPermission = this.getRequiredPermission(resource, action);
-    if (!requiredPermission) {
-      return {
-        granted: false,
-        reason: 'Invalid resource or action',
-        auditRequired: true
-      };
+    // Check role-based access
+    const roleAccess = this.checkRoleAccess(user, context);
+    if (!roleAccess.allowed) {
+      return roleAccess;
     }
 
-    // Check if user has permission
-    if (!this.hasPermission(context, requiredPermission)) {
-      return {
-        granted: false,
-        reason: `Permission '${requiredPermission}' required`,
-        auditRequired: true
-      };
+    // Check contextual access
+    const contextAccess = this.checkContextualAccess(user, context);
+    if (!contextAccess.allowed) {
+      return contextAccess;
     }
 
-    // Check role restrictions
-    const restrictionCheck = this.checkRoleRestrictions(context, metadata);
-    if (!restrictionCheck.allowed) {
-      return {
-        granted: false,
-        reason: restrictionCheck.reason,
-        auditRequired: true
-      };
+    // Check resource-specific restrictions
+    const resourceAccess = this.checkResourceAccess(user, context);
+    if (!resourceAccess.allowed) {
+      return resourceAccess;
     }
 
-    // Check emergency access
-    if (context.emergencyMode) {
-      return this.handleEmergencyAccess(request);
-    }
-
-    // Check time restrictions
-    const timeCheck = this.checkTimeRestrictions(context);
-    if (!timeCheck.allowed) {
-      return {
-        granted: false,
-        reason: timeCheck.reason,
-        auditRequired: true
-      };
-    }
-
-    // Grant access
-    const permission = MEDICAL_PERMISSIONS[requiredPermission];
     return {
-      granted: true,
-      auditRequired: permission.auditRequired,
-      conditions: this.getAccessConditions(context, permission),
-      supervisorNotification: this.requiresSupervisorNotification(context, permission)
+      allowed: true,
+      auditRequired: this.isAuditRequired(context),
+      conditions: this.getAccessConditions(user, context)
     };
   }
 
-  // Get required permission for resource/action
-  private static getRequiredPermission(resource: string, action: string): string {
-    const permissionMap: Record<string, Record<string, string>> = {
-      'patient_data': {
-        'read': 'patient_data_read',
-        'write': 'patient_data_write'
-      },
-      'medical_imaging': {
-        'read': 'medical_imaging_read',
-        'write': 'medical_imaging_write'
-      },
-      'medical_reports': {
-        'read': 'medical_reports_read',
-        'write': 'medical_reports_write'
-      },
-      'ai_analysis': {
-        'use': 'ai_analysis_use'
-      },
-      'collaboration': {
-        'access': 'collaboration_access'
-      },
-      'emergency': {
-        'access': 'emergency_access',
-        'override': 'emergency_override'
-      },
-      'admin': {
-        'user_management': 'user_management',
-        'system_config': 'system_configuration',
-        'audit_logs': 'audit_log_access'
-      }
-    };
+  // Get required permissions for resource access
+  private getRequiredPermissions(context: PermissionContext): Permission[] {
+    const permissions: Permission[] = [];
 
-    return permissionMap[resource]?.[action] || '';
-  }
-
-  // Check role restrictions
-  private static checkRoleRestrictions(context: MedicalAccessContext, metadata?: any): {
-    allowed: boolean;
-    reason?: string;
-  } {
-    for (const roleId of context.roles) {
-      const role = MEDICAL_ROLES[roleId.toUpperCase()];
-      if (!role?.restrictions) continue;
-
-      // Check data restrictions
-      if (role.restrictions.dataRestrictions?.maxPatientAccess && metadata?.patientId) {
-        // In production, check actual patient access count
-        // For now, assume under limit
-      }
-
-      // Check location restrictions
-      if (role.restrictions.locationRestrictions?.allowedDepartments) {
-        if (context.currentDepartment && 
-            !role.restrictions.locationRestrictions.allowedDepartments.includes(context.currentDepartment)) {
-          if (!role.restrictions.locationRestrictions.emergencyOverride || !context.emergencyMode) {
-            return {
-              allowed: false,
-              reason: `Access restricted to departments: ${role.restrictions.locationRestrictions.allowedDepartments.join(', ')}`
-            };
-          }
+    switch (context.resourceType) {
+      case 'patient-data':
+        permissions.push('view-patient-data');
+        if (context.accessLevel === 'write') {
+          permissions.push('edit-patient-data');
         }
+        break;
+      
+      case 'dicom-images':
+        permissions.push('view-dicom-images');
+        if (context.accessLevel === 'write') {
+          permissions.push('annotate-images');
+        }
+        break;
+      
+      case 'medical-reports':
+        permissions.push('generate-reports');
+        if (context.accessLevel === 'admin') {
+          permissions.push('approve-reports');
+        }
+        break;
+      
+      case 'ai-analysis':
+        permissions.push('access-ai-tools');
+        break;
+      
+      case 'system-config':
+        permissions.push('system-administration');
+        break;
+      
+      case 'user-management':
+        permissions.push('manage-users');
+        break;
+      
+      case 'audit-logs':
+        permissions.push('audit-access');
+        break;
+      
+      case 'compliance-data':
+        permissions.push('compliance-access');
+        break;
+      
+      case 'emergency-access':
+        permissions.push('emergency-access');
+        break;
+      
+      default:
+        permissions.push('view-patient-data');
+    }
+
+    return permissions;
+  }
+
+  // Check role-based access
+  private checkRoleAccess(user: MedicalUser, context: PermissionContext): AccessResult {
+    const roleHierarchy = this.getRoleHierarchy();
+    const userLevel = roleHierarchy[user.role] || 0;
+    const requiredLevel = this.getRequiredRoleLevel(context);
+
+    if (userLevel < requiredLevel) {
+      return {
+        allowed: false,
+        reason: `Role ${user.role} insufficient for ${context.resourceType} access`,
+        auditRequired: true
+      };
+    }
+
+    return { allowed: true };
+  }
+
+  // Check contextual access (department, hospital, etc.)
+  private checkContextualAccess(user: MedicalUser, context: PermissionContext): AccessResult {
+    // Check department access
+    if (context.departmentId) {
+      const userDepartments = user.affiliations.map(aff => aff.department);
+      if (!userDepartments.includes(context.departmentId)) {
+        return {
+          allowed: false,
+          reason: 'User not affiliated with required department',
+          auditRequired: true
+        };
+      }
+    }
+
+    // Check hospital access
+    if (context.hospitalId) {
+      const userHospitals = user.affiliations.map(aff => aff.hospitalName);
+      if (!userHospitals.includes(context.hospitalId)) {
+        return {
+          allowed: false,
+          reason: 'User not affiliated with required hospital',
+          auditRequired: true
+        };
+      }
+    }
+
+    // Check patient access (if patient-specific)
+    if (context.patientId) {
+      const patientAccess = this.checkPatientAccess(user, context.patientId);
+      if (!patientAccess.allowed) {
+        return patientAccess;
       }
     }
 
     return { allowed: true };
   }
 
-  // Check time restrictions
-  private static checkTimeRestrictions(context: MedicalAccessContext): {
-    allowed: boolean;
-    reason?: string;
-  } {
-    const currentHour = new Date().getHours();
-    
-    for (const roleId of context.roles) {
-      const role = MEDICAL_ROLES[roleId.toUpperCase()];
-      if (!role?.restrictions?.timeRestrictions?.allowedHours) continue;
+  // Check resource-specific access
+  private checkResourceAccess(user: MedicalUser, context: PermissionContext): AccessResult {
+    // Check time-based restrictions
+    if (this.hasTimeRestrictions(user.role)) {
+      const timeAccess = this.checkTimeAccess(user, context);
+      if (!timeAccess.allowed) {
+        return timeAccess;
+      }
+    }
 
-      const allowedHours = role.restrictions.timeRestrictions.allowedHours;
-      const isAllowed = allowedHours.some(period => 
-        currentHour >= period.start && currentHour <= period.end
-      );
-
-      if (!isAllowed) {
-        if (!role.restrictions.timeRestrictions.emergencyOverride || !context.emergencyMode) {
-          return {
-            allowed: false,
-            reason: `Access restricted to hours: ${allowedHours.map(p => `${p.start}:00-${p.end}:00`).join(', ')}`
-          };
-        }
+    // Check concurrent access limits
+    if (this.hasConcurrentLimits(context.resourceType)) {
+      const concurrentAccess = this.checkConcurrentAccess(user, context);
+      if (!concurrentAccess.allowed) {
+        return concurrentAccess;
       }
     }
 
     return { allowed: true };
   }
 
-  // Handle emergency access
-  private static handleEmergencyAccess(request: MedicalAccessRequest): MedicalAccessResponse {
-    const { context, metadata } = request;
+  // Check patient-specific access
+  private checkPatientAccess(user: MedicalUser, patientId: string): AccessResult {
+    // In a real implementation, this would check:
+    // - Patient assignment to user
+    // - Care team membership
+    // - Consultation permissions
+    // - Emergency access rights
     
-    // Check if user has emergency access permission
-    if (!this.hasPermission(context, 'emergency_access')) {
-      return {
-        granted: false,
-        reason: 'Emergency access permission required',
-        auditRequired: true
-      };
-    }
-
-    // Require emergency justification
-    if (!metadata?.emergencyJustification) {
-      return {
-        granted: false,
-        reason: 'Emergency justification required',
-        auditRequired: true
-      };
+    // For now, allow access if user has patient data permissions
+    if (this.hasPermission(user, 'view-patient-data')) {
+      return { allowed: true };
     }
 
     return {
-      granted: true,
-      reason: 'Emergency access granted',
-      conditions: [
-        'Emergency access mode',
-        'Limited time access (1 hour)',
-        'Supervisor notification required',
-        'Detailed audit trail'
-      ],
-      auditRequired: true,
-      timeLimit: 60 * 60 * 1000, // 1 hour
-      supervisorNotification: true
+      allowed: false,
+      reason: 'No patient access permissions',
+      auditRequired: true
     };
+  }
+
+  // Check time-based access restrictions
+  private checkTimeAccess(user: MedicalUser, context: PermissionContext): AccessResult {
+    const now = new Date();
+    const hour = now.getHours();
+
+    // Example: Residents have restricted access during certain hours
+    if (user.role === 'resident' && (hour < 6 || hour > 22)) {
+      return {
+        allowed: false,
+        reason: 'Access restricted during off-hours for residents',
+        auditRequired: true
+      };
+    }
+
+    return { allowed: true };
+  }
+
+  // Check concurrent access limits
+  private checkConcurrentAccess(user: MedicalUser, context: PermissionContext): AccessResult {
+    // In a real implementation, this would check current sessions
+    // and enforce limits based on resource type and user role
+    
+    return { allowed: true };
+  }
+
+  // Get role hierarchy levels
+  private getRoleHierarchy(): Record<MedicalRole, number> {
+    return {
+      'medical-student': 1,
+      'resident': 2,
+      'fellow': 3,
+      'attending': 4,
+      'radiologist': 4,
+      'nurse': 2,
+      'technologist': 2,
+      'administrator': 5,
+      'system-admin': 6,
+      'super-admin': 7
+    };
+  }
+
+  // Check if role hierarchy is met
+  private isRoleHierarchyMet(userRole: MedicalRole, requiredRole: MedicalRole): boolean {
+    const hierarchy = this.getRoleHierarchy();
+    return (hierarchy[userRole] || 0) >= (hierarchy[requiredRole] || 0);
+  }
+
+  // Get required role level for resource access
+  private getRequiredRoleLevel(context: PermissionContext): number {
+    switch (context.resourceType) {
+      case 'system-config':
+        return 6; // system-admin
+      case 'user-management':
+        return 5; // administrator
+      case 'audit-logs':
+        return 5; // administrator
+      case 'compliance-data':
+        return 5; // administrator
+      case 'emergency-access':
+        return 2; // resident and above
+      case 'ai-analysis':
+        return 3; // fellow and above
+      case 'medical-reports':
+        return context.accessLevel === 'admin' ? 4 : 2; // attending for approval
+      default:
+        return 1; // basic access
+    }
+  }
+
+  // Check if time restrictions apply
+  private hasTimeRestrictions(role: MedicalRole): boolean {
+    return ['medical-student', 'resident'].includes(role);
+  }
+
+  // Check if concurrent limits apply
+  private hasConcurrentLimits(resourceType: ResourceType): boolean {
+    return ['ai-analysis', 'system-config'].includes(resourceType);
+  }
+
+  // Check if audit is required
+  private isAuditRequired(context: PermissionContext): boolean {
+    const highRiskResources: ResourceType[] = [
+      'patient-data',
+      'medical-reports',
+      'system-config',
+      'user-management',
+      'audit-logs',
+      'compliance-data',
+      'emergency-access'
+    ];
+
+    return highRiskResources.includes(context.resourceType) || 
+           context.emergencyAccess === true;
   }
 
   // Get access conditions
-  private static getAccessConditions(context: MedicalAccessContext, permission: MedicalPermission): string[] {
+  private getAccessConditions(user: MedicalUser, context: PermissionContext): string[] {
     const conditions: string[] = [];
 
-    if (permission.hipaaLevel === 'sensitive') {
-      conditions.push('Sensitive data access - enhanced audit trail');
+    // Add time-based conditions
+    if (this.hasTimeRestrictions(user.role)) {
+      conditions.push('Access limited to business hours');
     }
 
-    if (context.supervisionLevel === 'trainee') {
-      conditions.push('Trainee access - supervisor oversight required');
+    // Add supervision conditions
+    if (user.role === 'medical-student') {
+      conditions.push('Supervision required for patient data access');
     }
 
-    if (permission.category === 'emergency') {
-      conditions.push('Emergency access - time limited');
+    // Add emergency conditions
+    if (context.emergencyAccess) {
+      conditions.push('Emergency access - requires justification');
     }
 
     return conditions;
   }
 
-  // Check if supervisor notification required
-  private static requiresSupervisorNotification(context: MedicalAccessContext, permission: MedicalPermission): boolean {
-    return context.supervisionLevel === 'trainee' || 
-           permission.hipaaLevel === 'sensitive' ||
-           permission.category === 'emergency';
+  // Grant temporary permission
+  public grantTemporaryPermission(
+    user: MedicalUser, 
+    permission: Permission, 
+    duration: number, 
+    reason: string
+  ): boolean {
+    // In a real implementation, this would store temporary permissions
+    // with expiration times
+    
+    medicalServices.auditMedicalAccess(
+      user.id, 
+      'temporary-permission', 
+      `GRANTED_${permission.toUpperCase()}`
+    );
+
+    console.log(`Granted temporary permission ${permission} to user ${user.id} for ${duration}ms`);
+    return true;
   }
 
-  // Get user role hierarchy level
-  static getUserHierarchyLevel(roles: string[]): number {
-    let highestLevel = 999; // Lower number = higher authority
-    
-    for (const roleId of roles) {
-      const role = MEDICAL_ROLES[roleId.toUpperCase()];
-      if (role && role.hierarchy < highestLevel) {
-        highestLevel = role.hierarchy;
-      }
+  // Revoke temporary permission
+  public revokeTemporaryPermission(user: MedicalUser, permission: Permission): boolean {
+    medicalServices.auditMedicalAccess(
+      user.id, 
+      'temporary-permission', 
+      `REVOKED_${permission.toUpperCase()}`
+    );
+
+    console.log(`Revoked temporary permission ${permission} from user ${user.id}`);
+    return true;
+  }
+
+  // Check if user can delegate permission
+  public canDelegatePermission(
+    delegator: MedicalUser, 
+    delegatee: MedicalUser, 
+    permission: Permission
+  ): boolean {
+    // Check if delegator has the permission
+    if (!this.hasPermission(delegator, permission)) {
+      return false;
     }
-    
-    return highestLevel;
+
+    // Check role hierarchy
+    const hierarchy = this.getRoleHierarchy();
+    const delegatorLevel = hierarchy[delegator.role] || 0;
+    const delegateeLevel = hierarchy[delegatee.role] || 0;
+
+    // Can only delegate to equal or lower level
+    return delegatorLevel >= delegateeLevel;
   }
 
-  // Check if user can supervise another user
-  static canSupervise(supervisorRoles: string[], superviseeRoles: string[]): boolean {
-    const supervisorLevel = this.getUserHierarchyLevel(supervisorRoles);
-    const superviseeLevel = this.getUserHierarchyLevel(superviseeRoles);
+  // Get user's effective permissions (including temporary)
+  public getEffectivePermissions(user: MedicalUser): Permission[] {
+    // In a real implementation, this would combine:
+    // - Base role permissions
+    // - Temporary permissions
+    // - Delegated permissions
     
-    return supervisorLevel < superviseeLevel; // Lower number = higher authority
+    return [...user.permissions];
   }
 
-  // Validate medical compliance
-  static validateMedicalCompliance(context: MedicalAccessContext): {
-    compliant: boolean;
-    missing: string[];
+  // Check bulk permissions
+  public checkBulkPermissions(
+    user: MedicalUser, 
+    permissions: Permission[]
+  ): Record<Permission, boolean> {
+    const results: Record<Permission, boolean> = {} as any;
+    
+    permissions.forEach(permission => {
+      results[permission] = this.hasPermission(user, permission);
+    });
+
+    return results;
+  }
+
+  // Get permission summary for user
+  public getPermissionSummary(user: MedicalUser): {
+    role: MedicalRole;
+    permissions: Permission[];
+    resourceAccess: Record<ResourceType, AccessLevel>;
+    restrictions: string[];
   } {
-    const missing: string[] = [];
+    const resourceAccess: Record<ResourceType, AccessLevel> = {} as any;
+    const restrictions: string[] = [];
 
-    if (!context.complianceStatus.hipaaValid) {
-      missing.push('HIPAA Training');
+    // Determine access level for each resource type
+    const resourceTypes: ResourceType[] = [
+      'patient-data', 'dicom-images', 'medical-reports', 'ai-analysis',
+      'system-config', 'user-management', 'audit-logs', 'compliance-data',
+      'emergency-access', 'billing-data'
+    ];
+
+    resourceTypes.forEach(resourceType => {
+      resourceAccess[resourceType] = this.getResourceAccessLevel(user, resourceType);
+    });
+
+    // Add restrictions based on role
+    if (this.hasTimeRestrictions(user.role)) {
+      restrictions.push('Time-based access restrictions');
     }
 
-    if (!context.complianceStatus.licenseValid) {
-      missing.push('Medical License');
-    }
-
-    if (!context.complianceStatus.backgroundValid) {
-      missing.push('Background Check');
+    if (user.role === 'medical-student') {
+      restrictions.push('Supervision required');
     }
 
     return {
-      compliant: missing.length === 0,
-      missing
+      role: user.role,
+      permissions: user.permissions,
+      resourceAccess,
+      restrictions
+    };
+  }
+
+  // Get resource access level for user
+  private getResourceAccessLevel(user: MedicalUser, resourceType: ResourceType): AccessLevel {
+    const context: PermissionContext = {
+      resourceType,
+      accessLevel: 'read'
+    };
+
+    const readAccess = this.canAccessResource(user, context);
+    if (!readAccess.allowed) {
+      return 'none';
+    }
+
+    const writeContext: PermissionContext = {
+      resourceType,
+      accessLevel: 'write'
+    };
+
+    const writeAccess = this.canAccessResource(user, writeContext);
+    if (!writeAccess.allowed) {
+      return 'read';
+    }
+
+    const adminContext: PermissionContext = {
+      resourceType,
+      accessLevel: 'admin'
+    };
+
+    const adminAccess = this.canAccessResource(user, adminContext);
+    if (adminAccess.allowed) {
+      return 'admin';
+    }
+
+    return 'write';
+  }
+
+  // Validate permission consistency
+  public validatePermissionConsistency(user: MedicalUser): {
+    valid: boolean;
+    issues: string[];
+  } {
+    const issues: string[] = [];
+
+    // Check if user has permissions consistent with role
+    const expectedPermissions = ROLE_PERMISSIONS[user.role];
+    const hasAllExpected = expectedPermissions.every(perm => 
+      user.permissions.includes(perm)
+    );
+
+    if (!hasAllExpected) {
+      issues.push('User missing expected permissions for role');
+    }
+
+    // Check for contradictory permissions
+    const hasSystemAdmin = user.permissions.includes('system-administration');
+    const isLowRole = ['medical-student', 'resident'].includes(user.role);
+
+    if (hasSystemAdmin && isLowRole) {
+      issues.push('User has system admin permissions but low-level role');
+    }
+
+    return {
+      valid: issues.length === 0,
+      issues
     };
   }
 }
 
-// Export for use in other modules
-export default MedicalAccessControlManager; 
+// Utility functions for permission checking
+export const checkPermission = (user: MedicalUser, permission: Permission): boolean => {
+  return MedicalAccessControl.getInstance().hasPermission(user, permission);
+};
+
+export const checkResourceAccess = (user: MedicalUser, context: PermissionContext): AccessResult => {
+  return MedicalAccessControl.getInstance().canAccessResource(user, context);
+};
+
+export const checkRole = (user: MedicalUser, role: MedicalRole): boolean => {
+  return MedicalAccessControl.getInstance().hasRole(user, role);
+};
+
+// Higher-order component for permission-based rendering
+export const withPermission = (permission: Permission) => {
+  return (user: MedicalUser | null) => {
+    if (!user) return false;
+    return checkPermission(user, permission);
+  };
+};
+
+// Higher-order component for role-based rendering
+export const withRole = (role: MedicalRole) => {
+  return (user: MedicalUser | null) => {
+    if (!user) return false;
+    return checkRole(user, role);
+  };
+};
+
+// Export singleton instance
+export const medicalAccessControl = MedicalAccessControl.getInstance();
+export default medicalAccessControl; 

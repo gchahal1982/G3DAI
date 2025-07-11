@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * G3D Diffusion Generator
  * Advanced diffusion-based image generation with G3D acceleration

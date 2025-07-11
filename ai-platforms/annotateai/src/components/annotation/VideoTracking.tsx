@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * G3D Video Tracking Tool
  * Advanced video object tracking with temporal consistency and AI prediction

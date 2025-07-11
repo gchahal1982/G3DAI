@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * G3D Instance Segmentation Model
  * Advanced pixel-level object segmentation with GPU-accelerated mask generation

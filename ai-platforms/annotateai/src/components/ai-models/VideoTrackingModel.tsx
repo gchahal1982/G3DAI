@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * G3D Video Tracking Model
  * Advanced temporal object tracking and motion analysis

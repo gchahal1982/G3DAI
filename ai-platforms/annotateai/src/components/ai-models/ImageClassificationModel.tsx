@@ -1,10 +1,12 @@
+'use client';
+
 /**
  * G3D Image Classification Model
- * Advanced image classification with G3D acceleration
- * ~2,200 lines of production code
+ * Advanced image classification with multi-class support and real-time inference
+ * ~1,800 lines of production code
  */
 
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useRef, useEffect, useState, useCallback } from 'react';
 import { NativeRenderer } from '../../integration/NativeRenderer';
 import { SceneManager } from '../../integration/SceneManager';
 import { ModelRunner } from '../../ai/ModelRunner';

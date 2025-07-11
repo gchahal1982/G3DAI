@@ -3,17 +3,27 @@
 import React, { useState, useCallback, useRef } from 'react';
 
 interface FileUploaderProps {
-  onFilesUploaded: (files: File[]) => void;
+  onFilesUploaded?: (files: File[]) => void;
+  onUploadComplete?: (files: any[]) => void;
+  onUploadError?: (error: string) => void;
   acceptedFileTypes?: string[];
   maxFileSize?: number;
+  maxFiles?: number;
   className?: string;
+  projectId?: string;
+  datasetId?: string;
 }
 
 const FileUploader: React.FC<FileUploaderProps> = ({
   onFilesUploaded,
+  onUploadComplete,
+  onUploadError,
   acceptedFileTypes = ['image/*', '.zip', '.json'],
   maxFileSize = 10 * 1024 * 1024, // 10MB
-  className = ''
+  maxFiles = 10,
+  className = '',
+  projectId,
+  datasetId
 }) => {
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
@@ -72,15 +82,18 @@ const FileUploader: React.FC<FileUploaderProps> = ({
           await new Promise(resolve => setTimeout(resolve, 100));
         }
 
-        onFilesUploaded(acceptedFiles);
+        onFilesUploaded?.(acceptedFiles);
+        onUploadComplete?.(acceptedFiles);
       } catch (error) {
         console.error('Upload failed:', error);
+        const errorMessage = error instanceof Error ? error.message : 'Upload failed';
+        onUploadError?.(errorMessage);
       }
     }
 
     setUploading(false);
     setUploadProgress(0);
-  }, [onFilesUploaded, acceptedFileTypes, maxFileSize]);
+  }, [onFilesUploaded, onUploadComplete, onUploadError, acceptedFileTypes, maxFileSize]);
 
   const handleDragEnter = useCallback((e: React.DragEvent) => {
     e.preventDefault();

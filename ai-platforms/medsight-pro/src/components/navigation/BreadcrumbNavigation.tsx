@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
-import { MedSightBadge } from '@/lib/shared-ui';
+import MedSightBadge from '@/lib/shared-ui';
 
 // Medical breadcrumb item interface
 interface MedicalBreadcrumbItem {
@@ -346,17 +346,13 @@ export const BreadcrumbNavigation: React.FC<BreadcrumbNavigationProps> = ({
                     {showMetadata && item.metadata && (
                       <div className="flex items-center space-x-1 ml-2">
                         {item.metadata.status && (
-                          <MedSightBadge 
-                            variant="status"
-                            medicalVariant={
-                              item.metadata.status === 'critical' ? 'critical' :
-                              item.metadata.status === 'pending' ? 'pending' :
-                              item.metadata.status === 'completed' ? 'normal' : 'pending'
-                            }
+                          <MedSightBadge.UI.MedicalStatusBadge
+                            status={item.metadata.status}
+                            confidence={0} // Assuming confidence is not available in metadata
                             className="text-xs"
                           >
                             {item.metadata.status}
-                          </MedSightBadge>
+                          </MedSightBadge.UI.MedicalStatusBadge>
                         )}
                         
                         {item.metadata.modality && (

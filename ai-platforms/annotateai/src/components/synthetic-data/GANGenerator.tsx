@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * G3D GAN Generator
  * Advanced synthetic image generation using GANs with G3D acceleration

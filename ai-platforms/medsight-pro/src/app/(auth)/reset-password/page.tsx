@@ -5,8 +5,8 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { medicalAuth } from '@/lib/auth/medical-auth-adapter';
 import { 
-  GlassCard, 
-  GlassButton, 
+  Card, 
+  Button, 
   Input, 
   Alert 
 } from '@/components/ui';
@@ -373,7 +373,7 @@ export default function PasswordResetPage() {
               )}
             </div>
             
-            <GlassButton
+            <Button
               onClick={handleIdentityVerification}
               disabled={isLoading || isLocked}
               className="w-full"
@@ -395,7 +395,7 @@ export default function PasswordResetPage() {
                 `Locked for ${Math.floor(lockoutTime / 60)}:${(lockoutTime % 60).toString().padStart(2, '0')}` : 
                 'Verify Identity'
               }
-            </GlassButton>
+            </Button>
           </div>
         );
         
@@ -446,7 +446,7 @@ export default function PasswordResetPage() {
             </div>
             
             <div className="flex space-x-4">
-              <GlassButton
+              <Button
                 onClick={() => setCurrentStep(ResetStep.IDENTITY_VERIFICATION)}
                 className="flex-1"
                 style={{
@@ -458,8 +458,8 @@ export default function PasswordResetPage() {
                 }}
               >
                 Back
-              </GlassButton>
-              <GlassButton
+              </Button>
+              <Button
                 onClick={handleSecurityVerification}
                 disabled={isLoading}
                 className="flex-1"
@@ -472,7 +472,7 @@ export default function PasswordResetPage() {
                 }}
               >
                 {isLoading ? 'Verifying...' : 'Verify Answer'}
-              </GlassButton>
+              </Button>
             </div>
           </div>
         );
@@ -510,7 +510,7 @@ export default function PasswordResetPage() {
                     color: 'white'
                   }}
                 />
-                <GlassButton
+                <Button
                   onClick={resendVerificationCode}
                   disabled={isLoading}
                   className="px-4"
@@ -524,7 +524,7 @@ export default function PasswordResetPage() {
                   }}
                 >
                   Resend
-                </GlassButton>
+                </Button>
               </div>
               {errors.verificationCode && (
                 <p className="text-sm mt-1" style={{ color: 'var(--medsight-abnormal)' }}>
@@ -588,7 +588,7 @@ export default function PasswordResetPage() {
               )}
             </div>
             
-            <GlassButton
+            <Button
               onClick={handlePasswordReset}
               disabled={isLoading}
               className="w-full"
@@ -604,7 +604,7 @@ export default function PasswordResetPage() {
               }}
             >
               {isLoading ? 'Resetting Password...' : 'Reset Password'}
-            </GlassButton>
+            </Button>
           </div>
         );
         
@@ -654,7 +654,7 @@ export default function PasswordResetPage() {
               </p>
             </div>
             
-            <GlassButton
+            <Button
               onClick={() => router.push('/login')}
               className="w-full"
               style={{
@@ -669,7 +669,7 @@ export default function PasswordResetPage() {
               }}
             >
               Continue to Sign In
-            </GlassButton>
+            </Button>
             
             <p className="text-gray-400 text-xs">
               Redirecting automatically in 5 seconds...
@@ -705,7 +705,7 @@ export default function PasswordResetPage() {
       
       {/* Main reset form */}
       <div className="relative z-10 w-full max-w-md p-6">
-        <GlassCard 
+        <Card 
           className="medsight-glass p-8"
           style={{
             background: 'linear-gradient(135deg, rgba(14, 165, 233, 0.06) 0%, rgba(16, 185, 129, 0.04) 100%)',
@@ -787,7 +787,7 @@ export default function PasswordResetPage() {
               </Link>
             </div>
           )}
-        </GlassCard>
+        </Card>
       </div>
     </div>
   );

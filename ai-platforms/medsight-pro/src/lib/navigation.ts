@@ -1,561 +1,787 @@
 /**
- * MedSight Pro - Navigation Configuration & Routing System
- * Medical-specific routing with role-based access control and workflow optimization
- * Optimized for clinical workflows and HIPAA compliance
+ * Navigation Configuration Library
+ * Medical-specific routing, permissions, and navigation utilities
+ * 
+ * Features:
+ * - Role-based navigation configuration
+ * - Medical workflow routing
+ * - Permission-based access control
+ * - Navigation breadcrumb generation
+ * - Medical emergency navigation
+ * - Compliance routing
+ * - Navigation state management
+ * - Medical workspace navigation
+ * - Quick action routing
+ * - Navigation analytics
  */
 
-// Medical route interface
-interface MedicalRoute {
+import { medicalServices } from '@/config/shared-config';
+
+// Navigation item types
+export type NavigationItemType = 'system' | 'workspace' | 'case' | 'study' | 'admin' | 'emergency' | 'compliance' | 'ai' | 'collaboration';
+
+// Navigation item interface
+export interface NavigationItem {
   id: string;
-  path: string;
   name: string;
-  icon?: string;
+  path: string;
+  icon: string;
   description?: string;
-  roles: string[];
-  type: 'public' | 'protected' | 'admin' | 'emergency';
-  category: 'auth' | 'dashboard' | 'workspace' | 'admin' | 'emergency' | 'support';
-  children?: MedicalRoute[];
+  type: NavigationItemType;
+  badge?: {
+    text: string;
+    variant: 'primary' | 'secondary' | 'success' | 'warning' | 'error' | 'info';
+    count?: number;
+  };
+  permissions: string[];
+  children?: NavigationItem[];
+  isActive?: boolean;
+  disabled?: boolean;
+  emergency?: boolean;
+  compliance?: boolean;
   metadata?: {
-    requiresMFA?: boolean;
-    requiresLicense?: boolean;
-    emergencyAccess?: boolean;
-    auditLevel?: 'basic' | 'detailed' | 'comprehensive';
-    complianceRequired?: string[];
+    workspaceType?: string;
+    category?: string;
+    priority?: number;
+    lastAccessed?: Date;
+    accessCount?: number;
   };
 }
 
-// Medical user roles
-export const MEDICAL_USER_ROLES = {
-  // System Roles
-  SYSTEM_ADMIN: 'system-admin',
-  ADMIN: 'admin',
-  
-  // Medical Professional Roles
-  MEDICAL_PROFESSIONAL: 'medical-professional',
-  RADIOLOGIST: 'radiologist',
-  ATTENDING_PHYSICIAN: 'attending',
-  RESIDENT: 'resident',
-  TECHNICIAN: 'technician',
-  NURSE: 'nurse',
-  
-  // Specialized Roles
-  CHIEF_RADIOLOGIST: 'chief-radiologist',
-  DEPARTMENT_HEAD: 'department-head',
-  CLINICAL_COORDINATOR: 'clinical-coordinator',
-  
-  // Guest/Limited Access
-  VIEWER: 'viewer',
-  GUEST: 'guest'
-} as const;
-
-// Medical route categories
-export const MEDICAL_ROUTE_CATEGORIES = {
-  AUTH: 'auth',
-  DASHBOARD: 'dashboard',
-  WORKSPACE: 'workspace',
-  ADMIN: 'admin',
-  EMERGENCY: 'emergency',
-  SUPPORT: 'support'
-} as const;
+// Navigation configuration interface
+export interface NavigationConfig {
+  items: NavigationItem[];
+  emergencyItems: NavigationItem[];
+  quickActions: NavigationItem[];
+  breadcrumbSeparators: Record<NavigationItemType, string>;
+  icons: Record<NavigationItemType, string>;
+  colors: Record<NavigationItemType, string>;
+}
 
 // Medical navigation configuration
-export const MEDICAL_NAVIGATION_CONFIG: MedicalRoute[] = [
-  // Authentication Routes (Public)
-  {
-    id: 'auth',
-    path: '/auth',
-    name: 'Authentication',
-    icon: '🔐',
-    description: 'Medical professional authentication',
-    roles: [],
-    type: 'public',
-    category: 'auth',
-    children: [
-      {
-        id: 'login',
-        path: '/login',
-        name: 'Login',
-        icon: '🔑',
-        description: 'Medical professional login',
-        roles: [],
-        type: 'public',
-        category: 'auth',
-        metadata: {
-          requiresMFA: true,
-          requiresLicense: true,
-          auditLevel: 'comprehensive'
-        }
-      },
-      {
-        id: 'signup',
-        path: '/signup',
-        name: 'Sign Up',
-        icon: '📝',
-        description: 'New medical professional registration',
-        roles: [],
-        type: 'public',
-        category: 'auth',
-        metadata: {
-          requiresLicense: true,
-          auditLevel: 'comprehensive',
-          complianceRequired: ['HIPAA', 'Medical_License']
-        }
-      },
-      {
-        id: 'reset-password',
-        path: '/reset-password',
-        name: 'Password Reset',
-        icon: '🔄',
-        description: 'Secure password recovery',
-        roles: [],
-        type: 'public',
-        category: 'auth',
-        metadata: {
-          auditLevel: 'detailed'
-        }
-      },
-      {
-        id: 'verify-account',
-        path: '/verify-account',
-        name: 'Account Verification',
-        icon: '✅',
-        description: 'Email and license verification',
-        roles: [],
-        type: 'public',
-        category: 'auth'
-      },
-      {
-        id: 'mfa',
-        path: '/mfa',
-        name: 'Multi-Factor Authentication',
-        icon: '🔐',
-        description: 'Two-factor authentication',
-        roles: [],
-        type: 'public',
-        category: 'auth',
-        metadata: {
-          requiresMFA: true,
-          auditLevel: 'comprehensive'
-        }
-      }
-    ]
-  },
-
-  // Dashboard Routes (Protected)
-  {
-    id: 'dashboard',
-    path: '/dashboard',
-    name: 'Dashboard',
-    icon: '📊',
-    description: 'Medical dashboard system',
-    roles: [MEDICAL_USER_ROLES.MEDICAL_PROFESSIONAL],
-    type: 'protected',
-    category: 'dashboard',
-    metadata: {
-      requiresMFA: true,
-      requiresLicense: true,
-      auditLevel: 'basic'
-    },
-    children: [
-      {
-        id: 'medical-dashboard',
-        path: '/dashboard/medical',
-        name: 'Medical Dashboard',
-        icon: '🏥',
-        description: 'Primary clinical workspace',
-        roles: [MEDICAL_USER_ROLES.MEDICAL_PROFESSIONAL, MEDICAL_USER_ROLES.RADIOLOGIST, MEDICAL_USER_ROLES.ATTENDING_PHYSICIAN],
-        type: 'protected',
+export const MEDICAL_NAVIGATION_CONFIG: NavigationConfig = {
+  items: [
+    // System Navigation
+    {
+      id: 'dashboard',
+      name: 'Medical Dashboard',
+      path: '/dashboard/medical',
+      icon: '🏥',
+      description: 'Main clinical workspace',
+      type: 'system',
+      permissions: ['view-patient-data'],
+      metadata: {
+        workspaceType: 'primary',
         category: 'dashboard',
-        metadata: {
-          requiresLicense: true,
-          auditLevel: 'detailed'
-        }
+        priority: 1
+      }
+    },
+    {
+      id: 'admin-dashboard',
+      name: 'Admin Dashboard',
+      path: '/dashboard/admin',
+      icon: '⚙️',
+      description: 'System administration',
+      type: 'admin',
+      permissions: ['system-administration'],
+      badge: {
+        text: 'Admin',
+        variant: 'warning'
       },
-      {
-        id: 'admin-dashboard',
-        path: '/dashboard/admin',
-        name: 'Admin Dashboard',
-        icon: '⚙️',
-        description: 'System administration',
-        roles: [MEDICAL_USER_ROLES.ADMIN, MEDICAL_USER_ROLES.SYSTEM_ADMIN],
-        type: 'admin',
+      metadata: {
+        workspaceType: 'admin',
         category: 'dashboard',
-        metadata: {
-          auditLevel: 'comprehensive'
-        }
-      },
-      {
-        id: 'enterprise-dashboard',
-        path: '/dashboard/enterprise',
-        name: 'Enterprise Dashboard',
-        icon: '🏢',
-        description: 'Multi-tenant management',
-        roles: [MEDICAL_USER_ROLES.SYSTEM_ADMIN, MEDICAL_USER_ROLES.DEPARTMENT_HEAD],
-        type: 'admin',
-        category: 'dashboard'
-      },
-      {
-        id: 'analytics-dashboard',
-        path: '/dashboard/analytics',
-        name: 'Analytics Dashboard',
-        icon: '📈',
-        description: 'Medical analytics and insights',
-        roles: [MEDICAL_USER_ROLES.RADIOLOGIST, MEDICAL_USER_ROLES.ATTENDING_PHYSICIAN, MEDICAL_USER_ROLES.ADMIN],
-        type: 'protected',
-        category: 'dashboard'
+        priority: 2
       }
-    ]
-  },
-
-  // Workspace Routes (Protected)
-  {
-    id: 'workspace',
-    path: '/workspace',
-    name: 'Medical Workspace',
-    icon: '🔬',
-    description: 'Specialized medical workspaces',
-    roles: [MEDICAL_USER_ROLES.MEDICAL_PROFESSIONAL],
-    type: 'protected',
-    category: 'workspace',
-    metadata: {
-      requiresLicense: true,
-      auditLevel: 'detailed'
     },
-    children: [
-      {
-        id: 'imaging-workspace',
-        path: '/workspace/imaging',
-        name: 'Medical Imaging',
-        icon: '📱',
-        description: 'DICOM imaging and analysis',
-        roles: [MEDICAL_USER_ROLES.RADIOLOGIST, MEDICAL_USER_ROLES.ATTENDING_PHYSICIAN, MEDICAL_USER_ROLES.TECHNICIAN],
-        type: 'protected',
-        category: 'workspace',
-        metadata: {
-          requiresLicense: true,
-          auditLevel: 'comprehensive',
-          complianceRequired: ['DICOM', 'HIPAA']
-        }
+    {
+      id: 'enterprise-dashboard',
+      name: 'Enterprise Dashboard',
+      path: '/dashboard/enterprise',
+      icon: '🏢',
+      description: 'Multi-tenant management',
+      type: 'system',
+      permissions: ['system-administration'],
+      badge: {
+        text: 'Enterprise',
+        variant: 'primary'
       },
-      {
-        id: 'ai-analysis-workspace',
-        path: '/workspace/ai-analysis',
-        name: 'AI Analysis',
-        icon: '🤖',
-        description: 'AI-powered medical analysis',
-        roles: [MEDICAL_USER_ROLES.RADIOLOGIST, MEDICAL_USER_ROLES.ATTENDING_PHYSICIAN],
-        type: 'protected',
-        category: 'workspace',
-        metadata: {
-          requiresLicense: true,
-          auditLevel: 'comprehensive'
-        }
-      },
-      {
-        id: 'collaboration-workspace',
-        path: '/workspace/collaboration',
-        name: 'Collaboration',
-        icon: '👥',
-        description: 'Multi-user collaboration tools',
-        roles: [MEDICAL_USER_ROLES.MEDICAL_PROFESSIONAL],
-        type: 'protected',
-        category: 'workspace',
-        metadata: {
-          auditLevel: 'detailed'
-        }
-      },
-      {
-        id: 'performance-workspace',
-        path: '/workspace/performance',
-        name: 'Performance Monitoring',
-        icon: '⚡',
-        description: 'System performance monitoring',
-        roles: [MEDICAL_USER_ROLES.ADMIN, MEDICAL_USER_ROLES.SYSTEM_ADMIN],
-        type: 'admin',
-        category: 'workspace'
-      },
-      {
-        id: 'xr-workspace',
-        path: '/workspace/xr',
-        name: 'Medical XR',
-        icon: '🥽',
-        description: 'Virtual and augmented reality',
-        roles: [MEDICAL_USER_ROLES.RADIOLOGIST, MEDICAL_USER_ROLES.ATTENDING_PHYSICIAN],
-        type: 'protected',
-        category: 'workspace',
-        metadata: {
-          requiresLicense: true
-        }
+      metadata: {
+        workspaceType: 'enterprise',
+        category: 'dashboard',
+        priority: 3
       }
-    ]
-  },
-
-  // Admin Routes (Admin Only)
-  {
-    id: 'admin',
-    path: '/admin',
-    name: 'Administration',
-    icon: '⚙️',
-    description: 'System administration',
-    roles: [MEDICAL_USER_ROLES.ADMIN, MEDICAL_USER_ROLES.SYSTEM_ADMIN],
-    type: 'admin',
-    category: 'admin',
-    metadata: {
-      auditLevel: 'comprehensive'
     },
-    children: [
-      {
-        id: 'user-management',
-        path: '/admin/users',
-        name: 'User Management',
-        icon: '👤',
-        description: 'Medical professional management',
-        roles: [MEDICAL_USER_ROLES.ADMIN, MEDICAL_USER_ROLES.SYSTEM_ADMIN],
-        type: 'admin',
-        category: 'admin'
+    {
+      id: 'analytics-dashboard',
+      name: 'Analytics Dashboard',
+      path: '/dashboard/analytics',
+      icon: '📊',
+      description: 'Business intelligence',
+      type: 'system',
+      permissions: ['system-administration'],
+      badge: {
+        text: 'Analytics',
+        variant: 'info'
       },
-      {
-        id: 'organization-management',
-        path: '/admin/organizations',
-        name: 'Organization Management',
-        icon: '🏢',
-        description: 'Hospital and clinic management',
-        roles: [MEDICAL_USER_ROLES.SYSTEM_ADMIN],
-        type: 'admin',
-        category: 'admin'
+      metadata: {
+        workspaceType: 'analytics',
+        category: 'dashboard',
+        priority: 4
+      }
+    },
+
+    // Medical Workspaces
+    {
+      id: 'imaging-workspace',
+      name: 'Medical Imaging',
+      path: '/workspace/imaging',
+      icon: '🔬',
+      description: 'DICOM imaging workspace',
+      type: 'workspace',
+      permissions: ['view-dicom-images'],
+      badge: {
+        text: 'DICOM',
+        variant: 'secondary'
       },
-      {
-        id: 'system-health',
-        path: '/admin/health',
-        name: 'System Health',
-        icon: '💚',
-        description: 'System monitoring and health',
-        roles: [MEDICAL_USER_ROLES.ADMIN, MEDICAL_USER_ROLES.SYSTEM_ADMIN],
-        type: 'admin',
-        category: 'admin'
+      metadata: {
+        workspaceType: 'imaging',
+        category: 'medical',
+        priority: 1
+      }
+    },
+    {
+      id: 'ai-analysis-workspace',
+      name: 'AI Analysis',
+      path: '/workspace/ai-analysis',
+      icon: '🤖',
+      description: 'Medical AI tools',
+      type: 'ai',
+      permissions: ['access-ai-tools'],
+      badge: {
+        text: 'AI',
+        variant: 'success'
       },
-      {
-        id: 'compliance-management',
-        path: '/admin/compliance',
-        name: 'Medical Compliance',
-        icon: '🛡️',
-        description: 'HIPAA and regulatory compliance',
-        roles: [MEDICAL_USER_ROLES.ADMIN, MEDICAL_USER_ROLES.SYSTEM_ADMIN],
-        type: 'admin',
+      metadata: {
+        workspaceType: 'ai',
+        category: 'medical',
+        priority: 2
+      }
+    },
+    {
+      id: 'collaboration-workspace',
+      name: 'Collaboration',
+      path: '/workspace/collaboration',
+      icon: '👥',
+      description: 'Multi-user review',
+      type: 'collaboration',
+      permissions: ['view-patient-data'],
+      badge: {
+        text: 'Collab',
+        variant: 'info'
+      },
+      metadata: {
+        workspaceType: 'collaboration',
+        category: 'medical',
+        priority: 3
+      }
+    },
+    {
+      id: 'performance-workspace',
+      name: 'Performance',
+      path: '/workspace/performance',
+      icon: '⚡',
+      description: 'System performance monitoring',
+      type: 'system',
+      permissions: ['system-administration'],
+      badge: {
+        text: 'Perf',
+        variant: 'warning'
+      },
+      metadata: {
+        workspaceType: 'performance',
+        category: 'system',
+        priority: 4
+      }
+    },
+
+    // Medical Cases and Studies
+    {
+      id: 'medical-cases',
+      name: 'Medical Cases',
+      path: '/medical/cases',
+      icon: '📋',
+      description: 'Patient case management',
+      type: 'case',
+      permissions: ['view-patient-data'],
+      metadata: {
+        workspaceType: 'cases',
+        category: 'medical',
+        priority: 1
+      }
+    },
+    {
+      id: 'medical-studies',
+      name: 'Medical Studies',
+      path: '/medical/studies',
+      icon: '📊',
+      description: 'Research studies',
+      type: 'study',
+      permissions: ['view-patient-data'],
+      metadata: {
+        workspaceType: 'studies',
+        category: 'medical',
+        priority: 2
+      }
+    },
+    {
+      id: 'medical-reports',
+      name: 'Medical Reports',
+      path: '/medical/reports',
+      icon: '📄',
+      description: 'Generate clinical reports',
+      type: 'case',
+      permissions: ['generate-reports'],
+      metadata: {
+        workspaceType: 'reports',
+        category: 'medical',
+        priority: 3
+      }
+    },
+
+    // User Management
+    {
+      id: 'user-management',
+      name: 'User Management',
+      path: '/admin/users',
+      icon: '👤',
+      description: 'Manage medical professionals',
+      type: 'admin',
+      permissions: ['manage-users'],
+      metadata: {
+        workspaceType: 'user-management',
         category: 'admin',
-        metadata: {
-          auditLevel: 'comprehensive',
-          complianceRequired: ['HIPAA', 'DICOM', 'FDA']
-        }
+        priority: 1
       }
-    ]
-  },
-
-  // Emergency Routes (Emergency Access)
-  {
-    id: 'emergency',
-    path: '/emergency',
-    name: 'Emergency',
-    icon: '🚨',
-    description: 'Emergency medical protocols',
-    roles: [MEDICAL_USER_ROLES.MEDICAL_PROFESSIONAL],
-    type: 'emergency',
-    category: 'emergency',
-    metadata: {
-      emergencyAccess: true,
-      auditLevel: 'comprehensive'
     },
-    children: [
-      {
-        id: 'emergency-alert',
-        path: '/emergency/alert',
-        name: 'Emergency Alert',
-        icon: '🚨',
-        description: 'Activate emergency alert',
-        roles: [MEDICAL_USER_ROLES.MEDICAL_PROFESSIONAL],
-        type: 'emergency',
-        category: 'emergency',
-        metadata: {
-          emergencyAccess: true,
-          auditLevel: 'comprehensive'
-        }
+
+    // Compliance and Security
+    {
+      id: 'compliance-center',
+      name: 'Compliance Center',
+      path: '/admin/compliance',
+      icon: '🛡️',
+      description: 'HIPAA & regulatory compliance',
+      type: 'compliance',
+      permissions: ['compliance-access'],
+      badge: {
+        text: 'HIPAA',
+        variant: 'success'
       },
-      {
-        id: 'emergency-consult',
-        path: '/emergency/consult',
-        name: 'Emergency Consultation',
-        icon: '📞',
-        description: 'Request emergency consultation',
-        roles: [MEDICAL_USER_ROLES.MEDICAL_PROFESSIONAL],
-        type: 'emergency',
-        category: 'emergency'
+      compliance: true,
+      metadata: {
+        workspaceType: 'compliance',
+        category: 'admin',
+        priority: 1
       }
-    ]
+    },
+    {
+      id: 'security-center',
+      name: 'Security Center',
+      path: '/admin/security',
+      icon: '🔒',
+      description: 'Security monitoring',
+      type: 'admin',
+      permissions: ['system-administration'],
+      badge: {
+        text: 'Security',
+        variant: 'error'
+      },
+      metadata: {
+        workspaceType: 'security',
+        category: 'admin',
+        priority: 2
+      }
+    },
+    {
+      id: 'audit-logs',
+      name: 'Audit Logs',
+      path: '/admin/audit',
+      icon: '📋',
+      description: 'Medical audit trail',
+      type: 'compliance',
+      permissions: ['audit-access'],
+      compliance: true,
+      metadata: {
+        workspaceType: 'audit',
+        category: 'admin',
+        priority: 3
+      }
+    }
+  ],
+
+  emergencyItems: [
+    {
+      id: 'emergency-access',
+      name: 'Emergency Access',
+      path: '/emergency/access',
+      icon: '🚨',
+      description: 'Emergency patient access',
+      type: 'emergency',
+      permissions: ['emergency-access'],
+      emergency: true,
+      badge: {
+        text: 'Emergency',
+        variant: 'error'
+      },
+      metadata: {
+        workspaceType: 'emergency',
+        category: 'emergency',
+        priority: 1
+      }
+    },
+    {
+      id: 'emergency-protocols',
+      name: 'Emergency Protocols',
+      path: '/emergency/protocols',
+      icon: '📟',
+      description: 'Medical emergency procedures',
+      type: 'emergency',
+      permissions: ['emergency-access'],
+      emergency: true,
+      metadata: {
+        workspaceType: 'emergency',
+        category: 'emergency',
+        priority: 2
+      }
+    },
+    {
+      id: 'emergency-contacts',
+      name: 'Emergency Contacts',
+      path: '/emergency/contacts',
+      icon: '📞',
+      description: 'Emergency contact directory',
+      type: 'emergency',
+      permissions: ['emergency-access'],
+      emergency: true,
+      metadata: {
+        workspaceType: 'emergency',
+        category: 'emergency',
+        priority: 3
+      }
+    }
+  ],
+
+  quickActions: [
+    {
+      id: 'new-case',
+      name: 'New Case',
+      path: '/medical/cases/new',
+      icon: '➕',
+      description: 'Create new medical case',
+      type: 'case',
+      permissions: ['view-patient-data'],
+      metadata: {
+        workspaceType: 'quick-action',
+        category: 'medical',
+        priority: 1
+      }
+    },
+    {
+      id: 'upload-dicom',
+      name: 'Upload DICOM',
+      path: '/workspace/imaging/upload',
+      icon: '📤',
+      description: 'Upload DICOM files',
+      type: 'workspace',
+      permissions: ['view-dicom-images'],
+      metadata: {
+        workspaceType: 'quick-action',
+        category: 'medical',
+        priority: 2
+      }
+    },
+    {
+      id: 'ai-analysis',
+      name: 'AI Analysis',
+      path: '/workspace/ai-analysis',
+      icon: '🤖',
+      description: 'Run AI analysis',
+      type: 'ai',
+      permissions: ['access-ai-tools'],
+      metadata: {
+        workspaceType: 'quick-action',
+        category: 'medical',
+        priority: 3
+      }
+    },
+    {
+      id: 'generate-report',
+      name: 'Generate Report',
+      path: '/medical/reports/generate',
+      icon: '📄',
+      description: 'Generate medical report',
+      type: 'case',
+      permissions: ['generate-reports'],
+      metadata: {
+        workspaceType: 'quick-action',
+        category: 'medical',
+        priority: 4
+      }
+    }
+  ],
+
+  breadcrumbSeparators: {
+    system: '/',
+    workspace: '→',
+    case: '•',
+    study: '›',
+    admin: '⚙',
+    emergency: '🚨',
+    compliance: '🛡',
+    ai: '🤖',
+    collaboration: '👥'
   },
 
-  // Support Routes (All Users)
-  {
-    id: 'support',
-    path: '/support',
-    name: 'Support',
-    icon: '💡',
-    description: 'Clinical support and training',
-    roles: [MEDICAL_USER_ROLES.MEDICAL_PROFESSIONAL],
-    type: 'protected',
-    category: 'support',
-    children: [
-      {
-        id: 'clinical-support',
-        path: '/support/clinical',
-        name: 'Clinical Support',
-        icon: '💬',
-        description: '24/7 clinical support',
-        roles: [MEDICAL_USER_ROLES.MEDICAL_PROFESSIONAL],
-        type: 'protected',
-        category: 'support'
-      },
-      {
-        id: 'training',
-        path: '/training',
-        name: 'Medical Training',
-        icon: '🎓',
-        description: 'Medical professional training',
-        roles: [MEDICAL_USER_ROLES.MEDICAL_PROFESSIONAL],
-        type: 'protected',
-        category: 'support'
-      },
-      {
-        id: 'documentation',
-        path: '/docs',
-        name: 'Documentation',
-        icon: '📚',
-        description: 'Clinical documentation',
-        roles: [MEDICAL_USER_ROLES.MEDICAL_PROFESSIONAL],
-        type: 'protected',
-        category: 'support'
-      }
-    ]
+  icons: {
+    system: '🏥',
+    workspace: '🔬',
+    case: '📋',
+    study: '📊',
+    admin: '⚙️',
+    emergency: '🚨',
+    compliance: '🛡️',
+    ai: '🤖',
+    collaboration: '👥'
+  },
+
+  colors: {
+    system: 'text-blue-600',
+    workspace: 'text-green-600',
+    case: 'text-yellow-600',
+    study: 'text-purple-600',
+    admin: 'text-orange-600',
+    emergency: 'text-red-600',
+    compliance: 'text-indigo-600',
+    ai: 'text-emerald-600',
+    collaboration: 'text-pink-600'
   }
-];
+};
 
 // Navigation utilities
-export class MedicalNavigationManager {
-  
-  // Check if user has access to route
-  static hasRouteAccess(route: MedicalRoute, userRoles: string[]): boolean {
-    if (route.roles.length === 0) return true; // Public route
-    return route.roles.some(role => userRoles.includes(role));
+export class NavigationUtils {
+  private static instance: NavigationUtils;
+  private navigationConfig: NavigationConfig;
+
+  private constructor() {
+    this.navigationConfig = MEDICAL_NAVIGATION_CONFIG;
   }
 
-  // Get filtered routes based on user roles
-  static getFilteredRoutes(routes: MedicalRoute[], userRoles: string[]): MedicalRoute[] {
-    return routes.filter(route => {
-      if (!this.hasRouteAccess(route, userRoles)) return false;
-      
-      if (route.children) {
-        route.children = this.getFilteredRoutes(route.children, userRoles);
-      }
-      
-      return true;
+  public static getInstance(): NavigationUtils {
+    if (!NavigationUtils.instance) {
+      NavigationUtils.instance = new NavigationUtils();
+    }
+    return NavigationUtils.instance;
+  }
+
+  // Get navigation items filtered by user permissions
+  public getNavigationItems(userPermissions: string[] = []): NavigationItem[] {
+    return this.navigationConfig.items.filter(item => 
+      this.hasPermission(item.permissions, userPermissions)
+    );
+  }
+
+  // Get emergency navigation items
+  public getEmergencyItems(userPermissions: string[] = []): NavigationItem[] {
+    return this.navigationConfig.emergencyItems.filter(item => 
+      this.hasPermission(item.permissions, userPermissions)
+    );
+  }
+
+  // Get quick action items
+  public getQuickActions(userPermissions: string[] = []): NavigationItem[] {
+    return this.navigationConfig.quickActions.filter(item => 
+      this.hasPermission(item.permissions, userPermissions)
+    );
+  }
+
+  // Check if user has required permissions
+  private hasPermission(requiredPermissions: string[], userPermissions: string[]): boolean {
+    if (requiredPermissions.length === 0) return true;
+    return requiredPermissions.some(permission => userPermissions.includes(permission));
+  }
+
+  // Get navigation item by ID
+  public getNavigationItem(id: string): NavigationItem | undefined {
+    const allItems = [
+      ...this.navigationConfig.items,
+      ...this.navigationConfig.emergencyItems,
+      ...this.navigationConfig.quickActions
+    ];
+    return allItems.find(item => item.id === id);
+  }
+
+  // Get navigation items by type
+  public getNavigationItemsByType(type: NavigationItemType, userPermissions: string[] = []): NavigationItem[] {
+    return this.getNavigationItems(userPermissions).filter(item => item.type === type);
+  }
+
+  // Get navigation items by category
+  public getNavigationItemsByCategory(category: string, userPermissions: string[] = []): NavigationItem[] {
+    return this.getNavigationItems(userPermissions).filter(item => 
+      item.metadata?.category === category
+    );
+  }
+
+  // Check if navigation item is accessible
+  public isNavigationItemAccessible(itemId: string, userPermissions: string[] = []): boolean {
+    const item = this.getNavigationItem(itemId);
+    if (!item) return false;
+    return this.hasPermission(item.permissions, userPermissions);
+  }
+
+  // Get breadcrumb path for a given route
+  public getBreadcrumbPath(pathname: string): NavigationItem[] {
+    const pathSegments = pathname.split('/').filter(Boolean);
+    const breadcrumbs: NavigationItem[] = [];
+
+    // Always start with root
+    breadcrumbs.push({
+      id: 'root',
+      name: 'MedSight Pro',
+      path: '/dashboard',
+      icon: '🏥',
+      type: 'system',
+      permissions: []
     });
-  }
 
-  // Find route by path
-  static findRouteByPath(routes: MedicalRoute[], path: string): MedicalRoute | null {
-    for (const route of routes) {
-      if (route.path === path) return route;
+    // Build breadcrumb path
+    let currentPath = '';
+    for (const segment of pathSegments) {
+      currentPath += `/${segment}`;
       
-      if (route.children) {
-        const found = this.findRouteByPath(route.children, path);
-        if (found) return found;
+      // Find matching navigation item
+      const matchingItem = this.findNavigationItemByPath(currentPath);
+      if (matchingItem) {
+        breadcrumbs.push({
+          ...matchingItem,
+          path: currentPath
+        });
+      } else {
+        // Create generic breadcrumb item
+        breadcrumbs.push({
+          id: segment,
+          name: this.formatBreadcrumbName(segment),
+          path: currentPath,
+          icon: '📄',
+          type: 'system',
+          permissions: []
+        });
       }
     }
-    return null;
+
+    return breadcrumbs;
   }
 
-  // Get breadcrumb trail for path
-  static getBreadcrumbTrail(routes: MedicalRoute[], path: string): MedicalRoute[] {
-    const trail: MedicalRoute[] = [];
+  // Find navigation item by path
+  private findNavigationItemByPath(path: string): NavigationItem | undefined {
+    const allItems = [
+      ...this.navigationConfig.items,
+      ...this.navigationConfig.emergencyItems,
+      ...this.navigationConfig.quickActions
+    ];
     
-    const findTrail = (routes: MedicalRoute[], targetPath: string, currentTrail: MedicalRoute[]): boolean => {
-      for (const route of routes) {
-        const newTrail = [...currentTrail, route];
-        
-        if (route.path === targetPath) {
-          trail.push(...newTrail);
-          return true;
-        }
-        
-        if (route.children && targetPath.startsWith(route.path)) {
-          if (findTrail(route.children, targetPath, newTrail)) {
-            return true;
-          }
-        }
+    return allItems.find(item => item.path === path || item.path.startsWith(path));
+  }
+
+  // Format breadcrumb name
+  private formatBreadcrumbName(segment: string): string {
+    return segment
+      .split('-')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
+  }
+
+  // Get navigation separator for breadcrumbs
+  public getBreadcrumbSeparator(type: NavigationItemType): string {
+    return this.navigationConfig.breadcrumbSeparators[type] || '/';
+  }
+
+  // Get navigation icon for type
+  public getNavigationIcon(type: NavigationItemType): string {
+    return this.navigationConfig.icons[type] || '📄';
+  }
+
+  // Get navigation color for type
+  public getNavigationColor(type: NavigationItemType): string {
+    return this.navigationConfig.colors[type] || 'text-gray-600';
+  }
+
+  // Update navigation item metadata
+  public updateNavigationItemMetadata(itemId: string, metadata: Partial<NavigationItem['metadata']>): void {
+    const item = this.getNavigationItem(itemId);
+    if (item && item.metadata) {
+      item.metadata = { ...item.metadata, ...metadata };
+    }
+  }
+
+  // Track navigation access
+  public trackNavigationAccess(itemId: string, userId: string): void {
+    const item = this.getNavigationItem(itemId);
+    if (item) {
+      // Update access metadata
+      this.updateNavigationItemMetadata(itemId, {
+        lastAccessed: new Date(),
+        accessCount: (item.metadata?.accessCount || 0) + 1
+      });
+
+      // Medical audit logging
+      medicalServices.auditMedicalAccess(
+        userId,
+        'navigation',
+        `NAVIGATION_ACCESS_${itemId.toUpperCase()}`
+      );
+    }
+  }
+
+  // Get most accessed navigation items
+  public getMostAccessedItems(userPermissions: string[] = [], limit: number = 5): NavigationItem[] {
+    return this.getNavigationItems(userPermissions)
+      .sort((a, b) => (b.metadata?.accessCount || 0) - (a.metadata?.accessCount || 0))
+      .slice(0, limit);
+  }
+
+  // Get recently accessed navigation items
+  public getRecentlyAccessedItems(userPermissions: string[] = [], limit: number = 5): NavigationItem[] {
+    return this.getNavigationItems(userPermissions)
+      .filter(item => item.metadata?.lastAccessed)
+      .sort((a, b) => {
+        const aTime = a.metadata?.lastAccessed?.getTime() || 0;
+        const bTime = b.metadata?.lastAccessed?.getTime() || 0;
+        return bTime - aTime;
+      })
+      .slice(0, limit);
+  }
+
+  // Check if navigation item is active
+  public isNavigationItemActive(itemPath: string, currentPath: string): boolean {
+    if (itemPath === currentPath) return true;
+    if (itemPath === '/dashboard/medical' && currentPath === '/dashboard') return true;
+    return currentPath.startsWith(itemPath + '/');
+  }
+
+  // Get navigation badge count
+  public getNavigationBadgeCount(itemId: string): number {
+    const item = this.getNavigationItem(itemId);
+    return item?.badge?.count || 0;
+  }
+
+  // Update navigation badge count
+  public updateNavigationBadgeCount(itemId: string, count: number): void {
+    const item = this.getNavigationItem(itemId);
+    if (item && item.badge) {
+      item.badge.count = count;
+    }
+  }
+
+  // Get medical compliance navigation items
+  public getComplianceNavigationItems(userPermissions: string[] = []): NavigationItem[] {
+    return this.getNavigationItems(userPermissions).filter(item => item.compliance);
+  }
+
+  // Get emergency navigation items
+  public getEmergencyNavigationItems(userPermissions: string[] = []): NavigationItem[] {
+    return this.getNavigationItems(userPermissions).filter(item => item.emergency);
+  }
+
+  // Validate navigation configuration
+  public validateNavigationConfig(): boolean {
+    try {
+      // Check for duplicate IDs
+      const allItems = [
+        ...this.navigationConfig.items,
+        ...this.navigationConfig.emergencyItems,
+        ...this.navigationConfig.quickActions
+      ];
+      
+      const ids = allItems.map(item => item.id);
+      const uniqueIds = new Set(ids);
+      
+      if (ids.length !== uniqueIds.size) {
+        console.error('Navigation configuration has duplicate IDs');
+        return false;
       }
+
+      // Check for invalid paths
+      const invalidPaths = allItems.filter(item => !item.path.startsWith('/'));
+      if (invalidPaths.length > 0) {
+        console.error('Navigation configuration has invalid paths:', invalidPaths);
+        return false;
+      }
+
+      return true;
+    } catch (error) {
+      console.error('Navigation configuration validation failed:', error);
       return false;
-    };
-    
-    findTrail(routes, path, []);
-    return trail;
+    }
   }
 
-  // Get routes by category
-  static getRoutesByCategory(routes: MedicalRoute[], category: string): MedicalRoute[] {
-    const result: MedicalRoute[] = [];
-    
-    for (const route of routes) {
-      if (route.category === category) {
-        result.push(route);
-      }
-      
-      if (route.children) {
-        result.push(...this.getRoutesByCategory(route.children, category));
-      }
-    }
-    
-    return result;
+  // Export navigation configuration
+  public exportNavigationConfig(): NavigationConfig {
+    return { ...this.navigationConfig };
   }
 
-  // Validate route access with metadata
-  static validateRouteAccess(route: MedicalRoute, user: any): {
-    allowed: boolean;
-    reasons: string[];
-  } {
-    const reasons: string[] = [];
-    let allowed = true;
-
-    // Check role access
-    if (!this.hasRouteAccess(route, user.roles || [])) {
-      allowed = false;
-      reasons.push('Insufficient role permissions');
-    }
-
-    // Check metadata requirements
-    if (route.metadata) {
-      if (route.metadata.requiresMFA && !user.mfaVerified) {
-        allowed = false;
-        reasons.push('Multi-factor authentication required');
-      }
-
-      if (route.metadata.requiresLicense && !user.medicalLicense) {
-        allowed = false;
-        reasons.push('Valid medical license required');
-      }
-
-      if (route.metadata.complianceRequired) {
-        const missingCompliance = route.metadata.complianceRequired.filter(
-          comp => !user.compliance?.includes(comp)
-        );
-        if (missingCompliance.length > 0) {
-          allowed = false;
-          reasons.push(`Missing compliance: ${missingCompliance.join(', ')}`);
-        }
-      }
-    }
-
-    return { allowed, reasons };
+  // Import navigation configuration
+  public importNavigationConfig(config: NavigationConfig): void {
+    this.navigationConfig = config;
   }
 }
 
-// Export navigation configuration
-export default MEDICAL_NAVIGATION_CONFIG; 
+// Navigation hooks and utilities
+export const navigationUtils = NavigationUtils.getInstance();
+
+// Medical navigation constants
+export const MEDICAL_NAVIGATION_CONSTANTS = {
+  DEFAULT_DASHBOARD: '/dashboard/medical',
+  EMERGENCY_ACCESS: '/emergency/access',
+  COMPLIANCE_CENTER: '/admin/compliance',
+  IMAGING_WORKSPACE: '/workspace/imaging',
+  AI_ANALYSIS: '/workspace/ai-analysis',
+  COLLABORATION: '/workspace/collaboration',
+  ADMIN_DASHBOARD: '/dashboard/admin',
+  ENTERPRISE_DASHBOARD: '/dashboard/enterprise',
+  ANALYTICS_DASHBOARD: '/dashboard/analytics'
+} as const;
+
+// Medical navigation types
+export type MedicalNavigationRoute = typeof MEDICAL_NAVIGATION_CONSTANTS[keyof typeof MEDICAL_NAVIGATION_CONSTANTS];
+
+// Navigation permissions
+export const NAVIGATION_PERMISSIONS = {
+  VIEW_PATIENT_DATA: 'view-patient-data',
+  VIEW_DICOM_IMAGES: 'view-dicom-images',
+  ACCESS_AI_TOOLS: 'access-ai-tools',
+  GENERATE_REPORTS: 'generate-reports',
+  MANAGE_USERS: 'manage-users',
+  SYSTEM_ADMINISTRATION: 'system-administration',
+  EMERGENCY_ACCESS: 'emergency-access',
+  COMPLIANCE_ACCESS: 'compliance-access',
+  AUDIT_ACCESS: 'audit-access'
+} as const;
+
+// Navigation roles
+export const NAVIGATION_ROLES = {
+  MEDICAL_STUDENT: 'medical-student',
+  RESIDENT: 'resident',
+  ATTENDING: 'attending',
+  FELLOW: 'fellow',
+  RADIOLOGIST: 'radiologist',
+  TECHNOLOGIST: 'technologist',
+  NURSE: 'nurse',
+  ADMINISTRATOR: 'administrator',
+  SYSTEM_ADMIN: 'system-admin',
+  SUPER_ADMIN: 'super-admin'
+} as const;
+
+// Default export
+export default navigationUtils; 

@@ -78,7 +78,7 @@ export default function HelpCenter() {
       description: 'Learn the basics of AnnotateAI',
       icon: <Book className="w-6 h-6" />,
       articleCount: 12,
-      color: 'bg-blue-100 text-blue-700',
+      color: 'bg-indigo-500/20 text-indigo-300',
     },
     {
       id: 'annotation-tools',
@@ -86,7 +86,7 @@ export default function HelpCenter() {
       description: 'Master our annotation features',
       icon: <Play className="w-6 h-6" />,
       articleCount: 18,
-      color: 'bg-purple-100 text-purple-700',
+      color: 'bg-purple-500/20 text-purple-300',
     },
     {
       id: 'ai-models',
@@ -94,7 +94,7 @@ export default function HelpCenter() {
       description: 'Train and deploy AI models',
       icon: <Book className="w-6 h-6" />,
       articleCount: 15,
-      color: 'bg-green-100 text-green-700',
+      color: 'bg-green-500/20 text-green-300',
     },
     {
       id: 'collaboration',
@@ -102,7 +102,7 @@ export default function HelpCenter() {
       description: 'Work together effectively',
       icon: <MessageCircle className="w-6 h-6" />,
       articleCount: 8,
-      color: 'bg-yellow-100 text-yellow-700',
+      color: 'bg-yellow-500/20 text-yellow-300',
     },
     {
       id: 'billing',
@@ -110,7 +110,7 @@ export default function HelpCenter() {
       description: 'Manage your subscription',
       icon: <Mail className="w-6 h-6" />,
       articleCount: 6,
-      color: 'bg-red-100 text-red-700',
+      color: 'bg-red-500/20 text-red-300',
     },
     {
       id: 'api',
@@ -118,7 +118,7 @@ export default function HelpCenter() {
       description: 'Integrate with your workflow',
       icon: <ExternalLink className="w-6 h-6" />,
       articleCount: 10,
-      color: 'bg-indigo-100 text-indigo-700',
+      color: 'bg-cyan-500/20 text-cyan-300',
     },
   ];
 
@@ -208,28 +208,28 @@ export default function HelpCenter() {
     : categories;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-950 via-purple-950 to-gray-950">
       {/* Header */}
-      <div className="bg-white border-b border-gray-200">
+      <div className="bg-white/5 backdrop-blur-xl border-b border-white/10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <Link href="/" className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
+              <div className="w-8 h-8 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-lg flex items-center justify-center">
                 <span className="text-white font-bold text-sm">A</span>
               </div>
-              <span className="text-xl font-bold text-gray-900">AnnotateAI</span>
+              <span className="text-xl font-bold text-white">AnnotateAI</span>
             </Link>
             
             <div className="flex items-center gap-4">
               <Link
-                href="/dashboard"
-                className="text-gray-600 hover:text-gray-900 transition-colors"
+                href="/"
+                className="text-white/70 hover:text-white transition-colors"
               >
                 Dashboard
               </Link>
               <Link
                 href="/login"
-                className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-4 py-2 rounded-lg hover:from-indigo-700 hover:to-purple-700 transition-all shadow-lg shadow-indigo-500/25"
               >
                 Sign In
               </Link>
@@ -239,24 +239,24 @@ export default function HelpCenter() {
       </div>
 
       {/* Hero Section */}
-      <div className="bg-gradient-to-br from-blue-600 to-purple-700 text-white py-16">
+      <div className="bg-gradient-to-br from-indigo-600 to-purple-700 text-white py-16">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h1 className="text-4xl md:text-5xl font-bold mb-6">
             How can we help you?
           </h1>
-          <p className="text-xl text-blue-100 mb-8">
+          <p className="text-xl text-indigo-100 mb-8">
             Find answers, learn best practices, and get the most out of AnnotateAI
           </p>
           
           {/* Search Bar */}
           <div className="relative max-w-2xl mx-auto">
-            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-white/50" />
             <input
               type="text"
               placeholder="Search for help articles..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-12 pr-4 py-4 rounded-xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-300 text-lg"
+              className="w-full pl-12 pr-4 py-4 rounded-xl bg-white/10 backdrop-blur-sm border border-white/20 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-white/30 text-lg"
             />
           </div>
         </div>
@@ -266,13 +266,13 @@ export default function HelpCenter() {
         {/* Search Results */}
         {searchQuery && (
           <div className="mb-12">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">
+            <h2 className="text-2xl font-bold text-white mb-6">
               Search Results for "{searchQuery}"
             </h2>
             
             {loading ? (
               <div className="flex items-center justify-center py-12">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-500"></div>
               </div>
             ) : articles.length > 0 ? (
               <div className="grid gap-4">
@@ -280,28 +280,28 @@ export default function HelpCenter() {
                   <Link
                     key={article.id}
                     href={article.url}
-                    className="annotate-glass p-6 rounded-xl hover:shadow-lg transition-all duration-200 group"
+                    className="bg-white/5 backdrop-blur-xl border border-white/10 p-6 rounded-xl hover:bg-white/10 transition-all duration-200 group"
                   >
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
-                        <h3 className="text-lg font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">
+                        <h3 className="text-lg font-semibold text-white group-hover:text-indigo-300 transition-colors">
                           {article.title}
                         </h3>
-                        <p className="text-gray-600 mt-2">{article.description}</p>
-                        <div className="flex items-center gap-4 mt-3 text-sm text-gray-500">
+                        <p className="text-white/70 mt-2">{article.description}</p>
+                        <div className="flex items-center gap-4 mt-3 text-sm text-white/50">
                           <span>{article.category}</span>
                           <span>•</span>
                           <span>{article.readTime}</span>
                         </div>
                       </div>
-                      <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-blue-600 transition-colors" />
+                      <ChevronRight className="w-5 h-5 text-white/50 group-hover:text-indigo-300 transition-colors" />
                     </div>
                   </Link>
                 ))}
               </div>
             ) : (
               <div className="text-center py-12">
-                <p className="text-gray-500">No articles found for your search.</p>
+                <p className="text-white/50">No articles found for your search.</p>
               </div>
             )}
           </div>
@@ -311,7 +311,7 @@ export default function HelpCenter() {
         {!searchQuery && (
           <>
             <div className="mb-12">
-              <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">
+              <h2 className="text-3xl font-bold text-white mb-8 text-center">
                 Browse by Category
               </h2>
               
@@ -319,21 +319,21 @@ export default function HelpCenter() {
                 {categories.map((category) => (
                   <div
                     key={category.id}
-                    className="annotate-glass p-6 rounded-xl hover:shadow-lg transition-all duration-200 cursor-pointer group"
+                    className="bg-white/5 backdrop-blur-xl border border-white/10 p-6 rounded-xl hover:bg-white/10 transition-all duration-200 cursor-pointer group"
                     onClick={() => setSelectedCategory(category.id)}
                   >
                     <div className={`w-12 h-12 rounded-lg ${category.color} flex items-center justify-center mb-4`}>
                       {category.icon}
                     </div>
-                    <h3 className="text-xl font-semibold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors">
+                    <h3 className="text-xl font-semibold text-white mb-2 group-hover:text-indigo-300 transition-colors">
                       {category.name}
                     </h3>
-                    <p className="text-gray-600 mb-3">{category.description}</p>
+                    <p className="text-white/70 mb-3">{category.description}</p>
                     <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-500">
+                      <span className="text-sm text-white/50">
                         {category.articleCount} articles
                       </span>
-                      <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-blue-600 transition-colors" />
+                      <ChevronRight className="w-4 h-4 text-white/50 group-hover:text-indigo-300 transition-colors" />
                     </div>
                   </div>
                 ))}
@@ -342,7 +342,7 @@ export default function HelpCenter() {
 
             {/* Popular Articles */}
             <div className="mb-12">
-              <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">
+              <h2 className="text-3xl font-bold text-white mb-8 text-center">
                 Popular Articles
               </h2>
               
@@ -351,26 +351,26 @@ export default function HelpCenter() {
                   <Link
                     key={article.id}
                     href={article.url}
-                    className="annotate-glass p-6 rounded-xl hover:shadow-lg transition-all duration-200 group"
+                    className="bg-white/5 backdrop-blur-xl border border-white/10 p-6 rounded-xl hover:bg-white/10 transition-all duration-200 group"
                   >
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
                         <div className="flex items-center gap-3 mb-2">
-                          <h3 className="text-lg font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">
+                          <h3 className="text-lg font-semibold text-white group-hover:text-indigo-300 transition-colors">
                             {article.title}
                           </h3>
-                          <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">
+                          <span className="bg-green-500/20 text-green-300 text-xs px-2 py-1 rounded-full">
                             Popular
                           </span>
                         </div>
-                        <p className="text-gray-600 mb-3">{article.description}</p>
-                        <div className="flex items-center gap-4 text-sm text-gray-500">
+                        <p className="text-white/70 mb-3">{article.description}</p>
+                        <div className="flex items-center gap-4 text-sm text-white/50">
                           <span>{article.category}</span>
                           <span>•</span>
                           <span>{article.readTime}</span>
                         </div>
                       </div>
-                      <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-blue-600 transition-colors" />
+                      <ChevronRight className="w-5 h-5 text-white/50 group-hover:text-indigo-300 transition-colors" />
                     </div>
                   </Link>
                 ))}
@@ -378,35 +378,35 @@ export default function HelpCenter() {
             </div>
 
             {/* Contact Support */}
-            <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl p-8 text-white text-center">
+            <div className="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-2xl p-8 text-white text-center">
               <h2 className="text-2xl font-bold mb-4">Still need help?</h2>
-              <p className="text-blue-100 mb-6">
+              <p className="text-indigo-100 mb-6">
                 Can't find what you're looking for? Our support team is here to help.
               </p>
               
               <div className="grid md:grid-cols-3 gap-4 max-w-2xl mx-auto">
                 <a
                   href="mailto:support@annotateai.com"
-                  className="bg-white/10 backdrop-blur-sm p-4 rounded-lg hover:bg-white/20 transition-colors"
+                  className="bg-white/10 backdrop-blur-sm border border-white/20 p-4 rounded-lg hover:bg-white/20 transition-all"
                 >
                   <Mail className="w-6 h-6 mx-auto mb-2" />
                   <div className="text-sm font-medium">Email Support</div>
-                  <div className="text-xs text-blue-200">support@annotateai.com</div>
+                  <div className="text-xs text-indigo-200">support@annotateai.com</div>
                 </a>
                 
-                <button className="bg-white/10 backdrop-blur-sm p-4 rounded-lg hover:bg-white/20 transition-colors">
+                <button className="bg-white/10 backdrop-blur-sm border border-white/20 p-4 rounded-lg hover:bg-white/20 transition-all">
                   <MessageCircle className="w-6 h-6 mx-auto mb-2" />
                   <div className="text-sm font-medium">Live Chat</div>
-                  <div className="text-xs text-blue-200">Available 24/7</div>
+                  <div className="text-xs text-indigo-200">Available 24/7</div>
                 </button>
                 
                 <a
                   href="/contact"
-                  className="bg-white/10 backdrop-blur-sm p-4 rounded-lg hover:bg-white/20 transition-colors"
+                  className="bg-white/10 backdrop-blur-sm border border-white/20 p-4 rounded-lg hover:bg-white/20 transition-all"
                 >
                   <ExternalLink className="w-6 h-6 mx-auto mb-2" />
                   <div className="text-sm font-medium">Contact Form</div>
-                  <div className="text-xs text-blue-200">Detailed inquiries</div>
+                  <div className="text-xs text-indigo-200">Detailed inquiries</div>
                 </a>
               </div>
             </div>

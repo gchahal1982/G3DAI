@@ -150,17 +150,17 @@ export default function DatasetsPage() {
     switch (status) {
       case 'completed':
       case 'reviewed':
-        return 'text-annotate-accent-green';
+        return 'text-green-400';
       case 'processing':
       case 'in_progress':
-        return 'text-annotate-accent-orange';
+        return 'text-orange-400';
       case 'pending':
-        return 'text-gray-500';
+        return 'text-gray-400';
       case 'failed':
       case 'rejected':
-        return 'text-red-500';
+        return 'text-red-400';
       default:
-        return 'text-gray-500';
+        return 'text-gray-400';
     }
   };
 
@@ -209,25 +209,28 @@ export default function DatasetsPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="loading-spinner"></div>
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl p-8">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-400 mx-auto"></div>
+          <p className="text-white/70 mt-4 text-center">Loading datasets...</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-gray-900 to-slate-800 p-6">
+    <div className="min-h-screen">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-6">
             <div>
               <h1 className="text-3xl font-bold text-white mb-2">Dataset Management</h1>
-              <p className="text-gray-400">Manage your training data and annotation files</p>
+              <p className="text-white/70">Manage your training data and annotation files</p>
             </div>
             <button
               onClick={() => setShowUploader(true)}
-              className="px-6 py-3 bg-annotate-primary-500 hover:bg-indigo-600 text-white rounded-xl font-medium transition-colors flex items-center gap-2"
+              className="px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white rounded-lg transition-all duration-200 font-medium flex items-center gap-2"
             >
               <PlusIcon className="w-5 h-5" />
               Upload Files
@@ -237,19 +240,19 @@ export default function DatasetsPage() {
           {/* Search and Filters */}
           <div className="flex flex-col sm:flex-row gap-4 mb-6">
             <div className="flex-1 relative">
-              <MagnifyingGlassIcon className="w-5 h-5 absolute left-3 top-3 text-gray-400" />
+              <MagnifyingGlassIcon className="w-5 h-5 absolute left-3 top-3 text-white/40" />
               <input
                 type="text"
                 placeholder="Search datasets and files..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-annotate-primary-500 backdrop-blur-sm"
+                className="w-full pl-10 pr-4 py-3 bg-white/10 backdrop-blur-sm text-white border border-white/20 rounded-xl placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500/50 transition-all duration-200"
               />
             </div>
             <select
               value={filterType}
               onChange={(e) => setFilterType(e.target.value)}
-              className="px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:border-annotate-primary-500 backdrop-blur-sm"
+              className="px-4 py-3 bg-white/10 backdrop-blur-sm text-white border border-white/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500/50 transition-all duration-200"
             >
               <option value="all">All Types</option>
               <option value="images">Images</option>
@@ -260,7 +263,7 @@ export default function DatasetsPage() {
             <select
               value={filterStatus}
               onChange={(e) => setFilterStatus(e.target.value)}
-              className="px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:border-annotate-primary-500 backdrop-blur-sm"
+              className="px-4 py-3 bg-white/10 backdrop-blur-sm text-white border border-white/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500/50 transition-all duration-200"
             >
               <option value="all">All Status</option>
               <option value="pending">Pending</option>
@@ -274,7 +277,7 @@ export default function DatasetsPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Datasets List */}
           <div className="lg:col-span-1">
-            <div className="annotate-glass p-6 rounded-2xl">
+            <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6">
               <h2 className="text-xl font-semibold text-white mb-4">Datasets ({filteredDatasets.length})</h2>
               <div className="space-y-3 max-h-[600px] overflow-y-auto">
                 {filteredDatasets.map((dataset) => (
@@ -283,8 +286,8 @@ export default function DatasetsPage() {
                     onClick={() => setSelectedDataset(dataset)}
                     className={`p-4 rounded-xl cursor-pointer transition-all duration-200 ${
                       selectedDataset?.id === dataset.id
-                        ? 'bg-annotate-primary-500/20 border border-annotate-primary-500/40'
-                        : 'bg-white/5 hover:bg-white/10 border border-transparent'
+                        ? 'bg-indigo-600/20 border border-indigo-500/40'
+                        : 'bg-white/5 hover:bg-white/10 border border-transparent hover:border-indigo-500/30'
                     }`}
                   >
                     <div className="flex items-start justify-between mb-2">
@@ -296,20 +299,20 @@ export default function DatasetsPage() {
                         {dataset.uploadStatus}
                       </span>
                     </div>
-                    <p className="text-sm text-gray-400 mb-3 line-clamp-2">{dataset.description}</p>
-                    <div className="flex items-center justify-between text-xs text-gray-500">
+                    <p className="text-sm text-white/70 mb-3 line-clamp-2">{dataset.description}</p>
+                    <div className="flex items-center justify-between text-xs text-white/60">
                       <span>{dataset.totalFiles} files</span>
                       <span>{formatFileSize(dataset.totalSize)}</span>
                     </div>
                     {dataset.uploadStatus === 'processing' && (
                       <div className="mt-2">
-                        <div className="w-full bg-gray-700 rounded-full h-1">
+                        <div className="w-full bg-white/10 rounded-full h-1">
                           <div
-                            className="bg-annotate-primary-500 h-1 rounded-full transition-all duration-300"
+                            className="bg-gradient-to-r from-indigo-500 to-purple-500 h-1 rounded-full transition-all duration-300"
                             style={{ width: `${dataset.uploadProgress}%` }}
                           />
                         </div>
-                        <span className="text-xs text-gray-500 mt-1">{dataset.uploadProgress}%</span>
+                        <span className="text-xs text-white/60 mt-1">{dataset.uploadProgress}%</span>
                       </div>
                     )}
                   </div>
@@ -321,15 +324,15 @@ export default function DatasetsPage() {
           {/* Dataset Files */}
           <div className="lg:col-span-2">
             {selectedDataset ? (
-              <div className="annotate-glass p-6 rounded-2xl">
+              <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6">
                 <div className="flex items-center justify-between mb-6">
                   <div>
                     <h2 className="text-xl font-semibold text-white flex items-center gap-2">
                       <span className="text-xl">{getTypeIcon(selectedDataset.type)}</span>
                       {selectedDataset.name}
                     </h2>
-                    <p className="text-gray-400 mt-1">{selectedDataset.description}</p>
-                    <div className="flex items-center gap-4 mt-2 text-sm text-gray-500">
+                    <p className="text-white/70 mt-1">{selectedDataset.description}</p>
+                    <div className="flex items-center gap-4 mt-2 text-sm text-white/60">
                       <span>{selectedDataset.totalFiles} files</span>
                       <span>{formatFileSize(selectedDataset.totalSize)}</span>
                       <span>Created {formatDate(selectedDataset.createdAt)}</span>
@@ -338,11 +341,11 @@ export default function DatasetsPage() {
                   <div className="flex items-center gap-2">
                     <button
                       onClick={() => setViewMode(viewMode === 'grid' ? 'list' : 'grid')}
-                      className="p-2 text-gray-400 hover:text-white transition-colors"
+                      className="p-2 text-white/60 hover:text-white transition-colors"
                     >
                       {viewMode === 'grid' ? '📋' : '⊞'}
                     </button>
-                    <button className="p-2 text-gray-400 hover:text-white transition-colors">
+                    <button className="p-2 text-white/60 hover:text-white transition-colors">
                       <ArrowDownTrayIcon className="w-5 h-5" />
                     </button>
                   </div>
@@ -357,7 +360,7 @@ export default function DatasetsPage() {
                   {filteredFiles.map((file) => (
                     <div
                       key={file.id}
-                      className={`group relative bg-white/5 hover:bg-white/10 rounded-lg transition-all duration-200 ${
+                      className={`group relative bg-white/5 hover:bg-white/10 hover:border-indigo-500/30 border border-transparent rounded-xl transition-all duration-200 ${
                         viewMode === 'grid' ? 'aspect-square p-3' : 'flex items-center p-3'
                       }`}
                     >
@@ -370,8 +373,8 @@ export default function DatasetsPage() {
                               className="w-full h-20 object-cover rounded-lg mb-2"
                             />
                           ) : (
-                            <div className="w-full h-20 bg-gray-700 rounded-lg flex items-center justify-center mb-2">
-                              <DocumentIcon className="w-8 h-8 text-gray-400" />
+                            <div className="w-full h-20 bg-white/10 rounded-lg flex items-center justify-center mb-2">
+                              <DocumentIcon className="w-8 h-8 text-white/40" />
                             </div>
                           )}
                           <p className="text-xs text-white truncate mb-1">{file.filename}</p>
@@ -379,14 +382,14 @@ export default function DatasetsPage() {
                             <span className={getStatusColor(file.annotationStatus)}>
                               {file.annotationStatus}
                             </span>
-                            <span className="text-gray-500">{formatFileSize(file.fileSize)}</span>
+                            <span className="text-white/60">{formatFileSize(file.fileSize)}</span>
                           </div>
                           <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
                             <div className="flex gap-1">
-                              <button className="p-1 bg-black/50 rounded text-white hover:bg-black/70">
+                              <button className="p-1 bg-black/50 backdrop-blur-sm rounded text-white hover:bg-black/70">
                                 <EyeIcon className="w-3 h-3" />
                               </button>
-                              <button className="p-1 bg-black/50 rounded text-white hover:bg-black/70">
+                              <button className="p-1 bg-black/50 backdrop-blur-sm rounded text-white hover:bg-black/70">
                                 <TrashIcon className="w-3 h-3" />
                               </button>
                             </div>
@@ -402,13 +405,13 @@ export default function DatasetsPage() {
                                 className="w-10 h-10 object-cover rounded"
                               />
                             ) : (
-                              <div className="w-10 h-10 bg-gray-700 rounded flex items-center justify-center">
-                                <DocumentIcon className="w-5 h-5 text-gray-400" />
+                              <div className="w-10 h-10 bg-white/10 rounded flex items-center justify-center">
+                                <DocumentIcon className="w-5 h-5 text-white/40" />
                               </div>
                             )}
                             <div className="flex-1 min-w-0">
                               <p className="text-sm text-white truncate">{file.filename}</p>
-                              <div className="flex items-center gap-4 text-xs text-gray-500">
+                              <div className="flex items-center gap-4 text-xs text-white/60">
                                 <span>{formatFileSize(file.fileSize)}</span>
                                 <span className={getStatusColor(file.annotationStatus)}>
                                   {file.annotationStatus}
@@ -418,10 +421,10 @@ export default function DatasetsPage() {
                             </div>
                           </div>
                           <div className="flex items-center gap-1">
-                            <button className="p-2 text-gray-400 hover:text-white transition-colors">
+                            <button className="p-2 text-white/60 hover:text-white transition-colors">
                               <EyeIcon className="w-4 h-4" />
                             </button>
-                            <button className="p-2 text-gray-400 hover:text-white transition-colors">
+                            <button className="p-2 text-white/60 hover:text-white transition-colors">
                               <TrashIcon className="w-4 h-4" />
                             </button>
                           </div>
@@ -432,10 +435,10 @@ export default function DatasetsPage() {
                 </div>
               </div>
             ) : (
-              <div className="annotate-glass p-12 rounded-2xl text-center">
-                <FolderIcon className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+              <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-12 text-center">
+                <FolderIcon className="w-16 h-16 text-white/40 mx-auto mb-4" />
                 <h3 className="text-lg font-medium text-white mb-2">Select a Dataset</h3>
-                <p className="text-gray-400">Choose a dataset from the left panel to view its files</p>
+                <p className="text-white/70">Choose a dataset from the left panel to view its files</p>
               </div>
             )}
           </div>
@@ -444,12 +447,12 @@ export default function DatasetsPage() {
         {/* Upload Modal */}
         {showUploader && (
           <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-            <div className="bg-white/10 backdrop-blur-lg border border-white/20 rounded-2xl p-6 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl p-6 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
               <div className="flex items-center justify-between mb-6">
                 <h3 className="text-2xl font-semibold text-white">Upload Files</h3>
                 <button
                   onClick={() => setShowUploader(false)}
-                  className="text-gray-400 hover:text-white transition-colors"
+                  className="text-white/60 hover:text-white transition-colors"
                 >
                   ✕
                 </button>

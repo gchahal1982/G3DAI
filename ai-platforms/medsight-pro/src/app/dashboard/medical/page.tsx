@@ -1,257 +1,322 @@
-import { Metadata } from 'next';
-import { Suspense } from 'react';
+'use client';
+
+import { useState, useEffect } from 'react';
+import { 
+  HeartIcon, 
+  BeakerIcon, 
+  UserGroupIcon, 
+  ClipboardDocumentListIcon,
+  ExclamationTriangleIcon,
+  ChartBarIcon,
+  ClockIcon,
+  CheckCircleIcon
+} from '@heroicons/react/24/outline';
 import { MedicalOverview } from '@/components/medical/MedicalOverview';
 import { ActiveCases } from '@/components/medical/ActiveCases';
 import { RecentStudies } from '@/components/medical/RecentStudies';
 import { MedicalNotifications } from '@/components/medical/MedicalNotifications';
-import { QuickActions } from '@/components/medical/QuickActions';
 import { MedicalMetrics } from '@/components/medical/MedicalMetrics';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Activity, Heart, Brain, Zap, Users, Calendar, AlertTriangle, TrendingUp } from 'lucide-react';
 
-export const metadata: Metadata = {
-  title: 'Medical Dashboard - MedSight Pro',
-  description: 'Primary clinical workspace for medical professionals',
-};
-
-// Mock data for medical dashboard
-const mockMedicalData = {
-  todayStats: {
-    totalCases: 24,
-    pendingReviews: 8,
-    completedStudies: 16,
-    emergencyCases: 2,
-    aiAnalysisComplete: 20,
-    collaborativeReviews: 6
-  },
-  recentActivity: [
-    { type: 'case', title: 'CT Chest - John Doe', time: '5 min ago', priority: 'high' },
-    { type: 'ai', title: 'AI Analysis Complete - MRI Brain', time: '12 min ago', priority: 'normal' },
-    { type: 'collab', title: 'Peer Review Request - X-Ray', time: '18 min ago', priority: 'normal' },
-    { type: 'emergency', title: 'STAT - Trauma CT', time: '25 min ago', priority: 'critical' }
-  ],
-  upcomingSchedule: [
-    { time: '10:00 AM', type: 'Consultation', patient: 'Patient A', modality: 'MRI' },
-    { time: '11:30 AM', type: 'Review', patient: 'Patient B', modality: 'CT' },
-    { time: '2:00 PM', type: 'Conference', patient: 'Multi-disciplinary', modality: 'Various' },
-    { time: '3:30 PM', type: 'Emergency', patient: 'STAT Read', modality: 'X-Ray' }
-  ]
-};
+interface MedicalDashboardData {
+  user: {
+    name: string;
+    role: string;
+    specialization: string;
+    licenseNumber: string;
+  };
+  metrics: {
+    totalCases: number;
+    pendingReviews: number;
+    completedToday: number;
+    criticalFindings: number;
+    aiAccuracy: number;
+    averageReviewTime: string;
+  };
+  systemStatus: {
+    dicomProcessor: 'online' | 'offline' | 'processing';
+    aiEngine: 'online' | 'offline' | 'processing';
+    database: 'connected' | 'disconnected' | 'syncing';
+  };
+}
 
 export default function MedicalDashboardPage() {
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 dark:from-slate-900 dark:to-slate-800">
-      {/* Medical Dashboard Header */}
-      <div className="medsight-glass border-b border-white/10 p-6 mb-6">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <div className="p-3 rounded-xl bg-gradient-to-r from-blue-500 to-blue-600 text-white">
-              <Activity className="h-8 w-8" />
+  const [medicalData, setMedicalData] = useState<MedicalDashboardData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    loadMedicalDashboard();
+  }, []);
+
+  const loadMedicalDashboard = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      // Connect to backend medical systems
+      // Integration with existing backend: MedicalAnalytics.ts, MedicalAPI.ts, MedicalOrchestrator.ts
+      const response = await fetch('/api/medical/dashboard', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Medical-License': 'verified',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to load medical dashboard');
+      }
+
+      const data = await response.json();
+      setMedicalData(data);
+    } catch (error) {
+      console.error('Medical dashboard loading error:', error);
+      setError(error instanceof Error ? error.message : 'Unknown error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleEmergencyAccess = () => {
+    // Emergency protocol activation
+    window.location.href = '/emergency-access';
+  };
+
+  const handleNewStudy = () => {
+    window.location.href = '/workspace/imaging';
+  };
+
+  const handleAIAnalysis = () => {
+    window.location.href = '/workspace/ai-analysis';
+  };
+
+  const handleCollaboration = () => {
+    window.location.href = '/workspace/collaboration';
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="medsight-glass p-8 rounded-xl max-w-md w-full mx-4">
+          <div className="text-center">
+            <div className="w-8 h-8 border-4 border-medsight-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+            <div className="text-lg font-medium text-medsight-primary mb-2">
+              Loading Medical Dashboard
             </div>
-            <div>
-              <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
-                Medical Dashboard
-              </h1>
-              <p className="text-slate-600 dark:text-slate-300">
-                Primary Clinical Workspace
-              </p>
+            <div className="text-sm text-medsight-primary/70">
+              Connecting to medical systems...
             </div>
           </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="medsight-glass p-8 rounded-xl max-w-md w-full mx-4 border-medsight-critical/20">
+          <div className="text-center">
+            <ExclamationTriangleIcon className="w-12 h-12 text-medsight-critical mx-auto mb-4" />
+            <div className="text-lg font-medium text-medsight-critical mb-2">
+              Medical Dashboard Error
+            </div>
+            <div className="text-sm text-medsight-critical/70 mb-4">
+              {error}
+            </div>
+            <button 
+              onClick={loadMedicalDashboard}
+              className="btn-medsight"
+            >
+              Retry Connection
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6 p-6 min-h-screen">
+      {/* Medical Welcome Header */}
+      <div className="medsight-glass p-6 rounded-xl">
+        <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
-            <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
-              <Heart className="h-4 w-4 mr-1" />
-              System Healthy
-            </Badge>
-            <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
-              <Brain className="h-4 w-4 mr-1" />
-              AI Active
-            </Badge>
-            <Badge variant="outline" className="bg-purple-50 text-purple-700 border-purple-200">
-              <Users className="h-4 w-4 mr-1" />
-              Collaborative
-            </Badge>
+            <div className="medsight-control-glass p-3 rounded-full">
+              <HeartIcon className="w-8 h-8 text-medsight-primary" />
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold text-medsight-primary">
+                Medical Dashboard
+              </h1>
+              <p className="text-medsight-primary/70">
+                Welcome back, {medicalData?.user?.name || 'Dr. Smith'} - {medicalData?.user?.specialization || 'Clinical Review Center'}
+              </p>
+              <div className="flex items-center space-x-4 mt-2">
+                <span className="text-xs text-medsight-primary/60">
+                  License: {medicalData?.user?.licenseNumber || 'MD-12345'}
+                </span>
+                <span className="text-xs text-medsight-primary/60">
+                  Role: {medicalData?.user?.role || 'Attending Physician'}
+                </span>
+              </div>
+            </div>
+          </div>
+          
+          {/* Medical System Status */}
+          <div className="flex items-center space-x-3">
+            <div className="flex items-center space-x-2">
+              <div className="w-3 h-3 bg-medsight-normal rounded-full animate-pulse"></div>
+              <span className="text-sm text-medsight-normal">Systems Online</span>
+            </div>
+            <div className="text-sm text-medsight-primary/60">
+              {new Date().toLocaleString()}
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Medical Dashboard Content */}
-      <div className="px-6 pb-6">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Left Column - Overview & Quick Actions */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Medical Overview */}
-            <Suspense fallback={<div className="medsight-glass h-64 animate-pulse rounded-xl" />}>
-              <MedicalOverview />
-            </Suspense>
-
-            {/* Today's Medical Statistics */}
-            <Card className="medsight-glass border-0">
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <TrendingUp className="h-5 w-5 text-blue-500" />
-                  <span>Today's Clinical Activity</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                  <div className="text-center p-4 rounded-lg bg-blue-50 dark:bg-blue-900/20">
-                    <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-                      {mockMedicalData.todayStats.totalCases}
-                    </div>
-                    <div className="text-sm text-blue-600/70 dark:text-blue-400/70">
-                      Total Cases
-                    </div>
-                  </div>
-                  <div className="text-center p-4 rounded-lg bg-amber-50 dark:bg-amber-900/20">
-                    <div className="text-2xl font-bold text-amber-600 dark:text-amber-400">
-                      {mockMedicalData.todayStats.pendingReviews}
-                    </div>
-                    <div className="text-sm text-amber-600/70 dark:text-amber-400/70">
-                      Pending Reviews
-                    </div>
-                  </div>
-                  <div className="text-center p-4 rounded-lg bg-green-50 dark:bg-green-900/20">
-                    <div className="text-2xl font-bold text-green-600 dark:text-green-400">
-                      {mockMedicalData.todayStats.completedStudies}
-                    </div>
-                    <div className="text-sm text-green-600/70 dark:text-green-400/70">
-                      Completed Studies
-                    </div>
-                  </div>
-                  <div className="text-center p-4 rounded-lg bg-red-50 dark:bg-red-900/20">
-                    <div className="text-2xl font-bold text-red-600 dark:text-red-400">
-                      {mockMedicalData.todayStats.emergencyCases}
-                    </div>
-                    <div className="text-sm text-red-600/70 dark:text-red-400/70">
-                      Emergency Cases
-                    </div>
-                  </div>
-                  <div className="text-center p-4 rounded-lg bg-purple-50 dark:bg-purple-900/20">
-                    <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">
-                      {mockMedicalData.todayStats.aiAnalysisComplete}
-                    </div>
-                    <div className="text-sm text-purple-600/70 dark:text-purple-400/70">
-                      AI Analysis Complete
-                    </div>
-                  </div>
-                  <div className="text-center p-4 rounded-lg bg-indigo-50 dark:bg-indigo-900/20">
-                    <div className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">
-                      {mockMedicalData.todayStats.collaborativeReviews}
-                    </div>
-                    <div className="text-sm text-indigo-600/70 dark:text-indigo-400/70">
-                      Collaborative Reviews
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Medical Workflow Tabs */}
-            <Tabs defaultValue="active-cases" className="w-full">
-              <TabsList className="grid w-full grid-cols-3 medsight-glass">
-                <TabsTrigger value="active-cases">Active Cases</TabsTrigger>
-                <TabsTrigger value="recent-studies">Recent Studies</TabsTrigger>
-                <TabsTrigger value="metrics">Medical Metrics</TabsTrigger>
-              </TabsList>
-              <TabsContent value="active-cases" className="space-y-4">
-                <Suspense fallback={<div className="medsight-glass h-64 animate-pulse rounded-xl" />}>
-                  <ActiveCases />
-                </Suspense>
-              </TabsContent>
-              <TabsContent value="recent-studies" className="space-y-4">
-                <Suspense fallback={<div className="medsight-glass h-64 animate-pulse rounded-xl" />}>
-                  <RecentStudies />
-                </Suspense>
-              </TabsContent>
-              <TabsContent value="metrics" className="space-y-4">
-                <Suspense fallback={<div className="medsight-glass h-64 animate-pulse rounded-xl" />}>
-                  <MedicalMetrics />
-                </Suspense>
-              </TabsContent>
-            </Tabs>
+      {/* Medical Quick Actions */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <button 
+          onClick={handleNewStudy}
+          className="btn-medsight p-4 text-left hover:scale-105 transition-transform"
+        >
+          <div className="flex items-center space-x-3">
+            <BeakerIcon className="w-6 h-6 text-medsight-primary" />
+            <div>
+              <div className="text-sm font-medium text-medsight-primary">New Study</div>
+              <div className="text-xs text-medsight-primary/60">Start DICOM Analysis</div>
+            </div>
           </div>
-
-          {/* Right Column - Notifications & Quick Actions */}
-          <div className="space-y-6">
-            {/* Medical Quick Actions */}
-            <Suspense fallback={<div className="medsight-glass h-64 animate-pulse rounded-xl" />}>
-              <QuickActions />
-            </Suspense>
-
-            {/* Medical Notifications */}
-            <Suspense fallback={<div className="medsight-glass h-64 animate-pulse rounded-xl" />}>
-              <MedicalNotifications />
-            </Suspense>
-
-            {/* Recent Activity */}
-            <Card className="medsight-glass border-0">
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <Activity className="h-5 w-5 text-blue-500" />
-                  <span>Recent Activity</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {mockMedicalData.recentActivity.map((activity, index) => (
-                    <div key={index} className="flex items-center space-x-3 p-3 rounded-lg hover:bg-white/50 dark:hover:bg-white/5 transition-colors">
-                      <div className={`p-2 rounded-full ${
-                        activity.priority === 'critical' ? 'bg-red-100 text-red-600 dark:bg-red-900/20' :
-                        activity.priority === 'high' ? 'bg-amber-100 text-amber-600 dark:bg-amber-900/20' :
-                        'bg-blue-100 text-blue-600 dark:bg-blue-900/20'
-                      }`}>
-                        {activity.type === 'emergency' && <AlertTriangle className="h-4 w-4" />}
-                        {activity.type === 'case' && <Activity className="h-4 w-4" />}
-                        {activity.type === 'ai' && <Brain className="h-4 w-4" />}
-                        {activity.type === 'collab' && <Users className="h-4 w-4" />}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-slate-900 dark:text-white truncate">
-                          {activity.title}
-                        </p>
-                        <p className="text-xs text-slate-500 dark:text-slate-400">
-                          {activity.time}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Today's Schedule */}
-            <Card className="medsight-glass border-0">
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <Calendar className="h-5 w-5 text-blue-500" />
-                  <span>Today's Schedule</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {mockMedicalData.upcomingSchedule.map((item, index) => (
-                    <div key={index} className="flex items-center space-x-3 p-3 rounded-lg hover:bg-white/50 dark:hover:bg-white/5 transition-colors">
-                      <div className="flex-shrink-0">
-                        <div className="text-sm font-medium text-blue-600 dark:text-blue-400">
-                          {item.time}
-                        </div>
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-slate-900 dark:text-white">
-                          {item.type}
-                        </p>
-                        <p className="text-xs text-slate-500 dark:text-slate-400">
-                          {item.patient} - {item.modality}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+        </button>
+        
+        <button 
+          onClick={handleAIAnalysis}
+          className="btn-medsight p-4 text-left hover:scale-105 transition-transform"
+        >
+          <div className="flex items-center space-x-3">
+            <ChartBarIcon className="w-6 h-6 text-medsight-ai-high" />
+            <div>
+              <div className="text-sm font-medium text-medsight-ai-high">AI Analysis</div>
+              <div className="text-xs text-medsight-ai-high/60">Computer Vision</div>
+            </div>
           </div>
+        </button>
+        
+        <button 
+          onClick={handleCollaboration}
+          className="btn-medsight p-4 text-left hover:scale-105 transition-transform"
+        >
+          <div className="flex items-center space-x-3">
+            <UserGroupIcon className="w-6 h-6 text-medsight-secondary" />
+            <div>
+              <div className="text-sm font-medium text-medsight-secondary">Collaboration</div>
+              <div className="text-xs text-medsight-secondary/60">Review Cases</div>
+            </div>
+          </div>
+        </button>
+        
+        <button 
+          onClick={handleEmergencyAccess}
+          className="btn-medsight p-4 text-left bg-medsight-critical/10 border-medsight-critical/20 hover:bg-medsight-critical/20 transition-all"
+        >
+          <div className="flex items-center space-x-3">
+            <ExclamationTriangleIcon className="w-6 h-6 text-medsight-critical" />
+            <div>
+              <div className="text-sm font-medium text-medsight-critical">Emergency</div>
+              <div className="text-xs text-medsight-critical/60">Critical Access</div>
+            </div>
+          </div>
+        </button>
+      </div>
+
+      {/* Medical Metrics Overview */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="medsight-control-glass p-4 rounded-lg">
+          <div className="flex items-center space-x-3">
+            <ClipboardDocumentListIcon className="w-6 h-6 text-medsight-primary" />
+            <div>
+              <div className="text-2xl font-bold text-medsight-primary">
+                {medicalData?.metrics?.totalCases || 156}
+              </div>
+              <div className="text-sm text-medsight-primary/70">Total Cases</div>
+            </div>
+          </div>
+        </div>
+        
+        <div className="medsight-glass p-4 rounded-lg border-medsight-pending/20">
+          <div className="flex items-center space-x-3">
+            <ClockIcon className="w-6 h-6 text-medsight-pending" />
+            <div>
+              <div className="text-2xl font-bold text-medsight-pending">
+                {medicalData?.metrics?.pendingReviews || 23}
+              </div>
+              <div className="text-sm text-medsight-pending/70">Pending Reviews</div>
+            </div>
+          </div>
+        </div>
+        
+        <div className="medsight-glass p-4 rounded-lg border-medsight-normal/20">
+          <div className="flex items-center space-x-3">
+            <CheckCircleIcon className="w-6 h-6 text-medsight-normal" />
+            <div>
+              <div className="text-2xl font-bold text-medsight-normal">
+                {medicalData?.metrics?.completedToday || 45}
+              </div>
+              <div className="text-sm text-medsight-normal/70">Completed Today</div>
+            </div>
+          </div>
+        </div>
+        
+        <div className="medsight-glass p-4 rounded-lg border-medsight-critical/20">
+          <div className="flex items-center space-x-3">
+            <ExclamationTriangleIcon className="w-6 h-6 text-medsight-critical" />
+            <div>
+              <div className="text-2xl font-bold text-medsight-critical">
+                {medicalData?.metrics?.criticalFindings || 3}
+              </div>
+              <div className="text-sm text-medsight-critical/70">Critical Findings</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Medical Dashboard Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Medical Overview */}
+        <div className="lg:col-span-2">
+          <MedicalOverview data={medicalData} />
+        </div>
+        
+        {/* Medical Notifications */}
+        <div>
+          <MedicalNotifications />
+        </div>
+        
+        {/* Active Cases */}
+        <div className="lg:col-span-2">
+          <ActiveCases />
+        </div>
+        
+        {/* Medical Metrics */}
+        <div>
+          <MedicalMetrics />
+        </div>
+        
+        {/* Recent Studies */}
+        <div className="lg:col-span-3">
+          <RecentStudies />
+        </div>
+      </div>
+
+      {/* HIPAA Compliance Notice */}
+      <div className="medsight-glass p-4 rounded-lg border-medsight-primary/20">
+        <div className="flex items-center space-x-2">
+          <HeartIcon className="w-4 h-4 text-medsight-primary" />
+          <span className="text-sm text-medsight-primary/70">
+            HIPAA Compliant • Medical data encrypted • Session timeout: 15 minutes
+          </span>
         </div>
       </div>
     </div>

@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * G3D Object Detection Model
  * Multi-model ensemble object detection with GPU inference and training capabilities

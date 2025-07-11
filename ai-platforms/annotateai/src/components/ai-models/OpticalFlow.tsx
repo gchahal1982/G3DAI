@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * G3D Optical Flow Model
  * Advanced motion analysis and temporal tracking with vector field visualization

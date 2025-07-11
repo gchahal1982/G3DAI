@@ -1,601 +1,649 @@
 /**
- * MedSight Pro - Medical Authentication System
- * Medical-specific authentication logic with license validation and clinical security
- * Optimized for HIPAA compliance and medical workflow requirements
+ * Medical Authentication Logic
+ * Medical-specific authentication with credential validation and HIPAA compliance
  */
 
-import { AuthService } from '@/shared/auth/AuthService';
+import { medicalServices } from '@/config/shared-config';
+import { MedicalUser, AuthRequest, AuthResponse, RegistrationRequest, PasswordResetRequest, MFASetupRequest, ROLE_PERMISSIONS } from '@/types/medical-user';
+import { MedicalSessionManager } from './session-management';
 
-// Medical authentication interfaces
-interface MedicalCredentials {
-  email: string;
-  password: string;
-  medicalLicense?: string;
-  mfaCode?: string;
-  emergencyAccess?: boolean;
-}
-
-interface MedicalUser {
-  id: string;
-  email: string;
-  name: string;
-  medicalLicense: string;
-  licenseState: string;
-  licenseExpiry: Date;
-  specializations: string[];
-  hospital: string;
-  department: string;
-  role: string;
-  npiNumber?: string;
-  deaNumber?: string;
-  boardCertifications: string[];
-  emergencyContact: {
-    name: string;
-    phone: string;
-    relationship: string;
-  };
-  compliance: {
-    hipaaTraining: Date;
-    complianceAgreement: Date;
-    backgroundCheck: Date;
-    credentialVerification: Date;
-  };
-  sessionInfo: {
-    lastLogin: Date;
-    sessionTimeout: number;
-    mfaVerified: boolean;
-    deviceFingerprint: string;
-  };
-}
-
-interface MedicalLicenseInfo {
-  licenseNumber: string;
-  state: string;
-  expiryDate: Date;
-  status: 'active' | 'expired' | 'suspended' | 'revoked';
-  specialties: string[];
-  boardCertifications: string[];
-  deaRegistration?: string;
-  npiNumber?: string;
-}
-
-interface MedicalAuthResponse {
-  success: boolean;
-  user?: MedicalUser;
-  token?: string;
-  requiresMFA?: boolean;
-  requiresLicenseVerification?: boolean;
-  requiresCompliance?: string[];
-  sessionInfo?: {
-    timeout: number;
-    refreshToken: string;
-    deviceId: string;
-  };
-  error?: string;
-  auditLog: {
-    timestamp: Date;
-    action: string;
-    userAgent: string;
-    ipAddress: string;
-    success: boolean;
-    failureReason?: string;
-  };
-}
-
-// Medical authentication configuration
-const MEDICAL_AUTH_CONFIG = {
-  session: {
-    timeout: 15 * 60 * 1000, // 15 minutes in milliseconds
-    extendOnActivity: true,
-    maxConcurrentSessions: 2
-  },
-  mfa: {
-    required: true,
-    methods: ['sms', 'email', 'totp'],
-    codeLength: 6,
-    codeExpiry: 5 * 60 * 1000 // 5 minutes
-  },
-  license: {
-    verificationRequired: true,
-    allowEmergencyBypass: true,
-    emergencyBypassDuration: 60 * 60 * 1000, // 1 hour
-    states: [
-      'AL', 'AK', 'AZ', 'AR', 'CA', 'CO', 'CT', 'DE', 'FL', 'GA',
-      'HI', 'ID', 'IL', 'IN', 'IA', 'KS', 'KY', 'LA', 'ME', 'MD',
-      'MA', 'MI', 'MN', 'MS', 'MO', 'MT', 'NE', 'NV', 'NH', 'NJ',
-      'NM', 'NY', 'NC', 'ND', 'OH', 'OK', 'OR', 'PA', 'RI', 'SC',
-      'SD', 'TN', 'TX', 'UT', 'VT', 'VA', 'WA', 'WV', 'WI', 'WY'
-    ]
-  },
-  security: {
-    maxLoginAttempts: 5,
-    lockoutDuration: 5 * 60 * 1000, // 5 minutes
-    passwordMinLength: 12,
-    requireUppercase: true,
-    requireLowercase: true,
-    requireNumbers: true,
-    requireSpecialChars: true
-  },
-  compliance: {
-    required: ['HIPAA', 'MEDICAL_LICENSE', 'BACKGROUND_CHECK'],
-    hipaaRenewal: 365 * 24 * 60 * 60 * 1000, // 1 year
-    licenseRenewal: 730 * 24 * 60 * 60 * 1000 // 2 years
-  }
-};
-
-export class MedicalAuthenticationService {
-  private authService: AuthService;
-  private auditLogs: any[] = [];
+// Medical authentication service
+export class MedicalAuthService {
+  private static instance: MedicalAuthService;
+  private sessionManager: MedicalSessionManager;
 
   constructor() {
-    this.authService = new AuthService({
-      serviceId: 'medsight-pro',
-      apiUrl: process.env.NEXT_PUBLIC_AUTH_API_URL || 'https://auth.g3d.ai',
-      storage: { type: 'local', encrypt: true },
-      session: { 
-        timeout: MEDICAL_AUTH_CONFIG.session.timeout / 1000, 
-        renewThreshold: 5 * 60 // 5 minutes
-      },
-      logging: { level: 'info' }
-    });
+    this.sessionManager = MedicalSessionManager.getInstance();
   }
 
-  // Medical professional login
-  async login(credentials: MedicalCredentials): Promise<MedicalAuthResponse> {
-    const auditLog = {
-      timestamp: new Date(),
-      action: 'medical_login_attempt',
-      userAgent: typeof window !== 'undefined' ? navigator.userAgent : 'server',
-      ipAddress: await this.getClientIP(),
-      success: false,
-      failureReason: undefined
-    };
+  public static getInstance(): MedicalAuthService {
+    if (!MedicalAuthService.instance) {
+      MedicalAuthService.instance = new MedicalAuthService();
+    }
+    return MedicalAuthService.instance;
+  }
 
+  // Get current user method
+  async getCurrentUser(): Promise<MedicalUser | null> {
     try {
-      // Validate credentials format
-      const validation = this.validateCredentials(credentials);
-      if (!validation.valid) {
-        auditLog.failureReason = validation.reason;
-        this.logAuditEvent(auditLog);
-        return {
-          success: false,
-          error: validation.reason,
-          auditLog
-        };
-      }
+      const session = await this.sessionManager.getCurrentSession();
+      if (!session) return null;
 
-      // Check if account is locked
-      const lockStatus = await this.checkAccountLock(credentials.email);
-      if (lockStatus.locked) {
-        auditLog.failureReason = 'account_locked';
-        this.logAuditEvent(auditLog);
-        return {
-          success: false,
-          error: `Account locked until ${lockStatus.unlockTime.toLocaleTimeString()}`,
-          auditLog
-        };
-      }
-
-      // Attempt basic authentication
-      const authResult = await this.authService.login({
-        email: credentials.email,
-        password: credentials.password
-      });
-
-      if (!authResult.success) {
-        await this.handleFailedLogin(credentials.email);
-        auditLog.failureReason = 'invalid_credentials';
-        this.logAuditEvent(auditLog);
-        return {
-          success: false,
-          error: 'Invalid credentials',
-          auditLog
-        };
-      }
-
-      // Get medical user profile
-      const medicalUser = await this.getMedicalUserProfile(authResult.user.id);
-      if (!medicalUser) {
-        auditLog.failureReason = 'medical_profile_not_found';
-        this.logAuditEvent(auditLog);
-        return {
-          success: false,
-          error: 'Medical profile not found',
-          auditLog
-        };
-      }
-
-      // Validate medical license
-      if (MEDICAL_AUTH_CONFIG.license.verificationRequired && !credentials.emergencyAccess) {
-        const licenseValidation = await this.validateMedicalLicense(medicalUser.medicalLicense);
-        if (!licenseValidation.valid) {
-          auditLog.failureReason = 'invalid_medical_license';
-          this.logAuditEvent(auditLog);
-          return {
-            success: false,
-            error: 'Medical license validation failed',
-            requiresLicenseVerification: true,
-            auditLog
-          };
-        }
-      }
-
-      // Check compliance requirements
-      const complianceCheck = this.checkComplianceRequirements(medicalUser);
-      if (complianceCheck.missing.length > 0) {
-        auditLog.failureReason = 'compliance_requirements_missing';
-        this.logAuditEvent(auditLog);
-        return {
-          success: false,
-          error: 'Compliance requirements not met',
-          requiresCompliance: complianceCheck.missing,
-          auditLog
-        };
-      }
-
-      // Check MFA requirement
-      if (MEDICAL_AUTH_CONFIG.mfa.required && !credentials.mfaCode) {
-        // Send MFA code
-        await this.sendMFACode(medicalUser);
-        auditLog.success = true;
-        auditLog.action = 'mfa_code_sent';
-        this.logAuditEvent(auditLog);
-        return {
-          success: false,
-          requiresMFA: true,
-          auditLog
-        };
-      }
-
-      // Verify MFA if provided
-      if (credentials.mfaCode) {
-        const mfaVerification = await this.verifyMFACode(medicalUser.id, credentials.mfaCode);
-        if (!mfaVerification.valid) {
-          auditLog.failureReason = 'invalid_mfa_code';
-          this.logAuditEvent(auditLog);
-          return {
-            success: false,
-            error: 'Invalid MFA code',
-            auditLog
-          };
-        }
-      }
-
-      // Create medical session
-      const sessionInfo = await this.createMedicalSession(medicalUser);
-      
-      // Clear failed login attempts
-      await this.clearFailedLoginAttempts(credentials.email);
-
-      auditLog.success = true;
-      auditLog.action = 'medical_login_success';
-      this.logAuditEvent(auditLog);
-
-      return {
-        success: true,
-        user: medicalUser,
-        token: authResult.token,
-        sessionInfo,
-        auditLog
-      };
-
-    } catch (error) {
-      auditLog.failureReason = 'system_error';
-      this.logAuditEvent(auditLog);
-      return {
-        success: false,
-        error: 'Authentication system error',
-        auditLog
-      };
-    }
-  }
-
-  // Validate medical credentials format
-  private validateCredentials(credentials: MedicalCredentials): { valid: boolean; reason?: string } {
-    if (!credentials.email || !credentials.password) {
-      return { valid: false, reason: 'Email and password required' };
-    }
-
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(credentials.email)) {
-      return { valid: false, reason: 'Invalid email format' };
-    }
-
-    if (credentials.password.length < MEDICAL_AUTH_CONFIG.security.passwordMinLength) {
-      return { valid: false, reason: 'Password does not meet security requirements' };
-    }
-
-    return { valid: true };
-  }
-
-  // Validate medical license
-  private async validateMedicalLicense(licenseNumber: string): Promise<{ valid: boolean; info?: MedicalLicenseInfo }> {
-    try {
-      // Mock license validation - in production, this would call state medical board APIs
-      const mockLicenseInfo: MedicalLicenseInfo = {
-        licenseNumber,
-        state: 'CA',
-        expiryDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // 1 year from now
-        status: 'active',
-        specialties: ['Radiology', 'Nuclear Medicine'],
-        boardCertifications: ['American Board of Radiology'],
-        npiNumber: '1234567890'
-      };
-
-      const isValid = mockLicenseInfo.status === 'active' && 
-                     mockLicenseInfo.expiryDate > new Date();
-
-      return {
-        valid: isValid,
-        info: mockLicenseInfo
-      };
-    } catch (error) {
-      return { valid: false };
-    }
-  }
-
-  // Check compliance requirements
-  private checkComplianceRequirements(user: MedicalUser): { valid: boolean; missing: string[] } {
-    const missing: string[] = [];
-    const now = new Date();
-
-    // Check HIPAA training
-    if (!user.compliance.hipaaTraining || 
-        (now.getTime() - user.compliance.hipaaTraining.getTime()) > MEDICAL_AUTH_CONFIG.compliance.hipaaRenewal) {
-      missing.push('HIPAA Training');
-    }
-
-    // Check compliance agreement
-    if (!user.compliance.complianceAgreement) {
-      missing.push('Compliance Agreement');
-    }
-
-    // Check background check
-    if (!user.compliance.backgroundCheck) {
-      missing.push('Background Check');
-    }
-
-    // Check license verification
-    if (!user.compliance.credentialVerification) {
-      missing.push('Credential Verification');
-    }
-
-    return {
-      valid: missing.length === 0,
-      missing
-    };
-  }
-
-  // Send MFA code
-  private async sendMFACode(user: MedicalUser): Promise<boolean> {
-    try {
-      // Mock MFA code sending
-      const code = Math.floor(100000 + Math.random() * 900000).toString();
-      
-      // Store code temporarily (in production, use secure storage)
-      if (typeof window !== 'undefined') {
-        sessionStorage.setItem(`mfa_code_${user.id}`, code);
-        sessionStorage.setItem(`mfa_code_expiry_${user.id}`, 
-          (Date.now() + MEDICAL_AUTH_CONFIG.mfa.codeExpiry).toString());
-      }
-
-      console.log(`🔐 MFA Code for ${user.email}: ${code}`);
-      return true;
-    } catch (error) {
-      return false;
-    }
-  }
-
-  // Verify MFA code
-  private async verifyMFACode(userId: string, code: string): Promise<{ valid: boolean }> {
-    try {
-      if (typeof window === 'undefined') return { valid: false };
-
-      const storedCode = sessionStorage.getItem(`mfa_code_${userId}`);
-      const expiry = sessionStorage.getItem(`mfa_code_expiry_${userId}`);
-
-      if (!storedCode || !expiry) {
-        return { valid: false };
-      }
-
-      if (Date.now() > parseInt(expiry)) {
-        sessionStorage.removeItem(`mfa_code_${userId}`);
-        sessionStorage.removeItem(`mfa_code_expiry_${userId}`);
-        return { valid: false };
-      }
-
-      const isValid = storedCode === code;
-      if (isValid) {
-        sessionStorage.removeItem(`mfa_code_${userId}`);
-        sessionStorage.removeItem(`mfa_code_expiry_${userId}`);
-      }
-
-      return { valid: isValid };
-    } catch (error) {
-      return { valid: false };
-    }
-  }
-
-  // Create medical session
-  private async createMedicalSession(user: MedicalUser): Promise<any> {
-    const sessionInfo = {
-      timeout: MEDICAL_AUTH_CONFIG.session.timeout / 1000,
-      refreshToken: this.generateRefreshToken(),
-      deviceId: await this.getDeviceFingerprint()
-    };
-
-    // Update user session info
-    user.sessionInfo = {
-      lastLogin: new Date(),
-      sessionTimeout: MEDICAL_AUTH_CONFIG.session.timeout,
-      mfaVerified: true,
-      deviceFingerprint: sessionInfo.deviceId
-    };
-
-    return sessionInfo;
-  }
-
-  // Get medical user profile
-  private async getMedicalUserProfile(userId: string): Promise<MedicalUser | null> {
-    try {
-      // Mock medical user profile - in production, fetch from database
-      return {
-        id: userId,
-        email: 'dr.sarah.chen@hospital.com',
-        name: 'Dr. Sarah Chen',
-        medicalLicense: 'MD-CA-12345',
-        licenseState: 'CA',
-        licenseExpiry: new Date(Date.now() + 730 * 24 * 60 * 60 * 1000), // 2 years
-        specializations: ['Radiology', 'Nuclear Medicine'],
-        hospital: 'General Medical Center',
-        department: 'Radiology',
-        role: 'Attending Radiologist',
-        npiNumber: '1234567890',
-        boardCertifications: ['American Board of Radiology'],
-        emergencyContact: {
-          name: 'John Chen',
-          phone: '+1-555-0123',
-          relationship: 'Spouse'
+      // Mock user data - in real app this would come from the session/token
+      const mockUser: MedicalUser = {
+        id: session.userId,
+        firstName: 'Dr. John',
+        lastName: 'Doe',
+        email: 'john.doe@example.com',
+        role: 'radiologist',
+        credentials: {
+          medicalLicense: 'MD123456',
+          licenseState: 'CA',
+          npi: '1234567890',
+          boardCertifications: ['Radiology', 'Nuclear Medicine'],
+          medicalSchool: 'Harvard Medical School',
+          graduationYear: 2010,
+          specializations: ['Diagnostic Radiology']
         },
-        compliance: {
-          hipaaTraining: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000), // 30 days ago
-          complianceAgreement: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000), // 90 days ago
-          backgroundCheck: new Date(Date.now() - 180 * 24 * 60 * 60 * 1000), // 180 days ago
-          credentialVerification: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000) // 60 days ago
+        affiliations: [],
+        permissions: [],
+        mfaEnabled: true,
+        emergencyAccess: false,
+        sessionTimeout: 15 * 60 * 1000,
+        maxSessions: 3,
+        currentSessions: 1,
+        hipaaCompliance: true,
+        preferences: {
+          theme: 'dark',
+          language: 'en',
+          timezone: 'America/New_York',
+          notifications: {
+            email: true,
+            sms: false,
+            push: true,
+            emergencyAlerts: true,
+            aiAlerts: true,
+            reportAlerts: true,
+            systemAlerts: true
+          },
+          workspace: {
+            defaultWorkspace: '/dashboard/medical',
+            hangingProtocols: [],
+            windowLevelPresets: [],
+            annotationDefaults: {
+              defaultTool: 'arrow',
+              defaultColor: '#FF0000',
+              defaultFontSize: 14,
+              showMeasurements: true
+            },
+            layout: 'grid',
+            density: 'comfortable',
+            showTips: false
+          },
+          accessibility: {
+            highContrast: false,
+            fontSize: 'medium',
+            screenReader: false,
+            reducedMotion: false,
+            keyboardNavigation: true
+          }
         },
-        sessionInfo: {
-          lastLogin: new Date(),
-          sessionTimeout: MEDICAL_AUTH_CONFIG.session.timeout,
-          mfaVerified: false,
-          deviceFingerprint: ''
-        }
+        isActive: true,
+        isVerified: true,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        lastLogin: new Date(),
+        loginAttempts: 0
       };
+
+      return mockUser;
     } catch (error) {
+      console.error('Error getting current user:', error);
       return null;
     }
   }
 
-  // Account lockout management
-  private async checkAccountLock(email: string): Promise<{ locked: boolean; unlockTime?: Date }> {
-    if (typeof window === 'undefined') return { locked: false };
-
-    const lockKey = `account_lock_${email}`;
-    const lockData = localStorage.getItem(lockKey);
-    
-    if (!lockData) return { locked: false };
-
-    const { unlockTime } = JSON.parse(lockData);
-    const unlockDate = new Date(unlockTime);
-
-    if (Date.now() < unlockDate.getTime()) {
-      return { locked: true, unlockTime: unlockDate };
-    } else {
-      localStorage.removeItem(lockKey);
-      return { locked: false };
-    }
-  }
-
-  private async handleFailedLogin(email: string): Promise<void> {
-    if (typeof window === 'undefined') return;
-
-    const attemptsKey = `login_attempts_${email}`;
-    const attempts = parseInt(localStorage.getItem(attemptsKey) || '0') + 1;
-    localStorage.setItem(attemptsKey, attempts.toString());
-
-    if (attempts >= MEDICAL_AUTH_CONFIG.security.maxLoginAttempts) {
-      const unlockTime = Date.now() + MEDICAL_AUTH_CONFIG.security.lockoutDuration;
-      localStorage.setItem(`account_lock_${email}`, JSON.stringify({ unlockTime }));
-      localStorage.removeItem(attemptsKey);
-    }
-  }
-
-  private async clearFailedLoginAttempts(email: string): Promise<void> {
-    if (typeof window === 'undefined') return;
-    localStorage.removeItem(`login_attempts_${email}`);
-  }
-
-  // Utility methods
-  private async getClientIP(): Promise<string> {
+  // Medical user authentication
+  public async authenticate(request: AuthRequest): Promise<AuthResponse> {
     try {
-      // Mock IP - in production, get from request or service
-      return '192.168.1.100';
-    } catch {
-      return 'unknown';
-    }
-  }
-
-  private generateRefreshToken(): string {
-    return Math.random().toString(36).substring(2) + Date.now().toString(36);
-  }
-
-  private async getDeviceFingerprint(): Promise<string> {
-    if (typeof window === 'undefined') return 'server';
-    
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
-    if (ctx) {
-      ctx.textBaseline = 'top';
-      ctx.font = '14px Arial';
-      ctx.fillText('Medical device fingerprint', 2, 2);
-    }
-    
-    const fingerprint = [
-      navigator.userAgent,
-      navigator.language,
-      screen.width + 'x' + screen.height,
-      new Date().getTimezoneOffset(),
-      canvas.toDataURL()
-    ].join('|');
-    
-    return btoa(fingerprint).substring(0, 32);
-  }
-
-  private logAuditEvent(auditLog: any): void {
-    this.auditLogs.push(auditLog);
-    console.log('🔍 Medical Audit Log:', auditLog);
-    
-    // In production, send to audit logging service
-    // await this.sendToAuditService(auditLog);
-  }
-
-  // Get current medical user
-  async getCurrentMedicalUser(): Promise<MedicalUser | null> {
-    const currentUser = await this.authService.getCurrentUser();
-    if (!currentUser) return null;
-    
-    return this.getMedicalUserProfile(currentUser.id);
-  }
-
-  // Medical logout
-  async logout(): Promise<boolean> {
-    try {
-      const result = await this.authService.logout();
-      
-      // Clear medical session data
-      if (typeof window !== 'undefined') {
-        const keys = Object.keys(sessionStorage);
-        keys.forEach(key => {
-          if (key.startsWith('mfa_code_') || key.startsWith('medical_')) {
-            sessionStorage.removeItem(key);
-          }
-        });
+      // Validate medical license if provided
+      if (request.email.includes('@')) {
+        const licenseValid = await this.validateMedicalLicense(request.email);
+        if (!licenseValid) {
+          return {
+            success: false,
+            error: 'Invalid medical license or credentials',
+            requiresLicense: true
+          };
+        }
       }
 
-      this.logAuditEvent({
-        timestamp: new Date(),
-        action: 'medical_logout',
-        userAgent: typeof window !== 'undefined' ? navigator.userAgent : 'server',
-        ipAddress: await this.getClientIP(),
-        success: result
-      });
+      // Simulate authentication
+      const user = await this.getMedicalUser(request.email);
+      if (!user) {
+        return {
+          success: false,
+          error: 'User not found'
+        };
+      }
 
-      return result;
+      // Check password
+      const passwordValid = await this.validatePassword(request.password, user.id);
+      if (!passwordValid) {
+        await this.incrementLoginAttempts(user.id);
+        return {
+          success: false,
+          error: 'Invalid credentials'
+        };
+      }
+
+      // Check MFA if enabled
+      if (user.mfaEnabled && !request.mfaCode) {
+        return {
+          success: false,
+          requiresMFA: true,
+          error: 'MFA code required'
+        };
+      }
+
+      if (user.mfaEnabled && request.mfaCode) {
+        const mfaValid = await this.validateMFACode(user.id, request.mfaCode);
+        if (!mfaValid) {
+          return {
+            success: false,
+            error: 'Invalid MFA code'
+          };
+        }
+      }
+
+      // Generate tokens
+      const token = this.generateJWT(user);
+      const refreshToken = this.generateRefreshToken(user);
+
+      // Update last login
+      await this.updateLastLogin(user.id);
+
+      // Medical audit logging
+      medicalServices.auditMedicalAccess(user.id, 'authentication', 'LOGIN_SUCCESS');
+
+      return {
+        success: true,
+        user,
+        token,
+        refreshToken,
+        expiresAt: new Date(Date.now() + 60 * 60 * 1000) // 1 hour
+      };
     } catch (error) {
+      console.error('Authentication error:', error);
+      return {
+        success: false,
+        error: 'Authentication failed'
+      };
+    }
+  }
+
+  // Medical professional registration
+  public async register(request: RegistrationRequest): Promise<AuthResponse> {
+    try {
+      // Validate medical credentials
+      const credentialsValid = await this.validateMedicalCredentials(request);
+      if (!credentialsValid) {
+        return {
+          success: false,
+          error: 'Invalid medical credentials'
+        };
+      }
+
+      // Check if user already exists
+      const existingUser = await this.getMedicalUser(request.email);
+      if (existingUser) {
+        return {
+          success: false,
+          error: 'User already exists'
+        };
+      }
+
+      // Create medical user
+      const user = await this.createMedicalUser(request);
+
+      // Generate verification token
+      const verificationToken = this.generateVerificationToken(user.id);
+
+      // Send verification email
+      await this.sendVerificationEmail(user.email, verificationToken);
+
+      // Medical audit logging
+      medicalServices.auditMedicalAccess(user.id, 'registration', 'REGISTRATION_SUCCESS');
+
+      return {
+        success: true,
+        user,
+        requiresLicense: true
+      };
+    } catch (error) {
+      console.error('Registration error:', error);
+      return {
+        success: false,
+        error: 'Registration failed'
+      };
+    }
+  }
+
+  // Password reset
+  public async resetPassword(request: PasswordResetRequest): Promise<boolean> {
+    try {
+      const user = await this.getMedicalUser(request.email);
+      if (!user) {
+        return false;
+      }
+
+      // Validate medical license if provided
+      if (request.medicalLicense) {
+        if (user.credentials.medicalLicense !== request.medicalLicense) {
+          return false;
+        }
+      }
+
+      // Generate reset token
+      const resetToken = this.generatePasswordResetToken(user.id);
+
+      // Send reset email
+      await this.sendPasswordResetEmail(user.email, resetToken);
+
+      // Medical audit logging
+      medicalServices.auditMedicalAccess(user.id, 'password-reset', 'RESET_REQUESTED');
+
+      return true;
+    } catch (error) {
+      console.error('Password reset error:', error);
       return false;
     }
+  }
+
+  // MFA setup
+  public async setupMFA(request: MFASetupRequest): Promise<{ secret?: string; qrCode?: string }> {
+    try {
+      const user = await this.getMedicalUser(request.userId);
+      if (!user) {
+        throw new Error('User not found');
+      }
+
+      if (request.method === 'app') {
+        const secret = this.generateMFASecret();
+        const qrCode = this.generateMFAQRCode(user.email, secret);
+        
+        // Store secret
+        await this.storeMFASecret(user.id, secret);
+
+        return { secret, qrCode };
+      }
+
+      // For SMS/Email MFA
+      const code = this.generateMFACode();
+      await this.storeMFACode(user.id, code);
+
+      if (request.method === 'sms' && request.phoneNumber) {
+        await this.sendSMSCode(request.phoneNumber, code);
+      } else if (request.method === 'email') {
+        await this.sendEmailCode(user.email, code);
+      }
+
+      return {};
+    } catch (error) {
+      console.error('MFA setup error:', error);
+      throw error;
+    }
+  }
+
+  // Validate medical license
+  private async validateMedicalLicense(email: string): Promise<boolean> {
+    // This would integrate with medical board APIs
+    // For now, simulate validation
+    return true;
+  }
+
+  // Validate medical credentials
+  private async validateMedicalCredentials(request: RegistrationRequest): Promise<boolean> {
+    // Validate medical license format
+    if (!medicalServices.validateMedicalLicense(request.medicalLicense, 'CA')) {
+      throw new Error('Invalid medical license');
+    }
+
+    // Validate NPI number
+    if (!medicalServices.validateNPI(request.npi)) {
+      return false;
+    }
+
+    // Validate specialization
+    if (!medicalServices.validateSpecialization(request.specializations[0])) {
+      return false;
+    }
+
+    // Additional validation would go here
+    return true;
+  }
+
+  // Get medical user
+  private async getMedicalUser(emailOrId: string): Promise<MedicalUser | null> {
+    // Mock implementation - would query database
+    return null;
+  }
+
+  // Create medical user
+  private async createMedicalUser(request: RegistrationRequest): Promise<MedicalUser> {
+    // Mock implementation - would create in database
+    const user: MedicalUser = {
+      id: 'user-' + Date.now(),
+      email: request.email,
+      firstName: request.firstName,
+      lastName: request.lastName,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      lastLogin: new Date(), // Add missing lastLogin property
+      isActive: true,
+      isVerified: false,
+      credentials: {
+        medicalLicense: request.medicalLicense,
+        licenseState: request.licenseState,
+        npi: request.npi,
+        deaNumber: request.deaNumber,
+        boardCertifications: request.boardCertifications,
+        medicalSchool: request.medicalSchool,
+        graduationYear: request.graduationYear,
+        specializations: request.specializations,
+        subspecialties: []
+      },
+      affiliations: [{
+        hospitalName: 'Mock Hospital',
+        department: 'Radiology',
+        role: 'Staff Radiologist',
+        startDate: new Date(),
+        endDate: null,
+        isPrimary: true
+      }],
+      role: 'attending',
+      permissions: ROLE_PERMISSIONS.attending,
+      mfaEnabled: false,
+      emergencyAccess: false,
+      sessionTimeout: 15 * 60 * 1000,
+      maxSessions: 3,
+      currentSessions: 0,
+      hipaaCompliance: request.hipaaCompliance,
+      preferences: {
+        theme: 'system',
+        language: 'en',
+        timezone: 'America/New_York',
+        notifications: {
+          email: true,
+          sms: false,
+          push: true,
+          emergencyAlerts: true,
+          aiAlerts: true,
+          reportAlerts: true,
+          systemAlerts: true
+        },
+        workspace: {
+          defaultWorkspace: '/dashboard/medical',
+          hangingProtocols: [],
+          windowLevelPresets: [],
+          annotationDefaults: {
+            defaultTool: 'arrow',
+            defaultColor: '#FF0000',
+            defaultFontSize: 14,
+            showMeasurements: true
+          }
+        },
+        accessibility: {
+          highContrast: false,
+          fontSize: 'medium',
+          reducedMotion: false,
+          screenReader: false,
+          keyboardNavigation: false
+        }
+      },
+      loginAttempts: 0
+    };
+
+    return user;
+  }
+
+  // Validate password
+  private async validatePassword(password: string, userId: string): Promise<boolean> {
+    // Mock implementation - would validate against stored hash
+    return password.length >= 8;
+  }
+
+  // Validate MFA code
+  private async validateMFACode(userId: string, code: string): Promise<boolean> {
+    // Mock implementation - would validate against stored code/secret
+    return code.length === 6;
+  }
+
+  // Generate JWT token
+  private generateJWT(user: MedicalUser): string {
+    // Mock implementation - would use proper JWT library
+    return 'jwt-token-' + user.id + '-' + Date.now();
+  }
+
+  // Generate refresh token
+  private generateRefreshToken(user: MedicalUser): string {
+    // Mock implementation - would use proper token generation
+    return 'refresh-token-' + user.id + '-' + Date.now();
+  }
+
+  // Generate verification token
+  private generateVerificationToken(userId: string): string {
+    return 'verify-token-' + userId + '-' + Date.now();
+  }
+
+  // Generate password reset token
+  private generatePasswordResetToken(userId: string): string {
+    return 'reset-token-' + userId + '-' + Date.now();
+  }
+
+  // Generate MFA secret
+  private generateMFASecret(): string {
+    return 'mfa-secret-' + Date.now();
+  }
+
+  // Generate MFA QR code
+  private generateMFAQRCode(email: string, secret: string): string {
+    return 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==';
+  }
+
+  // Generate MFA code
+  private generateMFACode(): string {
+    return Math.floor(100000 + Math.random() * 900000).toString();
+  }
+
+  // Store MFA secret
+  private async storeMFASecret(userId: string, secret: string): Promise<void> {
+    // Mock implementation - would store in database
+    console.log('Storing MFA secret for user:', userId);
+  }
+
+  // Store MFA code
+  private async storeMFACode(userId: string, code: string): Promise<void> {
+    // Mock implementation - would store in database
+    console.log('Storing MFA code for user:', userId);
+  }
+
+  // Send verification email
+  private async sendVerificationEmail(email: string, token: string): Promise<void> {
+    // Mock implementation - would send actual email
+    console.log('Sending verification email to:', email);
+  }
+
+  // Send password reset email
+  private async sendPasswordResetEmail(email: string, token: string): Promise<void> {
+    // Mock implementation - would send actual email
+    console.log('Sending password reset email to:', email);
+  }
+
+  // Send SMS code
+  private async sendSMSCode(phoneNumber: string, code: string): Promise<void> {
+    // Mock implementation - would send actual SMS
+    console.log('Sending SMS code to:', phoneNumber);
+  }
+
+  // Send email code
+  private async sendEmailCode(email: string, code: string): Promise<void> {
+    // Mock implementation - would send actual email
+    console.log('Sending email code to:', email);
+  }
+
+  // Update last login
+  private async updateLastLogin(userId: string): Promise<void> {
+    // Mock implementation - would update database
+    console.log('Updating last login for user:', userId);
+  }
+
+  // Increment login attempts
+  private async incrementLoginAttempts(userId: string): Promise<void> {
+    // Mock implementation - would update database
+    console.log('Incrementing login attempts for user:', userId);
+  }
+
+  // Refresh token
+  public async refreshToken(token: string): Promise<AuthResponse> {
+    try {
+      // Validate refresh token
+      const userId = this.validateRefreshToken(token);
+      if (!userId) {
+        return {
+          success: false,
+          error: 'Invalid refresh token'
+        };
+      }
+
+      const user = await this.getMedicalUser(userId);
+      if (!user) {
+        return {
+          success: false,
+          error: 'User not found'
+        };
+      }
+
+      // Generate new tokens
+      const newToken = this.generateJWT(user);
+      const newRefreshToken = this.generateRefreshToken(user);
+
+      return {
+        success: true,
+        user,
+        token: newToken,
+        refreshToken: newRefreshToken,
+        expiresAt: new Date(Date.now() + 60 * 60 * 1000)
+      };
+    } catch (error) {
+      console.error('Token refresh error:', error);
+      return {
+        success: false,
+        error: 'Token refresh failed'
+      };
+    }
+  }
+
+  // Validate refresh token
+  private validateRefreshToken(token: string): string | null {
+    // Mock implementation - would validate JWT
+    if (token.startsWith('refresh-token-')) {
+      return token.split('-')[2];
+    }
+    return null;
+  }
+
+  // Logout
+  public async logout(userId: string, token: string): Promise<boolean> {
+    try {
+      // Invalidate token
+      await this.invalidateToken(token);
+
+      // Medical audit logging
+      medicalServices.auditMedicalAccess(userId, 'authentication', 'LOGOUT_SUCCESS');
+
+      return true;
+    } catch (error) {
+      console.error('Logout error:', error);
+      return false;
+    }
+  }
+
+  // Invalidate token
+  private async invalidateToken(token: string): Promise<void> {
+    // Mock implementation - would add to blacklist
+    console.log('Invalidating token:', token.substring(0, 10) + '...');
+  }
+
+  // Emergency access
+  public async requestEmergencyAccess(userId: string, reason: string): Promise<boolean> {
+    try {
+      const user = await this.getMedicalUser(userId);
+      if (!user) {
+        return false;
+      }
+
+      // Check if user has emergency access permission
+      if (!user.emergencyAccess) {
+        return false;
+      }
+
+      // Log emergency access
+      medicalServices.auditMedicalAccess(userId, 'emergency-access', 'EMERGENCY_ACCESS_REQUESTED');
+
+      // Grant temporary elevated permissions
+      await this.grantEmergencyPermissions(userId);
+
+      return true;
+    } catch (error) {
+      console.error('Emergency access error:', error);
+      return false;
+    }
+  }
+
+  // Grant emergency permissions
+  private async grantEmergencyPermissions(userId: string): Promise<void> {
+    // Mock implementation - would grant temporary permissions
+    console.log('Granting emergency permissions to user:', userId);
+  }
+
+  // Verify account
+  public async verifyAccount(token: string): Promise<boolean> {
+    try {
+      const userId = this.validateVerificationToken(token);
+      if (!userId) {
+        return false;
+      }
+
+      // Update user verification status
+      await this.updateVerificationStatus(userId, true);
+
+      // Medical audit logging
+      medicalServices.auditMedicalAccess(userId, 'verification', 'ACCOUNT_VERIFIED');
+
+      return true;
+    } catch (error) {
+      console.error('Account verification error:', error);
+      return false;
+    }
+  }
+
+  // Validate verification token
+  private validateVerificationToken(token: string): string | null {
+    // Mock implementation
+    if (token.startsWith('verify-token-')) {
+      return token.split('-')[2];
+    }
+    return null;
+  }
+
+  // Update verification status
+  private async updateVerificationStatus(userId: string, verified: boolean): Promise<void> {
+    // Mock implementation
+    console.log('Updating verification status for user:', userId, 'to:', verified);
   }
 }
 
 // Export singleton instance
-export const medicalAuth = new MedicalAuthenticationService();
-export default medicalAuth; 
+export const medicalAuthService = MedicalAuthService.getInstance();
+export default medicalAuthService; 

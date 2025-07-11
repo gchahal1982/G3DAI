@@ -5,8 +5,8 @@ import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import { medicalAuth } from '@/lib/auth/medical-auth-adapter';
 import { 
-  GlassCard, 
-  GlassButton, 
+  Card, 
+  Button, 
   Alert 
 } from '@/components/ui';
 
@@ -199,7 +199,7 @@ export default function OrganizationInvitePage() {
         />
         
         <div className="relative z-10 w-full max-w-md p-6">
-          <GlassCard 
+          <Card 
             className="medsight-glass p-8 text-center"
             style={{
               background: 'linear-gradient(135deg, rgba(14, 165, 233, 0.06) 0%, rgba(16, 185, 129, 0.04) 100%)',
@@ -210,7 +210,7 @@ export default function OrganizationInvitePage() {
           >
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white mx-auto mb-4"></div>
             <p className="text-white text-sm">Loading invitation details...</p>
-          </GlassCard>
+          </Card>
         </div>
       </div>
     );
@@ -228,7 +228,7 @@ export default function OrganizationInvitePage() {
         />
         
         <div className="relative z-10 w-full max-w-md p-6">
-          <GlassCard 
+          <Card 
             className="medsight-glass p-8 text-center"
             style={{
               background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(14, 165, 233, 0.04) 100%)',
@@ -271,7 +271,7 @@ export default function OrganizationInvitePage() {
               </p>
             </div>
             
-            <GlassButton
+            <Button
               onClick={() => router.push('/dashboard/medical')}
               className="w-full"
               style={{
@@ -285,12 +285,12 @@ export default function OrganizationInvitePage() {
               }}
             >
               Continue to Dashboard
-            </GlassButton>
+            </Button>
             
             <p className="text-gray-400 text-xs mt-4">
               Redirecting automatically in 3 seconds...
             </p>
-          </GlassCard>
+          </Card>
         </div>
       </div>
     );
@@ -306,7 +306,7 @@ export default function OrganizationInvitePage() {
       />
       
       <div className="relative z-10 w-full max-w-2xl p-6">
-        <GlassCard 
+        <Card 
           className="medsight-glass p-8"
           style={{
             background: 'linear-gradient(135deg, rgba(14, 165, 233, 0.06) 0%, rgba(16, 185, 129, 0.04) 100%)',
@@ -476,7 +476,7 @@ export default function OrganizationInvitePage() {
 
               {/* Action buttons */}
               <div className="flex space-x-4 pt-4">
-                <GlassButton
+                <Button
                   onClick={acceptInvitation}
                   disabled={isAccepting}
                   className="flex-1"
@@ -491,9 +491,9 @@ export default function OrganizationInvitePage() {
                   }}
                 >
                   {isAccepting ? 'Accepting...' : 'Accept Invitation'}
-                </GlassButton>
+                </Button>
                 
-                <GlassButton
+                <Button
                   onClick={declineInvitation}
                   disabled={isAccepting}
                   className="flex-1"
@@ -509,7 +509,7 @@ export default function OrganizationInvitePage() {
                   }}
                 >
                   Decline
-                </GlassButton>
+                </Button>
               </div>
             </div>
           )}
@@ -534,7 +534,7 @@ export default function OrganizationInvitePage() {
               ← Back to Sign In
             </Link>
           </div>
-        </GlassCard>
+        </Card>
       </div>
     </div>
   );

@@ -397,6 +397,79 @@ export function getMedicalComplianceConfig(): MedicalComplianceConfig {
 // Export default configuration
 export default getMedSightProConfig();
 
+// Medical services configuration for components
+export const medicalServices = {
+  config: getMedSightProConfig(),
+  api: getAPIConfig(),
+  auth: getAuthConfig(),
+  analytics: getAnalyticsConfig(),
+  security: getSecurityConfig(),
+  billing: getBillingConfig(),
+  environment: getEnvironmentConfig(),
+  features: getMedicalFeatureFlags(),
+  compliance: getMedicalComplianceConfig(),
+  websocket: getMedicalWebSocketConfig(),
+  apiClient: getMedicalAPIClientConfig(),
+  
+  // Medical validation methods
+  validateMedicalLicense: async (licenseNumber: string, state: string): Promise<boolean> => {
+    try {
+      const response = await fetch('/api/medical/validate-license', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ licenseNumber, state })
+      });
+      const result = await response.json();
+      return result.isValid;
+    } catch (error) {
+      console.error('Medical license validation error:', error);
+      return false;
+    }
+  },
+
+  validateNPI: async (npiNumber: string): Promise<boolean> => {
+    try {
+      const response = await fetch('/api/medical/validate-npi', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ npiNumber })
+      });
+      const result = await response.json();
+      return result.isValid;
+    } catch (error) {
+      console.error('NPI validation error:', error);
+      return false;
+    }
+  },
+
+  validateSpecialization: async (specialization: string): Promise<boolean> => {
+    try {
+      const response = await fetch('/api/medical/validate-specialization', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ specialization })
+      });
+      const result = await response.json();
+      return result.isValid;
+    } catch (error) {
+      console.error('Specialization validation error:', error);
+      return false;
+    }
+  },
+
+  auditMedicalAccess: async (userId: string, action: string, eventType: string): Promise<void> => {
+    try {
+      await fetch('/api/medical/audit-access', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId, action, eventType, timestamp: new Date() })
+      });
+    } catch (error) {
+      console.error('Medical access audit error:', error);
+    }
+  }
+};
+
 // Log configuration on initialization (development only)
 if (process.env.NODE_ENV === 'development') {
   console.log('🏥 MedSight Pro Configuration Initialized');

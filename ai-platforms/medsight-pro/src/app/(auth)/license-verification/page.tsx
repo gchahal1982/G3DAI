@@ -5,8 +5,8 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { medicalAuth } from '@/lib/auth/medical-auth-adapter';
 import { 
-  GlassCard, 
-  GlassButton, 
+  Card, 
+  Button, 
   Input, 
   Alert,
   Select 
@@ -269,7 +269,7 @@ export default function LicenseVerificationPage() {
         />
         
         <div className="relative z-10 w-full max-w-md p-6">
-          <GlassCard 
+          <Card 
             className="medsight-glass p-8 text-center"
             style={{
               background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(14, 165, 233, 0.04) 100%)',
@@ -312,7 +312,7 @@ export default function LicenseVerificationPage() {
               </p>
             </div>
             
-            <GlassButton
+            <Button
               onClick={() => router.push(decodeURIComponent(redirectTo))}
               className="w-full"
               style={{
@@ -326,8 +326,8 @@ export default function LicenseVerificationPage() {
               }}
             >
               Continue to Profile Setup
-            </GlassButton>
-          </GlassCard>
+            </Button>
+          </Card>
         </div>
       </div>
     );
@@ -343,7 +343,7 @@ export default function LicenseVerificationPage() {
       />
       
       <div className="relative z-10 w-full max-w-2xl p-6">
-        <GlassCard 
+        <Card 
           className="medsight-glass p-8"
           style={{
             background: 'linear-gradient(135deg, rgba(14, 165, 233, 0.06) 0%, rgba(16, 185, 129, 0.04) 100%)',
@@ -598,7 +598,7 @@ export default function LicenseVerificationPage() {
 
           {/* Submit button */}
           <div className="mt-8">
-            <GlassButton
+            <Button
               onClick={handleLicenseVerification}
               disabled={isLoading}
               className="w-full"
@@ -613,7 +613,7 @@ export default function LicenseVerificationPage() {
               }}
             >
               {isLoading ? 'Verifying License...' : 'Verify Medical License'}
-            </GlassButton>
+            </Button>
           </div>
 
           <div className="text-center mt-6">
@@ -628,7 +628,7 @@ export default function LicenseVerificationPage() {
               ← Back to Sign In
             </Link>
           </div>
-        </GlassCard>
+        </Card>
       </div>
     </div>
   );

@@ -5,8 +5,8 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { medicalAuth } from '@/lib/auth/medical-auth-adapter';
 import { 
-  GlassCard, 
-  GlassButton, 
+  Card, 
+  Button, 
   Input, 
   Alert 
 } from '@/components/ui';
@@ -329,7 +329,7 @@ export default function VerifyAccountPage() {
         
         {/* Success card */}
         <div className="relative z-10 w-full max-w-md p-6">
-          <GlassCard 
+          <Card 
             className="medsight-glass p-8 text-center"
             style={{
               background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(14, 165, 233, 0.04) 100%)',
@@ -383,7 +383,7 @@ export default function VerifyAccountPage() {
               </p>
             </div>
             
-            <GlassButton
+            <Button
               onClick={() => router.push('/login')}
               className="w-full"
               style={{
@@ -398,12 +398,12 @@ export default function VerifyAccountPage() {
               }}
             >
               Continue to Sign In
-            </GlassButton>
+            </Button>
             
             <p className="text-gray-400 text-xs mt-4">
               Redirecting automatically in 3 seconds...
             </p>
-          </GlassCard>
+          </Card>
         </div>
       </div>
     );
@@ -432,7 +432,7 @@ export default function VerifyAccountPage() {
       
       {/* Main verification form */}
       <div className="relative z-10 w-full max-w-md p-6">
-        <GlassCard 
+        <Card 
           className="medsight-glass p-8"
           style={{
             background: 'linear-gradient(135deg, rgba(14, 165, 233, 0.06) 0%, rgba(16, 185, 129, 0.04) 100%)',
@@ -542,7 +542,7 @@ export default function VerifyAccountPage() {
           {/* Verification method selector */}
           {verificationData.email && verificationData.phone && (
             <div className="flex space-x-2 mb-6">
-              <GlassButton
+              <Button
                 onClick={() => changeVerificationMethod(VerificationMethod.EMAIL)}
                 className="flex-1 text-xs"
                 style={{
@@ -557,8 +557,8 @@ export default function VerifyAccountPage() {
                 }}
               >
                 Email Only
-              </GlassButton>
-              <GlassButton
+              </Button>
+              <Button
                 onClick={() => changeVerificationMethod(VerificationMethod.SMS)}
                 className="flex-1 text-xs"
                 style={{
@@ -573,8 +573,8 @@ export default function VerifyAccountPage() {
                 }}
               >
                 SMS Only
-              </GlassButton>
-              <GlassButton
+              </Button>
+              <Button
                 onClick={() => changeVerificationMethod(VerificationMethod.BOTH)}
                 className="flex-1 text-xs"
                 style={{
@@ -589,7 +589,7 @@ export default function VerifyAccountPage() {
                 }}
               >
                 Both
-              </GlassButton>
+              </Button>
             </div>
           )}
 
@@ -672,7 +672,7 @@ export default function VerifyAccountPage() {
 
           {/* Action buttons */}
           <div className="space-y-4">
-            <GlassButton
+            <Button
               onClick={handleCodeVerification}
               disabled={isLoading || isLocked}
               className="w-full"
@@ -694,9 +694,9 @@ export default function VerifyAccountPage() {
                 `Locked for ${Math.floor(lockoutTime / 60)}:${(lockoutTime % 60).toString().padStart(2, '0')}` : 
                 'Verify Account'
               }
-            </GlassButton>
+            </Button>
 
-            <GlassButton
+            <Button
               onClick={resendVerificationCode}
               disabled={isLoading || isLocked}
               className="w-full"
@@ -712,7 +712,7 @@ export default function VerifyAccountPage() {
               }}
             >
               {isLoading ? 'Sending...' : 'Resend Verification Code'}
-            </GlassButton>
+            </Button>
           </div>
 
           {/* Help text */}
@@ -738,7 +738,7 @@ export default function VerifyAccountPage() {
               ← Back to Sign In
             </Link>
           </div>
-        </GlassCard>
+        </Card>
       </div>
     </div>
   );

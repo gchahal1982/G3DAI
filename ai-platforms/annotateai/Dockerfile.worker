@@ -1,0 +1,112 @@
+# Production Dockerfile for AnnotateAI Background Worker
+# Processes annotation jobs, exports, and background tasks
+
+FROM node:18-alpine AS deps
+
+# Install security updates and required packages
+RUN apk add --no-cache \
+    libc6-compat \
+    dumb-init \
+    python3 \
+    make \
+    g++ \
+    && rm -rf /var/cache/apk/*
+
+# Create non-root user for security
+RUN addgroup --system --gid 1001 nodejs \
+    && adduser --system --uid 1001 worker
+
+WORKDIR /app
+
+# Copy package files
+COPY package.json package-lock.json* ./
+COPY pnpm-lock.yaml* ./
+
+# Install dependencies including dev dependencies for building
+RUN npm ci --include=dev --ignore-scripts \
+    && npm cache clean --force
+
+# ======================================
+# Builder Stage
+# ======================================
+FROM node:18-alpine AS builder
+
+WORKDIR /app
+
+# Copy dependencies from deps stage
+COPY --from=deps /app/node_modules ./node_modules
+
+# Copy source code
+COPY . .
+
+# Build worker scripts
+RUN npm run build:worker || echo "No worker build script found"
+
+# ======================================
+# Production Runtime
+# ======================================
+FROM node:18-alpine AS runner
+
+# Install runtime dependencies
+RUN apk add --no-cache \
+    dumb-init \
+    tini \
+    curl \
+    imagemagick \
+    ffmpeg \
+    && rm -rf /var/cache/apk/*
+
+# Create non-root user
+RUN addgroup --system --gid 1001 nodejs \
+    && adduser --system --uid 1001 worker
+
+WORKDIR /app
+
+# Set production environment
+ENV NODE_ENV=production
+
+# Copy built application and dependencies
+COPY --from=deps --chown=worker:nodejs /app/node_modules ./node_modules
+COPY --from=builder --chown=worker:nodejs /app/dist ./dist
+COPY --from=builder --chown=worker:nodejs /app/package.json ./
+
+# Copy worker scripts
+COPY --chown=worker:nodejs worker/ ./worker/
+COPY --chown=worker:nodejs scripts/worker/ ./scripts/worker/
+
+# Create necessary directories
+RUN mkdir -p /app/logs /app/uploads /app/temp /app/exports \
+    && chown -R worker:nodejs /app/logs /app/uploads /app/temp /app/exports
+
+# Worker health check
+COPY --chown=worker:nodejs worker-health.js ./
+RUN chmod +x worker-health.js
+
+HEALTHCHECK --interval=60s --timeout=30s --start-period=60s --retries=3 \
+    CMD node worker-health.js || exit 1
+
+# Security: Set proper permissions
+RUN chmod -R 755 /app \
+    && chmod 644 /app/package.json
+
+# Switch to non-root user
+USER worker
+
+# Environment variables
+ENV WORKER_CONCURRENCY=4
+ENV WORKER_TIMEOUT=300000
+ENV WORKER_MAX_MEMORY=1024
+
+# Use tini as init system
+ENTRYPOINT ["tini", "--"]
+
+# Start worker
+CMD ["dumb-init", "node", "worker/index.js"]
+
+# Production labels
+LABEL org.opencontainers.image.title="AnnotateAI Background Worker"
+LABEL org.opencontainers.image.description="Background job processor for AnnotateAI platform"
+LABEL org.opencontainers.image.version="1.0.0"
+LABEL security.non-root="true"
+LABEL deployment.tier="production"
+LABEL deployment.component="worker" 

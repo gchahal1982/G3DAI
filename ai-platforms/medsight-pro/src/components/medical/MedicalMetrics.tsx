@@ -1,486 +1,598 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import React, { useState } from 'react';
+import { 
+  ChartBarIcon,
+  ClockIcon,
+  CheckCircleIcon,
+  UserGroupIcon,
+  SparklesIcon,
+  ArrowTrendingUpIcon,
+  ArrowTrendingDownIcon,
+  ArrowRightIcon,
+  CalendarIcon,
+  EyeIcon,
+  HeartIcon,
+  AcademicCapIcon,
+  StarIcon,
+  BoltIcon,
+  ShieldCheckIcon
+} from '@heroicons/react/24/outline';
+import {
+  ChartBarIcon as ChartBarIconSolid,
+  ClockIcon as ClockIconSolid,
+  CheckCircleIcon as CheckCircleIconSolid,
+  UserGroupIcon as UserGroupIconSolid,
+  SparklesIcon as SparklesIconSolid,
+  ArrowTrendingUpIcon as ArrowTrendingUpIconSolid,
+  ArrowTrendingDownIcon as ArrowTrendingDownIconSolid,
+  CalendarIcon as CalendarIconSolid,
+  EyeIcon as EyeIconSolid,
+  HeartIcon as HeartIconSolid,
+  AcademicCapIcon as AcademicCapIconSolid,
+  StarIcon as StarIconSolid,
+  BoltIcon as BoltIconSolid,
+  ShieldCheckIcon as ShieldCheckIconSolid
+} from '@heroicons/react/24/solid';
 
-// Simple icon components
-const TrendingUp = ({ className = '' }: { className?: string }) => <div className={`inline-block ${className}`}>📈</div>;
-const TrendingDown = ({ className = '' }: { className?: string }) => <div className={`inline-block ${className}`}>📉</div>;
-const BarChart = ({ className = '' }: { className?: string }) => <div className={`inline-block ${className}`}>📊</div>;
-const Target = ({ className = '' }: { className?: string }) => <div className={`inline-block ${className}`}>🎯</div>;
-const Clock = ({ className = '' }: { className?: string }) => <div className={`inline-block ${className}`}>⏰</div>;
-const Brain = ({ className = '' }: { className?: string }) => <div className={`inline-block ${className}`}>🧠</div>;
-const Heart = ({ className = '' }: { className?: string }) => <div className={`inline-block ${className}`}>❤️</div>;
-const Users = ({ className = '' }: { className?: string }) => <div className={`inline-block ${className}`}>👥</div>;
-const Award = ({ className = '' }: { className?: string }) => <div className={`inline-block ${className}`}>🏆</div>;
-const Activity = ({ className = '' }: { className?: string }) => <div className={`inline-block ${className}`}>📊</div>;
+import type { MedicalUser } from '@/types/medical-user';
 
-// Simple component definitions
-const Card = ({ children, className = '' }: { children: React.ReactNode; className?: string }) => (
-  <div className={`rounded-lg border shadow-sm ${className}`}>{children}</div>
-);
-
-const CardHeader = ({ children, className = '' }: { children: React.ReactNode; className?: string }) => (
-  <div className={`p-6 pb-4 ${className}`}>{children}</div>
-);
-
-const CardTitle = ({ children, className = '' }: { children: React.ReactNode; className?: string }) => (
-  <h3 className={`text-lg font-semibold leading-none tracking-tight ${className}`}>{children}</h3>
-);
-
-const CardContent = ({ children, className = '' }: { children: React.ReactNode; className?: string }) => (
-  <div className={`p-6 pt-0 ${className}`}>{children}</div>
-);
-
-const Badge = ({ children, variant = 'primary', className = '' }: { children: React.ReactNode; variant?: string; className?: string }) => (
-  <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${className}`}>{children}</span>
-);
-
-const Progress = ({ value = 0, className = '' }: { value?: number; className?: string }) => (
-  <div className={`w-full bg-gray-200 rounded-full h-2 ${className}`}>
-    <div 
-      className="bg-blue-600 h-2 rounded-full transition-all duration-300" 
-      style={{ width: `${Math.min(100, Math.max(0, value))}%` }}
-    ></div>
-  </div>
-);
-
-interface MedicalMetricsProps {
-  className?: string;
+interface MedicalMetrics {
+  dailyMetrics: {
+    casesReviewed: number;
+    averageTime: number;
+    accuracyRate: number;
+    collaborations: number;
+  };
+  weeklyMetrics: {
+    totalCases: number;
+    averageDaily: number;
+    peakDay: string;
+    efficiency: number;
+  };
+  monthlyMetrics: {
+    totalCases: number;
+    growthRate: number;
+    qualityScore: number;
+    patientSatisfaction: number;
+  };
+  aiMetrics: {
+    analysesCompleted: number;
+    averageConfidence: number;
+    accuracyRate: number;
+    timeReduction: number;
+  };
 }
 
-// Mock medical metrics data
-const mockMedicalMetrics = {
-  diagnosticAccuracy: {
-    current: 96.8,
-    target: 95.0,
-    trend: 'up',
-    change: '+2.3%',
-    timeframe: 'vs last month'
-  },
-  averageReadTime: {
-    current: 8.5,
-    target: 12.0,
-    trend: 'down',
-    change: '-1.2 min',
-    timeframe: 'vs last month',
-    unit: 'minutes'
-  },
-  aiAgreementRate: {
-    current: 94.2,
-    target: 90.0,
-    trend: 'up',
-    change: '+3.1%',
-    timeframe: 'vs last month'
-  },
-  peerReviewScore: {
-    current: 4.8,
-    target: 4.5,
-    trend: 'up',
-    change: '+0.2',
-    timeframe: 'vs last month',
-    max: 5.0
-  },
-  patientSatisfaction: {
-    current: 4.9,
-    target: 4.6,
-    trend: 'up',
-    change: '+0.1',
-    timeframe: 'vs last month',
-    max: 5.0
-  },
-  complianceScore: {
-    current: 100,
-    target: 98.0,
-    trend: 'stable',
-    change: '0%',
-    timeframe: 'vs last month'
-  },
-  weeklyStats: {
-    casesCompleted: 142,
-    emergencyCases: 18,
-    aiAssisted: 134,
-    collaborativeReviews: 23,
-    qualityFlags: 2,
-    averageConfidence: 92.4
-  },
-  performanceTrends: {
-    diagnosticAccuracy: [94.2, 95.1, 95.8, 96.2, 96.8],
-    readTime: [10.2, 9.8, 9.1, 8.7, 8.5],
-    aiAgreement: [89.1, 90.5, 92.1, 93.4, 94.2],
-    satisfaction: [4.6, 4.7, 4.7, 4.8, 4.9]
-  },
-  benchmarks: {
-    industryAverage: {
-      diagnosticAccuracy: 93.5,
-      readTime: 11.2,
-      aiAgreement: 87.3,
-      satisfaction: 4.4
+interface MedicalMetricsProps {
+  metrics: MedicalMetrics;
+  timeRange: 'today' | 'week' | 'month';
+  user: MedicalUser;
+}
+
+export function MedicalMetrics({ metrics, timeRange, user }: MedicalMetricsProps) {
+  const [selectedMetric, setSelectedMetric] = useState<'performance' | 'ai' | 'quality' | 'collaboration'>('performance');
+
+  const timeRangeData = {
+    today: metrics.dailyMetrics,
+    week: metrics.weeklyMetrics,
+    month: metrics.monthlyMetrics
+  };
+
+  const performanceMetrics = [
+    {
+      id: 'cases-reviewed',
+      label: 'Cases Reviewed',
+      value: timeRange === 'today' ? metrics.dailyMetrics.casesReviewed : 
+             timeRange === 'week' ? metrics.weeklyMetrics.totalCases : 
+             metrics.monthlyMetrics.totalCases,
+      icon: ChartBarIconSolid,
+      color: 'bg-blue-500',
+      textColor: 'text-blue-700',
+      bgColor: 'bg-blue-50',
+      trend: timeRange === 'today' ? '+12.5%' : timeRange === 'week' ? '+8.3%' : '+15.2%',
+      trendUp: true,
+      suffix: '',
+      description: 'Total cases reviewed'
     },
-    topPerformers: {
-      diagnosticAccuracy: 97.8,
-      readTime: 7.2,
-      aiAgreement: 96.1,
-      satisfaction: 4.9
+    {
+      id: 'average-time',
+      label: 'Average Time',
+      value: timeRange === 'today' ? metrics.dailyMetrics.averageTime : 
+             timeRange === 'week' ? Math.round(metrics.weeklyMetrics.averageDaily * 4.5) : 
+             Math.round(metrics.monthlyMetrics.totalCases / 30 * 4.2),
+      icon: ClockIconSolid,
+      color: 'bg-green-500',
+      textColor: 'text-green-700',
+      bgColor: 'bg-green-50',
+      trend: timeRange === 'today' ? '-8.2%' : timeRange === 'week' ? '-5.1%' : '-12.3%',
+      trendUp: false,
+      suffix: 'min',
+      description: 'Average time per case'
+    },
+    {
+      id: 'accuracy-rate',
+      label: 'Accuracy Rate',
+      value: timeRange === 'today' ? metrics.dailyMetrics.accuracyRate : 
+             timeRange === 'week' ? metrics.weeklyMetrics.efficiency : 
+             metrics.monthlyMetrics.qualityScore,
+      icon: CheckCircleIconSolid,
+      color: 'bg-emerald-500',
+      textColor: 'text-emerald-700',
+      bgColor: 'bg-emerald-50',
+      trend: timeRange === 'today' ? '+2.1%' : timeRange === 'week' ? '+1.8%' : '+3.2%',
+      trendUp: true,
+      suffix: '%',
+      description: 'Diagnostic accuracy'
+    },
+    {
+      id: 'collaborations',
+      label: 'Collaborations',
+      value: timeRange === 'today' ? metrics.dailyMetrics.collaborations : 
+             timeRange === 'week' ? metrics.dailyMetrics.collaborations * 7 : 
+             metrics.dailyMetrics.collaborations * 30,
+      icon: UserGroupIconSolid,
+      color: 'bg-purple-500',
+      textColor: 'text-purple-700',
+      bgColor: 'bg-purple-50',
+      trend: timeRange === 'today' ? '+25.3%' : timeRange === 'week' ? '+18.7%' : '+22.1%',
+      trendUp: true,
+      suffix: '',
+      description: 'Team collaborations'
     }
-  }
-};
+  ];
 
-export function MedicalMetrics({ className }: MedicalMetricsProps) {
-  const [timeframe, setTimeframe] = useState('month');
-  const [selectedMetric, setSelectedMetric] = useState('diagnosticAccuracy');
-  const [animatedValues, setAnimatedValues] = useState<Record<string, number>>({});
+  const aiMetrics = [
+    {
+      id: 'ai-analyses',
+      label: 'AI Analyses',
+      value: metrics.aiMetrics.analysesCompleted,
+      icon: SparklesIconSolid,
+      color: 'bg-indigo-500',
+      textColor: 'text-indigo-700',
+      bgColor: 'bg-indigo-50',
+      trend: '+42.1%',
+      trendUp: true,
+      suffix: '',
+      description: 'AI analyses completed'
+    },
+    {
+      id: 'ai-confidence',
+      label: 'AI Confidence',
+      value: metrics.aiMetrics.averageConfidence,
+      icon: StarIconSolid,
+      color: 'bg-yellow-500',
+      textColor: 'text-yellow-700',
+      bgColor: 'bg-yellow-50',
+      trend: '+5.2%',
+      trendUp: true,
+      suffix: '%',
+      description: 'Average AI confidence'
+    },
+    {
+      id: 'ai-accuracy',
+      label: 'AI Accuracy',
+      value: metrics.aiMetrics.accuracyRate,
+      icon: ShieldCheckIconSolid,
+      color: 'bg-teal-500',
+      textColor: 'text-teal-700',
+      bgColor: 'bg-teal-50',
+      trend: '+1.8%',
+      trendUp: true,
+      suffix: '%',
+      description: 'AI diagnostic accuracy'
+    },
+    {
+      id: 'time-reduction',
+      label: 'Time Reduction',
+      value: metrics.aiMetrics.timeReduction,
+      icon: BoltIconSolid,
+      color: 'bg-orange-500',
+      textColor: 'text-orange-700',
+      bgColor: 'bg-orange-50',
+      trend: '+12.4%',
+      trendUp: true,
+      suffix: '%',
+      description: 'Time saved with AI'
+    }
+  ];
 
-  useEffect(() => {
-    // Animate values on component mount
-    const timer = setTimeout(() => {
-      setAnimatedValues({
-        diagnosticAccuracy: mockMedicalMetrics.diagnosticAccuracy.current,
-        readTime: mockMedicalMetrics.averageReadTime.current,
-        aiAgreement: mockMedicalMetrics.aiAgreementRate.current,
-        peerReview: mockMedicalMetrics.peerReviewScore.current,
-        satisfaction: mockMedicalMetrics.patientSatisfaction.current,
-        compliance: mockMedicalMetrics.complianceScore.current
-      });
-    }, 100);
+  const qualityMetrics = [
+    {
+      id: 'quality-score',
+      label: 'Quality Score',
+      value: metrics.monthlyMetrics.qualityScore,
+      icon: AcademicCapIconSolid,
+      color: 'bg-blue-600',
+      textColor: 'text-blue-700',
+      bgColor: 'bg-blue-50',
+      trend: '+3.1%',
+      trendUp: true,
+      suffix: '%',
+      description: 'Overall quality rating'
+    },
+    {
+      id: 'patient-satisfaction',
+      label: 'Patient Satisfaction',
+      value: metrics.monthlyMetrics.patientSatisfaction,
+      icon: HeartIconSolid,
+      color: 'bg-pink-500',
+      textColor: 'text-pink-700',
+      bgColor: 'bg-pink-50',
+      trend: '+4.7%',
+      trendUp: true,
+      suffix: '%',
+      description: 'Patient feedback score'
+    },
+    {
+      id: 'growth-rate',
+      label: 'Growth Rate',
+      value: metrics.monthlyMetrics.growthRate,
+             icon: ArrowTrendingUpIconSolid,
+      color: 'bg-green-600',
+      textColor: 'text-green-700',
+      bgColor: 'bg-green-50',
+      trend: '+8.3%',
+      trendUp: true,
+      suffix: '%',
+      description: 'Monthly growth rate'
+    },
+    {
+      id: 'peak-efficiency',
+      label: 'Peak Day',
+      value: metrics.weeklyMetrics.peakDay === 'Monday' ? 1 : 
+             metrics.weeklyMetrics.peakDay === 'Tuesday' ? 2 :
+             metrics.weeklyMetrics.peakDay === 'Wednesday' ? 3 :
+             metrics.weeklyMetrics.peakDay === 'Thursday' ? 4 :
+             metrics.weeklyMetrics.peakDay === 'Friday' ? 5 : 0,
+      icon: CalendarIconSolid,
+      color: 'bg-purple-600',
+      textColor: 'text-purple-700',
+      bgColor: 'bg-purple-50',
+      trend: metrics.weeklyMetrics.peakDay,
+      trendUp: true,
+      suffix: '',
+      description: 'Most productive day'
+    }
+  ];
 
-    return () => clearTimeout(timer);
-  }, []);
-
-  const getTrendIcon = (trend: string) => {
-    switch (trend) {
-      case 'up': return <TrendingUp className="h-4 w-4 text-green-500" />;
-      case 'down': return <TrendingDown className="h-4 w-4 text-red-500" />;
-      default: return <Activity className="h-4 w-4 text-blue-500" />;
+  const getMetricsByCategory = () => {
+    switch (selectedMetric) {
+      case 'ai':
+        return aiMetrics;
+      case 'quality':
+        return qualityMetrics;
+      case 'collaboration':
+        return performanceMetrics.filter(m => m.id === 'collaborations');
+      default:
+        return performanceMetrics;
     }
   };
 
-  const getTrendColor = (trend: string) => {
-    switch (trend) {
-      case 'up': return 'text-green-600';
-      case 'down': return 'text-red-600';
-      default: return 'text-blue-600';
-    }
-  };
-
-  const getPerformanceColor = (current: number, target: number) => {
-    if (current >= target * 1.05) return 'text-green-600';
-    if (current >= target) return 'text-blue-600';
-    if (current >= target * 0.9) return 'text-amber-600';
-    return 'text-red-600';
-  };
-
-  const getProgressColor = (current: number, target: number) => {
-    if (current >= target * 1.05) return 'bg-green-500';
-    if (current >= target) return 'bg-blue-500';
-    if (current >= target * 0.9) return 'bg-amber-500';
-    return 'bg-red-500';
+  const timeRangeLabels = {
+    today: 'Today',
+    week: 'This Week',
+    month: 'This Month'
   };
 
   return (
-    <div className={`space-y-6 ${className}`}>
-      <Card className="medsight-glass border-0">
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle className="flex items-center space-x-2">
-              <BarChart className="h-5 w-5 text-blue-500" />
-              <span>Medical Performance Metrics</span>
-            </CardTitle>
-            <div className="flex items-center space-x-2">
-              <select
-                value={timeframe}
-                onChange={(e) => setTimeframe(e.target.value)}
-                className="px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white/50 dark:bg-slate-800/50 text-sm"
+    <div className="medsight-glass rounded-xl p-6">
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h2 
+            className="text-xl font-semibold text-slate-800"
+            style={{ 
+              fontFamily: 'var(--font-primary)',
+              letterSpacing: '0.01em'
+            }}
+          >
+            Medical Metrics
+          </h2>
+          <p 
+            className="text-sm text-slate-600 mt-1"
+            style={{ 
+              fontFamily: 'var(--font-primary)',
+              letterSpacing: '0.01em'
+            }}
+          >
+            {timeRangeLabels[timeRange]} - Performance analytics for Dr. {user.lastName}
+          </p>
+        </div>
+
+        <div className="flex items-center space-x-2">
+          <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
+          <span 
+            className="text-sm text-green-600 font-medium"
+            style={{ 
+              fontFamily: 'var(--font-primary)',
+              letterSpacing: '0.01em'
+            }}
+          >
+            Real-time
+          </span>
+        </div>
+      </div>
+
+      {/* Metric Category Selector */}
+      <div className="flex space-x-2 mb-6">
+        <button
+          onClick={() => setSelectedMetric('performance')}
+          className={`px-3 py-1 rounded-lg text-sm font-medium transition-colors ${
+            selectedMetric === 'performance' 
+              ? 'bg-medsight-primary-500 text-white' 
+              : 'bg-white/50 text-slate-600 hover:bg-white/70'
+          }`}
+        >
+          Performance
+        </button>
+        <button
+          onClick={() => setSelectedMetric('ai')}
+          className={`px-3 py-1 rounded-lg text-sm font-medium transition-colors ${
+            selectedMetric === 'ai' 
+              ? 'bg-purple-500 text-white' 
+              : 'bg-white/50 text-slate-600 hover:bg-white/70'
+          }`}
+        >
+          AI Analytics
+        </button>
+        <button
+          onClick={() => setSelectedMetric('quality')}
+          className={`px-3 py-1 rounded-lg text-sm font-medium transition-colors ${
+            selectedMetric === 'quality' 
+              ? 'bg-green-500 text-white' 
+              : 'bg-white/50 text-slate-600 hover:bg-white/70'
+          }`}
+        >
+          Quality
+        </button>
+        <button
+          onClick={() => setSelectedMetric('collaboration')}
+          className={`px-3 py-1 rounded-lg text-sm font-medium transition-colors ${
+            selectedMetric === 'collaboration' 
+              ? 'bg-blue-500 text-white' 
+              : 'bg-white/50 text-slate-600 hover:bg-white/70'
+          }`}
+        >
+          Team
+        </button>
+      </div>
+
+      {/* Metrics Display */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+        {getMetricsByCategory().map((metric) => (
+          <div
+            key={metric.id}
+            className={`p-4 rounded-lg ${metric.bgColor} border border-white/20 hover:shadow-lg transition-all duration-200`}
+          >
+            <div className="flex items-center justify-between mb-3">
+              <div className={`w-10 h-10 ${metric.color} rounded-lg flex items-center justify-center`}>
+                <metric.icon className="w-5 h-5 text-white" />
+              </div>
+                             <div className="flex items-center space-x-1">
+                 {metric.trendUp ? (
+                   <ArrowTrendingUpIconSolid className="w-4 h-4 text-green-500" />
+                 ) : (
+                   <ArrowTrendingDownIconSolid className="w-4 h-4 text-red-500" />
+                 )}
+                <span 
+                  className={`text-xs font-medium ${metric.trendUp ? 'text-green-600' : 'text-red-600'}`}
+                  style={{ 
+                    fontFamily: 'var(--font-primary)',
+                    letterSpacing: '0.01em'
+                  }}
+                >
+                  {typeof metric.trend === 'string' && metric.trend.includes('%') ? metric.trend : 
+                   metric.id === 'peak-efficiency' ? metric.trend : metric.trend}
+                </span>
+              </div>
+            </div>
+
+            <div className="mb-2">
+              <div className={`text-2xl font-bold ${metric.textColor} mb-1`}>
+                {metric.id === 'peak-efficiency' ? metrics.weeklyMetrics.peakDay : `${metric.value}${metric.suffix}`}
+              </div>
+              <div 
+                className={`text-xs ${metric.textColor}/70 font-medium`}
+                style={{ 
+                  fontFamily: 'var(--font-primary)',
+                  letterSpacing: '0.01em'
+                }}
               >
-                <option value="week">This Week</option>
-                <option value="month">This Month</option>
-                <option value="quarter">This Quarter</option>
-                <option value="year">This Year</option>
-              </select>
+                {metric.label}
+              </div>
             </div>
+
+            <p 
+              className={`text-xs ${metric.textColor}/60`}
+              style={{ 
+                fontFamily: 'var(--font-primary)',
+                letterSpacing: '0.01em'
+              }}
+            >
+              {metric.description}
+            </p>
           </div>
-        </CardHeader>
-        <CardContent>
-          {/* Key Performance Indicators */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-            {/* Diagnostic Accuracy */}
-            <div className="p-6 rounded-lg bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center space-x-2">
-                  <Target className="h-5 w-5 text-blue-500" />
-                  <span className="text-sm font-medium text-blue-700 dark:text-blue-300">
-                    Diagnostic Accuracy
-                  </span>
-                </div>
-                {getTrendIcon(mockMedicalMetrics.diagnosticAccuracy.trend)}
-              </div>
-              <div className="space-y-2">
-                <div className="text-3xl font-bold text-blue-800 dark:text-blue-200">
-                  {animatedValues.diagnosticAccuracy?.toFixed(1) || 0}%
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Badge variant="outline" className="bg-blue-100 text-blue-700 border-blue-200">
-                    Target: {mockMedicalMetrics.diagnosticAccuracy.target}%
-                  </Badge>
-                  <span className={`text-sm font-medium ${getTrendColor(mockMedicalMetrics.diagnosticAccuracy.trend)}`}>
-                    {mockMedicalMetrics.diagnosticAccuracy.change}
-                  </span>
-                </div>
-                <Progress 
-                  value={(animatedValues.diagnosticAccuracy || 0) / 100 * 100} 
-                  className="h-2"
-                />
-              </div>
-            </div>
+        ))}
+      </div>
 
-            {/* Average Read Time */}
-            <div className="p-6 rounded-lg bg-gradient-to-r from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center space-x-2">
-                  <Clock className="h-5 w-5 text-green-500" />
-                  <span className="text-sm font-medium text-green-700 dark:text-green-300">
-                    Average Read Time
-                  </span>
-                </div>
-                {getTrendIcon(mockMedicalMetrics.averageReadTime.trend)}
+      {/* Performance Insights */}
+      <div className="bg-white/60 rounded-lg p-4 mb-6">
+        <h3 
+          className="text-sm font-semibold text-slate-800 mb-3"
+          style={{ 
+            fontFamily: 'var(--font-primary)',
+            letterSpacing: '0.01em'
+          }}
+        >
+          Performance Insights
+        </h3>
+        <div className="space-y-2">
+          {selectedMetric === 'performance' && (
+            <>
+              <div className="flex items-center space-x-2">
+                <CheckCircleIconSolid className="w-4 h-4 text-green-500" />
+                <span 
+                  className="text-xs text-slate-700"
+                  style={{ 
+                    fontFamily: 'var(--font-primary)',
+                    letterSpacing: '0.01em'
+                  }}
+                >
+                  Accuracy rate increased by 2.1% this {timeRange}
+                </span>
               </div>
-              <div className="space-y-2">
-                <div className="text-3xl font-bold text-green-800 dark:text-green-200">
-                  {animatedValues.readTime?.toFixed(1) || 0}m
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Badge variant="outline" className="bg-green-100 text-green-700 border-green-200">
-                    Target: {mockMedicalMetrics.averageReadTime.target}m
-                  </Badge>
-                  <span className={`text-sm font-medium ${getTrendColor(mockMedicalMetrics.averageReadTime.trend)}`}>
-                    {mockMedicalMetrics.averageReadTime.change}
-                  </span>
-                </div>
-                <Progress 
-                  value={100 - ((animatedValues.readTime || 0) / mockMedicalMetrics.averageReadTime.target * 100)} 
-                  className="h-2"
-                />
+              <div className="flex items-center space-x-2">
+                <ClockIconSolid className="w-4 h-4 text-blue-500" />
+                <span 
+                  className="text-xs text-slate-700"
+                  style={{ 
+                    fontFamily: 'var(--font-primary)',
+                    letterSpacing: '0.01em'
+                  }}
+                >
+                  Average case time reduced by 8.2% with AI assistance
+                </span>
               </div>
-            </div>
+              <div className="flex items-center space-x-2">
+                <UserGroupIconSolid className="w-4 h-4 text-purple-500" />
+                <span 
+                  className="text-xs text-slate-700"
+                  style={{ 
+                    fontFamily: 'var(--font-primary)',
+                    letterSpacing: '0.01em'
+                  }}
+                >
+                  Team collaboration up 25% from last period
+                </span>
+              </div>
+            </>
+          )}
+          {selectedMetric === 'ai' && (
+            <>
+              <div className="flex items-center space-x-2">
+                <SparklesIconSolid className="w-4 h-4 text-indigo-500" />
+                <span 
+                  className="text-xs text-slate-700"
+                  style={{ 
+                    fontFamily: 'var(--font-primary)',
+                    letterSpacing: '0.01em'
+                  }}
+                >
+                  AI confidence levels consistently above 90%
+                </span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <BoltIconSolid className="w-4 h-4 text-orange-500" />
+                <span 
+                  className="text-xs text-slate-700"
+                  style={{ 
+                    fontFamily: 'var(--font-primary)',
+                    letterSpacing: '0.01em'
+                  }}
+                >
+                  AI assistance saves 34.7% time on complex cases
+                </span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <ShieldCheckIconSolid className="w-4 h-4 text-teal-500" />
+                <span 
+                  className="text-xs text-slate-700"
+                  style={{ 
+                    fontFamily: 'var(--font-primary)',
+                    letterSpacing: '0.01em'
+                  }}
+                >
+                  AI-human collaboration accuracy: 96.8%
+                </span>
+              </div>
+            </>
+          )}
+          {selectedMetric === 'quality' && (
+            <>
+              <div className="flex items-center space-x-2">
+                <AcademicCapIconSolid className="w-4 h-4 text-blue-500" />
+                <span 
+                  className="text-xs text-slate-700"
+                  style={{ 
+                    fontFamily: 'var(--font-primary)',
+                    letterSpacing: '0.01em'
+                  }}
+                >
+                  Quality score above 97% for the month
+                </span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <HeartIconSolid className="w-4 h-4 text-pink-500" />
+                <span 
+                  className="text-xs text-slate-700"
+                  style={{ 
+                    fontFamily: 'var(--font-primary)',
+                    letterSpacing: '0.01em'
+                  }}
+                >
+                  Patient satisfaction increased by 4.7%
+                </span>
+              </div>
+                             <div className="flex items-center space-x-2">
+                 <ArrowTrendingUpIconSolid className="w-4 h-4 text-green-500" />
+                 <span 
+                   className="text-xs text-slate-700"
+                   style={{ 
+                     fontFamily: 'var(--font-primary)',
+                     letterSpacing: '0.01em'
+                   }}
+                 >
+                   Consistent growth trend over the past quarter
+                 </span>
+               </div>
+            </>
+          )}
+        </div>
+      </div>
 
-            {/* AI Agreement Rate */}
-            <div className="p-6 rounded-lg bg-gradient-to-r from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center space-x-2">
-                  <Brain className="h-5 w-5 text-purple-500" />
-                  <span className="text-sm font-medium text-purple-700 dark:text-purple-300">
-                    AI Agreement Rate
-                  </span>
-                </div>
-                {getTrendIcon(mockMedicalMetrics.aiAgreementRate.trend)}
-              </div>
-              <div className="space-y-2">
-                <div className="text-3xl font-bold text-purple-800 dark:text-purple-200">
-                  {animatedValues.aiAgreement?.toFixed(1) || 0}%
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Badge variant="outline" className="bg-purple-100 text-purple-700 border-purple-200">
-                    Target: {mockMedicalMetrics.aiAgreementRate.target}%
-                  </Badge>
-                  <span className={`text-sm font-medium ${getTrendColor(mockMedicalMetrics.aiAgreementRate.trend)}`}>
-                    {mockMedicalMetrics.aiAgreementRate.change}
-                  </span>
-                </div>
-                <Progress 
-                  value={(animatedValues.aiAgreement || 0) / 100 * 100} 
-                  className="h-2"
-                />
-              </div>
-            </div>
-
-            {/* Peer Review Score */}
-            <div className="p-6 rounded-lg bg-gradient-to-r from-amber-50 to-amber-100 dark:from-amber-900/20 dark:to-amber-800/20">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center space-x-2">
-                  <Users className="h-5 w-5 text-amber-500" />
-                  <span className="text-sm font-medium text-amber-700 dark:text-amber-300">
-                    Peer Review Score
-                  </span>
-                </div>
-                {getTrendIcon(mockMedicalMetrics.peerReviewScore.trend)}
-              </div>
-              <div className="space-y-2">
-                <div className="text-3xl font-bold text-amber-800 dark:text-amber-200">
-                  {animatedValues.peerReview?.toFixed(1) || 0}/5.0
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Badge variant="outline" className="bg-amber-100 text-amber-700 border-amber-200">
-                    Target: {mockMedicalMetrics.peerReviewScore.target}/5.0
-                  </Badge>
-                  <span className={`text-sm font-medium ${getTrendColor(mockMedicalMetrics.peerReviewScore.trend)}`}>
-                    {mockMedicalMetrics.peerReviewScore.change}
-                  </span>
-                </div>
-                <Progress 
-                  value={(animatedValues.peerReview || 0) / 5 * 100} 
-                  className="h-2"
-                />
-              </div>
-            </div>
-
-            {/* Patient Satisfaction */}
-            <div className="p-6 rounded-lg bg-gradient-to-r from-red-50 to-red-100 dark:from-red-900/20 dark:to-red-800/20">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center space-x-2">
-                  <Heart className="h-5 w-5 text-red-500" />
-                  <span className="text-sm font-medium text-red-700 dark:text-red-300">
-                    Patient Satisfaction
-                  </span>
-                </div>
-                {getTrendIcon(mockMedicalMetrics.patientSatisfaction.trend)}
-              </div>
-              <div className="space-y-2">
-                <div className="text-3xl font-bold text-red-800 dark:text-red-200">
-                  {animatedValues.satisfaction?.toFixed(1) || 0}/5.0
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Badge variant="outline" className="bg-red-100 text-red-700 border-red-200">
-                    Target: {mockMedicalMetrics.patientSatisfaction.target}/5.0
-                  </Badge>
-                  <span className={`text-sm font-medium ${getTrendColor(mockMedicalMetrics.patientSatisfaction.trend)}`}>
-                    {mockMedicalMetrics.patientSatisfaction.change}
-                  </span>
-                </div>
-                <Progress 
-                  value={(animatedValues.satisfaction || 0) / 5 * 100} 
-                  className="h-2"
-                />
-              </div>
-            </div>
-
-            {/* Compliance Score */}
-            <div className="p-6 rounded-lg bg-gradient-to-r from-indigo-50 to-indigo-100 dark:from-indigo-900/20 dark:to-indigo-800/20">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center space-x-2">
-                  <Award className="h-5 w-5 text-indigo-500" />
-                  <span className="text-sm font-medium text-indigo-700 dark:text-indigo-300">
-                    Compliance Score
-                  </span>
-                </div>
-                {getTrendIcon(mockMedicalMetrics.complianceScore.trend)}
-              </div>
-              <div className="space-y-2">
-                <div className="text-3xl font-bold text-indigo-800 dark:text-indigo-200">
-                  {animatedValues.compliance?.toFixed(0) || 0}%
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Badge variant="outline" className="bg-indigo-100 text-indigo-700 border-indigo-200">
-                    Target: {mockMedicalMetrics.complianceScore.target}%
-                  </Badge>
-                  <span className={`text-sm font-medium ${getTrendColor(mockMedicalMetrics.complianceScore.trend)}`}>
-                    {mockMedicalMetrics.complianceScore.change}
-                  </span>
-                </div>
-                <Progress 
-                  value={animatedValues.compliance || 0} 
-                  className="h-2"
-                />
-              </div>
-            </div>
+      {/* Quick Stats Summary */}
+      <div className="bg-gradient-to-r from-medsight-primary-50 to-medsight-secondary-50 rounded-lg p-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h4 
+              className="text-sm font-semibold text-slate-800 mb-1"
+              style={{ 
+                fontFamily: 'var(--font-primary)',
+                letterSpacing: '0.01em'
+              }}
+            >
+              {timeRangeLabels[timeRange]} Summary
+            </h4>
+            <p 
+              className="text-xs text-slate-600"
+              style={{ 
+                fontFamily: 'var(--font-primary)',
+                letterSpacing: '0.01em'
+              }}
+            >
+              Excellent performance across all metrics
+            </p>
           </div>
-
-          {/* Weekly Statistics */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-            <Card className="medsight-glass border-0">
-              <CardHeader>
-                <CardTitle className="text-lg">Weekly Performance Summary</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-slate-600 dark:text-slate-400">Cases Completed</span>
-                    <span className="text-lg font-semibold text-slate-900 dark:text-white">
-                      {mockMedicalMetrics.weeklyStats.casesCompleted}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-slate-600 dark:text-slate-400">Emergency Cases</span>
-                    <span className="text-lg font-semibold text-red-600 dark:text-red-400">
-                      {mockMedicalMetrics.weeklyStats.emergencyCases}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-slate-600 dark:text-slate-400">AI Assisted</span>
-                    <span className="text-lg font-semibold text-purple-600 dark:text-purple-400">
-                      {mockMedicalMetrics.weeklyStats.aiAssisted}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-slate-600 dark:text-slate-400">Collaborative Reviews</span>
-                    <span className="text-lg font-semibold text-blue-600 dark:text-blue-400">
-                      {mockMedicalMetrics.weeklyStats.collaborativeReviews}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-slate-600 dark:text-slate-400">Quality Flags</span>
-                    <span className="text-lg font-semibold text-amber-600 dark:text-amber-400">
-                      {mockMedicalMetrics.weeklyStats.qualityFlags}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-slate-600 dark:text-slate-400">Average AI Confidence</span>
-                    <span className="text-lg font-semibold text-green-600 dark:text-green-400">
-                      {mockMedicalMetrics.weeklyStats.averageConfidence}%
-                    </span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="medsight-glass border-0">
-              <CardHeader>
-                <CardTitle className="text-lg">Performance Benchmarks</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div>
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm text-slate-600 dark:text-slate-400">vs Industry Average</span>
-                    </div>
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between text-xs">
-                        <span>Diagnostic Accuracy</span>
-                        <span className="text-green-600">+3.3% above</span>
-                      </div>
-                      <div className="flex items-center justify-between text-xs">
-                        <span>Read Time</span>
-                        <span className="text-green-600">2.7m faster</span>
-                      </div>
-                      <div className="flex items-center justify-between text-xs">
-                        <span>AI Agreement</span>
-                        <span className="text-green-600">+6.9% above</span>
-                      </div>
-                    </div>
-                  </div>
-                  <div>
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm text-slate-600 dark:text-slate-400">vs Top Performers</span>
-                    </div>
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between text-xs">
-                        <span>Diagnostic Accuracy</span>
-                        <span className="text-amber-600">-1.0% below</span>
-                      </div>
-                      <div className="flex items-center justify-between text-xs">
-                        <span>Read Time</span>
-                        <span className="text-amber-600">1.3m slower</span>
-                      </div>
-                      <div className="flex items-center justify-between text-xs">
-                        <span>AI Agreement</span>
-                        <span className="text-amber-600">-1.9% below</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+          <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-1">
+              <StarIconSolid className="w-4 h-4 text-yellow-500" />
+              <StarIconSolid className="w-4 h-4 text-yellow-500" />
+              <StarIconSolid className="w-4 h-4 text-yellow-500" />
+              <StarIconSolid className="w-4 h-4 text-yellow-500" />
+              <StarIconSolid className="w-4 h-4 text-yellow-500" />
+            </div>
+            <span 
+              className="text-xs text-slate-600 font-medium"
+              style={{ 
+                fontFamily: 'var(--font-primary)',
+                letterSpacing: '0.01em'
+              }}
+            >
+              5.0
+            </span>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 } 

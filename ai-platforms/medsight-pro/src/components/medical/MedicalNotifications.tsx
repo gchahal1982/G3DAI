@@ -1,374 +1,435 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { 
+  BellIcon, 
+  ExclamationTriangleIcon, 
+  CheckCircleIcon, 
+  ClockIcon,
+  HeartIcon,
+  BeakerIcon,
+  UserGroupIcon,
+  ComputerDesktopIcon,
+  ShieldCheckIcon,
+  XMarkIcon,
+  EyeIcon
+} from '@heroicons/react/24/outline';
 
-// Simple icon components
-const Bell = ({ className = '' }: { className?: string }) => <div className={`inline-block ${className}`}>🔔</div>;
-const AlertTriangle = ({ className = '' }: { className?: string }) => <div className={`inline-block ${className}`}>⚠️</div>;
-const CheckCircle = ({ className = '' }: { className?: string }) => <div className={`inline-block ${className}`}>✅</div>;
-const Info = ({ className = '' }: { className?: string }) => <div className={`inline-block ${className}`}>ℹ️</div>;
-const Clock = ({ className = '' }: { className?: string }) => <div className={`inline-block ${className}`}>⏰</div>;
-const Brain = ({ className = '' }: { className?: string }) => <div className={`inline-block ${className}`}>🧠</div>;
-const Heart = ({ className = '' }: { className?: string }) => <div className={`inline-block ${className}`}>❤️</div>;
-const Shield = ({ className = '' }: { className?: string }) => <div className={`inline-block ${className}`}>🛡️</div>;
-const Users = ({ className = '' }: { className?: string }) => <div className={`inline-block ${className}`}>👥</div>;
-const Zap = ({ className = '' }: { className?: string }) => <div className={`inline-block ${className}`}>⚡</div>;
-const X = ({ className = '' }: { className?: string }) => <div className={`inline-block ${className}`}>❌</div>;
-
-// Simple component definitions
-const Card = ({ children, className = '' }: { children: React.ReactNode; className?: string }) => (
-  <div className={`rounded-lg border shadow-sm ${className}`}>{children}</div>
-);
-
-const CardHeader = ({ children, className = '' }: { children: React.ReactNode; className?: string }) => (
-  <div className={`p-6 pb-4 ${className}`}>{children}</div>
-);
-
-const CardTitle = ({ children, className = '' }: { children: React.ReactNode; className?: string }) => (
-  <h3 className={`text-lg font-semibold leading-none tracking-tight ${className}`}>{children}</h3>
-);
-
-const CardContent = ({ children, className = '' }: { children: React.ReactNode; className?: string }) => (
-  <div className={`p-6 pt-0 ${className}`}>{children}</div>
-);
-
-const Badge = ({ children, variant = 'primary', className = '' }: { children: React.ReactNode; variant?: string; className?: string }) => (
-  <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${className}`}>{children}</span>
-);
-
-const Button = ({ children, className = '', variant = 'primary', size = 'md', onClick, ...props }: any) => (
-  <button 
-    className={`inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background ${className}`}
-    onClick={onClick}
-    {...props}
-  >
-    {children}
-  </button>
-);
-
-interface MedicalNotificationsProps {
-  className?: string;
+export interface MedicalNotification {
+  id: string;
+  type: 'critical' | 'warning' | 'info' | 'success' | 'ai_result' | 'collaboration' | 'system';
+  title: string;
+  message: string;
+  timestamp: Date;
+  isRead: boolean;
+  priority: 'high' | 'medium' | 'low';
+  source: string;
+  actionUrl?: string;
+  patientId?: string;
+  studyId?: string;
+  aiConfidence?: number;
 }
 
-// Mock medical notifications data
-const mockNotifications = [
-  {
-    id: 'NOTIF-001',
-    type: 'critical',
-    category: 'emergency',
-    title: 'STAT Read Required',
-    message: 'Emergency CT scan requires immediate attention - possible stroke',
-    caseId: 'CASE-2024-001',
-    patientName: 'John Doe',
-    timestamp: '2024-01-15T10:30:00Z',
-    isRead: false,
-    priority: 'critical',
-    source: 'Emergency Department',
-    actionRequired: true,
-    estimatedTime: '< 5 min'
-  },
-  {
-    id: 'NOTIF-002',
-    type: 'warning',
-    category: 'ai-analysis',
-    title: 'AI Analysis Complete',
-    message: 'High confidence detection of pulmonary embolism in CT chest study',
-    caseId: 'CASE-2024-002',
-    patientName: 'Jane Smith',
-    timestamp: '2024-01-15T10:15:00Z',
-    isRead: false,
-    priority: 'high',
-    source: 'AI Inference Engine',
-    actionRequired: true,
-    aiConfidence: 94,
-    estimatedTime: '10 min'
-  },
-  {
-    id: 'NOTIF-003',
-    type: 'info',
-    category: 'collaboration',
-    title: 'Peer Review Request',
-    message: 'Dr. Mike Chen requests second opinion on complex brain MRI',
-    caseId: 'CASE-2024-003',
-    patientName: 'Robert Johnson',
-    timestamp: '2024-01-15T09:45:00Z',
-    isRead: false,
-    priority: 'normal',
-    source: 'Dr. Mike Chen',
-    actionRequired: true,
-    estimatedTime: '15 min'
-  },
-  {
-    id: 'NOTIF-004',
-    type: 'success',
-    category: 'system',
-    title: 'System Update Complete',
-    message: 'DICOM processing system updated successfully - improved performance',
-    timestamp: '2024-01-15T09:00:00Z',
-    isRead: true,
-    priority: 'low',
-    source: 'System Administrator',
-    actionRequired: false
-  },
-  {
-    id: 'NOTIF-005',
-    type: 'warning',
-    category: 'compliance',
-    title: 'License Renewal Reminder',
-    message: 'Medical license expires in 30 days - renewal required',
-    timestamp: '2024-01-15T08:30:00Z',
-    isRead: false,
-    priority: 'high',
-    source: 'Compliance System',
-    actionRequired: true,
-    estimatedTime: '30 min'
-  },
-  {
-    id: 'NOTIF-006',
-    type: 'info',
-    category: 'workflow',
-    title: 'Workload Alert',
-    message: 'High case volume detected - consider break or delegation',
-    timestamp: '2024-01-15T08:00:00Z',
-    isRead: false,
-    priority: 'normal',
-    source: 'Workflow Manager',
-    actionRequired: false
-  }
-];
+export interface MedicalNotificationsProps {
+  notifications?: MedicalNotification[];
+  onNotificationClick?: (notification: MedicalNotification) => void;
+  onMarkAsRead?: (notificationId: string) => void;
+  onDismiss?: (notificationId: string) => void;
+}
 
-export function MedicalNotifications({ className }: MedicalNotificationsProps) {
-  const [notifications, setNotifications] = useState(mockNotifications);
-  const [filterType, setFilterType] = useState('all');
-  const [showUnreadOnly, setShowUnreadOnly] = useState(false);
+export function MedicalNotifications({ 
+  notifications = [],
+  onNotificationClick,
+  onMarkAsRead,
+  onDismiss
+}: MedicalNotificationsProps) {
+  const [localNotifications, setLocalNotifications] = useState<MedicalNotification[]>([]);
+  const [filter, setFilter] = useState<'all' | 'unread' | 'critical'>('all');
 
-  const filteredNotifications = notifications.filter(notification => {
-    const matchesType = filterType === 'all' || notification.category === filterType;
-    const matchesRead = !showUnreadOnly || !notification.isRead;
-    return matchesType && matchesRead;
+  useEffect(() => {
+    // Initialize with mock data if no notifications provided
+    if (notifications.length === 0) {
+      setLocalNotifications([
+        {
+          id: '1',
+          type: 'critical',
+          title: 'Critical Finding Detected',
+          message: 'AI analysis detected potential pneumothorax in Study #MR-2024-001',
+          timestamp: new Date(Date.now() - 5 * 60 * 1000), // 5 minutes ago
+          isRead: false,
+          priority: 'high',
+          source: 'AI Analysis Engine',
+          actionUrl: '/workspace/ai-analysis',
+          patientId: 'PT-2024-001',
+          studyId: 'MR-2024-001',
+          aiConfidence: 0.94
+        },
+        {
+          id: '2',
+          type: 'ai_result',
+          title: 'AI Analysis Complete',
+          message: 'Computer vision analysis completed for chest X-ray study',
+          timestamp: new Date(Date.now() - 12 * 60 * 1000), // 12 minutes ago
+          isRead: false,
+          priority: 'medium',
+          source: 'Computer Vision',
+          actionUrl: '/workspace/ai-analysis',
+          patientId: 'PT-2024-002',
+          studyId: 'XR-2024-003',
+          aiConfidence: 0.87
+        },
+        {
+          id: '3',
+          type: 'collaboration',
+          title: 'Consultation Request',
+          message: 'Dr. Johnson requests consultation on complex cardiac case',
+          timestamp: new Date(Date.now() - 25 * 60 * 1000), // 25 minutes ago
+          isRead: false,
+          priority: 'medium',
+          source: 'Dr. Johnson',
+          actionUrl: '/workspace/collaboration',
+          patientId: 'PT-2024-003',
+          studyId: 'CT-2024-005'
+        },
+        {
+          id: '4',
+          type: 'system',
+          title: 'DICOM Server Maintenance',
+          message: 'Scheduled maintenance completed successfully',
+          timestamp: new Date(Date.now() - 45 * 60 * 1000), // 45 minutes ago
+          isRead: true,
+          priority: 'low',
+          source: 'System Administrator',
+          actionUrl: '/admin/system-health'
+        },
+        {
+          id: '5',
+          type: 'warning',
+          title: 'Image Quality Warning',
+          message: 'Low contrast detected in mammography study - review recommended',
+          timestamp: new Date(Date.now() - 60 * 60 * 1000), // 1 hour ago
+          isRead: false,
+          priority: 'medium',
+          source: 'Quality Assurance',
+          actionUrl: '/workspace/imaging',
+          patientId: 'PT-2024-004',
+          studyId: 'MG-2024-002'
+        },
+        {
+          id: '6',
+          type: 'success',
+          title: 'Study Review Complete',
+          message: 'Successfully completed review of 15 radiology studies',
+          timestamp: new Date(Date.now() - 90 * 60 * 1000), // 1.5 hours ago
+          isRead: true,
+          priority: 'low',
+          source: 'Clinical Workflow',
+          actionUrl: '/reports'
+        }
+      ]);
+    } else {
+      setLocalNotifications(notifications);
+    }
+  }, [notifications]);
+
+  const getNotificationIcon = (type: MedicalNotification['type']) => {
+    switch (type) {
+      case 'critical':
+        return ExclamationTriangleIcon;
+      case 'warning':
+        return ExclamationTriangleIcon;
+      case 'info':
+        return BellIcon;
+      case 'success':
+        return CheckCircleIcon;
+      case 'ai_result':
+        return BeakerIcon;
+      case 'collaboration':
+        return UserGroupIcon;
+      case 'system':
+        return ComputerDesktopIcon;
+      default:
+        return BellIcon;
+    }
+  };
+
+  const getNotificationColor = (type: MedicalNotification['type']) => {
+    switch (type) {
+      case 'critical':
+        return 'text-medsight-critical';
+      case 'warning':
+        return 'text-medsight-pending';
+      case 'info':
+        return 'text-medsight-primary';
+      case 'success':
+        return 'text-medsight-normal';
+      case 'ai_result':
+        return 'text-medsight-ai-high';
+      case 'collaboration':
+        return 'text-medsight-secondary';
+      case 'system':
+        return 'text-medsight-primary';
+      default:
+        return 'text-medsight-primary';
+    }
+  };
+
+  const getNotificationBg = (type: MedicalNotification['type']) => {
+    switch (type) {
+      case 'critical':
+        return 'border-medsight-critical/20 bg-medsight-critical/5';
+      case 'warning':
+        return 'border-medsight-pending/20 bg-medsight-pending/5';
+      case 'info':
+        return 'border-medsight-primary/20 bg-medsight-primary/5';
+      case 'success':
+        return 'border-medsight-normal/20 bg-medsight-normal/5';
+      case 'ai_result':
+        return 'border-medsight-ai-high/20 bg-medsight-ai-high/5';
+      case 'collaboration':
+        return 'border-medsight-secondary/20 bg-medsight-secondary/5';
+      case 'system':
+        return 'border-medsight-primary/20 bg-medsight-primary/5';
+      default:
+        return 'border-medsight-primary/20 bg-medsight-primary/5';
+    }
+  };
+
+  const formatTimestamp = (timestamp: Date) => {
+    const now = new Date();
+    const diff = now.getTime() - timestamp.getTime();
+    const minutes = Math.floor(diff / (1000 * 60));
+    const hours = Math.floor(diff / (1000 * 60 * 60));
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+
+    if (minutes < 60) {
+      return `${minutes}m ago`;
+    } else if (hours < 24) {
+      return `${hours}h ago`;
+    } else {
+      return `${days}d ago`;
+    }
+  };
+
+  const handleNotificationClick = (notification: MedicalNotification) => {
+    if (!notification.isRead) {
+      handleMarkAsRead(notification.id);
+    }
+    onNotificationClick?.(notification);
+  };
+
+  const handleMarkAsRead = (notificationId: string) => {
+    setLocalNotifications(prev => 
+      prev.map(notification => 
+        notification.id === notificationId 
+          ? { ...notification, isRead: true }
+          : notification
+      )
+    );
+    onMarkAsRead?.(notificationId);
+  };
+
+  const handleDismiss = (notificationId: string) => {
+    setLocalNotifications(prev => 
+      prev.filter(notification => notification.id !== notificationId)
+    );
+    onDismiss?.(notificationId);
+  };
+
+  const filteredNotifications = localNotifications.filter(notification => {
+    switch (filter) {
+      case 'unread':
+        return !notification.isRead;
+      case 'critical':
+        return notification.type === 'critical' || notification.priority === 'high';
+      default:
+        return true;
+    }
   });
 
-  const unreadCount = notifications.filter(n => !n.isRead).length;
-  const criticalCount = notifications.filter(n => n.priority === 'critical' && !n.isRead).length;
-
-  const markAsRead = (id: string) => {
-    setNotifications(notifications.map(n => 
-      n.id === id ? { ...n, isRead: true } : n
-    ));
-  };
-
-  const dismissNotification = (id: string) => {
-    setNotifications(notifications.filter(n => n.id !== id));
-  };
-
-  const getNotificationIcon = (type: string, category: string) => {
-    if (category === 'emergency') return <Heart className="h-4 w-4" />;
-    if (category === 'ai-analysis') return <Brain className="h-4 w-4" />;
-    if (category === 'collaboration') return <Users className="h-4 w-4" />;
-    if (category === 'compliance') return <Shield className="h-4 w-4" />;
-    if (category === 'system') return <Zap className="h-4 w-4" />;
-    
-    switch (type) {
-      case 'critical': return <AlertTriangle className="h-4 w-4" />;
-      case 'warning': return <AlertTriangle className="h-4 w-4" />;
-      case 'success': return <CheckCircle className="h-4 w-4" />;
-      default: return <Info className="h-4 w-4" />;
-    }
-  };
-
-  const getNotificationColor = (type: string, priority: string) => {
-    if (priority === 'critical') return 'bg-red-100 text-red-600 border-red-200';
-    if (type === 'warning') return 'bg-amber-100 text-amber-600 border-amber-200';
-    if (type === 'success') return 'bg-green-100 text-green-600 border-green-200';
-    return 'bg-blue-100 text-blue-600 border-blue-200';
-  };
-
-  const getPriorityBadgeColor = (priority: string) => {
-    switch (priority) {
-      case 'critical': return 'bg-red-100 text-red-700 border-red-200';
-      case 'high': return 'bg-amber-100 text-amber-700 border-amber-200';
-      case 'normal': return 'bg-blue-100 text-blue-700 border-blue-200';
-      case 'low': return 'bg-slate-100 text-slate-700 border-slate-200';
-      default: return 'bg-slate-100 text-slate-700 border-slate-200';
-    }
-  };
-
-  const getTimeAgo = (timestamp: string) => {
-    const now = new Date();
-    const time = new Date(timestamp);
-    const diffMs = now.getTime() - time.getTime();
-    const diffMins = Math.floor(diffMs / 60000);
-    
-    if (diffMins < 60) return `${diffMins}m ago`;
-    const diffHours = Math.floor(diffMins / 60);
-    if (diffHours < 24) return `${diffHours}h ago`;
-    const diffDays = Math.floor(diffHours / 24);
-    return `${diffDays}d ago`;
-  };
+  const unreadCount = localNotifications.filter(n => !n.isRead).length;
+  const criticalCount = localNotifications.filter(n => n.type === 'critical').length;
 
   return (
-    <div className={`space-y-6 ${className}`}>
-      <Card className="medsight-glass border-0">
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle className="flex items-center space-x-2">
-              <Bell className="h-5 w-5 text-blue-500" />
-              <span>Medical Notifications</span>
-            </CardTitle>
-            <div className="flex items-center space-x-2">
-              {criticalCount > 0 && (
-                <Badge variant="outline" className="bg-red-100 text-red-700 border-red-200 animate-pulse">
-                  {criticalCount} Critical
-                </Badge>
-              )}
-              <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
-                {unreadCount} Unread
-              </Badge>
+    <div className="space-y-4">
+      {/* Notifications Header */}
+      <div className="medsight-glass p-4 rounded-xl">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center space-x-3">
+            <div className="medsight-control-glass p-2 rounded-lg">
+              <BellIcon className="w-5 h-5 text-medsight-primary" />
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-medsight-primary">
+                Medical Notifications
+              </h3>
+              <div className="flex items-center space-x-4 text-xs text-medsight-primary/70">
+                <span>{unreadCount} unread</span>
+                {criticalCount > 0 && (
+                  <span className="text-medsight-critical">
+                    {criticalCount} critical
+                  </span>
+                )}
+              </div>
             </div>
           </div>
-        </CardHeader>
-        <CardContent>
-          {/* Filter Controls */}
-          <div className="flex flex-col sm:flex-row gap-4 mb-6">
-            <div className="flex gap-2">
-              <select
-                value={filterType}
-                onChange={(e) => setFilterType(e.target.value)}
-                className="px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white/50 dark:bg-slate-800/50 text-sm"
-              >
-                <option value="all">All Categories</option>
-                <option value="emergency">Emergency</option>
-                <option value="ai-analysis">AI Analysis</option>
-                <option value="collaboration">Collaboration</option>
-                <option value="compliance">Compliance</option>
-                <option value="system">System</option>
-                <option value="workflow">Workflow</option>
-              </select>
-              <label className="flex items-center space-x-2 px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white/50 dark:bg-slate-800/50 text-sm cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={showUnreadOnly}
-                  onChange={(e) => setShowUnreadOnly(e.target.checked)}
-                  className="rounded"
-                />
-                <span>Unread only</span>
-              </label>
+          
+          {/* Emergency Alert */}
+          {criticalCount > 0 && (
+            <div className="flex items-center space-x-2 px-3 py-1 bg-medsight-critical/10 border border-medsight-critical/20 rounded-lg">
+              <ExclamationTriangleIcon className="w-4 h-4 text-medsight-critical" />
+              <span className="text-sm font-medium text-medsight-critical">
+                Critical Alert
+              </span>
             </div>
-          </div>
+          )}
+        </div>
+        
+        {/* Filter Buttons */}
+        <div className="flex items-center space-x-2">
+          <button
+            onClick={() => setFilter('all')}
+            className={`px-3 py-1 rounded-lg text-sm font-medium transition-all ${
+              filter === 'all' 
+                ? 'bg-medsight-primary text-white' 
+                : 'text-medsight-primary hover:bg-medsight-primary/10'
+            }`}
+          >
+            All
+          </button>
+          <button
+            onClick={() => setFilter('unread')}
+            className={`px-3 py-1 rounded-lg text-sm font-medium transition-all ${
+              filter === 'unread' 
+                ? 'bg-medsight-primary text-white' 
+                : 'text-medsight-primary hover:bg-medsight-primary/10'
+            }`}
+          >
+            Unread ({unreadCount})
+          </button>
+          <button
+            onClick={() => setFilter('critical')}
+            className={`px-3 py-1 rounded-lg text-sm font-medium transition-all ${
+              filter === 'critical' 
+                ? 'bg-medsight-critical text-white' 
+                : 'text-medsight-critical hover:bg-medsight-critical/10'
+            }`}
+          >
+            Critical ({criticalCount})
+          </button>
+        </div>
+      </div>
 
-          {/* Notifications List */}
-          <div className="space-y-3">
-            {filteredNotifications.map((notification) => (
-              <div 
-                key={notification.id} 
-                className={`medsight-glass rounded-lg p-4 transition-colors ${
-                  !notification.isRead ? 'bg-blue-50/50 dark:bg-blue-900/10' : 'hover:bg-white/70 dark:hover:bg-white/5'
-                }`}
+      {/* Notifications List */}
+      <div className="space-y-3 max-h-96 overflow-y-auto">
+        {filteredNotifications.length === 0 ? (
+          <div className="medsight-glass p-6 rounded-xl text-center">
+            <BellIcon className="w-8 h-8 text-medsight-primary/50 mx-auto mb-2" />
+            <p className="text-sm text-medsight-primary/70">
+              No notifications match your filter
+            </p>
+          </div>
+        ) : (
+          filteredNotifications.map((notification) => {
+            const IconComponent = getNotificationIcon(notification.type);
+            const colorClass = getNotificationColor(notification.type);
+            const bgClass = getNotificationBg(notification.type);
+            
+            return (
+              <div
+                key={notification.id}
+                className={`medsight-glass p-4 rounded-xl border ${bgClass} ${
+                  !notification.isRead ? 'border-l-4 border-l-medsight-primary' : ''
+                } hover:scale-[1.02] transition-all cursor-pointer`}
+                onClick={() => handleNotificationClick(notification)}
               >
                 <div className="flex items-start space-x-3">
-                  <div className={`p-2 rounded-full flex-shrink-0 ${getNotificationColor(notification.type, notification.priority)}`}>
-                    {getNotificationIcon(notification.type, notification.category)}
+                  <div className={`medsight-control-glass p-2 rounded-lg ${
+                    notification.priority === 'high' ? 'animate-pulse' : ''
+                  }`}>
+                    <IconComponent className={`w-4 h-4 ${colorClass}`} />
                   </div>
                   
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-start justify-between mb-2">
-                      <div className="flex-1">
-                        <h4 className={`text-sm font-semibold ${!notification.isRead ? 'text-slate-900 dark:text-white' : 'text-slate-700 dark:text-slate-300'}`}>
-                          {notification.title}
-                        </h4>
-                        <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
-                          {notification.message}
-                        </p>
-                      </div>
-                      <div className="flex items-center space-x-2 ml-4">
-                        <Badge variant="outline" className={getPriorityBadgeColor(notification.priority)}>
-                          {notification.priority.toUpperCase()}
-                        </Badge>
-                        {!notification.isRead && (
-                          <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-4 text-xs text-slate-500 dark:text-slate-400">
-                        <div className="flex items-center space-x-1">
-                          <Clock className="h-3 w-3" />
-                          <span>{getTimeAgo(notification.timestamp)}</span>
-                        </div>
-                        <span>•</span>
-                        <span>{notification.source}</span>
-                        {notification.caseId && (
-                          <>
-                            <span>•</span>
-                            <span>{notification.caseId}</span>
-                          </>
-                        )}
-                        {notification.aiConfidence && (
-                          <>
-                            <span>•</span>
-                            <span>AI: {notification.aiConfidence}%</span>
-                          </>
-                        )}
-                      </div>
-
+                    <div className="flex items-center justify-between mb-1">
+                      <h4 className={`text-sm font-medium ${colorClass}`}>
+                        {notification.title}
+                      </h4>
                       <div className="flex items-center space-x-2">
-                        {notification.actionRequired && notification.estimatedTime && (
-                          <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200">
-                            Est: {notification.estimatedTime}
-                          </Badge>
-                        )}
-                        {!notification.isRead && (
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => markAsRead(notification.id)}
-                            className="text-xs px-2 py-1 h-6"
-                          >
-                            Mark Read
-                          </Button>
-                        )}
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => dismissNotification(notification.id)}
-                          className="text-xs px-2 py-1 h-6 text-slate-400 hover:text-slate-600"
+                        <span className="text-xs text-medsight-primary/60">
+                          {formatTimestamp(notification.timestamp)}
+                        </span>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDismiss(notification.id);
+                          }}
+                          className="text-medsight-primary/40 hover:text-medsight-primary/70 transition-colors"
                         >
-                          <X className="h-3 w-3" />
-                        </Button>
+                          <XMarkIcon className="w-4 h-4" />
+                        </button>
                       </div>
                     </div>
-
-                    {notification.actionRequired && (
-                      <div className="mt-3 flex items-center space-x-2">
-                        <Button size="sm" className="glass-button bg-blue-100 text-blue-700 border-blue-200">
-                          Take Action
-                        </Button>
-                        {notification.caseId && (
-                          <Button size="sm" variant="outline" className="glass-button">
-                            View Case
-                          </Button>
+                    
+                    <p className="text-sm text-medsight-primary/70 mb-2">
+                      {notification.message}
+                    </p>
+                    
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-4 text-xs text-medsight-primary/60">
+                        <span>From: {notification.source}</span>
+                        {notification.patientId && (
+                          <span>Patient: {notification.patientId}</span>
+                        )}
+                        {notification.studyId && (
+                          <span>Study: {notification.studyId}</span>
                         )}
                       </div>
+                      
+                      {notification.aiConfidence && (
+                        <div className="flex items-center space-x-2">
+                          <span className="text-xs text-medsight-ai-high/70">
+                            AI Confidence:
+                          </span>
+                          <span className={`text-xs font-medium ${
+                            notification.aiConfidence >= 0.9 ? 'text-medsight-ai-high' :
+                            notification.aiConfidence >= 0.7 ? 'text-medsight-ai-medium' :
+                            'text-medsight-ai-low'
+                          }`}>
+                            {(notification.aiConfidence * 100).toFixed(1)}%
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                    
+                    {!notification.isRead && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleMarkAsRead(notification.id);
+                        }}
+                        className="mt-2 text-xs text-medsight-primary/60 hover:text-medsight-primary transition-colors"
+                      >
+                        Mark as read
+                      </button>
                     )}
                   </div>
                 </div>
               </div>
-            ))}
-          </div>
+            );
+          })
+        )}
+      </div>
 
-          {filteredNotifications.length === 0 && (
-            <div className="text-center py-8">
-              <div className="text-slate-400 mb-2">
-                <Bell className="h-12 w-12 mx-auto" />
-              </div>
-              <p className="text-slate-600 dark:text-slate-400">
-                {showUnreadOnly ? 'No unread notifications' : 'No notifications found'}
-              </p>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+      {/* Medical Compliance Notice */}
+      <div className="medsight-glass p-3 rounded-xl border-medsight-primary/20">
+        <div className="flex items-center space-x-2">
+          <ShieldCheckIcon className="w-4 h-4 text-medsight-primary" />
+          <span className="text-xs text-medsight-primary/70">
+            All medical notifications are HIPAA compliant and audit-logged
+          </span>
+        </div>
+      </div>
     </div>
   );
 } 

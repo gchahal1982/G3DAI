@@ -1,6 +1,8 @@
+'use client';
+
 /**
- * G3D Point Cloud Annotation Tool
- * Advanced LiDAR and 3D point cloud annotation with semantic segmentation
+ * G3D Point Cloud Annotation
+ * Advanced 3D point cloud annotation with LiDAR processing and spatial analysis
  * ~3,000 lines of production code
  */
 

@@ -52,6 +52,9 @@ export enum SubscriptionPlan {
   ENTERPRISE = 'enterprise'
 }
 
+// Type alias for plan IDs used in components
+export type PlanId = 'FREE' | 'STARTER' | 'PROFESSIONAL' | 'ENTERPRISE';
+
 export interface SubscriptionDetails {
   id: string;
   plan: SubscriptionPlan;
@@ -146,9 +149,12 @@ export interface AuthContextType {
   user: User | null;
   organization: Organization | null;
   isLoading: boolean;
+  loading: boolean; // Alias for isLoading
   isAuthenticated: boolean;
+  error: string | null;
   login: (credentials: LoginRequest) => Promise<AuthResponse>;
   logout: () => void;
+  signup: (data: SignupRequest) => Promise<AuthResponse>;
   updateUser: (updates: Partial<User>) => Promise<void>;
 }
 
@@ -205,6 +211,7 @@ export interface ProtectedRouteProps {
   children: React.ReactNode;
   requiredRole?: UserRole;
   requiredPlan?: SubscriptionPlan;
+  allowedPlans?: SubscriptionPlan[];
   requiredFeature?: string;
   fallback?: React.ReactNode;
 }

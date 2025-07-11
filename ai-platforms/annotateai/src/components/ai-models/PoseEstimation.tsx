@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * G3D Pose Estimation Model
  * Advanced human pose detection and skeletal tracking with 3D visualization

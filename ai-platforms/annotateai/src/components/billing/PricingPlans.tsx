@@ -66,29 +66,29 @@ const ShieldIcon = () => (
 );
 
 const planIcons = {
-  FREE: <ZapIcon />,
-  STARTER: <ArrowRightIcon />,
-  PROFESSIONAL: <StarIcon />,
-  ENTERPRISE: <CrownIcon />,
+  free: <ZapIcon />,
+  starter: <ArrowRightIcon />,
+  professional: <StarIcon />,
+  enterprise: <CrownIcon />,
 };
 
 const planColors = {
-  FREE: {
+  free: {
     badge: 'bg-gray-100 text-gray-800',
     button: 'btn-secondary',
     glass: 'annotate-glass',
   },
-  STARTER: {
+  starter: {
     badge: 'bg-annotate-primary-100 text-annotate-primary-800',
     button: 'btn-annotate',
     glass: 'annotate-glass',
   },
-  PROFESSIONAL: {
+  professional: {
     badge: 'bg-annotate-accent-purple/10 text-annotate-accent-purple',
     button: 'btn-annotate',
     glass: 'annotate-ai-glass',
   },
-  ENTERPRISE: {
+  enterprise: {
     badge: 'bg-annotate-accent-cyan/10 text-annotate-accent-cyan',
     button: 'btn-annotate',
     glass: 'annotate-tool-glass',
@@ -96,7 +96,7 @@ const planColors = {
 };
 
 export default function PricingPlans({
-  currentPlan = 'FREE',
+  currentPlan = 'free',
   customerId,
   customerEmail,
   onPlanSelect,
@@ -107,13 +107,13 @@ export default function PricingPlans({
   const [loadingPlan, setLoadingPlan] = useState<PlanId | null>(null);
 
   const plans = Object.entries(PRICING_PLANS).filter(([planId]) => 
-    showFreePlan || planId !== 'FREE'
+    showFreePlan || planId !== 'free'
   ) as [PlanId, typeof PRICING_PLANS[PlanId]][];
 
   const handlePlanSelect = async (planId: PlanId) => {
     if (loadingPlan) return;
     
-    if (planId === 'FREE') {
+    if (planId === 'free') {
       onPlanSelect?.(planId);
       return;
     }
@@ -132,7 +132,7 @@ export default function PricingPlans({
         customerEmail,
         successUrl: `${window.location.origin}/dashboard/settings/billing?success=true`,
         cancelUrl: `${window.location.origin}/pricing?canceled=true`,
-        trialDays: planId === 'STARTER' ? 14 : undefined,
+        trialDays: planId === 'starter' ? 14 : undefined,
         metadata: {
           planId,
           upgrade: currentPlan !== planId ? 'true' : 'false',
@@ -185,7 +185,12 @@ export default function PricingPlans({
       features.push('Unlimited team members');
     }
     
-    features.push(`${plan.features.support} support`);
+    // Add basic support info
+    if (plan.features.priority) {
+      features.push('Priority support');
+    } else {
+      features.push('Community support');
+    }
     
     if (Array.isArray(plan.features.exportFormats)) {
       features.push(`${plan.features.exportFormats.join(', ')} export formats`);
@@ -201,13 +206,8 @@ export default function PricingPlans({
       features.push('Priority processing');
     }
     
-    // Safely check for optional properties
-    if ('sso' in plan.features && plan.features.sso) {
+    if (plan.features.sso) {
       features.push('Single Sign-On (SSO)');
-    }
-    
-    if ('compliance' in plan.features && plan.features.compliance) {
-      features.push(plan.features.compliance);
     }
     
     return features;
@@ -256,7 +256,7 @@ export default function PricingPlans({
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
         {plans.map(([planId, plan]) => {
           const isCurrentPlan = currentPlan === planId;
-          const isProfessional = planId === 'PROFESSIONAL';
+          const isProfessional = planId === 'professional';
           const features = getPlanFeatures(plan);
           
           return (
@@ -336,7 +336,7 @@ export default function PricingPlans({
               </div>
 
               {/* Trial Info */}
-              {planId === 'STARTER' && !isCurrentPlan && (
+              {planId === 'starter' && !isCurrentPlan && (
                 <p className="text-xs text-gray-500 text-center mt-2">
                   14-day free trial, no credit card required
                 </p>

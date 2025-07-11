@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * G3D Keypoint Detection Model
  * Advanced 3D keypoint detection, skeletal tracking, and pose estimation

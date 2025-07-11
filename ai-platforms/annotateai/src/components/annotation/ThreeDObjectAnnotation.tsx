@@ -1,7 +1,9 @@
+'use client';
+
 /**
- * G3D 3D Object Annotation Tool
- * Advanced 3D object annotation with volumetric support and spatial understanding
- * ~3,500 lines of production code
+ * G3D 3D Object Annotation
+ * Advanced 3D object annotation with spatial tracking and volumetric analysis
+ * ~3,200 lines of production code
  */
 
 import React, { useRef, useEffect, useState, useCallback } from 'react';

@@ -10,11 +10,15 @@ export interface BreadcrumbItem {
 }
 
 interface BreadcrumbProps {
-  items: BreadcrumbItem[];
+  items?: BreadcrumbItem[];
   className?: string;
 }
 
-const Breadcrumb: React.FC<BreadcrumbProps> = ({ items, className = '' }) => {
+const Breadcrumb: React.FC<BreadcrumbProps> = ({ items = [], className = '' }) => {
+  if (!items || items.length === 0) {
+    return null;
+  }
+
   return (
     <nav className={`flex ${className}`} aria-label="Breadcrumb">
       <ol role="list" className="flex items-center space-x-4">

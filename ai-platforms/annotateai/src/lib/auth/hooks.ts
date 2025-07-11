@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useAuth } from './AuthContext';
+import { SubscriptionPlan } from '@/types/auth';
 
 // Types
 interface LoginFormData {
@@ -29,7 +30,7 @@ interface FormErrors {
 interface UseAuthGuardOptions {
   redirectTo?: string;
   requireAuth?: boolean;
-  allowedPlans?: Array<'free' | 'pro' | 'enterprise' | 'custom'>;
+  allowedPlans?: Array<SubscriptionPlan>;
   requiredFeatures?: string[];
 }
 
@@ -442,6 +443,7 @@ export const useSignupForm = (): UseSignupFormReturn => {
 
     try {
       await signup({
+        name: `${formData.firstName} ${formData.lastName}`,
         firstName: formData.firstName,
         lastName: formData.lastName,
         email: formData.email,

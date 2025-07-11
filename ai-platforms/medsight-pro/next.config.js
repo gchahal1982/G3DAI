@@ -1,8 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Enable App Router
+  // Enable experimental features
   experimental: {
-    appDir: true,
     serverComponentsExternalPackages: ['three', 'opencv-js'],
   },
   

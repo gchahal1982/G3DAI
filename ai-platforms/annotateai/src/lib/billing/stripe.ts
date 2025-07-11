@@ -105,11 +105,20 @@ export const PRICING_PLANS: Record<PlanId, PricingPlan> = {
 // Stripe service functions
 export const stripeService = {
   // Create customer
-  createCustomer: async (email: string, name?: string): Promise<Stripe.Customer> => {
-    return await stripe.customers.create({
-      email,
-      name
-    });
+  createCustomer: async (emailOrUser: string | any, name?: string): Promise<Stripe.Customer> => {
+    if (typeof emailOrUser === 'string') {
+      return await stripe.customers.create({
+        email: emailOrUser,
+        name
+      });
+    } else {
+      // Handle User object
+      const user = emailOrUser;
+      return await stripe.customers.create({
+        email: user.email,
+        name: user.name || `${user.firstName} ${user.lastName}`
+      });
+    }
   },
 
   // Get customer
@@ -129,29 +138,41 @@ export const stripeService = {
   },
 
   // Update subscription
-  updateSubscription: async (subscriptionId: string, priceId: string): Promise<Stripe.Subscription> => {
-    const subscription = await stripe.subscriptions.retrieve(subscriptionId);
-    
-    return await stripe.subscriptions.update(subscriptionId, {
-      items: [
-        {
-          id: subscription.items.data[0].id,
-          price: priceId
-        }
-      ]
-    });
+  updateSubscription: async (subscriptionId: string, priceIdOrOptions: string | any): Promise<Stripe.Subscription> => {
+    if (typeof priceIdOrOptions === 'string') {
+      // Handle legacy string parameter
+      const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+      
+      return await stripe.subscriptions.update(subscriptionId, {
+        items: [
+          {
+            id: subscription.items.data[0].id,
+            price: priceIdOrOptions
+          }
+        ]
+      });
+    } else {
+      // Handle options object
+      return await stripe.subscriptions.update(subscriptionId, priceIdOrOptions);
+    }
   },
 
   // Cancel subscription
-  cancelSubscription: async (subscriptionId: string): Promise<Stripe.Subscription> => {
-    return await stripe.subscriptions.cancel(subscriptionId);
+  cancelSubscription: async (subscriptionId: string, immediately: boolean = false): Promise<Stripe.Subscription> => {
+    if (immediately) {
+      return await stripe.subscriptions.cancel(subscriptionId);
+    } else {
+      return await stripe.subscriptions.update(subscriptionId, {
+        cancel_at_period_end: true
+      });
+    }
   },
 
   // Get invoices
-  getInvoices: async (customerId: string): Promise<Stripe.Invoice[]> => {
+  getInvoices: async (customerId: string, limit: number = 10): Promise<Stripe.Invoice[]> => {
     const invoices = await stripe.invoices.list({
       customer: customerId,
-      limit: 10
+      limit
     });
     return invoices.data;
   },

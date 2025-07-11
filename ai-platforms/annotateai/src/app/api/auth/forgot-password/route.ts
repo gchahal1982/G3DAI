@@ -1,5 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { v4 as uuidv4 } from 'uuid';
+import { 
+  getExistingValidToken, 
+  addResetToken, 
+  countRecentTokensForEmail,
+  type ResetToken 
+} from '../../../../lib/auth/reset-tokens';
 
 // Mock user database (should match signup/login)
 const users = [
@@ -27,18 +33,6 @@ const users = [
     },
   },
 ];
-
-// Mock reset token storage (replace with Redis or database)
-interface ResetToken {
-  token: string;
-  userId: string;
-  email: string;
-  expiresAt: Date;
-  createdAt: Date;
-  used: boolean;
-}
-
-let resetTokens: ResetToken[] = [];
 
 interface ForgotPasswordRequest {
   email: string;
@@ -79,11 +73,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check for existing unused reset token
-    const existingToken = resetTokens.find(
-      token => token.userId === user.id && 
-               !token.used && 
-               token.expiresAt > new Date()
-    );
+    const existingToken = getExistingValidToken(user.id);
 
     let resetToken: string;
     
@@ -106,7 +96,7 @@ export async function POST(request: NextRequest) {
         used: false,
       };
 
-      resetTokens.push(tokenRecord);
+      addResetToken(tokenRecord);
       console.log('Created new reset token for user:', user.email);
     }
 
@@ -124,10 +114,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Rate limiting: Clean up old tokens (in production, use proper rate limiting)
-    const userTokenCount = resetTokens.filter(
-      token => token.email === user.email && 
-               token.createdAt > new Date(Date.now() - 60 * 60 * 1000) // Last hour
-    ).length;
+    const userTokenCount = countRecentTokensForEmail(user.email);
 
     if (userTokenCount > 5) {
       console.warn('Rate limit: Too many reset requests for email:', user.email);
@@ -150,11 +137,4 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// Helper function to clean up expired tokens (call periodically)
-export function cleanupExpiredTokens() {
-  const now = new Date();
-  resetTokens = resetTokens.filter(token => token.expiresAt > now);
-}
-
-// Export reset tokens for use in reset password endpoint
-export { resetTokens }; 
+// Helper functions are now available from the utility module 

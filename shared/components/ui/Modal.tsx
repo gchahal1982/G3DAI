@@ -1,4 +1,12 @@
-import React from 'react';
+'use client';
+
+/**
+ * G3D Modal Component
+ * Shared modal system for overlays, dialogs, and popups
+ * ~150 lines of production code
+ */
+
+import React, { useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { XMarkIcon } from '@heroicons/react/24/outline';
 import { cn } from './utils';

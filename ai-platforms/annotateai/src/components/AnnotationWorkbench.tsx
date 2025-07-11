@@ -1,3 +1,5 @@
+"use client";
+
 /**
  * AnnotationWorkbench.tsx - Main Annotation Interface
  * 
@@ -614,47 +616,146 @@ export const AnnotationWorkbench: React.FC<WorkbenchProps> = ({
     return (
         <div
             ref={workbenchRef}
-            className="h-screen flex flex-col bg-gray-900 text-white overflow-hidden"
+            className="h-screen flex flex-col bg-gradient-to-br from-indigo-950 via-purple-950 to-gray-950 text-white overflow-hidden"
         >
             {/* Header */}
-            <WorkbenchHeader
-                project={project}
-                session={session}
-                isConnected={isConnected}
-                collaborators={collaborators}
-                onSave={handleSave}
-                onExport={handleExport}
-            />
+            <div className="h-16 bg-white/5 backdrop-blur-xl border-b border-white/10 flex items-center justify-between px-6">
+                <div className="flex items-center space-x-4">
+                    <div className="flex items-center space-x-3">
+                        <div className="w-8 h-8 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-lg flex items-center justify-center shadow-lg shadow-indigo-500/25">
+                            <span className="text-white font-bold text-sm">A</span>
+                        </div>
+                        <h1 className="text-lg font-semibold text-white">G3D AnnotateAI</h1>
+                    </div>
+                    {project && (
+                        <div className="flex items-center space-x-2">
+                            <span className="text-white/40">•</span>
+                            <span className="text-sm text-white/80">{project.name}</span>
+                        </div>
+                    )}
+                    {isConnected && (
+                        <div className="flex items-center space-x-2 px-3 py-1 bg-green-500/20 border border-green-500/30 rounded-lg">
+                            <UsersIcon className="w-4 h-4 text-green-400" />
+                            <span className="text-xs text-green-300">{collaborators.length + 1} online</span>
+                        </div>
+                    )}
+                </div>
+                <div className="flex items-center space-x-3">
+                    <button
+                        onClick={handleSave}
+                        className="flex items-center space-x-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors"
+                    >
+                        <ArrowDownTrayIcon className="w-4 h-4" />
+                        <span>Save</span>
+                    </button>
+                    <button
+                        onClick={() => handleExport('coco')}
+                        className="flex items-center space-x-2 px-4 py-2 bg-white/10 hover:bg-white/20 text-white border border-white/20 rounded-lg transition-colors"
+                    >
+                        <DocumentArrowDownIcon className="w-4 h-4" />
+                        <span>Export</span>
+                    </button>
+                </div>
+            </div>
 
             {/* Main content area */}
             <div className="flex-1 flex">
                 {/* Left sidebar - Tools */}
-                <ToolsSidebar
-                    tools={annotationTools}
-                    selectedTool={selectedTool}
-                    onSelectTool={selectTool}
-                    onRunAI={runAIAssist}
-                    isAIProcessing={isAIProcessing}
-                />
+                <div className="w-16 bg-white/5 backdrop-blur-xl border-r border-white/10 flex flex-col items-center py-4 space-y-3">
+                    {annotationTools.map(tool => {
+                        const IconComponent = tool.icon;
+                        return (
+                            <button
+                                key={tool.id}
+                                onClick={() => selectTool(tool.id)}
+                                className={`w-10 h-10 rounded-lg flex items-center justify-center transition-all ${
+                                    tool.active 
+                                        ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/25' 
+                                        : 'bg-white/10 text-white/70 hover:bg-white/20 hover:text-white'
+                                }`}
+                                title={`${tool.name} (${tool.hotkey})`}
+                            >
+                                <IconComponent className="w-5 h-5" />
+                            </button>
+                        );
+                    })}
+                    
+                    <div className="flex-1" />
+                    
+                    <button
+                        onClick={runAIAssist}
+                        disabled={isAIProcessing}
+                        className="w-10 h-10 rounded-lg bg-purple-600 hover:bg-purple-700 text-white flex items-center justify-center transition-all shadow-lg shadow-purple-500/25"
+                        title="AI Assistance"
+                    >
+                        {isAIProcessing ? (
+                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                        ) : (
+                            <SparklesIcon className="w-5 h-5" />
+                        )}
+                    </button>
+                </div>
 
                 {/* Center - Viewport */}
                 <div className="flex-1 flex flex-col">
                     {/* Viewport controls */}
-                    <ViewportControls
-                        viewport={viewport}
-                        onViewportChange={setViewport}
-                        mode={mode}
-                        currentFrame={currentFrame}
-                        totalFrames={totalFrames}
-                        isPlaying={isPlaying}
-                        playbackSpeed={playbackSpeed}
-                        onTogglePlayback={togglePlayback}
-                        onSeekToFrame={seekToFrame}
-                        onChangeSpeed={changePlaybackSpeed}
-                    />
+                    <div className="h-12 bg-white/5 backdrop-blur-xl border-b border-white/10 flex items-center justify-between px-4">
+                        <div className="flex items-center space-x-4">
+                            <div className="flex items-center space-x-2">
+                                <button
+                                    onClick={() => setViewport(prev => ({ ...prev, zoom: Math.max(0.1, prev.zoom - 0.1) }))}
+                                    className="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors"
+                                >
+                                    <MagnifyingGlassMinusIcon className="w-4 h-4" />
+                                </button>
+                                <span className="text-sm text-white/80 min-w-[60px] text-center">
+                                    {Math.round(viewport.zoom * 100)}%
+                                </span>
+                                <button
+                                    onClick={() => setViewport(prev => ({ ...prev, zoom: Math.min(5, prev.zoom + 0.1) }))}
+                                    className="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors"
+                                >
+                                    <MagnifyingGlassPlusIcon className="w-4 h-4" />
+                                </button>
+                            </div>
+                            
+                            <div className="flex items-center space-x-2">
+                                <button
+                                    onClick={() => setViewport(prev => ({ ...prev, showGrid: !prev.showGrid }))}
+                                    className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${
+                                        viewport.showGrid ? 'bg-indigo-600 text-white' : 'bg-white/10 hover:bg-white/20 text-white'
+                                    }`}
+                                >
+                                    <Squares2X2Icon className="w-4 h-4" />
+                                </button>
+                                <button
+                                    onClick={() => setViewport(prev => ({ ...prev, showAnnotations: !prev.showAnnotations }))}
+                                    className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${
+                                        viewport.showAnnotations ? 'bg-indigo-600 text-white' : 'bg-white/10 hover:bg-white/20 text-white'
+                                    }`}
+                                >
+                                    <EyeIcon className="w-4 h-4" />
+                                </button>
+                            </div>
+                        </div>
+                        
+                        {mode === 'video' && (
+                            <div className="flex items-center space-x-3">
+                                <button
+                                    onClick={togglePlayback}
+                                    className="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors"
+                                >
+                                    {isPlaying ? <PauseIcon className="w-4 h-4" /> : <PlayIcon className="w-4 h-4" />}
+                                </button>
+                                <span className="text-sm text-white/80">
+                                    {currentFrame + 1} / {totalFrames}
+                                </span>
+                            </div>
+                        )}
+                    </div>
 
                     {/* Main viewport */}
-                    <div className="flex-1 relative bg-gray-800">
+                    <div className="flex-1 relative bg-gradient-to-br from-indigo-950/50 via-purple-950/30 to-gray-950/50">
                         <AnnotationViewport
                             ref={canvasRef}
                             mode={mode}
@@ -680,47 +781,43 @@ export const AnnotationWorkbench: React.FC<WorkbenchProps> = ({
                 </div>
 
                 {/* Right sidebar - Properties and Quality */}
-                <div className="w-80 bg-gray-800 border-l border-gray-700 flex flex-col">
-                    <Tabs defaultValue="properties" className="flex-1 flex flex-col">
-                        <TabsList className="grid w-full grid-cols-3">
-                            <TabsTrigger value="properties">Properties</TabsTrigger>
-                            <TabsTrigger value="quality">Quality</TabsTrigger>
-                            <TabsTrigger value="ai">AI</TabsTrigger>
-                        </TabsList>
+                <div className="w-80 bg-white/5 backdrop-blur-xl border-l border-white/10 flex flex-col">
+                    <div className="flex-1 flex flex-col">
+                        <div className="flex bg-white/10 rounded-lg m-3 p-1">
+                            <button className="flex-1 px-3 py-2 text-sm rounded-md bg-indigo-600 text-white">
+                                Properties
+                            </button>
+                            <button className="flex-1 px-3 py-2 text-sm rounded-md text-white/70 hover:text-white">
+                                Quality
+                            </button>
+                            <button className="flex-1 px-3 py-2 text-sm rounded-md text-white/70 hover:text-white">
+                                AI
+                            </button>
+                        </div>
 
-                        <TabsContent value="properties" className="flex-1 p-4">
+                        <div className="flex-1 p-4">
                             <PropertiesPanel
                                 session={session}
                                 selectedAnnotations={selectedAnnotations}
                                 project={project}
                             />
-                        </TabsContent>
-
-                        <TabsContent value="quality" className="flex-1 p-4">
-                            <QualityPanel
-                                metrics={qualityMetrics}
-                                onAssessQuality={assessQuality}
-                            />
-                        </TabsContent>
-
-                        <TabsContent value="ai" className="flex-1 p-4">
-                            <AIPanel
-                                suggestions={aiSuggestions}
-                                isProcessing={isAIProcessing}
-                                onRunAI={runAIAssist}
-                            />
-                        </TabsContent>
-                    </Tabs>
+                        </div>
+                    </div>
                 </div>
             </div>
 
             {/* Bottom status bar */}
-            <StatusBar
-                session={session}
-                qualityMetrics={qualityMetrics}
-                viewport={viewport}
-                selectedAnnotations={selectedAnnotations}
-            />
+            <div className="h-8 bg-white/5 backdrop-blur-xl border-t border-white/10 flex items-center justify-between px-4 text-xs text-white/60">
+                <div className="flex items-center space-x-4">
+                    <span>Annotations: {session?.annotations.boundingBoxes.length || 0}</span>
+                    <span>Selected: {selectedAnnotations.length}</span>
+                    <span>Quality: {Math.round(qualityMetrics.accuracy * 100)}%</span>
+                </div>
+                <div className="flex items-center space-x-4">
+                    <span>Zoom: {Math.round(viewport.zoom * 100)}%</span>
+                    <span>{session?.status || 'Draft'}</span>
+                </div>
+            </div>
         </div>
     );
 };

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { LoginRequest, AuthResponse } from '@/types/auth';
+import { LoginRequest, AuthResponse, UserRole, SubscriptionPlan } from '@/types/auth';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 
@@ -7,15 +7,16 @@ import jwt from 'jsonwebtoken';
 const mockUsers = [
   {
     id: '1',
+    name: 'Demo User',
     email: 'demo@annotateai.com',
     password: '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', // password
     firstName: 'Demo',
     lastName: 'User',
     avatar: null,
-    role: 'admin' as const,
+    role: UserRole.ADMIN,
     subscription: {
       id: 'sub-1',
-      plan: 'pro' as const,
+      plan: SubscriptionPlan.PROFESSIONAL,
       status: 'active' as const,
       currentPeriodStart: new Date('2024-01-01'),
       currentPeriodEnd: new Date('2024-12-31'),
@@ -37,8 +38,7 @@ const mockUsers = [
         teamMembers: 10,
         modelTraining: 10,
         exports: 1000,
-        supportLevel: 'priority' as const,
-        features: ['basic_annotation', 'advanced_annotation', 'collaboration', 'api_access']
+        supportLevel: 'priority' as const
       }
     },
     preferences: {
@@ -54,6 +54,8 @@ const mockUsers = [
           productUpdates: false,
           weeklyDigest: true
         },
+        browser: true,
+        mobile: true,
         push: {
           projectUpdates: true,
           mentions: true,
@@ -200,7 +202,14 @@ export async function POST(request: NextRequest) {
     }
 
     // Verify password
-    const isValidPassword = await bcrypt.compare(body.password, user.password);
+    let isValidPassword = false;
+    
+    // Special case for demo user
+    if (user.email === 'demo@annotateai.com' && body.password === 'demo123') {
+      isValidPassword = true;
+    } else {
+      isValidPassword = await bcrypt.compare(body.password, user.password);
+    }
     
     if (!isValidPassword) {
       // Log failed attempt for security monitoring
@@ -273,7 +282,7 @@ export async function POST(request: NextRequest) {
       user: userWithoutPassword,
       accessToken,
       refreshToken,
-      expiresIn
+      expiresAt: new Date(Date.now() + expiresIn * 1000)
     };
 
     // Create HTTP response with secure cookies

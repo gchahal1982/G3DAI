@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * G3D Glassmorphism UI Components
  * Shared across all 24 AI services
@@ -214,44 +216,50 @@ export interface GlassCardProps {
     style?: React.CSSProperties;
 }
 
-interface StyledGlassCardProps extends GlassCardProps {
+interface StyledGlassCardProps {
+    $variant?: 'primary' | 'secondary' | 'accent' | 'surface';
+    $size?: 'sm' | 'md' | 'lg' | 'xl';
+    $blur?: 'light' | 'medium' | 'heavy';
+    $hover?: boolean;
+    $interactive?: boolean;
+    $loading?: boolean;
     theme: GlassmorphismTheme;
 }
 
 const StyledGlassCard = styled.div<StyledGlassCardProps>`
   position: relative;
   border-radius: ${props => props.theme.borderRadius.md};
-  backdrop-filter: ${props => props.theme.blur[props.blur || 'medium']};
-  -webkit-backdrop-filter: ${props => props.theme.blur[props.blur || 'medium']};
+  backdrop-filter: ${props => props.theme.blur[props.$blur || 'medium']};
+  -webkit-backdrop-filter: ${props => props.theme.blur[props.$blur || 'medium']};
   border: 1px solid ${props => props.theme.colors.border};
   overflow: hidden;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   
   ${props => {
-        const variant = props.variant || 'surface';
+        const variant = props.$variant || 'surface';
         return css`
       background: ${props.theme.colors.glass[variant]};
       box-shadow: ${props.theme.shadows.glass};
     `;
     }}
   
-  ${props => props.size === 'sm' && css`
+  ${props => props.$size === 'sm' && css`
     padding: ${props.theme.spacing.sm};
   `}
   
-  ${props => props.size === 'md' && css`
+  ${props => props.$size === 'md' && css`
     padding: ${props.theme.spacing.md};
   `}
   
-  ${props => props.size === 'lg' && css`
+  ${props => props.$size === 'lg' && css`
     padding: ${props.theme.spacing.lg};
   `}
   
-  ${props => props.size === 'xl' && css`
+  ${props => props.$size === 'xl' && css`
     padding: ${props.theme.spacing.xl};
   `}
   
-  ${props => props.interactive && css`
+  ${props => props.$interactive && css`
     cursor: pointer;
     
     &:hover {
@@ -261,14 +269,14 @@ const StyledGlassCard = styled.div<StyledGlassCardProps>`
     }
   `}
   
-  ${props => props.hover && css`
+  ${props => props.$hover && css`
     &:hover {
-      background: ${props.theme.gradients[props.variant || 'primary']};
+      background: ${props.theme.gradients[props.$variant || 'primary']};
       transform: scale(1.02);
     }
   `}
   
-  ${props => props.loading && css`
+  ${props => props.$loading && css`
     &::before {
       content: '';
       position: absolute;
@@ -306,12 +314,12 @@ export const GlassCard: React.FC<GlassCardProps> = ({
 
     return (
         <StyledGlassCard
-            variant={variant}
-            size={size}
-            blur={blur}
-            hover={hover}
-            interactive={interactive}
-            loading={loading}
+            $variant={variant}
+            $size={size}
+            $blur={blur}
+            $hover={hover}
+            $interactive={interactive}
+            $loading={loading}
             className={className}
             onClick={onClick}
             theme={mergedTheme}
@@ -340,7 +348,12 @@ export interface GlassButtonProps {
     type?: 'button' | 'submit' | 'reset';
 }
 
-interface StyledGlassButtonProps extends GlassButtonProps {
+interface StyledGlassButtonProps {
+    $variant?: 'primary' | 'secondary' | 'accent' | 'ghost';
+    $size?: 'sm' | 'md' | 'lg';
+    $disabled?: boolean;
+    $loading?: boolean;
+    $fullWidth?: boolean;
     theme: GlassmorphismTheme;
 }
 
@@ -359,27 +372,27 @@ const StyledGlassButton = styled.button<StyledGlassButtonProps>`
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   overflow: hidden;
   
-  ${props => props.fullWidth && css`
+  ${props => props.$fullWidth && css`
     width: 100%;
   `}
   
-  ${props => props.size === 'sm' && css`
+  ${props => props.$size === 'sm' && css`
     padding: ${props.theme.spacing.sm} ${props.theme.spacing.md};
     font-size: 0.875rem;
   `}
   
-  ${props => props.size === 'md' && css`
+  ${props => props.$size === 'md' && css`
     padding: ${props.theme.spacing.md} ${props.theme.spacing.lg};
     font-size: 1rem;
   `}
   
-  ${props => props.size === 'lg' && css`
+  ${props => props.$size === 'lg' && css`
     padding: ${props.theme.spacing.lg} ${props.theme.spacing.xl};
     font-size: 1.125rem;
   `}
   
   ${props => {
-        const variant = props.variant || 'primary';
+        const variant = props.$variant || 'primary';
 
         if (variant === 'ghost') {
             return css`
@@ -412,7 +425,7 @@ const StyledGlassButton = styled.button<StyledGlassButtonProps>`
     `;
     }}
   
-  ${props => props.disabled && css`
+  ${props => props.$disabled && css`
     opacity: 0.5;
     cursor: not-allowed;
     
@@ -421,7 +434,7 @@ const StyledGlassButton = styled.button<StyledGlassButtonProps>`
     }
   `}
   
-  ${props => props.loading && css`
+  ${props => props.$loading && css`
     cursor: wait;
     
     &::before {
@@ -463,11 +476,12 @@ export const GlassButton: React.FC<GlassButtonProps> = ({
     
     return (
         <StyledGlassButton
-            variant={variant}
-            size={size}
+            $variant={variant}
+            $size={size}
+            $disabled={disabled || loading}
+            $loading={loading}
+            $fullWidth={fullWidth}
             disabled={disabled || loading}
-            loading={loading}
-            fullWidth={fullWidth}
             onClick={onClick}
             className={className}
             theme={mergedTheme}
@@ -498,7 +512,10 @@ export interface GlassInputProps {
     theme?: Partial<GlassmorphismTheme>;
 }
 
-interface StyledGlassInputProps extends Omit<GlassInputProps, 'onChange'> {
+interface StyledGlassInputProps {
+    $error?: boolean;
+    $disabled?: boolean;
+    $fullWidth?: boolean;
     theme: GlassmorphismTheme;
 }
 
@@ -525,7 +542,7 @@ const StyledGlassInput = styled.input<StyledGlassInputProps>`
     box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
   }
   
-  ${props => props.error && css`
+  ${props => props.$error && css`
     border-color: #ef4444;
     
     &:focus {
@@ -534,16 +551,16 @@ const StyledGlassInput = styled.input<StyledGlassInputProps>`
     }
   `}
   
-  ${props => props.disabled && css`
+  ${props => props.$disabled && css`
     opacity: 0.5;
     cursor: not-allowed;
   `}
 `;
 
-const InputWrapper = styled.div<{ fullWidth?: boolean }>`
+const InputWrapper = styled.div<{ $fullWidth?: boolean }>`
   position: relative;
   display: inline-block;
-  ${props => props.fullWidth && css`width: 100%;`}
+  ${props => props.$fullWidth && css`width: 100%;`}
 `;
 
 const ErrorMessage = styled.span<{ theme: GlassmorphismTheme }>`
@@ -571,14 +588,15 @@ export const GlassInput: React.FC<GlassInputProps> = ({
     const mergedTheme = { ...baseGlassmorphismTheme, ...theme };
     
     return (
-        <InputWrapper fullWidth={fullWidth} className={className}>
+        <InputWrapper $fullWidth={fullWidth} className={className}>
             <StyledGlassInput
                 type={type}
                 placeholder={placeholder}
                 value={value}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => onChange?.(e.target.value)}
                 disabled={disabled}
-                error={error}
+                $error={error}
+                $disabled={disabled}
                 theme={mergedTheme}
                 {...props}
             />

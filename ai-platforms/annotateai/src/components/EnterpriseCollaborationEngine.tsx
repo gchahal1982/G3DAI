@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * G3D Collaboration Engine
  * Real-time multi-user collaboration with G3D acceleration

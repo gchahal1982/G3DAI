@@ -25,6 +25,9 @@ import {
   Button
 } from '../../../../../shared/components/ui';
 
+// Import Alert component
+import { Alert } from './Alert';
+
 // Re-export all components for external use
 export {
   GlassCard as Card,
@@ -47,7 +50,8 @@ export {
   Tooltip,
   Pagination,
   Radio,
-  Slider
+  Slider,
+  Alert
 };
 
 // Create basic Label component if not available
@@ -185,4 +189,11 @@ export const MedicalCheckbox: React.FC<any> = ({ className = '', ...props }) => 
 
 export const MedicalLabel: React.FC<any> = ({ className = '', ...props }) => (
   <Label className={`label-medsight ${className}`} {...props} />
+); 
+
+// Create AlertDescription component
+export const AlertDescription: React.FC<any> = ({ children, className = '', ...props }) => (
+  <div className={`text-sm [&_p]:leading-relaxed ${className}`} {...props}>
+    {children}
+  </div>
 ); 

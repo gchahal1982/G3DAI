@@ -201,7 +201,7 @@ export default function OnboardingPage() {
       });
 
       if (response.ok) {
-        router.push('/dashboard');
+        router.push('/');
       } else {
         throw new Error('Failed to complete onboarding');
       }
@@ -237,7 +237,7 @@ export default function OnboardingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center p-8">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-950 via-purple-950 to-gray-950 flex items-center justify-center p-8">
       <div className="w-full max-w-4xl">
         {/* Header */}
         <div className="text-center mb-8">

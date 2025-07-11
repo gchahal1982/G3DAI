@@ -1,432 +1,586 @@
 'use client';
 
-import { useState } from 'react';
-// Simple icon components
-const Search = ({ className = '' }: { className?: string }) => <div className={`inline-block ${className}`}>🔍</div>;
-const Clock = ({ className = '' }: { className?: string }) => <div className={`inline-block ${className}`}>⏰</div>;
-const AlertTriangle = ({ className = '' }: { className?: string }) => <div className={`inline-block ${className}`}>⚠️</div>;
-const CheckCircle = ({ className = '' }: { className?: string }) => <div className={`inline-block ${className}`}>✅</div>;
-const Eye = ({ className = '' }: { className?: string }) => <div className={`inline-block ${className}`}>👁️</div>;
-const Users = ({ className = '' }: { className?: string }) => <div className={`inline-block ${className}`}>👥</div>;
-const Brain = ({ className = '' }: { className?: string }) => <div className={`inline-block ${className}`}>🧠</div>;
-const Heart = ({ className = '' }: { className?: string }) => <div className={`inline-block ${className}`}>❤️</div>;
-const User = ({ className = '' }: { className?: string }) => <div className={`inline-block ${className}`}>👤</div>;
-const MapPin = ({ className = '' }: { className?: string }) => <div className={`inline-block ${className}`}>📍</div>;
-const FileText = ({ className = '' }: { className?: string }) => <div className={`inline-block ${className}`}>📄</div>;
-const Play = ({ className = '' }: { className?: string }) => <div className={`inline-block ${className}`}>▶️</div>;
-const MoreHorizontal = ({ className = '' }: { className?: string }) => <div className={`inline-block ${className}`}>⋯</div>;
-const Activity = ({ className = '' }: { className?: string }) => <div className={`inline-block ${className}`}>📊</div>;
+import { useState, useEffect } from 'react';
+import { 
+  FolderIcon, 
+  ExclamationTriangleIcon, 
+  CheckCircleIcon, 
+  ClockIcon,
+  HeartIcon,
+  UserIcon,
+  CalendarIcon,
+  EyeIcon,
+  BeakerIcon,
+  UserGroupIcon,
+  DocumentTextIcon,
+  ArrowRightIcon,
+  MagnifyingGlassIcon,
+  FunnelIcon
+} from '@heroicons/react/24/outline';
 
-// Simple component definitions for missing UI components
-const Card = ({ children, className = '' }: { children: React.ReactNode; className?: string }) => (
-  <div className={`rounded-lg border shadow-sm ${className}`}>{children}</div>
-);
-
-const CardHeader = ({ children, className = '' }: { children: React.ReactNode; className?: string }) => (
-  <div className={`p-6 pb-4 ${className}`}>{children}</div>
-);
-
-const CardTitle = ({ children, className = '' }: { children: React.ReactNode; className?: string }) => (
-  <h3 className={`text-lg font-semibold leading-none tracking-tight ${className}`}>{children}</h3>
-);
-
-const CardContent = ({ children, className = '' }: { children: React.ReactNode; className?: string }) => (
-  <div className={`p-6 pt-0 ${className}`}>{children}</div>
-);
-
-const Button = ({ children, className = '', variant = 'primary', size = 'md', onClick, ...props }: any) => (
-  <button 
-    className={`inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background ${className}`}
-    onClick={onClick}
-    {...props}
-  >
-    {children}
-  </button>
-);
-
-const TabsContent = ({ children, value, className = '' }: { children: React.ReactNode; value: string; className?: string }) => (
-  <div className={`mt-2 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${className}`}>{children}</div>
-);
-
-const TabsList = ({ children, className = '' }: { children: React.ReactNode; className?: string }) => (
-  <div className={`inline-flex h-10 items-center justify-center rounded-md bg-muted p-1 text-muted-foreground ${className}`}>{children}</div>
-);
-
-const TabsTrigger = ({ children, value, className = '' }: { children: React.ReactNode; value: string; className?: string }) => (
-  <button className={`inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm ${className}`}>{children}</button>
-);
-
-const Badge = ({ children, variant = 'primary', className = '' }: { children: React.ReactNode; variant?: string; className?: string }) => (
-  <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${className}`}>{children}</span>
-);
-
-const Input = ({ placeholder = '', value = '', onChange, className = '', ...props }: any) => (
-  <input 
-    className={`flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ${className}`}
-    placeholder={placeholder}
-    value={value}
-    onChange={onChange}
-    {...props}
-  />
-);
-
-interface ActiveCasesProps {
-  className?: string;
+export interface MedicalCase {
+  id: string;
+  patientId: string;
+  patientName: string;
+  patientAge: number;
+  patientGender: 'M' | 'F' | 'O';
+  studyId: string;
+  studyType: 'CT' | 'MRI' | 'X-Ray' | 'Ultrasound' | 'Mammography' | 'PET' | 'Nuclear';
+  studyDate: Date;
+  priority: 'critical' | 'urgent' | 'routine' | 'stat';
+  status: 'pending' | 'in_progress' | 'reviewing' | 'completed' | 'on_hold';
+  assignedTo: string;
+  findings: string[];
+  aiAnalysis?: {
+    confidence: number;
+    findings: string[];
+    recommendations: string[];
+  };
+  lastActivity: Date;
+  estimatedTime: number; // in minutes
+  bodyPart: string;
+  indication: string;
+  urgent: boolean;
+  collaborators: string[];
+  notes: string;
 }
 
-// Mock active cases data
-const mockActiveCases = [
-  {
-    id: 'CASE-2024-001',
-    patientId: 'P-12345',
-    patientName: 'John Doe',
-    age: 45,
-    gender: 'M',
-    modality: 'CT',
-    studyType: 'Chest CT',
-    priority: 'critical',
-    status: 'in-progress',
-    assignedTo: 'Dr. Sarah Johnson',
-    timeReceived: '2024-01-15T08:30:00Z',
-    estimatedCompletion: '2024-01-15T09:00:00Z',
-    aiAnalysis: {
-      status: 'completed',
-      confidence: 0.92,
-      findings: ['Possible pulmonary embolism', 'Enlarged lymph nodes']
-    },
-    clinicalHistory: 'Chest pain, shortness of breath',
-    location: 'Emergency Department',
-    urgency: 'STAT',
-    collaboration: {
-      reviewers: ['Dr. Mike Chen', 'Dr. Lisa Park'],
-      comments: 3
-    }
-  },
-  {
-    id: 'CASE-2024-002',
-    patientId: 'P-12346',
-    patientName: 'Jane Smith',
-    age: 32,
-    gender: 'F',
-    modality: 'MRI',
-    studyType: 'Brain MRI',
-    priority: 'high',
-    status: 'pending',
-    assignedTo: 'Dr. Sarah Johnson',
-    timeReceived: '2024-01-15T09:15:00Z',
-    estimatedCompletion: '2024-01-15T10:15:00Z',
-    aiAnalysis: {
-      status: 'in-progress',
-      confidence: null,
-      findings: []
-    },
-    clinicalHistory: 'Headaches, visual disturbances',
-    location: 'Neurology',
-    urgency: 'Urgent',
-    collaboration: {
-      reviewers: ['Dr. Tom Wilson'],
-      comments: 1
-    }
-  },
-  {
-    id: 'CASE-2024-003',
-    patientId: 'P-12347',
-    patientName: 'Robert Johnson',
-    age: 67,
-    gender: 'M',
-    modality: 'X-Ray',
-    studyType: 'Chest X-Ray',
-    priority: 'normal',
-    status: 'completed',
-    assignedTo: 'Dr. Sarah Johnson',
-    timeReceived: '2024-01-15T07:45:00Z',
-    estimatedCompletion: '2024-01-15T08:30:00Z',
-    aiAnalysis: {
-      status: 'completed',
-      confidence: 0.88,
-      findings: ['Normal chest X-ray']
-    },
-    clinicalHistory: 'Routine screening',
-    location: 'Outpatient',
-    urgency: 'Routine',
-    collaboration: {
-      reviewers: [],
-      comments: 0
-    }
-  },
-  {
-    id: 'CASE-2024-004',
-    patientId: 'P-12348',
-    patientName: 'Maria Garcia',
-    age: 28,
-    gender: 'F',
-    modality: 'Ultrasound',
-    studyType: 'Abdominal US',
-    priority: 'high',
-    status: 'ai-analysis',
-    assignedTo: 'Dr. Sarah Johnson',
-    timeReceived: '2024-01-15T09:30:00Z',
-    estimatedCompletion: '2024-01-15T10:00:00Z',
-    aiAnalysis: {
-      status: 'in-progress',
-      confidence: null,
-      findings: []
-    },
-    clinicalHistory: 'Abdominal pain, nausea',
-    location: 'Emergency Department',
-    urgency: 'Urgent',
-    collaboration: {
-      reviewers: ['Dr. Anna Lee'],
-      comments: 2
-    }
-  }
-];
+export interface ActiveCasesProps {
+  cases?: MedicalCase[];
+  user?: {
+    id: string;
+    name: string;
+    role: string;
+  };
+  onCaseClick?: (caseId: string) => void;
+  onCaseUpdate?: (caseId: string, updates: Partial<MedicalCase>) => void;
+  onAssignCase?: (caseId: string, assigneeId: string) => void;
+}
 
-export function ActiveCases({ className }: ActiveCasesProps) {
+export function ActiveCases({ 
+  cases = [],
+  user = { id: 'current-user', name: 'Dr. Smith', role: 'Radiologist' },
+  onCaseClick,
+  onCaseUpdate,
+  onAssignCase
+}: ActiveCasesProps) {
+  const [localCases, setLocalCases] = useState<MedicalCase[]>([]);
+  const [filter, setFilter] = useState<'all' | 'assigned' | 'critical' | 'pending'>('all');
+  const [sortBy, setSortBy] = useState<'priority' | 'date' | 'status'>('priority');
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterStatus, setFilterStatus] = useState('all');
-  const [filterPriority, setFilterPriority] = useState('all');
 
-  const filteredCases = mockActiveCases.filter(case_ => {
-    const matchesSearch = case_.patientName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         case_.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         case_.studyType.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchesStatus = filterStatus === 'all' || case_.status === filterStatus;
-    const matchesPriority = filterPriority === 'all' || case_.priority === filterPriority;
-    
-    return matchesSearch && matchesStatus && matchesPriority;
-  });
+  useEffect(() => {
+    // Initialize with mock data if no cases provided
+    if (cases.length === 0) {
+      setLocalCases([
+        {
+          id: 'case-001',
+          patientId: 'PT-2024-001',
+          patientName: 'John Doe',
+          patientAge: 45,
+          patientGender: 'M',
+          studyId: 'CT-2024-001',
+          studyType: 'CT',
+          studyDate: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
+          priority: 'critical',
+          status: 'pending',
+          assignedTo: 'Dr. Smith',
+          findings: ['Potential pneumothorax', 'Chest pain evaluation'],
+          aiAnalysis: {
+            confidence: 0.94,
+            findings: ['Pneumothorax detected in left lung', 'Pleural effusion'],
+            recommendations: ['Immediate chest tube placement', 'Cardiothoracic surgery consult']
+          },
+          lastActivity: new Date(Date.now() - 10 * 60 * 1000), // 10 minutes ago
+          estimatedTime: 15,
+          bodyPart: 'Chest',
+          indication: 'Chest pain, shortness of breath',
+          urgent: true,
+          collaborators: ['Dr. Johnson', 'Dr. Williams'],
+          notes: 'Patient presents with acute chest pain and dyspnea'
+        },
+        {
+          id: 'case-002',
+          patientId: 'PT-2024-002',
+          patientName: 'Jane Smith',
+          patientAge: 32,
+          patientGender: 'F',
+          studyId: 'MRI-2024-002',
+          studyType: 'MRI',
+          studyDate: new Date(Date.now() - 4 * 60 * 60 * 1000), // 4 hours ago
+          priority: 'urgent',
+          status: 'in_progress',
+          assignedTo: 'Dr. Smith',
+          findings: ['Brain lesion evaluation'],
+          aiAnalysis: {
+            confidence: 0.87,
+            findings: ['Multiple white matter lesions', 'Consistent with demyelinating disease'],
+            recommendations: ['Neurology consultation', 'Consider MS workup']
+          },
+          lastActivity: new Date(Date.now() - 30 * 60 * 1000), // 30 minutes ago
+          estimatedTime: 25,
+          bodyPart: 'Brain',
+          indication: 'Headache, vision changes',
+          urgent: false,
+          collaborators: ['Dr. Brown'],
+          notes: 'Follow-up MRI for lesion monitoring'
+        },
+        {
+          id: 'case-003',
+          patientId: 'PT-2024-003',
+          patientName: 'Robert Johnson',
+          patientAge: 67,
+          patientGender: 'M',
+          studyId: 'XR-2024-003',
+          studyType: 'X-Ray',
+          studyDate: new Date(Date.now() - 6 * 60 * 60 * 1000), // 6 hours ago
+          priority: 'routine',
+          status: 'reviewing',
+          assignedTo: 'Dr. Wilson',
+          findings: ['Orthopedic evaluation'],
+          lastActivity: new Date(Date.now() - 45 * 60 * 1000), // 45 minutes ago
+          estimatedTime: 10,
+          bodyPart: 'Knee',
+          indication: 'Knee pain, trauma',
+          urgent: false,
+          collaborators: [],
+          notes: 'Post-surgical follow-up'
+        },
+        {
+          id: 'case-004',
+          patientId: 'PT-2024-004',
+          patientName: 'Mary Williams',
+          patientAge: 55,
+          patientGender: 'F',
+          studyId: 'MG-2024-004',
+          studyType: 'Mammography',
+          studyDate: new Date(Date.now() - 8 * 60 * 60 * 1000), // 8 hours ago
+          priority: 'urgent',
+          status: 'pending',
+          assignedTo: 'Dr. Davis',
+          findings: ['Screening mammography'],
+          aiAnalysis: {
+            confidence: 0.76,
+            findings: ['Suspicious mass in upper outer quadrant'],
+            recommendations: ['Additional imaging recommended', 'Consider biopsy']
+          },
+          lastActivity: new Date(Date.now() - 60 * 60 * 1000), // 1 hour ago
+          estimatedTime: 20,
+          bodyPart: 'Breast',
+          indication: 'Routine screening',
+          urgent: false,
+          collaborators: ['Dr. Miller'],
+          notes: 'Annual screening mammogram'
+        }
+      ]);
+    } else {
+      setLocalCases(cases);
+    }
+  }, [cases]);
 
-  const getPriorityColor = (priority: string) => {
+  const getPriorityColor = (priority: MedicalCase['priority']) => {
     switch (priority) {
-      case 'critical': return 'bg-red-100 text-red-700 border-red-200';
-      case 'high': return 'bg-amber-100 text-amber-700 border-amber-200';
-      case 'normal': return 'bg-green-100 text-green-700 border-green-200';
-      default: return 'bg-slate-100 text-slate-700 border-slate-200';
+      case 'critical':
+      case 'stat':
+        return 'text-medsight-critical';
+      case 'urgent':
+        return 'text-medsight-pending';
+      case 'routine':
+        return 'text-medsight-normal';
+      default:
+        return 'text-medsight-primary';
     }
   };
 
-  const getStatusColor = (status: string) => {
+  const getPriorityBg = (priority: MedicalCase['priority']) => {
+    switch (priority) {
+      case 'critical':
+      case 'stat':
+        return 'bg-medsight-critical/10 border-medsight-critical/20';
+      case 'urgent':
+        return 'bg-medsight-pending/10 border-medsight-pending/20';
+      case 'routine':
+        return 'bg-medsight-normal/10 border-medsight-normal/20';
+      default:
+        return 'bg-medsight-primary/10 border-medsight-primary/20';
+    }
+  };
+
+  const getStatusColor = (status: MedicalCase['status']) => {
     switch (status) {
-      case 'completed': return 'bg-green-100 text-green-700 border-green-200';
-      case 'in-progress': return 'bg-blue-100 text-blue-700 border-blue-200';
-      case 'pending': return 'bg-amber-100 text-amber-700 border-amber-200';
-      case 'ai-analysis': return 'bg-purple-100 text-purple-700 border-purple-200';
-      default: return 'bg-slate-100 text-slate-700 border-slate-200';
+      case 'completed':
+        return 'text-medsight-normal';
+      case 'in_progress':
+        return 'text-medsight-ai-high';
+      case 'reviewing':
+        return 'text-medsight-pending';
+      case 'on_hold':
+        return 'text-medsight-critical';
+      case 'pending':
+        return 'text-medsight-primary';
+      default:
+        return 'text-medsight-primary';
     }
   };
 
-  const getTimeElapsed = (timeReceived: string) => {
-    const now = new Date();
-    const received = new Date(timeReceived);
-    const diffMs = now.getTime() - received.getTime();
-    const diffMins = Math.floor(diffMs / 60000);
-    
-    if (diffMins < 60) return `${diffMins}m ago`;
-    const diffHours = Math.floor(diffMins / 60);
-    return `${diffHours}h ${diffMins % 60}m ago`;
+  const getStatusBg = (status: MedicalCase['status']) => {
+    switch (status) {
+      case 'completed':
+        return 'bg-medsight-normal';
+      case 'in_progress':
+        return 'bg-medsight-ai-high';
+      case 'reviewing':
+        return 'bg-medsight-pending';
+      case 'on_hold':
+        return 'bg-medsight-critical';
+      case 'pending':
+        return 'bg-medsight-primary';
+      default:
+        return 'bg-medsight-primary';
+    }
   };
+
+  const formatTimeAgo = (date: Date) => {
+    const now = new Date();
+    const diff = now.getTime() - date.getTime();
+    const minutes = Math.floor(diff / (1000 * 60));
+    const hours = Math.floor(diff / (1000 * 60 * 60));
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+
+    if (minutes < 60) {
+      return `${minutes}m ago`;
+    } else if (hours < 24) {
+      return `${hours}h ago`;
+    } else {
+      return `${days}d ago`;
+    }
+  };
+
+  const handleCaseClick = (caseId: string) => {
+    onCaseClick?.(caseId);
+  };
+
+  const handleStatusChange = (caseId: string, newStatus: MedicalCase['status']) => {
+    setLocalCases(prev => 
+      prev.map(case_ => 
+        case_.id === caseId 
+          ? { ...case_, status: newStatus, lastActivity: new Date() }
+          : case_
+      )
+    );
+    onCaseUpdate?.(caseId, { status: newStatus });
+  };
+
+  const filteredCases = localCases
+    .filter(case_ => {
+      // Filter by search term
+      if (searchTerm && !case_.patientName.toLowerCase().includes(searchTerm.toLowerCase()) &&
+          !case_.patientId.toLowerCase().includes(searchTerm.toLowerCase()) &&
+          !case_.studyId.toLowerCase().includes(searchTerm.toLowerCase())) {
+        return false;
+      }
+
+      // Filter by category
+      switch (filter) {
+        case 'assigned':
+          return case_.assignedTo === user.name;
+        case 'critical':
+          return case_.priority === 'critical' || case_.priority === 'stat';
+        case 'pending':
+          return case_.status === 'pending';
+        default:
+          return true;
+      }
+    })
+    .sort((a, b) => {
+      switch (sortBy) {
+        case 'priority':
+          const priorityOrder = { 'critical': 4, 'stat': 4, 'urgent': 3, 'routine': 2 };
+          return priorityOrder[b.priority] - priorityOrder[a.priority];
+        case 'date':
+          return new Date(b.studyDate).getTime() - new Date(a.studyDate).getTime();
+        case 'status':
+          return a.status.localeCompare(b.status);
+        default:
+          return 0;
+      }
+    });
+
+  const criticalCount = localCases.filter(c => c.priority === 'critical' || c.priority === 'stat').length;
+  const assignedCount = localCases.filter(c => c.assignedTo === user.name).length;
+  const pendingCount = localCases.filter(c => c.status === 'pending').length;
 
   return (
-    <div className={`space-y-6 ${className}`}>
-      <Card className="medsight-glass border-0">
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle className="flex items-center space-x-2">
-              <Activity className="h-5 w-5 text-blue-500" />
-              <span>Active Medical Cases</span>
-            </CardTitle>
-            <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
-              {filteredCases.length} Active Cases
-            </Badge>
-          </div>
-        </CardHeader>
-        <CardContent>
-          {/* Search and Filter Controls */}
-          <div className="flex flex-col sm:flex-row gap-4 mb-6">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
-              <Input
-                placeholder="Search cases by patient name, ID, or study type..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 glass-input"
-              />
+    <div className="space-y-4">
+      {/* Active Cases Header */}
+      <div className="medsight-glass p-4 rounded-xl">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center space-x-3">
+            <div className="medsight-control-glass p-2 rounded-lg">
+              <FolderIcon className="w-5 h-5 text-medsight-primary" />
             </div>
-            <div className="flex gap-2">
-              <select
-                value={filterStatus}
-                onChange={(e) => setFilterStatus(e.target.value)}
-                className="px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white/50 dark:bg-slate-800/50 text-sm"
-              >
-                <option value="all">All Status</option>
-                <option value="pending">Pending</option>
-                <option value="in-progress">In Progress</option>
-                <option value="ai-analysis">AI Analysis</option>
-                <option value="completed">Completed</option>
-              </select>
-              <select
-                value={filterPriority}
-                onChange={(e) => setFilterPriority(e.target.value)}
-                className="px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white/50 dark:bg-slate-800/50 text-sm"
-              >
-                <option value="all">All Priority</option>
-                <option value="critical">Critical</option>
-                <option value="high">High</option>
-                <option value="normal">Normal</option>
-              </select>
-            </div>
-          </div>
-
-          {/* Cases List */}
-          <div className="space-y-4">
-            {filteredCases.map((case_) => (
-              <div key={case_.id} className="medsight-glass rounded-lg p-4 hover:bg-white/70 dark:hover:bg-white/5 transition-colors">
-                <div className="flex items-start justify-between mb-3">
-                  <div className="flex items-center space-x-3">
-                    <div className={`p-2 rounded-full ${
-                      case_.priority === 'critical' ? 'bg-red-100 text-red-600' :
-                      case_.priority === 'high' ? 'bg-amber-100 text-amber-600' :
-                      'bg-green-100 text-green-600'
-                    }`}>
-                      {case_.priority === 'critical' && <AlertTriangle className="h-4 w-4" />}
-                      {case_.priority === 'high' && <Clock className="h-4 w-4" />}
-                      {case_.priority === 'normal' && <CheckCircle className="h-4 w-4" />}
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-slate-900 dark:text-white">
-                        {case_.patientName}
-                      </h3>
-                      <p className="text-sm text-slate-600 dark:text-slate-400">
-                        {case_.id} • {case_.studyType}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Badge variant="outline" className={getPriorityColor(case_.priority)}>
-                      {case_.priority.toUpperCase()}
-                    </Badge>
-                    <Badge variant="outline" className={getStatusColor(case_.status)}>
-                      {case_.status.replace('-', ' ').toUpperCase()}
-                    </Badge>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-                  <div className="flex items-center space-x-2">
-                    <User className="h-4 w-4 text-slate-400" />
-                    <span className="text-sm text-slate-600 dark:text-slate-400">
-                      {case_.age}y {case_.gender}
-                    </span>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <MapPin className="h-4 w-4 text-slate-400" />
-                    <span className="text-sm text-slate-600 dark:text-slate-400">
-                      {case_.location}
-                    </span>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Clock className="h-4 w-4 text-slate-400" />
-                    <span className="text-sm text-slate-600 dark:text-slate-400">
-                      {getTimeElapsed(case_.timeReceived)}
-                    </span>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <FileText className="h-4 w-4 text-slate-400" />
-                    <span className="text-sm text-slate-600 dark:text-slate-400">
-                      {case_.modality}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-4">
-                    {/* AI Analysis Status */}
-                    <div className="flex items-center space-x-2">
-                      <Brain className={`h-4 w-4 ${
-                        case_.aiAnalysis.status === 'completed' ? 'text-green-500' :
-                        case_.aiAnalysis.status === 'in-progress' ? 'text-blue-500' :
-                        'text-slate-400'
-                      }`} />
-                      <span className="text-sm text-slate-600 dark:text-slate-400">
-                        AI: {case_.aiAnalysis.status}
-                        {case_.aiAnalysis.confidence && (
-                          <span className="ml-1 text-green-600">
-                            ({Math.round(case_.aiAnalysis.confidence * 100)}%)
-                          </span>
-                        )}
-                      </span>
-                    </div>
-
-                    {/* Collaboration Status */}
-                    {case_.collaboration.reviewers.length > 0 && (
-                      <div className="flex items-center space-x-2">
-                        <Users className="h-4 w-4 text-blue-500" />
-                        <span className="text-sm text-slate-600 dark:text-slate-400">
-                          {case_.collaboration.reviewers.length} reviewer(s)
-                        </span>
-                      </div>
-                    )}
-
-                    {/* Clinical History */}
-                    <div className="flex items-center space-x-2">
-                      <Heart className="h-4 w-4 text-red-500" />
-                      <span className="text-sm text-slate-600 dark:text-slate-400 truncate max-w-xs">
-                        {case_.clinicalHistory}
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center space-x-2">
-                    <Button size="sm" variant="outline" className="glass-button">
-                      <Eye className="h-4 w-4 mr-1" />
-                      View
-                    </Button>
-                    <Button size="sm" variant="outline" className="glass-button">
-                      <Play className="h-4 w-4 mr-1" />
-                      Start
-                    </Button>
-                    <Button size="sm" variant="ghost" className="glass-button">
-                      <MoreHorizontal className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-
-                {/* AI Findings */}
-                {case_.aiAnalysis.findings.length > 0 && (
-                  <div className="mt-3 p-3 rounded-lg bg-purple-50 dark:bg-purple-900/20">
-                    <div className="flex items-center space-x-2 mb-2">
-                      <Brain className="h-4 w-4 text-purple-500" />
-                      <span className="text-sm font-medium text-purple-700 dark:text-purple-300">
-                        AI Findings
-                      </span>
-                    </div>
-                    <div className="space-y-1">
-                      {case_.aiAnalysis.findings.map((finding, index) => (
-                        <div key={index} className="text-sm text-purple-600 dark:text-purple-400">
-                          • {finding}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
+            <div>
+              <h3 className="text-lg font-semibold text-medsight-primary">
+                Active Medical Cases
+              </h3>
+              <div className="flex items-center space-x-4 text-xs text-medsight-primary/70">
+                <span>{localCases.length} total cases</span>
+                <span>{assignedCount} assigned to you</span>
+                {criticalCount > 0 && (
+                  <span className="text-medsight-critical">
+                    {criticalCount} critical
+                  </span>
                 )}
               </div>
-            ))}
+            </div>
           </div>
-
-          {filteredCases.length === 0 && (
-            <div className="text-center py-8">
-              <div className="text-slate-400 mb-2">
-                <Search className="h-12 w-12 mx-auto" />
-              </div>
-              <p className="text-slate-600 dark:text-slate-400">
-                No cases found matching your criteria
-              </p>
+          
+          {/* Emergency Alert */}
+          {criticalCount > 0 && (
+            <div className="flex items-center space-x-2 px-3 py-1 bg-medsight-critical/10 border border-medsight-critical/20 rounded-lg">
+              <ExclamationTriangleIcon className="w-4 h-4 text-medsight-critical" />
+              <span className="text-sm font-medium text-medsight-critical">
+                {criticalCount} Critical
+              </span>
             </div>
           )}
-        </CardContent>
-      </Card>
+        </div>
+
+        {/* Search and Filters */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+          {/* Search */}
+          <div className="relative">
+            <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-medsight-primary/50" />
+            <input
+              type="text"
+              placeholder="Search cases..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="input-medsight pl-10 w-full"
+            />
+          </div>
+
+          {/* Filter */}
+          <select
+            value={filter}
+            onChange={(e) => setFilter(e.target.value as any)}
+            className="input-medsight"
+          >
+            <option value="all">All Cases</option>
+            <option value="assigned">Assigned to Me ({assignedCount})</option>
+            <option value="critical">Critical ({criticalCount})</option>
+            <option value="pending">Pending ({pendingCount})</option>
+          </select>
+
+          {/* Sort */}
+          <select
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value as any)}
+            className="input-medsight"
+          >
+            <option value="priority">Sort by Priority</option>
+            <option value="date">Sort by Date</option>
+            <option value="status">Sort by Status</option>
+          </select>
+        </div>
+
+        {/* Filter Buttons */}
+        <div className="flex items-center space-x-2">
+          <button
+            onClick={() => setFilter('all')}
+            className={`px-3 py-1 rounded-lg text-sm font-medium transition-all ${
+              filter === 'all' 
+                ? 'bg-medsight-primary text-white' 
+                : 'text-medsight-primary hover:bg-medsight-primary/10'
+            }`}
+          >
+            All
+          </button>
+          <button
+            onClick={() => setFilter('assigned')}
+            className={`px-3 py-1 rounded-lg text-sm font-medium transition-all ${
+              filter === 'assigned' 
+                ? 'bg-medsight-primary text-white' 
+                : 'text-medsight-primary hover:bg-medsight-primary/10'
+            }`}
+          >
+            My Cases ({assignedCount})
+          </button>
+          <button
+            onClick={() => setFilter('critical')}
+            className={`px-3 py-1 rounded-lg text-sm font-medium transition-all ${
+              filter === 'critical' 
+                ? 'bg-medsight-critical text-white' 
+                : 'text-medsight-critical hover:bg-medsight-critical/10'
+            }`}
+          >
+            Critical ({criticalCount})
+          </button>
+          <button
+            onClick={() => setFilter('pending')}
+            className={`px-3 py-1 rounded-lg text-sm font-medium transition-all ${
+              filter === 'pending' 
+                ? 'bg-medsight-pending text-white' 
+                : 'text-medsight-pending hover:bg-medsight-pending/10'
+            }`}
+          >
+            Pending ({pendingCount})
+          </button>
+        </div>
+      </div>
+
+      {/* Cases List */}
+      <div className="space-y-3 max-h-96 overflow-y-auto">
+        {filteredCases.length === 0 ? (
+          <div className="medsight-glass p-6 rounded-xl text-center">
+            <FolderIcon className="w-8 h-8 text-medsight-primary/50 mx-auto mb-2" />
+            <p className="text-sm text-medsight-primary/70">
+              No cases match your filter criteria
+            </p>
+          </div>
+        ) : (
+          filteredCases.map((case_) => (
+            <div
+              key={case_.id}
+              className={`medsight-glass p-4 rounded-xl border ${getPriorityBg(case_.priority)} ${
+                case_.urgent ? 'animate-pulse' : ''
+              } hover:scale-[1.02] transition-all cursor-pointer`}
+              onClick={() => handleCaseClick(case_.id)}
+            >
+              <div className="flex items-start justify-between mb-3">
+                <div className="flex items-start space-x-3">
+                  <div className="medsight-control-glass p-2 rounded-lg">
+                    <HeartIcon className={`w-5 h-5 ${getPriorityColor(case_.priority)}`} />
+                  </div>
+                  
+                  <div className="flex-1">
+                    <div className="flex items-center space-x-2 mb-1">
+                      <h4 className="text-sm font-medium text-medsight-primary">
+                        {case_.patientName}
+                      </h4>
+                      <span className="text-xs text-medsight-primary/60">
+                        ({case_.patientAge}{case_.patientGender})
+                      </span>
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${getPriorityColor(case_.priority)}`}>
+                        {case_.priority.toUpperCase()}
+                      </span>
+                    </div>
+                    
+                    <div className="flex items-center space-x-4 text-xs text-medsight-primary/70 mb-2">
+                      <span>Patient: {case_.patientId}</span>
+                      <span>Study: {case_.studyId}</span>
+                      <span>{case_.studyType}</span>
+                      <span>{case_.bodyPart}</span>
+                    </div>
+                    
+                    <p className="text-xs text-medsight-primary/70 mb-2">
+                      {case_.indication}
+                    </p>
+                    
+                    {case_.aiAnalysis && (
+                      <div className="medsight-ai-glass p-2 rounded-lg mb-2">
+                        <div className="flex items-center space-x-2 mb-1">
+                          <BeakerIcon className="w-4 h-4 text-medsight-ai-high" />
+                          <span className="text-xs font-medium text-medsight-ai-high">
+                            AI Analysis Complete
+                          </span>
+                          <span className={`text-xs ${
+                            case_.aiAnalysis.confidence >= 0.9 ? 'text-medsight-ai-high' :
+                            case_.aiAnalysis.confidence >= 0.7 ? 'text-medsight-ai-medium' :
+                            'text-medsight-ai-low'
+                          }`}>
+                            {(case_.aiAnalysis.confidence * 100).toFixed(1)}%
+                          </span>
+                        </div>
+                        <div className="text-xs text-medsight-ai-high/70">
+                          {case_.aiAnalysis.findings.slice(0, 2).join(', ')}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+                
+                <div className="flex items-center space-x-2">
+                  <div className={`w-2 h-2 rounded-full ${getStatusBg(case_.status)}`}></div>
+                  <span className={`text-xs font-medium ${getStatusColor(case_.status)}`}>
+                    {case_.status.replace('_', ' ')}
+                  </span>
+                </div>
+              </div>
+              
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-4 text-xs text-medsight-primary/60">
+                  <div className="flex items-center space-x-1">
+                    <UserIcon className="w-3 h-3" />
+                    <span>{case_.assignedTo}</span>
+                  </div>
+                  <div className="flex items-center space-x-1">
+                    <CalendarIcon className="w-3 h-3" />
+                    <span>{formatTimeAgo(case_.studyDate)}</span>
+                  </div>
+                  <div className="flex items-center space-x-1">
+                    <ClockIcon className="w-3 h-3" />
+                    <span>{case_.estimatedTime}m</span>
+                  </div>
+                  {case_.collaborators.length > 0 && (
+                    <div className="flex items-center space-x-1">
+                      <UserGroupIcon className="w-3 h-3" />
+                      <span>{case_.collaborators.length} collaborators</span>
+                    </div>
+                  )}
+                </div>
+                
+                <div className="flex items-center space-x-2">
+                  <select
+                    value={case_.status}
+                    onChange={(e) => {
+                      e.stopPropagation();
+                      handleStatusChange(case_.id, e.target.value as MedicalCase['status']);
+                    }}
+                    className="text-xs border border-medsight-primary/20 rounded px-2 py-1 bg-medsight-glass"
+                  >
+                    <option value="pending">Pending</option>
+                    <option value="in_progress">In Progress</option>
+                    <option value="reviewing">Reviewing</option>
+                    <option value="completed">Completed</option>
+                    <option value="on_hold">On Hold</option>
+                  </select>
+                  
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleCaseClick(case_.id);
+                    }}
+                    className="text-medsight-primary hover:text-medsight-primary/70 transition-colors"
+                  >
+                    <ArrowRightIcon className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+
+      {/* Quick Actions */}
+      <div className="medsight-glass p-4 rounded-xl">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-4">
+            <button className="btn-medsight text-sm">
+              <EyeIcon className="w-4 h-4 mr-2" />
+              View All Cases
+            </button>
+            <button className="btn-medsight text-sm">
+              <DocumentTextIcon className="w-4 h-4 mr-2" />
+              Generate Report
+            </button>
+          </div>
+          
+          <div className="text-xs text-medsight-primary/70">
+            Last updated: {formatTimeAgo(new Date(Date.now() - 5 * 60 * 1000))}
+          </div>
+        </div>
+      </div>
     </div>
   );
 } 

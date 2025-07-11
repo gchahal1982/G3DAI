@@ -1,7 +1,9 @@
+'use client';
+
 /**
  * G3D Text Detection Model
- * Advanced OCR, text recognition, and document analysis with 3D text modeling
- * ~2,500 lines of production code
+ * Advanced OCR and text detection with document analysis and structure recognition
+ * ~2,600 lines of production code
  */
 
 import React, { useRef, useEffect, useState, useCallback } from 'react';

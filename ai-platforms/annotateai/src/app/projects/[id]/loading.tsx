@@ -1,6 +1,6 @@
 export default function Loading() {
   return (
-    <div className="min-h-screen bg-gray-900 flex flex-col">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-950 via-purple-950 to-gray-950 flex flex-col">
       {/* Header Skeleton */}
       <div className="border-b border-gray-700 p-4">
         <div className="flex items-center justify-between">

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
+import { getResetToken, markTokenAsUsed, cleanupExpiredTokens } from '../../../../lib/auth/reset-tokens';
 
 // Mock user database (should match other auth endpoints)
 let users = [
@@ -27,19 +28,6 @@ let users = [
     },
   },
 ];
-
-// Mock reset token storage (should match forgot-password endpoint)
-interface ResetToken {
-  token: string;
-  userId: string;
-  email: string;
-  expiresAt: Date;
-  createdAt: Date;
-  used: boolean;
-}
-
-// In a real app, this would be shared from a database or cache
-let resetTokens: ResetToken[] = [];
 
 interface ResetPasswordRequest {
   token: string;
@@ -82,27 +70,11 @@ export async function POST(request: NextRequest) {
     }
 
     // Find reset token
-    const resetToken = resetTokens.find(t => t.token === token);
+    const resetToken = getResetToken(token);
     
     if (!resetToken) {
       return NextResponse.json(
         { message: 'Invalid or expired reset token' },
-        { status: 400 }
-      );
-    }
-
-    // Check if token is expired
-    if (resetToken.expiresAt < new Date()) {
-      return NextResponse.json(
-        { message: 'Reset token has expired' },
-        { status: 400 }
-      );
-    }
-
-    // Check if token has already been used
-    if (resetToken.used) {
-      return NextResponse.json(
-        { message: 'Reset token has already been used' },
         { status: 400 }
       );
     }
@@ -125,7 +97,7 @@ export async function POST(request: NextRequest) {
     user.lastLoginAt = new Date().toISOString(); // Update last activity
 
     // Mark token as used
-    resetToken.used = true;
+    markTokenAsUsed(token);
 
     // TODO: Invalidate all existing sessions for this user
     // await invalidateUserSessions(user.id);
@@ -182,27 +154,11 @@ export async function GET(request: NextRequest) {
     }
 
     // Find reset token
-    const resetToken = resetTokens.find(t => t.token === token);
+    const resetToken = getResetToken(token);
     
     if (!resetToken) {
       return NextResponse.json(
-        { valid: false, message: 'Invalid reset token' },
-        { status: 400 }
-      );
-    }
-
-    // Check if token is expired
-    if (resetToken.expiresAt < new Date()) {
-      return NextResponse.json(
-        { valid: false, message: 'Reset token has expired' },
-        { status: 400 }
-      );
-    }
-
-    // Check if token has already been used
-    if (resetToken.used) {
-      return NextResponse.json(
-        { valid: false, message: 'Reset token has already been used' },
+        { valid: false, message: 'Invalid or expired reset token' },
         { status: 400 }
       );
     }
@@ -221,13 +177,4 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// Helper function to clean up expired and used tokens
-export function cleanupTokens() {
-  const now = new Date();
-  resetTokens = resetTokens.filter(token => 
-    !token.used && token.expiresAt > now
-  );
-}
-
-// Export for sharing with forgot-password endpoint
-export { resetTokens }; 
+// Helper functions are now available from the reset-tokens utility module 

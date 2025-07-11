@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * G3D Face Recognition Model
  * Advanced facial detection, recognition, and biometric analysis with 3D face modeling

@@ -30,4 +30,13 @@ export const Alert: React.FC<AlertProps> = ({
   );
 };
 
+export const AlertDescription: React.FC<{ children: React.ReactNode; className?: string }> = ({ 
+  children, 
+  className = '' 
+}) => (
+  <div className={`text-sm [&_p]:leading-relaxed ${className}`}>
+    {children}
+  </div>
+);
+
 export default Alert; 

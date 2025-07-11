@@ -1,9 +1,11 @@
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import '../styles/globals.css';
-import Navigation from '@/components/layout/Navigation';
-import Header from '@/components/layout/Header';
-import Breadcrumb from '@/components/layout/Breadcrumb';
+import ConditionalLayout from '@/components/layout/ConditionalLayout';
+import ClientProviders from '@/components/providers/ClientProviders';
+
+// Force all pages to be dynamic to avoid static generation issues
+export const dynamic = 'force-dynamic';
 
 const inter = Inter({ 
   subsets: ['latin'],
@@ -12,6 +14,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://annotateai.g3dai.com'),
   title: 'AnnotateAI - Computer Vision Data Labeling Platform',
   description: 'Production-ready AI-powered annotation platform for computer vision training data with advanced glassmorphism UI',
   keywords: ['AI', 'annotation', 'computer vision', 'machine learning', 'data labeling', 'YOLO', 'COCO', 'Pascal VOC'],
@@ -87,78 +90,39 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
       </head>
-      <body className={`${inter.variable} font-sans antialiased h-full bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white overflow-hidden`}>
-        {/* Modal and Portal Root */}
-        <div id="modal-root" />
-        <div id="tooltip-root" />
-        <div id="dropdown-root" />
-        
-        {/* Main Application Layout */}
-        <div className="h-full flex bg-gray-900/50 backdrop-blur-sm">
-          {/* Navigation Sidebar - Hidden on mobile, fixed positioning handled within component */}
-          <div className="hidden lg:block">
-            <Navigation />
-          </div>
+      <body className={`${inter.variable} font-sans antialiased h-full bg-gradient-to-br from-indigo-950 via-purple-950 to-gray-950 text-white`}>
+        <ClientProviders>
+          {/* Modal and Portal Root */}
+          <div id="modal-root" />
+          <div id="tooltip-root" />
+          <div id="dropdown-root" />
           
-          {/* Main Content Container - Responsive offset for sidebar */}
-          <div className="flex-1 flex flex-col min-h-full max-h-screen overflow-hidden lg:ml-80 ml-0">
-            {/* Header */}
-            <Header 
-              className="flex-shrink-0" 
-              showSearch={true}
-            />
-            
-            {/* Content Area with Breadcrumb */}
-            <div className="flex-1 flex flex-col overflow-hidden">
-              {/* Breadcrumb Navigation */}
-              <div className="flex-shrink-0 px-6 py-3 border-b border-white/5 bg-white/2 backdrop-blur-sm">
-                <Breadcrumb />
-              </div>
-              
-              {/* Scrollable Main Content */}
-              <main className="flex-1 overflow-y-auto overflow-x-hidden">
-                <div className="p-6">
-                  {children}
+          {/* Conditional Layout - Shows dashboard when authenticated, clean layout when not */}
+          <ConditionalLayout>
+            {children}
+          </ConditionalLayout>
+          
+          {/* Global Loading Indicator */}
+          <div id="loading-indicator" className="hidden fixed inset-0 z-50 bg-black/50 backdrop-blur-sm">
+            <div className="flex items-center justify-center h-full">
+              <div className="glass-card p-6">
+                <div className="flex items-center space-x-3">
+                  <div className="loading-spinner" />
+                  <span className="text-white text-sm">Loading...</span>
                 </div>
-              </main>
-            </div>
-          </div>
-        </div>
-
-        {/* Mobile Navigation Overlay */}
-        <div 
-          id="mobile-nav-overlay" 
-          className="lg:hidden fixed inset-0 z-40 bg-black/50 backdrop-blur-sm hidden"
-          onClick={() => {
-            const overlay = document.getElementById('mobile-nav-overlay');
-            if (overlay) overlay.classList.add('hidden');
-          }}
-        >
-          <div className="w-80 h-full">
-            <Navigation />
-          </div>
-        </div>
-        
-        {/* Global Loading Indicator */}
-        <div id="loading-indicator" className="hidden fixed inset-0 z-50 bg-black/50 backdrop-blur-sm">
-          <div className="flex items-center justify-center h-full">
-            <div className="glass-card p-6">
-              <div className="flex items-center space-x-3">
-                <div className="loading-spinner" />
-                <span className="text-white text-sm">Loading...</span>
               </div>
             </div>
           </div>
-        </div>
 
-        {/* Development Tools - Only in development */}
-        {process.env.NODE_ENV === 'development' && (
-          <div className="fixed bottom-4 right-4 z-50">
-            <div className="glass-btn px-3 py-2 text-xs text-gray-400">
-              <span>Dev Mode</span>
+          {/* Development Tools - Only in development */}
+          {process.env.NODE_ENV === 'development' && (
+            <div className="fixed bottom-4 right-4 z-50">
+              <div className="glass-btn px-3 py-2 text-xs text-gray-400">
+                <span>Dev Mode</span>
+              </div>
             </div>
-          </div>
-        )}
+          )}
+        </ClientProviders>
 
         {/* Analytics and Tracking Scripts */}
         <script

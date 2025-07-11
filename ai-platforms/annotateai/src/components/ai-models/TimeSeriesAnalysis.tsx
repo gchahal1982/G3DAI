@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * G3D Time Series Analysis Model
  * Advanced temporal pattern recognition, forecasting, and anomaly detection in time series data

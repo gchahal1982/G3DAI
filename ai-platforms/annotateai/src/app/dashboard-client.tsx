@@ -14,7 +14,7 @@ import {
   VideoCameraIcon,
   CubeIcon
 } from '@heroicons/react/24/outline';
-import { Button } from '../../../../shared/components/ui';
+import { Button } from '../../../../shared/components/ui/Button';
 import Link from 'next/link';
 
 interface DashboardStats {
@@ -50,7 +50,21 @@ interface DashboardClientProps {
   initialProjects: RecentProject[];
 }
 
-export function DashboardClient({ initialStats, initialProjects }: DashboardClientProps) {
+export function DashboardClient({ 
+  initialStats = {
+    totalProjects: 0,
+    activeProjects: 0,
+    totalImages: 0,
+    annotatedImages: 0,
+    totalVideos: 0,
+    annotatedVideos: 0,
+    totalAnnotations: 0,
+    qualityScore: 0,
+    aiAssistanceUsage: 0,
+    collaborators: 0
+  }, 
+  initialProjects = [] 
+}: DashboardClientProps) {
   const [showCreateProject, setShowCreateProject] = useState(false);
 
   const formatNumber = (num: number): string => {
@@ -85,7 +99,7 @@ export function DashboardClient({ initialStats, initialProjects }: DashboardClie
   };
 
   return (
-    <div className="min-h-screen bg-gray-900 p-6">
+    <div className="min-h-screen">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
@@ -142,12 +156,24 @@ export function DashboardClient({ initialStats, initialProjects }: DashboardClie
         </div>
 
         {/* Recent Projects */}
-        <div className="annotate-glass rounded-xl p-6 mb-8">
+        <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6 mb-8">
           <h2 className="text-xl font-semibold text-white mb-6">Recent Projects</h2>
           <div className="space-y-4">
-            {initialProjects.map((project) => (
-              <ProjectCard key={project.id} project={project} />
-            ))}
+            {initialProjects && initialProjects.length > 0 ? (
+              initialProjects.map((project) => (
+                <ProjectCard key={project.id} project={project} />
+              ))
+            ) : (
+              <div className="text-center py-8 text-gray-400">
+                <p>No projects yet. Create your first project to get started!</p>
+                <Button
+                  onClick={() => setShowCreateProject(true)}
+                  className="mt-4 bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg"
+                >
+                  Create Your First Project
+                </Button>
+              </div>
+            )}
           </div>
         </div>
 
@@ -201,7 +227,7 @@ function StatCard({
   return (
     <motion.div
       whileHover={{ scale: 1.02 }}
-      className="glass-card p-6 rounded-xl"
+      className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6 hover:bg-white/10 hover:border-indigo-500/30 transition-all duration-300"
     >
       <div className="flex items-center justify-between mb-4">
         <div className={`p-3 rounded-lg ${bgColor}`}>
@@ -241,7 +267,7 @@ function ProjectCard({ project }: { project: RecentProject }) {
     <Link href={`/projects/${project.id}`}>
       <motion.div
         whileHover={{ scale: 1.01 }}
-        className="border border-gray-700 rounded-lg p-4 hover:border-indigo-500/50 transition-colors cursor-pointer"
+        className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-5 hover:bg-white/10 hover:border-indigo-500/50 transition-all duration-200 cursor-pointer"
       >
         <div className="flex items-start justify-between mb-3">
           <div>
@@ -304,7 +330,7 @@ function QuickActionCard({
     <Link href={href}>
       <motion.div
         whileHover={{ scale: 1.02 }}
-        className="border-2 border-dashed border-gray-700 rounded-xl p-8 text-center hover:border-indigo-500/50 transition-colors cursor-pointer"
+        className="bg-white/5 backdrop-blur-xl border-2 border-dashed border-white/20 rounded-2xl p-8 text-center hover:bg-white/10 hover:border-indigo-500/50 transition-all duration-300 cursor-pointer"
       >
         <Icon className="h-12 w-12 text-gray-500 mx-auto mb-4" />
         <h3 className="text-lg font-semibold text-white mb-2">{title}</h3>
@@ -320,7 +346,7 @@ function CreateProjectModal({ onClose }: { onClose: () => void }) {
       <motion.div
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        className="glass-modal rounded-xl p-6 w-full max-w-md mx-4"
+        className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl p-6 w-full max-w-md mx-4 shadow-2xl"
       >
         <h3 className="text-xl font-semibold text-white mb-4">Create New Project</h3>
         <div className="space-y-4">
@@ -328,13 +354,13 @@ function CreateProjectModal({ onClose }: { onClose: () => void }) {
             <label className="block text-sm font-medium text-gray-300 mb-2">Project Name</label>
             <input
               type="text"
-              className="w-full px-3 py-2 glass-input text-white placeholder-gray-400 focus:outline-none"
+              className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500/50 transition-all duration-200"
               placeholder="Enter project name"
             />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-2">Project Type</label>
-            <select className="w-full px-3 py-2 glass-input text-white focus:outline-none">
+            <select className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500/50 transition-all duration-200">
               <option>Object Detection</option>
               <option>Image Classification</option>
               <option>Semantic Segmentation</option>

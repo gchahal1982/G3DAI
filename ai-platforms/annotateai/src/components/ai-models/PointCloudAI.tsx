@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * G3D Point Cloud AI
  * Advanced LiDAR processing and 3D point cloud analysis
