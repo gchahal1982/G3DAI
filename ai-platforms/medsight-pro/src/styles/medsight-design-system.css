@@ -1,0 +1,671 @@
+/* MedSight Pro Medical Design System - EXACT UIUX.md COMPLIANCE */
+/* Medical-Grade Platform Design System for Clinical Workflows */
+
+:root {
+  /* MedSight Medical Colors - EXACT UIUX.md SPECIFICATION */
+  --medsight-primary-50: #f0f9ff;
+  --medsight-primary-100: #e0f2fe;
+  --medsight-primary-200: #bae6fd;
+  --medsight-primary-300: #7dd3fc;
+  --medsight-primary-400: #38bdf8;
+  --medsight-primary-500: #0ea5e9;   /* Primary medical blue */
+  --medsight-primary-600: #0284c7;
+  --medsight-primary-700: #0369a1;
+  --medsight-primary-800: #075985;
+  --medsight-primary-900: #0c4a6e;
+
+  /* Medical Status Colors - CRITICAL MEDICAL INDICATORS */
+  --medsight-normal: #10b981;      /* Normal findings */
+  --medsight-abnormal: #ef4444;    /* Abnormal findings */
+  --medsight-pending: #f59e0b;     /* Pending review */
+  --medsight-critical: #dc2626;    /* Critical findings */
+  --medsight-reviewed: #3b82f6;    /* Reviewed status */
+
+  /* AI Confidence Indicators - MEDICAL AI ACCURACY */
+  --medsight-ai-high: #059669;     /* 90%+ confidence */
+  --medsight-ai-medium: #d97706;   /* 70-90% confidence */
+  --medsight-ai-low: #dc2626;      /* <70% confidence */
+
+  /* Medical Typography - ENHANCED READABILITY */
+  --medsight-font-primary: 'Inter Variable', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --medsight-line-height: 1.6;    /* Enhanced readability for medical text */
+  --medsight-letter-spacing: 0.01em;
+
+  /* Clinical Text Sizes - MEDICAL PROFESSIONAL INTERFACE */
+  --medsight-text-patient: 1.125rem;   /* Patient information */
+  --medsight-text-findings: 1rem;      /* Medical findings */
+  --medsight-text-metadata: 0.875rem;  /* DICOM metadata */
+  --medsight-text-ai: 0.8125rem;       /* AI metrics */
+
+  /* Medical Component Spacing */
+  --medsight-space-xs: 0.25rem;
+  --medsight-space-sm: 0.5rem;
+  --medsight-space-md: 1rem;
+  --medsight-space-lg: 1.5rem;
+  --medsight-space-xl: 2rem;
+  --medsight-space-2xl: 3rem;
+
+  /* Medical Timing Functions */
+  --medsight-ease-out-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+  --medsight-duration-fast: 150ms;
+  --medsight-duration-normal: 300ms;
+  --medsight-duration-slow: 500ms;
+}
+
+/* MedSight Pro Glass Effects - EXACT UIUX.md IMPLEMENTATION */
+/* Primary MedSight Glass - MEDICAL INTERFACE STANDARD */
+.medsight-glass {
+  background: linear-gradient(135deg, 
+    rgba(14, 165, 233, 0.06) 0%, 
+    rgba(16, 185, 129, 0.04) 100%);
+  backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid rgba(14, 165, 233, 0.12);
+  box-shadow: 
+    0 8px 32px rgba(14, 165, 233, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.medsight-glass:hover {
+  background: linear-gradient(135deg, 
+    rgba(14, 165, 233, 0.1) 0%, 
+    rgba(16, 185, 129, 0.06) 100%);
+  border: 1px solid rgba(14, 165, 233, 0.2);
+  box-shadow: 
+    0 12px 48px rgba(14, 165, 233, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  transform: translateY(-2px);
+}
+
+/* Medical Viewer Glass - DICOM IMAGE DISPLAY */
+.medsight-viewer-glass {
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(20px) saturate(150%);
+  border: 1px solid rgba(14, 165, 233, 0.2);
+  border-radius: 12px;
+  box-shadow: 
+    0 16px 64px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(14, 165, 233, 0.1);
+}
+
+/* Medical Control Panel Glass - CLINICAL CONTROLS */
+.medsight-control-glass {
+  background: rgba(14, 165, 233, 0.08);
+  backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(14, 165, 233, 0.15);
+  border-radius: 12px;
+  box-shadow: 
+    0 8px 32px rgba(14, 165, 233, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+/* AI Diagnostic Glass - AI ANALYSIS INTERFACE */
+.medsight-ai-glass {
+  background: linear-gradient(135deg, 
+    rgba(16, 185, 129, 0.08) 0%, 
+    rgba(14, 165, 233, 0.04) 100%);
+  backdrop-filter: blur(24px) saturate(200%);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  box-shadow: 
+    0 12px 40px rgba(16, 185, 129, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+}
+
+/* Medical Status Glass Effects - CLINICAL STATUS INDICATORS */
+.medsight-status-normal {
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  backdrop-filter: blur(16px);
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(16, 185, 129, 0.1);
+  color: var(--medsight-normal);
+}
+
+.medsight-status-abnormal {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  backdrop-filter: blur(16px);
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(239, 68, 68, 0.1);
+  color: var(--medsight-abnormal);
+}
+
+.medsight-status-critical {
+  background: rgba(220, 38, 38, 0.1);
+  border: 1px solid rgba(220, 38, 38, 0.3);
+  backdrop-filter: blur(16px);
+  border-radius: 8px;
+  box-shadow: 
+    0 4px 16px rgba(220, 38, 38, 0.2),
+    0 0 20px rgba(220, 38, 38, 0.1);
+  color: var(--medsight-critical);
+  animation: pulse-critical 2s infinite;
+}
+
+.medsight-status-pending {
+  background: rgba(245, 158, 11, 0.1);
+  border: 1px solid rgba(245, 158, 11, 0.2);
+  backdrop-filter: blur(16px);
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(245, 158, 11, 0.1);
+  color: var(--medsight-pending);
+}
+
+.medsight-status-reviewed {
+  background: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  backdrop-filter: blur(16px);
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(59, 130, 246, 0.1);
+  color: var(--medsight-reviewed);
+}
+
+/* AI Confidence Glass - MEDICAL AI ACCURACY INDICATORS */
+.medsight-confidence-high {
+  background: rgba(5, 150, 105, 0.1);
+  border: 1px solid rgba(5, 150, 105, 0.2);
+  backdrop-filter: blur(16px);
+  border-radius: 6px;
+  color: var(--medsight-ai-high);
+  padding: 4px 8px;
+  font-size: var(--medsight-text-ai);
+  font-weight: 600;
+}
+
+.medsight-confidence-medium {
+  background: rgba(217, 119, 6, 0.1);
+  border: 1px solid rgba(217, 119, 6, 0.2);
+  backdrop-filter: blur(16px);
+  border-radius: 6px;
+  color: var(--medsight-ai-medium);
+  padding: 4px 8px;
+  font-size: var(--medsight-text-ai);
+  font-weight: 600;
+}
+
+.medsight-confidence-low {
+  background: rgba(220, 38, 38, 0.1);
+  border: 1px solid rgba(220, 38, 38, 0.2);
+  backdrop-filter: blur(16px);
+  border-radius: 6px;
+  color: var(--medsight-ai-low);
+  padding: 4px 8px;
+  font-size: var(--medsight-text-ai);
+  font-weight: 600;
+}
+
+/* Medical Image Overlay Glass - DICOM ANNOTATIONS */
+.medsight-overlay-glass {
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(14, 165, 233, 0.3);
+  border-radius: 8px;
+  color: white;
+  padding: var(--medsight-space-sm);
+}
+
+/* DICOM Info Glass - MEDICAL METADATA DISPLAY */
+.medsight-dicom-glass {
+  background: rgba(14, 165, 233, 0.04);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(14, 165, 233, 0.1);
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(14, 165, 233, 0.05);
+  padding: var(--medsight-space-md);
+  font-family: var(--medsight-font-primary);
+  line-height: var(--medsight-line-height);
+}
+
+/* Medical Button Styles - CLINICAL ACTION BUTTONS */
+.btn-medsight {
+  background: linear-gradient(135deg, var(--medsight-primary-500) 0%, var(--medsight-primary-600) 100%);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  padding: 12px 24px;
+  font-family: var(--medsight-font-primary);
+  font-weight: 600;
+  font-size: 0.875rem;
+  line-height: var(--medsight-line-height);
+  letter-spacing: var(--medsight-letter-spacing);
+  transition: all var(--medsight-duration-normal) var(--medsight-ease-out-smooth);
+  box-shadow: 0 4px 12px rgba(14, 165, 233, 0.2);
+  cursor: pointer;
+}
+
+.btn-medsight:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(14, 165, 233, 0.3);
+  background: linear-gradient(135deg, var(--medsight-primary-600) 0%, var(--medsight-primary-700) 100%);
+}
+
+.btn-medsight:active {
+  transform: translateY(0);
+  box-shadow: 0 4px 12px rgba(14, 165, 233, 0.2);
+}
+
+.btn-medsight-secondary {
+  background: rgba(14, 165, 233, 0.1);
+  color: var(--medsight-primary-700);
+  border: 1px solid rgba(14, 165, 233, 0.2);
+  backdrop-filter: blur(16px);
+}
+
+.btn-medsight-secondary:hover {
+  background: rgba(14, 165, 233, 0.15);
+  border: 1px solid rgba(14, 165, 233, 0.3);
+}
+
+/* Critical Action Buttons - EMERGENCY MEDICAL ACTIONS */
+.btn-medsight-critical {
+  background: linear-gradient(135deg, var(--medsight-critical) 0%, #b91c1c 100%);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  padding: 12px 24px;
+  font-weight: 700;
+  animation: pulse-critical 2s infinite;
+}
+
+.btn-medsight-success {
+  background: linear-gradient(135deg, var(--medsight-normal) 0%, #047857 100%);
+  color: white;
+}
+
+/* Medical Input Styles - CLINICAL DATA ENTRY */
+.input-medsight {
+  background: rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.05);
+  border-radius: 10px;
+  padding: 12px 16px;
+  font-family: var(--medsight-font-primary);
+  font-size: var(--medsight-text-findings);
+  line-height: var(--medsight-line-height);
+  letter-spacing: var(--medsight-letter-spacing);
+  color: var(--medsight-primary-900);
+  transition: all var(--medsight-duration-normal) var(--medsight-ease-out-smooth);
+}
+
+.input-medsight:focus {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(14, 165, 233, 0.3);
+  box-shadow: 
+    inset 0 2px 8px rgba(0, 0, 0, 0.05),
+    0 0 0 3px rgba(14, 165, 233, 0.1);
+  outline: none;
+}
+
+.input-medsight::placeholder {
+  color: var(--medsight-primary-400);
+  opacity: 0.7;
+}
+
+/* Medical Card Styles - PATIENT INFORMATION CARDS */
+.card-medsight {
+  background: var(--medsight-glass);
+  border-radius: 16px;
+  padding: var(--medsight-space-xl);
+  backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid rgba(14, 165, 233, 0.12);
+  box-shadow: 
+    0 8px 32px rgba(14, 165, 233, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  transition: all var(--medsight-duration-normal) var(--medsight-ease-out-smooth);
+}
+
+.card-medsight:hover {
+  transform: translateY(-4px);
+  box-shadow: 
+    0 12px 48px rgba(14, 165, 233, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+
+.card-medsight-header {
+  border-bottom: 1px solid rgba(14, 165, 233, 0.1);
+  padding-bottom: var(--medsight-space-md);
+  margin-bottom: var(--medsight-space-md);
+}
+
+.card-medsight-title {
+  font-size: var(--medsight-text-patient);
+  font-weight: 600;
+  color: var(--medsight-primary-900);
+  margin: 0;
+  line-height: var(--medsight-line-height);
+}
+
+/* Medical Typography - ENHANCED READABILITY */
+.text-medsight-primary {
+  color: var(--medsight-primary-500);
+  font-family: var(--medsight-font-primary);
+  line-height: var(--medsight-line-height);
+  letter-spacing: var(--medsight-letter-spacing);
+}
+
+.text-medsight-patient {
+  font-size: var(--medsight-text-patient);
+  font-weight: 600;
+  color: var(--medsight-primary-900);
+  line-height: var(--medsight-line-height);
+}
+
+.text-medsight-findings {
+  font-size: var(--medsight-text-findings);
+  color: var(--medsight-primary-800);
+  line-height: var(--medsight-line-height);
+  letter-spacing: var(--medsight-letter-spacing);
+}
+
+.text-medsight-metadata {
+  font-size: var(--medsight-text-metadata);
+  color: var(--medsight-primary-600);
+  font-family: 'Geist Mono', monospace;
+  line-height: 1.4;
+}
+
+.text-medsight-ai {
+  font-size: var(--medsight-text-ai);
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+/* Medical Navigation - CLINICAL WORKFLOW NAVIGATION */
+.nav-medsight {
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(24px) saturate(180%);
+  border-bottom: 1px solid rgba(14, 165, 233, 0.1);
+  padding: var(--medsight-space-md) var(--medsight-space-lg);
+}
+
+.nav-medsight-item {
+  padding: var(--medsight-space-sm) var(--medsight-space-md);
+  border-radius: 8px;
+  color: var(--medsight-primary-700);
+  text-decoration: none;
+  font-family: var(--medsight-font-primary);
+  font-weight: 500;
+  transition: all var(--medsight-duration-fast) var(--medsight-ease-out-smooth);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--medsight-space-sm);
+}
+
+.nav-medsight-item:hover {
+  background: rgba(14, 165, 233, 0.1);
+  color: var(--medsight-primary-900);
+  transform: translateY(-1px);
+}
+
+.nav-medsight-item.active {
+  background: var(--medsight-primary-500);
+  color: white;
+  box-shadow: 0 4px 12px rgba(14, 165, 233, 0.3);
+}
+
+/* Medical Modal - CLINICAL DIALOG INTERFACES */
+.modal-medsight {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(40px) saturate(200%);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 
+    0 32px 100px rgba(0, 0, 0, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  border-radius: 20px;
+  padding: var(--medsight-space-2xl);
+  max-width: 800px;
+  width: 90vw;
+}
+
+/* Medical Progress Indicators - CLINICAL WORKFLOW PROGRESS */
+.progress-medsight {
+  background: rgba(14, 165, 233, 0.1);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(14, 165, 233, 0.15);
+  border-radius: 50px;
+  overflow: hidden;
+  height: 8px;
+}
+
+.progress-medsight-fill {
+  background: linear-gradient(90deg, 
+    rgba(14, 165, 233, 0.8) 0%, 
+    rgba(14, 165, 233, 1) 100%);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 0 16px rgba(14, 165, 233, 0.4);
+  height: 100%;
+  transition: width var(--medsight-duration-slow) var(--medsight-ease-out-smooth);
+}
+
+/* Medical Animations - CLINICAL FEEDBACK ANIMATIONS */
+@keyframes pulse-critical {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.02);
+  }
+}
+
+@keyframes medical-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes ai-processing {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+/* Medical Accessibility - WCAG AA COMPLIANCE */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  
+  .medsight-glass,
+  .btn-medsight,
+  .input-medsight,
+  .card-medsight {
+    transition: none;
+  }
+}
+
+@media (prefers-contrast: high) {
+  .medsight-glass,
+  .medsight-viewer-glass,
+  .medsight-control-glass {
+    background: rgba(255, 255, 255, 0.2);
+    border: 2px solid rgba(255, 255, 255, 0.4);
+    backdrop-filter: blur(8px);
+  }
+  
+  .btn-medsight {
+    border: 2px solid white;
+  }
+  
+  .input-medsight {
+    border: 2px solid var(--medsight-primary-500);
+  }
+}
+
+/* Dark Mode Support - MEDICAL INTERFACE DARK MODE */
+@media (prefers-color-scheme: dark) {
+  .medsight-glass {
+    background: linear-gradient(135deg, 
+      rgba(14, 165, 233, 0.08) 0%, 
+      rgba(16, 185, 129, 0.06) 100%);
+    border: 1px solid rgba(14, 165, 233, 0.15);
+    box-shadow: 
+      0 8px 32px rgba(0, 0, 0, 0.3),
+      inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  }
+  
+  .medsight-control-glass {
+    background: rgba(14, 165, 233, 0.12);
+    border: 1px solid rgba(14, 165, 233, 0.2);
+  }
+  
+  .input-medsight {
+    background: rgba(0, 0, 0, 0.15);
+    border: 1px solid rgba(14, 165, 233, 0.2);
+    color: white;
+  }
+  
+  .text-medsight-primary {
+    color: var(--medsight-primary-300);
+  }
+  
+  .text-medsight-patient {
+    color: white;
+  }
+  
+  .text-medsight-findings {
+    color: rgba(255, 255, 255, 0.9);
+  }
+  
+  .text-medsight-metadata {
+    color: rgba(255, 255, 255, 0.7);
+  }
+}
+
+/* Medical Responsive Design - CLINICAL WORKFLOW OPTIMIZATION */
+@media (max-width: 768px) {
+  .medsight-glass {
+    backdrop-filter: blur(16px);
+    border-radius: 12px;
+    padding: var(--medsight-space-md);
+  }
+  
+  .btn-medsight {
+    padding: 10px 20px;
+    font-size: 0.8125rem;
+  }
+  
+  .modal-medsight {
+    padding: var(--medsight-space-lg);
+    border-radius: 16px;
+  }
+  
+  .text-medsight-patient {
+    font-size: 1rem;
+  }
+  
+  .nav-medsight {
+    padding: var(--medsight-space-sm) var(--medsight-space-md);
+  }
+}
+
+@media (min-width: 1024px) {
+  .medsight-glass {
+    backdrop-filter: blur(28px) saturate(180%);
+    border-radius: 18px;
+  }
+  
+  .medsight-viewer-glass {
+    backdrop-filter: blur(24px) saturate(150%);
+    border-radius: 14px;
+  }
+}
+
+/* Medical Print Styles - CLINICAL REPORT PRINTING */
+@media print {
+  .medsight-glass,
+  .medsight-viewer-glass,
+  .medsight-control-glass {
+    background: white !important;
+    backdrop-filter: none !important;
+    border: 1px solid #ccc !important;
+    box-shadow: none !important;
+  }
+  
+  .btn-medsight {
+    display: none;
+  }
+  
+  .text-medsight-patient,
+  .text-medsight-findings,
+  .text-medsight-metadata {
+    color: black !important;
+  }
+  
+  .nav-medsight {
+    display: none;
+  }
+}
+
+/* Medical Focus States - KEYBOARD NAVIGATION SUPPORT */
+.medsight-focus-ring:focus {
+  outline: 2px solid var(--medsight-primary-500);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.btn-medsight:focus {
+  outline: 2px solid var(--medsight-primary-300);
+  outline-offset: 2px;
+}
+
+.input-medsight:focus {
+  outline: 2px solid var(--medsight-primary-400);
+  outline-offset: 1px;
+}
+
+/* Medical Performance Optimization */
+.medsight-glass,
+.medsight-viewer-glass,
+.medsight-control-glass,
+.medsight-ai-glass {
+  will-change: backdrop-filter;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  contain: layout style paint;
+}
+
+/* Medical Component States */
+.medsight-disabled {
+  opacity: 0.5;
+  pointer-events: none;
+  cursor: not-allowed;
+}
+
+.medsight-loading {
+  position: relative;
+  overflow: hidden;
+}
+
+.medsight-loading::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    rgba(14, 165, 233, 0.1) 0%,
+    rgba(14, 165, 233, 0.3) 50%,
+    rgba(14, 165, 233, 0.1) 100%
+  );
+  animation: ai-processing 2s infinite;
+  background-size: 200% 100%;
+} 

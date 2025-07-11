@@ -206,8 +206,108 @@ interface GPUSampler {}
 interface GPUBindGroup {}
 interface GPUBindGroupLayout {}
 interface GPUPipelineLayout {}
-interface GPUCommandEncoder {}
-interface GPUCommandBuffer {}
+interface GPUCommandEncoder extends GPUObjectBase {
+  beginRenderPass(descriptor: GPURenderPassDescriptor): GPURenderPassEncoder;
+  beginComputePass(descriptor?: GPUComputePassDescriptor): GPUComputePassEncoder;
+  copyBufferToBuffer(source: GPUBuffer, sourceOffset: number, destination: GPUBuffer, destinationOffset: number, size: number): void;
+  copyBufferToTexture(source: GPUImageCopyBuffer, destination: GPUImageCopyTexture, copySize: GPUExtent3D): void;
+  copyTextureToBuffer(source: GPUImageCopyTexture, destination: GPUImageCopyBuffer, copySize: GPUExtent3D): void;
+  copyTextureToTexture(source: GPUImageCopyTexture, destination: GPUImageCopyTexture, copySize: GPUExtent3D): void;
+  clearBuffer(buffer: GPUBuffer, offset?: number, size?: number): void;
+  writeTimestamp(querySet: GPUQuerySet, queryIndex: number): void;
+  resolveQuerySet(querySet: GPUQuerySet, firstQuery: number, queryCount: number, destination: GPUBuffer, destinationOffset: number): void;
+  finish(descriptor?: GPUCommandBufferDescriptor): GPUCommandBuffer;
+  pushDebugGroup(groupLabel: string): void;
+  popDebugGroup(): void;
+  insertDebugMarker(markerLabel: string): void;
+}
+
+interface GPUCommandBuffer extends GPUObjectBase {}
+
+interface GPURenderPassEncoder extends GPUObjectBase {
+  setViewport(x: number, y: number, width: number, height: number, minDepth: number, maxDepth: number): void;
+  setScissorRect(x: number, y: number, width: number, height: number): void;
+  setPipeline(pipeline: GPURenderPipeline): void;
+  setBindGroup(index: number, bindGroup: GPUBindGroup, dynamicOffsets?: number[]): void;
+  draw(vertexCount: number, instanceCount?: number, firstVertex?: number, firstInstance?: number): void;
+  drawIndexed(indexCount: number, instanceCount?: number, firstIndex?: number, baseVertex?: number, firstInstance?: number): void;
+  drawIndirect(indirectBuffer: GPUBuffer, indirectOffset: number): void;
+  drawIndexedIndirect(indirectBuffer: GPUBuffer, indirectOffset: number): void;
+  end(): void;
+  pushDebugGroup(groupLabel: string): void;
+  popDebugGroup(): void;
+  insertDebugMarker(markerLabel: string): void;
+}
+
+interface GPUComputePassEncoder extends GPUObjectBase {
+  setPipeline(pipeline: GPUComputePipeline): void;
+  setBindGroup(index: number, bindGroup: GPUBindGroup, dynamicOffsets?: number[]): void;
+  dispatchWorkgroups(workgroupCountX: number, workgroupCountY?: number, workgroupCountZ?: number): void;
+  dispatchWorkgroupsIndirect(indirectBuffer: GPUBuffer, indirectOffset: number): void;
+  end(): void;
+  pushDebugGroup(groupLabel: string): void;
+  popDebugGroup(): void;
+  insertDebugMarker(markerLabel: string): void;
+}
+
+interface GPURenderPassDescriptor extends GPUObjectDescriptorBase {
+  colorAttachments: (GPURenderPassColorAttachment | null)[];
+  depthStencilAttachment?: GPURenderPassDepthStencilAttachment;
+  occlusionQuerySet?: GPUQuerySet;
+  timestampWrites?: GPURenderPassTimestampWrites;
+}
+
+interface GPUComputePassDescriptor extends GPUObjectDescriptorBase {
+  timestampWrites?: GPUComputePassTimestampWrites;
+}
+
+interface GPUCommandBufferDescriptor extends GPUObjectDescriptorBase {}
+
+interface GPUImageCopyBuffer extends GPUImageDataLayout {
+  buffer: GPUBuffer;
+}
+
+interface GPURenderPassColorAttachment {
+  view: GPUTextureView;
+  resolveTarget?: GPUTextureView;
+  clearValue?: GPUColor;
+  loadOp: GPULoadOp;
+  storeOp: GPUStoreOp;
+}
+
+interface GPURenderPassDepthStencilAttachment {
+  view: GPUTextureView;
+  depthClearValue?: number;
+  depthLoadOp?: GPULoadOp;
+  depthStoreOp?: GPUStoreOp;
+  stencilClearValue?: number;
+  stencilLoadOp?: GPULoadOp;
+  stencilStoreOp?: GPUStoreOp;
+}
+
+interface GPURenderPassTimestampWrites {
+  querySet: GPUQuerySet;
+  beginningOfPassWriteIndex?: number;
+  endOfPassWriteIndex?: number;
+}
+
+interface GPUComputePassTimestampWrites {
+  querySet: GPUQuerySet;
+  beginningOfPassWriteIndex?: number;
+  endOfPassWriteIndex?: number;
+}
+
+type GPUColor = [number, number, number, number] | GPUColorDict;
+
+interface GPUColorDict {
+  r: number;
+  g: number;
+  b: number;
+  a: number;
+}
+
+type GPULoadOp = "load" | "clear";
+type GPUStoreOp = "store" | "discard";
 interface GPUQuerySet {}
 interface GPUError {}
 interface GPUCompilationInfo {}

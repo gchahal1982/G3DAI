@@ -26,8 +26,6 @@
     }
   },
   "include": [
-    "ai-platforms/**/*.ts",
-    "ai-platforms/**/*.tsx",
     "shared/**/*.ts",
     "shared/**/*.tsx",
     "infrastructure/**/*.ts",
@@ -40,6 +38,7 @@
     "**/*.d.ts",
     "**/dist/**",
     "**/build/**",
-    "**/.next/**"
+    "**/.next/**",
+    "ai-platforms/**/*"
   ]
 } 

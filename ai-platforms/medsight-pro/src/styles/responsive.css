@@ -1,0 +1,1247 @@
+/* ============================================================================ */
+/* MEDSIGHT PRO RESPONSIVE DESIGN SYSTEM - MOBILE-FIRST CLINICAL WORKFLOWS */
+/* ============================================================================ */
+
+/* Medical Device Responsive Design for Clinical Environments */
+
+/* ============================================================================ */
+/* RESPONSIVE BREAKPOINTS - MEDICAL DEVICE COMPATIBILITY */
+/* ============================================================================ */
+
+/* Medical Device Breakpoints */
+:root {
+  /* Medical Device Screen Sizes */
+  --medsight-mobile-sm: 320px;      /* Small mobile devices */
+  --medsight-mobile-md: 375px;      /* Standard mobile devices */
+  --medsight-mobile-lg: 414px;      /* Large mobile devices */
+  --medsight-tablet-sm: 768px;      /* Small tablets, medical handhelds */
+  --medsight-tablet-md: 834px;      /* Standard tablets */
+  --medsight-tablet-lg: 1024px;     /* Large tablets, medical workstations */
+  --medsight-desktop-sm: 1280px;    /* Small desktops, medical stations */
+  --medsight-desktop-md: 1440px;    /* Standard desktops */
+  --medsight-desktop-lg: 1920px;    /* Large desktops, medical displays */
+  --medsight-desktop-xl: 2560px;    /* Extra large displays, medical imaging */
+  --medsight-desktop-4k: 3840px;    /* 4K medical displays */
+  
+  /* Medical Container Sizes */
+  --medsight-container-sm: 640px;
+  --medsight-container-md: 768px;
+  --medsight-container-lg: 1024px;
+  --medsight-container-xl: 1280px;
+  --medsight-container-2xl: 1536px;
+  --medsight-container-medical: 1920px;
+  
+  /* Medical Spacing Scale */
+  --medsight-space-mobile: 0.5rem;
+  --medsight-space-tablet: 0.75rem;
+  --medsight-space-desktop: 1rem;
+  --medsight-space-medical: 1.5rem;
+  
+  /* Medical Font Scales */
+  --medsight-text-mobile: 0.875rem;
+  --medsight-text-tablet: 1rem;
+  --medsight-text-desktop: 1rem;
+  --medsight-text-medical: 1.125rem;
+  
+  /* Medical Touch Targets */
+  --medsight-touch-mobile: 44px;
+  --medsight-touch-tablet: 40px;
+  --medsight-touch-desktop: 36px;
+  --medsight-touch-medical: 48px;
+}
+
+/* ============================================================================ */
+/* BASE MOBILE-FIRST DESIGN - CLINICAL PRIORITY */
+/* ============================================================================ */
+
+/* Base Mobile Design (320px+) - Medical Emergency Access */
+.medsight-container {
+  width: 100%;
+  max-width: 100%;
+  padding: var(--medsight-space-mobile);
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+
+.medsight-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--medsight-space-mobile);
+  width: 100%;
+}
+
+.medsight-flex {
+  display: flex;
+  flex-direction: column;
+  gap: var(--medsight-space-mobile);
+  width: 100%;
+}
+
+/* Mobile Medical Typography */
+.text-medsight-mobile {
+  font-size: var(--medsight-text-mobile);
+  line-height: 1.6;
+  letter-spacing: 0.01em;
+}
+
+.heading-medsight-mobile {
+  font-size: 1.25rem;
+  line-height: 1.4;
+  font-weight: 600;
+  margin-bottom: var(--medsight-space-mobile);
+}
+
+/* Mobile Medical Components */
+.btn-medsight-mobile {
+  min-height: var(--medsight-touch-mobile);
+  min-width: var(--medsight-touch-mobile);
+  padding: var(--medsight-space-mobile) calc(var(--medsight-space-mobile) * 2);
+  font-size: var(--medsight-text-mobile);
+  font-weight: 600;
+  border-radius: var(--medsight-radius-button);
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.card-medsight-mobile {
+  padding: var(--medsight-space-mobile);
+  border-radius: var(--medsight-radius-card);
+  margin-bottom: var(--medsight-space-mobile);
+  background: var(--medsight-glass-bg);
+  backdrop-filter: var(--medsight-blur-md);
+  border: 1px solid var(--medsight-primary-200);
+}
+
+.input-medsight-mobile {
+  min-height: var(--medsight-touch-mobile);
+  padding: var(--medsight-space-mobile);
+  font-size: var(--medsight-text-mobile);
+  border-radius: var(--medsight-radius-input);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Mobile Medical Navigation */
+.nav-medsight-mobile {
+  display: flex;
+  flex-direction: column;
+  background: var(--medsight-glass-bg);
+  backdrop-filter: var(--medsight-blur-lg);
+  border: 1px solid var(--medsight-primary-200);
+  border-radius: var(--medsight-radius-card);
+  padding: var(--medsight-space-mobile);
+  gap: var(--medsight-space-mobile);
+}
+
+.nav-medsight-mobile-item {
+  min-height: var(--medsight-touch-mobile);
+  padding: var(--medsight-space-mobile);
+  font-size: var(--medsight-text-mobile);
+  font-weight: 500;
+  color: var(--medsight-primary-700);
+  text-decoration: none;
+  border-radius: var(--medsight-radius-button);
+  display: flex;
+  align-items: center;
+  gap: var(--medsight-space-mobile);
+  transition: var(--medsight-transition-fast);
+}
+
+.nav-medsight-mobile-item:hover,
+.nav-medsight-mobile-item:focus-visible {
+  background: rgba(14, 165, 233, 0.1);
+  color: var(--medsight-primary-900);
+}
+
+.nav-medsight-mobile-item.active {
+  background: var(--medsight-primary-500);
+  color: white;
+}
+
+/* Mobile Medical Dashboard */
+.dashboard-medsight-mobile {
+  display: flex;
+  flex-direction: column;
+  gap: var(--medsight-space-mobile);
+  padding: var(--medsight-space-mobile);
+  min-height: 100vh;
+  background: var(--medsight-bg-gradient);
+}
+
+.dashboard-medsight-mobile-header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--medsight-space-mobile);
+  background: var(--medsight-glass-bg);
+  backdrop-filter: var(--medsight-blur-md);
+  border: 1px solid var(--medsight-primary-200);
+  border-radius: var(--medsight-radius-card);
+  padding: var(--medsight-space-mobile);
+}
+
+.dashboard-medsight-mobile-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--medsight-space-mobile);
+}
+
+/* Mobile Medical Forms */
+.form-medsight-mobile {
+  display: flex;
+  flex-direction: column;
+  gap: var(--medsight-space-mobile);
+  padding: var(--medsight-space-mobile);
+  background: var(--medsight-glass-bg);
+  backdrop-filter: var(--medsight-blur-md);
+  border: 1px solid var(--medsight-primary-200);
+  border-radius: var(--medsight-radius-card);
+}
+
+.form-medsight-mobile-group {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--medsight-space-mobile) / 2);
+}
+
+.form-medsight-mobile-label {
+  font-size: var(--medsight-text-mobile);
+  font-weight: 500;
+  color: var(--medsight-primary-700);
+  margin-bottom: calc(var(--medsight-space-mobile) / 2);
+}
+
+/* Mobile Medical Modal */
+.modal-medsight-mobile {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: var(--medsight-space-mobile);
+  z-index: var(--medsight-z-modal);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.modal-medsight-mobile-content {
+  width: 100%;
+  max-width: 100%;
+  background: white;
+  border-radius: var(--medsight-radius-card);
+  padding: var(--medsight-space-mobile);
+  margin-top: var(--medsight-space-mobile);
+  box-shadow: var(--medsight-shadow-lg);
+}
+
+/* ============================================================================ */
+/* TABLET RESPONSIVE DESIGN - MEDICAL WORKSTATIONS */
+/* ============================================================================ */
+
+/* Tablet Design (768px+) - Medical Workstation Compatibility */
+@media (min-width: 768px) {
+  .medsight-container {
+    max-width: var(--medsight-container-md);
+    padding: var(--medsight-space-tablet);
+  }
+  
+  .medsight-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--medsight-space-tablet);
+  }
+  
+  .medsight-flex {
+    flex-direction: row;
+    gap: var(--medsight-space-tablet);
+  }
+  
+  /* Tablet Medical Typography */
+  .text-medsight-tablet {
+    font-size: var(--medsight-text-tablet);
+  }
+  
+  .heading-medsight-tablet {
+    font-size: 1.5rem;
+    margin-bottom: var(--medsight-space-tablet);
+  }
+  
+  /* Tablet Medical Components */
+  .btn-medsight-tablet {
+    min-height: var(--medsight-touch-tablet);
+    min-width: var(--medsight-touch-tablet);
+    padding: var(--medsight-space-tablet) calc(var(--medsight-space-tablet) * 2);
+    font-size: var(--medsight-text-tablet);
+  }
+  
+  .card-medsight-tablet {
+    padding: var(--medsight-space-tablet);
+    margin-bottom: var(--medsight-space-tablet);
+  }
+  
+  .input-medsight-tablet {
+    min-height: var(--medsight-touch-tablet);
+    padding: var(--medsight-space-tablet);
+    font-size: var(--medsight-text-tablet);
+  }
+  
+  /* Tablet Medical Navigation */
+  .nav-medsight-tablet {
+    flex-direction: row;
+    padding: var(--medsight-space-tablet);
+    gap: var(--medsight-space-tablet);
+  }
+  
+  .nav-medsight-tablet-item {
+    min-height: var(--medsight-touch-tablet);
+    padding: var(--medsight-space-tablet);
+    font-size: var(--medsight-text-tablet);
+  }
+  
+  /* Tablet Medical Dashboard */
+  .dashboard-medsight-tablet {
+    display: grid;
+    grid-template-columns: 250px 1fr;
+    grid-template-rows: auto 1fr;
+    gap: var(--medsight-space-tablet);
+    padding: var(--medsight-space-tablet);
+    min-height: 100vh;
+  }
+  
+  .dashboard-medsight-tablet-sidebar {
+    grid-column: 1;
+    grid-row: 1 / -1;
+    background: var(--medsight-glass-bg);
+    backdrop-filter: var(--medsight-blur-md);
+    border: 1px solid var(--medsight-primary-200);
+    border-radius: var(--medsight-radius-card);
+    padding: var(--medsight-space-tablet);
+  }
+  
+  .dashboard-medsight-tablet-header {
+    grid-column: 2;
+    grid-row: 1;
+    background: var(--medsight-glass-bg);
+    backdrop-filter: var(--medsight-blur-md);
+    border: 1px solid var(--medsight-primary-200);
+    border-radius: var(--medsight-radius-card);
+    padding: var(--medsight-space-tablet);
+  }
+  
+  .dashboard-medsight-tablet-content {
+    grid-column: 2;
+    grid-row: 2;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--medsight-space-tablet);
+  }
+  
+  /* Tablet Medical Forms */
+  .form-medsight-tablet {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--medsight-space-tablet);
+    padding: var(--medsight-space-tablet);
+  }
+  
+  .form-medsight-tablet-group {
+    display: flex;
+    flex-direction: column;
+    gap: calc(var(--medsight-space-tablet) / 2);
+  }
+  
+  .form-medsight-tablet-full {
+    grid-column: 1 / -1;
+  }
+  
+  /* Tablet Medical Modal */
+  .modal-medsight-tablet {
+    padding: var(--medsight-space-tablet);
+  }
+  
+  .modal-medsight-tablet-content {
+    max-width: 600px;
+    padding: var(--medsight-space-tablet);
+  }
+}
+
+/* ============================================================================ */
+/* DESKTOP RESPONSIVE DESIGN - MEDICAL STATIONS */
+/* ============================================================================ */
+
+/* Desktop Design (1024px+) - Medical Desktop Stations */
+@media (min-width: 1024px) {
+  .medsight-container {
+    max-width: var(--medsight-container-lg);
+    padding: var(--medsight-space-desktop);
+  }
+  
+  .medsight-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--medsight-space-desktop);
+  }
+  
+  .medsight-flex {
+    gap: var(--medsight-space-desktop);
+  }
+  
+  /* Desktop Medical Typography */
+  .text-medsight-desktop {
+    font-size: var(--medsight-text-desktop);
+  }
+  
+  .heading-medsight-desktop {
+    font-size: 1.75rem;
+    margin-bottom: var(--medsight-space-desktop);
+  }
+  
+  /* Desktop Medical Components */
+  .btn-medsight-desktop {
+    min-height: var(--medsight-touch-desktop);
+    min-width: var(--medsight-touch-desktop);
+    padding: var(--medsight-space-desktop) calc(var(--medsight-space-desktop) * 2);
+    font-size: var(--medsight-text-desktop);
+  }
+  
+  .card-medsight-desktop {
+    padding: var(--medsight-space-desktop);
+    margin-bottom: var(--medsight-space-desktop);
+  }
+  
+  .input-medsight-desktop {
+    min-height: var(--medsight-touch-desktop);
+    padding: var(--medsight-space-desktop);
+    font-size: var(--medsight-text-desktop);
+  }
+  
+  /* Desktop Medical Navigation */
+  .nav-medsight-desktop {
+    padding: var(--medsight-space-desktop);
+    gap: var(--medsight-space-desktop);
+  }
+  
+  .nav-medsight-desktop-item {
+    min-height: var(--medsight-touch-desktop);
+    padding: var(--medsight-space-desktop);
+    font-size: var(--medsight-text-desktop);
+  }
+  
+  /* Desktop Medical Dashboard */
+  .dashboard-medsight-desktop {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    grid-template-rows: auto 1fr;
+    gap: var(--medsight-space-desktop);
+    padding: var(--medsight-space-desktop);
+    min-height: 100vh;
+  }
+  
+  .dashboard-medsight-desktop-sidebar {
+    grid-column: 1;
+    grid-row: 1 / -1;
+    background: var(--medsight-glass-bg);
+    backdrop-filter: var(--medsight-blur-md);
+    border: 1px solid var(--medsight-primary-200);
+    border-radius: var(--medsight-radius-card);
+    padding: var(--medsight-space-desktop);
+  }
+  
+  .dashboard-medsight-desktop-header {
+    grid-column: 2;
+    grid-row: 1;
+    background: var(--medsight-glass-bg);
+    backdrop-filter: var(--medsight-blur-md);
+    border: 1px solid var(--medsight-primary-200);
+    border-radius: var(--medsight-radius-card);
+    padding: var(--medsight-space-desktop);
+  }
+  
+  .dashboard-medsight-desktop-content {
+    grid-column: 2;
+    grid-row: 2;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--medsight-space-desktop);
+  }
+  
+  /* Desktop Medical Forms */
+  .form-medsight-desktop {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--medsight-space-desktop);
+    padding: var(--medsight-space-desktop);
+  }
+  
+  .form-medsight-desktop-group {
+    display: flex;
+    flex-direction: column;
+    gap: calc(var(--medsight-space-desktop) / 2);
+  }
+  
+  .form-medsight-desktop-full {
+    grid-column: 1 / -1;
+  }
+  
+  .form-medsight-desktop-half {
+    grid-column: span 2;
+  }
+  
+  /* Desktop Medical Modal */
+  .modal-medsight-desktop {
+    padding: var(--medsight-space-desktop);
+  }
+  
+  .modal-medsight-desktop-content {
+    max-width: 800px;
+    padding: var(--medsight-space-desktop);
+  }
+}
+
+/* ============================================================================ */
+/* LARGE DESKTOP RESPONSIVE DESIGN - MEDICAL DISPLAYS */
+/* ============================================================================ */
+
+/* Large Desktop Design (1280px+) - Medical Display Systems */
+@media (min-width: 1280px) {
+  .medsight-container {
+    max-width: var(--medsight-container-xl);
+    padding: var(--medsight-space-medical);
+  }
+  
+  .medsight-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--medsight-space-medical);
+  }
+  
+  .medsight-flex {
+    gap: var(--medsight-space-medical);
+  }
+  
+  /* Large Desktop Medical Typography */
+  .text-medsight-large {
+    font-size: var(--medsight-text-medical);
+  }
+  
+  .heading-medsight-large {
+    font-size: 2rem;
+    margin-bottom: var(--medsight-space-medical);
+  }
+  
+  /* Large Desktop Medical Components */
+  .btn-medsight-large {
+    min-height: var(--medsight-touch-medical);
+    min-width: var(--medsight-touch-medical);
+    padding: var(--medsight-space-medical) calc(var(--medsight-space-medical) * 2);
+    font-size: var(--medsight-text-medical);
+  }
+  
+  .card-medsight-large {
+    padding: var(--medsight-space-medical);
+    margin-bottom: var(--medsight-space-medical);
+  }
+  
+  .input-medsight-large {
+    min-height: var(--medsight-touch-medical);
+    padding: var(--medsight-space-medical);
+    font-size: var(--medsight-text-medical);
+  }
+  
+  /* Large Desktop Medical Dashboard */
+  .dashboard-medsight-large {
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    grid-template-rows: auto 1fr;
+    gap: var(--medsight-space-medical);
+    padding: var(--medsight-space-medical);
+    min-height: 100vh;
+  }
+  
+  .dashboard-medsight-large-sidebar {
+    grid-column: 1;
+    grid-row: 1 / -1;
+    background: var(--medsight-glass-bg);
+    backdrop-filter: var(--medsight-blur-md);
+    border: 1px solid var(--medsight-primary-200);
+    border-radius: var(--medsight-radius-card);
+    padding: var(--medsight-space-medical);
+  }
+  
+  .dashboard-medsight-large-header {
+    grid-column: 2;
+    grid-row: 1;
+    background: var(--medsight-glass-bg);
+    backdrop-filter: var(--medsight-blur-md);
+    border: 1px solid var(--medsight-primary-200);
+    border-radius: var(--medsight-radius-card);
+    padding: var(--medsight-space-medical);
+  }
+  
+  .dashboard-medsight-large-content {
+    grid-column: 2;
+    grid-row: 2;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--medsight-space-medical);
+  }
+  
+  /* Large Desktop Medical Forms */
+  .form-medsight-large {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--medsight-space-medical);
+    padding: var(--medsight-space-medical);
+  }
+  
+  .form-medsight-large-group {
+    display: flex;
+    flex-direction: column;
+    gap: calc(var(--medsight-space-medical) / 2);
+  }
+  
+  .form-medsight-large-full {
+    grid-column: 1 / -1;
+  }
+  
+  .form-medsight-large-half {
+    grid-column: span 2;
+  }
+  
+  .form-medsight-large-quarter {
+    grid-column: span 1;
+  }
+  
+  /* Large Desktop Medical Modal */
+  .modal-medsight-large {
+    padding: var(--medsight-space-medical);
+  }
+  
+  .modal-medsight-large-content {
+    max-width: 1000px;
+    padding: var(--medsight-space-medical);
+  }
+}
+
+/* ============================================================================ */
+/* EXTRA LARGE RESPONSIVE DESIGN - MEDICAL IMAGING DISPLAYS */
+/* ============================================================================ */
+
+/* Extra Large Desktop Design (1920px+) - Medical Imaging Systems */
+@media (min-width: 1920px) {
+  .medsight-container {
+    max-width: var(--medsight-container-medical);
+    padding: var(--medsight-space-medical);
+  }
+  
+  .medsight-grid {
+    grid-template-columns: repeat(6, 1fr);
+    gap: var(--medsight-space-medical);
+  }
+  
+  /* Extra Large Medical Typography */
+  .text-medsight-xl {
+    font-size: 1.25rem;
+  }
+  
+  .heading-medsight-xl {
+    font-size: 2.5rem;
+    margin-bottom: var(--medsight-space-medical);
+  }
+  
+  /* Extra Large Medical Dashboard */
+  .dashboard-medsight-xl {
+    display: grid;
+    grid-template-columns: 360px 1fr 300px;
+    grid-template-rows: auto 1fr;
+    gap: var(--medsight-space-medical);
+    padding: var(--medsight-space-medical);
+    min-height: 100vh;
+  }
+  
+  .dashboard-medsight-xl-sidebar {
+    grid-column: 1;
+    grid-row: 1 / -1;
+    background: var(--medsight-glass-bg);
+    backdrop-filter: var(--medsight-blur-md);
+    border: 1px solid var(--medsight-primary-200);
+    border-radius: var(--medsight-radius-card);
+    padding: var(--medsight-space-medical);
+  }
+  
+  .dashboard-medsight-xl-header {
+    grid-column: 2 / -1;
+    grid-row: 1;
+    background: var(--medsight-glass-bg);
+    backdrop-filter: var(--medsight-blur-md);
+    border: 1px solid var(--medsight-primary-200);
+    border-radius: var(--medsight-radius-card);
+    padding: var(--medsight-space-medical);
+  }
+  
+  .dashboard-medsight-xl-content {
+    grid-column: 2;
+    grid-row: 2;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--medsight-space-medical);
+  }
+  
+  .dashboard-medsight-xl-sidebar-right {
+    grid-column: 3;
+    grid-row: 2;
+    background: var(--medsight-glass-bg);
+    backdrop-filter: var(--medsight-blur-md);
+    border: 1px solid var(--medsight-primary-200);
+    border-radius: var(--medsight-radius-card);
+    padding: var(--medsight-space-medical);
+  }
+  
+  /* Extra Large Medical Forms */
+  .form-medsight-xl {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: var(--medsight-space-medical);
+    padding: var(--medsight-space-medical);
+  }
+  
+  .form-medsight-xl-group {
+    display: flex;
+    flex-direction: column;
+    gap: calc(var(--medsight-space-medical) / 2);
+  }
+  
+  .form-medsight-xl-full {
+    grid-column: 1 / -1;
+  }
+  
+  .form-medsight-xl-half {
+    grid-column: span 3;
+  }
+  
+  .form-medsight-xl-third {
+    grid-column: span 2;
+  }
+  
+  .form-medsight-xl-quarter {
+    grid-column: span 1;
+  }
+  
+  /* Extra Large Medical Modal */
+  .modal-medsight-xl {
+    padding: var(--medsight-space-medical);
+  }
+  
+  .modal-medsight-xl-content {
+    max-width: 1200px;
+    padding: var(--medsight-space-medical);
+  }
+}
+
+/* ============================================================================ */
+/* 4K MEDICAL DISPLAY RESPONSIVE DESIGN */
+/* ============================================================================ */
+
+/* 4K Display Design (3840px+) - High-Resolution Medical Displays */
+@media (min-width: 3840px) {
+  .medsight-container {
+    max-width: 3200px;
+    padding: calc(var(--medsight-space-medical) * 1.5);
+  }
+  
+  .medsight-grid {
+    grid-template-columns: repeat(8, 1fr);
+    gap: calc(var(--medsight-space-medical) * 1.5);
+  }
+  
+  /* 4K Medical Typography */
+  .text-medsight-4k {
+    font-size: 1.5rem;
+  }
+  
+  .heading-medsight-4k {
+    font-size: 3rem;
+    margin-bottom: calc(var(--medsight-space-medical) * 1.5);
+  }
+  
+  /* 4K Medical Components */
+  .btn-medsight-4k {
+    min-height: calc(var(--medsight-touch-medical) * 1.5);
+    min-width: calc(var(--medsight-touch-medical) * 1.5);
+    padding: calc(var(--medsight-space-medical) * 1.5) calc(var(--medsight-space-medical) * 3);
+    font-size: 1.5rem;
+  }
+  
+  .card-medsight-4k {
+    padding: calc(var(--medsight-space-medical) * 1.5);
+    margin-bottom: calc(var(--medsight-space-medical) * 1.5);
+  }
+  
+  .input-medsight-4k {
+    min-height: calc(var(--medsight-touch-medical) * 1.5);
+    padding: calc(var(--medsight-space-medical) * 1.5);
+    font-size: 1.5rem;
+  }
+  
+  /* 4K Medical Dashboard */
+  .dashboard-medsight-4k {
+    display: grid;
+    grid-template-columns: 500px 1fr 400px;
+    grid-template-rows: auto 1fr;
+    gap: calc(var(--medsight-space-medical) * 1.5);
+    padding: calc(var(--medsight-space-medical) * 1.5);
+    min-height: 100vh;
+  }
+  
+  .dashboard-medsight-4k-content {
+    grid-column: 2;
+    grid-row: 2;
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: calc(var(--medsight-space-medical) * 1.5);
+  }
+}
+
+/* ============================================================================ */
+/* MEDICAL DEVICE ORIENTATION SUPPORT */
+/* ============================================================================ */
+
+/* Portrait Orientation - Medical Tablets */
+@media (orientation: portrait) {
+  .medsight-orientation-portrait {
+    display: block;
+  }
+  
+  .medsight-orientation-landscape {
+    display: none;
+  }
+  
+  .dashboard-medsight-portrait {
+    display: flex;
+    flex-direction: column;
+    gap: var(--medsight-space-tablet);
+  }
+  
+  .nav-medsight-portrait {
+    flex-direction: column;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: var(--medsight-glass-bg);
+    backdrop-filter: var(--medsight-blur-lg);
+    border-top: 1px solid var(--medsight-primary-200);
+    padding: var(--medsight-space-tablet);
+  }
+  
+  .nav-medsight-portrait-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: calc(var(--medsight-space-tablet) / 2);
+    padding: var(--medsight-space-tablet);
+    font-size: 0.75rem;
+    text-align: center;
+  }
+}
+
+/* Landscape Orientation - Medical Workstations */
+@media (orientation: landscape) {
+  .medsight-orientation-landscape {
+    display: block;
+  }
+  
+  .medsight-orientation-portrait {
+    display: none;
+  }
+  
+  .dashboard-medsight-landscape {
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    grid-template-rows: auto 1fr;
+    gap: var(--medsight-space-desktop);
+  }
+  
+  .nav-medsight-landscape {
+    flex-direction: row;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    background: var(--medsight-glass-bg);
+    backdrop-filter: var(--medsight-blur-lg);
+    border-bottom: 1px solid var(--medsight-primary-200);
+    padding: var(--medsight-space-desktop);
+    z-index: var(--medsight-z-navigation);
+  }
+  
+  .nav-medsight-landscape-item {
+    display: flex;
+    align-items: center;
+    gap: var(--medsight-space-desktop);
+    padding: var(--medsight-space-desktop);
+    font-size: var(--medsight-text-desktop);
+  }
+}
+
+/* ============================================================================ */
+/* MEDICAL TOUCH DEVICE SUPPORT */
+/* ============================================================================ */
+
+/* Touch Device Optimizations */
+@media (hover: none) and (pointer: coarse) {
+  .btn-medsight-touch {
+    min-height: var(--medsight-touch-mobile);
+    min-width: var(--medsight-touch-mobile);
+    padding: var(--medsight-space-mobile) calc(var(--medsight-space-mobile) * 2);
+    font-size: var(--medsight-text-mobile);
+    font-weight: 600;
+    border-radius: var(--medsight-radius-button);
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+  }
+  
+  .btn-medsight-touch:active {
+    transform: scale(0.98);
+    transition: transform 0.1s ease;
+  }
+  
+  .input-medsight-touch {
+    min-height: var(--medsight-touch-mobile);
+    padding: var(--medsight-space-mobile);
+    font-size: var(--medsight-text-mobile);
+    -webkit-appearance: none;
+    border-radius: var(--medsight-radius-input);
+  }
+  
+  .nav-medsight-touch-item {
+    min-height: var(--medsight-touch-mobile);
+    padding: var(--medsight-space-mobile);
+    font-size: var(--medsight-text-mobile);
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+  
+  .nav-medsight-touch-item:active {
+    background: rgba(14, 165, 233, 0.2);
+    transform: scale(0.98);
+    transition: all 0.1s ease;
+  }
+  
+  .card-medsight-touch {
+    padding: var(--medsight-space-mobile);
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+  
+  .card-medsight-touch:active {
+    transform: scale(0.99);
+    transition: transform 0.1s ease;
+  }
+}
+
+/* Precise Pointer Device Optimizations */
+@media (hover: hover) and (pointer: fine) {
+  .btn-medsight-precise {
+    min-height: var(--medsight-touch-desktop);
+    min-width: var(--medsight-touch-desktop);
+    padding: var(--medsight-space-desktop) calc(var(--medsight-space-desktop) * 2);
+    font-size: var(--medsight-text-desktop);
+    transition: all 0.2s ease;
+  }
+  
+  .btn-medsight-precise:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(14, 165, 233, 0.3);
+  }
+  
+  .input-medsight-precise {
+    min-height: var(--medsight-touch-desktop);
+    padding: var(--medsight-space-desktop);
+    font-size: var(--medsight-text-desktop);
+    transition: all 0.2s ease;
+  }
+  
+  .input-medsight-precise:hover {
+    border-color: var(--medsight-primary-500);
+  }
+  
+  .nav-medsight-precise-item {
+    min-height: var(--medsight-touch-desktop);
+    padding: var(--medsight-space-desktop);
+    font-size: var(--medsight-text-desktop);
+    transition: all 0.2s ease;
+  }
+  
+  .nav-medsight-precise-item:hover {
+    background: rgba(14, 165, 233, 0.1);
+    transform: translateY(-1px);
+  }
+  
+  .card-medsight-precise {
+    padding: var(--medsight-space-desktop);
+    transition: all 0.2s ease;
+  }
+  
+  .card-medsight-precise:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 32px rgba(14, 165, 233, 0.15);
+  }
+}
+
+/* ============================================================================ */
+/* MEDICAL RESPONSIVE UTILITIES */
+/* ============================================================================ */
+
+/* Responsive Display Utilities */
+.medsight-hidden-mobile {
+  display: none;
+}
+
+.medsight-visible-mobile {
+  display: block;
+}
+
+@media (min-width: 768px) {
+  .medsight-hidden-mobile {
+    display: block;
+  }
+  
+  .medsight-visible-mobile {
+    display: none;
+  }
+  
+  .medsight-hidden-tablet {
+    display: none;
+  }
+  
+  .medsight-visible-tablet {
+    display: block;
+  }
+}
+
+@media (min-width: 1024px) {
+  .medsight-hidden-tablet {
+    display: block;
+  }
+  
+  .medsight-visible-tablet {
+    display: none;
+  }
+  
+  .medsight-hidden-desktop {
+    display: none;
+  }
+  
+  .medsight-visible-desktop {
+    display: block;
+  }
+}
+
+@media (min-width: 1280px) {
+  .medsight-hidden-desktop {
+    display: block;
+  }
+  
+  .medsight-visible-desktop {
+    display: none;
+  }
+  
+  .medsight-hidden-large {
+    display: none;
+  }
+  
+  .medsight-visible-large {
+    display: block;
+  }
+}
+
+/* Responsive Text Utilities */
+.medsight-text-responsive {
+  font-size: var(--medsight-text-mobile);
+}
+
+@media (min-width: 768px) {
+  .medsight-text-responsive {
+    font-size: var(--medsight-text-tablet);
+  }
+}
+
+@media (min-width: 1024px) {
+  .medsight-text-responsive {
+    font-size: var(--medsight-text-desktop);
+  }
+}
+
+@media (min-width: 1280px) {
+  .medsight-text-responsive {
+    font-size: var(--medsight-text-medical);
+  }
+}
+
+/* Responsive Spacing Utilities */
+.medsight-space-responsive {
+  padding: var(--medsight-space-mobile);
+}
+
+@media (min-width: 768px) {
+  .medsight-space-responsive {
+    padding: var(--medsight-space-tablet);
+  }
+}
+
+@media (min-width: 1024px) {
+  .medsight-space-responsive {
+    padding: var(--medsight-space-desktop);
+  }
+}
+
+@media (min-width: 1280px) {
+  .medsight-space-responsive {
+    padding: var(--medsight-space-medical);
+  }
+}
+
+/* Responsive Grid Utilities */
+.medsight-grid-responsive {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--medsight-space-mobile);
+}
+
+@media (min-width: 768px) {
+  .medsight-grid-responsive {
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--medsight-space-tablet);
+  }
+}
+
+@media (min-width: 1024px) {
+  .medsight-grid-responsive {
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--medsight-space-desktop);
+  }
+}
+
+@media (min-width: 1280px) {
+  .medsight-grid-responsive {
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--medsight-space-medical);
+  }
+}
+
+@media (min-width: 1920px) {
+  .medsight-grid-responsive {
+    grid-template-columns: repeat(6, 1fr);
+    gap: var(--medsight-space-medical);
+  }
+}
+
+/* ============================================================================ */
+/* MEDICAL RESPONSIVE PERFORMANCE */
+/* ============================================================================ */
+
+/* Performance Optimizations for Medical Devices */
+.medsight-performance-mobile {
+  contain: layout style paint;
+  will-change: auto;
+}
+
+.medsight-performance-tablet {
+  contain: layout style;
+  will-change: auto;
+}
+
+.medsight-performance-desktop {
+  contain: layout;
+  will-change: auto;
+}
+
+/* GPU Acceleration for Medical Displays */
+@media (min-width: 1024px) {
+  .medsight-gpu-accelerated {
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    perspective: 1000px;
+  }
+  
+  .medsight-glass-gpu {
+    transform: translateZ(0);
+    will-change: backdrop-filter;
+  }
+}
+
+/* Memory Optimization for Medical Data */
+.medsight-memory-optimized {
+  contain: strict;
+  content-visibility: auto;
+  contain-intrinsic-size: 300px;
+}
+
+/* ============================================================================ */
+/* MEDICAL RESPONSIVE VALIDATION */
+/* ============================================================================ */
+
+/*
+MEDICAL RESPONSIVE DESIGN FEATURES:
+
+1. Mobile-First Design (320px+)
+   - Clinical emergency access priority
+   - Touch-optimized medical interfaces
+   - Simplified medical navigation
+   - Essential medical information display
+
+2. Tablet Support (768px+)
+   - Medical workstation compatibility
+   - Two-column medical layouts
+   - Enhanced medical forms
+   - Medical collaboration features
+
+3. Desktop Support (1024px+)
+   - Medical desktop station optimization
+   - Three-column medical layouts
+   - Advanced medical workflow support
+   - Medical multi-tasking interfaces
+
+4. Large Desktop (1280px+)
+   - Medical display system support
+   - Four-column medical layouts
+   - Comprehensive medical dashboards
+   - Medical imaging workspace support
+
+5. Extra Large (1920px+)
+   - Medical imaging display optimization
+   - Six-column medical layouts
+   - Advanced medical visualization
+   - Medical collaboration workspaces
+
+6. 4K Display (3840px+)
+   - High-resolution medical displays
+   - Eight-column medical layouts
+   - Maximum medical information density
+   - Medical imaging precision interfaces
+
+7. Medical Device Considerations
+   - Touch device optimizations
+   - Precise pointer device support
+   - Orientation-aware layouts
+   - Medical device compatibility
+
+8. Performance Optimizations
+   - GPU acceleration for medical displays
+   - Memory optimization for medical data
+   - Content visibility for large datasets
+   - Performance monitoring integration
+
+USAGE GUIDELINES:
+- Start with mobile-first medical interfaces
+- Use medical breakpoints for device compatibility
+- Implement touch-friendly medical controls
+- Test on actual medical devices
+- Optimize for medical display environments
+- Consider medical professional workflows
+- Ensure accessibility across all breakpoints
+- Validate performance on medical hardware
+*/ 

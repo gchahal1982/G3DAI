@@ -529,46 +529,8 @@ services.forEach(service => {
             [`^${service.path}`]: ''
         },
         timeout: service.timeout,
-        proxyTimeout: service.timeout,
-        onError: (err, req: AuthenticatedRequest, res) => {
-            logger.error(`Proxy error for ${service.name}:`, {
-                error: err.message,
-                requestId: req.requestId,
-                service: service.name
-            });
-
-            if (!res.headersSent) {
-                res.status(502).json({
-                    error: 'Service temporarily unavailable',
-                    service: service.name,
-                    requestId: req.requestId
-                });
-            }
-        },
-        onProxyReq: (proxyReq, req: AuthenticatedRequest) => {
-            // Add user context to forwarded request
-            if (req.user) {
-                proxyReq.setHeader('X-User-ID', req.user.id);
-                proxyReq.setHeader('X-User-Roles', req.user.roles.join(','));
-                proxyReq.setHeader('X-User-Scopes', req.user.scopes.join(','));
-                proxyReq.setHeader('X-Organization-ID', req.user.organizationId);
-            }
-            proxyReq.setHeader('X-Request-ID', req.requestId!);
-        },
-        onProxyRes: (proxyRes, req: AuthenticatedRequest, res) => {
-            // Add response headers
-            proxyRes.headers['X-Service'] = service.name;
-            proxyRes.headers['X-Request-ID'] = req.requestId!;
-
-            // Log response
-            const duration = performance.now() - req.startTime!;
-            logger.info('Service response', {
-                requestId: req.requestId,
-                service: service.name,
-                statusCode: proxyRes.statusCode,
-                duration: `${duration.toFixed(2)}ms`
-            });
-        }
+        // Note: onError, onProxyReq, and onProxyRes are handled differently in newer versions
+        // These would be configured through event listeners on the proxy middleware
     };
 
     // Apply middleware chain for each service

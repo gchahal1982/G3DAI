@@ -1,0 +1,983 @@
+/* MedSight Pro Medical Components - EXACT UIUX.md SPECIFICATION */
+/* Medical-Grade UI Components for Clinical Workflows */
+
+/* ============================================================================ */
+/* MEDICAL BUTTON COMPONENTS - CLINICAL ACTION BUTTONS */
+/* ============================================================================ */
+
+/* Primary Medical Button - Main Clinical Actions */
+.btn-medsight {
+  background: linear-gradient(135deg, var(--medsight-primary-500) 0%, var(--medsight-primary-600) 100%);
+  color: white;
+  border: none;
+  border-radius: var(--medsight-radius-button);
+  padding: var(--medsight-button-padding-md);
+  font-family: var(--medsight-font-primary);
+  font-weight: var(--medsight-weight-semibold);
+  font-size: 0.875rem;
+  line-height: var(--medsight-line-height);
+  letter-spacing: var(--medsight-letter-spacing);
+  transition: var(--medsight-transition-normal);
+  box-shadow: 0 4px 12px rgba(14, 165, 233, 0.2);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--medsight-space-xs);
+  min-height: var(--medsight-button-height-md);
+  position: relative;
+  overflow: hidden;
+  will-change: var(--medsight-will-change);
+  transform: var(--medsight-transform-3d);
+}
+
+.btn-medsight:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(14, 165, 233, 0.3);
+  background: linear-gradient(135deg, var(--medsight-primary-600) 0%, var(--medsight-primary-700) 100%);
+}
+
+.btn-medsight:active {
+  transform: translateY(0);
+  box-shadow: 0 4px 12px rgba(14, 165, 233, 0.2);
+}
+
+.btn-medsight:focus {
+  outline: 2px solid var(--medsight-primary-300);
+  outline-offset: 2px;
+}
+
+.btn-medsight:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* Secondary Medical Button */
+.btn-medsight-secondary {
+  background: rgba(14, 165, 233, 0.1);
+  color: var(--medsight-primary-700);
+  border: 1px solid rgba(14, 165, 233, 0.2);
+  backdrop-filter: var(--medsight-blur-md);
+  border-radius: var(--medsight-radius-button);
+  padding: var(--medsight-button-padding-md);
+  font-family: var(--medsight-font-primary);
+  font-weight: var(--medsight-weight-medium);
+  transition: var(--medsight-transition-normal);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--medsight-space-xs);
+  min-height: var(--medsight-button-height-md);
+}
+
+.btn-medsight-secondary:hover {
+  background: rgba(14, 165, 233, 0.15);
+  border: 1px solid rgba(14, 165, 233, 0.3);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(14, 165, 233, 0.15);
+}
+
+/* Critical Medical Button - Emergency Actions */
+.btn-medsight-critical {
+  background: linear-gradient(135deg, var(--medsight-critical) 0%, #b91c1c 100%);
+  color: white;
+  border: none;
+  border-radius: var(--medsight-radius-button);
+  padding: var(--medsight-button-padding-md);
+  font-weight: var(--medsight-weight-bold);
+  animation: pulse-critical 2s infinite;
+  box-shadow: 0 4px 16px rgba(220, 38, 38, 0.3);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--medsight-space-xs);
+  min-height: var(--medsight-button-height-md);
+}
+
+.btn-medsight-critical:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(220, 38, 38, 0.4);
+}
+
+/* Success Medical Button */
+.btn-medsight-success {
+  background: linear-gradient(135deg, var(--medsight-normal) 0%, #047857 100%);
+  color: white;
+  border: none;
+  border-radius: var(--medsight-radius-button);
+  padding: var(--medsight-button-padding-md);
+  font-weight: var(--medsight-weight-semibold);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--medsight-space-xs);
+  min-height: var(--medsight-button-height-md);
+}
+
+/* Button Sizes */
+.btn-medsight-sm {
+  padding: var(--medsight-button-padding-sm);
+  min-height: var(--medsight-button-height-sm);
+  font-size: 0.75rem;
+}
+
+.btn-medsight-lg {
+  padding: var(--medsight-button-padding-lg);
+  min-height: var(--medsight-button-height-lg);
+  font-size: 1rem;
+}
+
+/* Button Loading State */
+.btn-medsight-loading {
+  pointer-events: none;
+  opacity: 0.7;
+}
+
+.btn-medsight-loading::after {
+  content: '';
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  border: 2px solid transparent;
+  border-top: 2px solid currentColor;
+  border-radius: 50%;
+  animation: button-spin 1s linear infinite;
+}
+
+/* ============================================================================ */
+/* MEDICAL CARD COMPONENTS - PATIENT INFORMATION CARDS */
+/* ============================================================================ */
+
+/* Medical Card Base */
+.card-medsight {
+  background: var(--medsight-glass-primary);
+  border-radius: var(--medsight-radius-card);
+  padding: var(--medsight-card-padding-md);
+  backdrop-filter: var(--medsight-blur-lg) var(--medsight-saturate);
+  border: 1px solid var(--medsight-border-glass);
+  box-shadow: var(--medsight-shadow-glass);
+  transition: var(--medsight-transition-normal);
+  will-change: var(--medsight-will-change);
+  transform: var(--medsight-transform-3d);
+  contain: var(--medsight-contain);
+}
+
+.card-medsight:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--medsight-shadow-glass-hover);
+  border: 1px solid var(--medsight-border-glass-hover);
+}
+
+/* Medical Card Header */
+.card-medsight-header {
+  border-bottom: 1px solid rgba(14, 165, 233, 0.1);
+  padding-bottom: var(--medsight-space-md);
+  margin-bottom: var(--medsight-space-md);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.card-medsight-title {
+  font-size: var(--medsight-text-patient);
+  font-weight: var(--medsight-weight-semibold);
+  color: var(--medsight-primary-900);
+  margin: 0;
+  line-height: var(--medsight-line-height);
+}
+
+.card-medsight-subtitle {
+  font-size: var(--medsight-text-metadata);
+  color: var(--medsight-primary-600);
+  margin: 0;
+  margin-top: var(--medsight-space-xs);
+}
+
+/* Medical Card Body */
+.card-medsight-body {
+  color: var(--medsight-primary-800);
+  line-height: var(--medsight-line-height);
+}
+
+/* Medical Card Footer */
+.card-medsight-footer {
+  border-top: 1px solid rgba(14, 165, 233, 0.1);
+  padding-top: var(--medsight-space-md);
+  margin-top: var(--medsight-space-md);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--medsight-space-sm);
+}
+
+/* Medical Card Variants */
+.card-medsight-patient {
+  border-left: 4px solid var(--medsight-primary-500);
+}
+
+.card-medsight-critical {
+  border-left: 4px solid var(--medsight-critical);
+  background: linear-gradient(135deg, 
+    rgba(220, 38, 38, 0.03) 0%, 
+    var(--medsight-glass-primary) 100%);
+}
+
+.card-medsight-normal {
+  border-left: 4px solid var(--medsight-normal);
+}
+
+/* Card Sizes */
+.card-medsight-sm {
+  padding: var(--medsight-card-padding-sm);
+}
+
+.card-medsight-lg {
+  padding: var(--medsight-card-padding-lg);
+}
+
+/* ============================================================================ */
+/* MEDICAL INPUT COMPONENTS - CLINICAL DATA ENTRY */
+/* ============================================================================ */
+
+/* Medical Input Base */
+.input-medsight {
+  background: rgba(255, 255, 255, 0.06);
+  backdrop-filter: var(--medsight-blur-md);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.05);
+  border-radius: var(--medsight-radius-input);
+  padding: var(--medsight-input-padding);
+  font-family: var(--medsight-font-primary);
+  font-size: var(--medsight-text-findings);
+  line-height: var(--medsight-line-height);
+  letter-spacing: var(--medsight-letter-spacing);
+  color: var(--medsight-primary-900);
+  transition: var(--medsight-transition-normal);
+  width: 100%;
+  min-height: var(--medsight-input-height-md);
+  resize: vertical;
+}
+
+.input-medsight:focus {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(14, 165, 233, 0.3);
+  box-shadow: 
+    inset 0 2px 8px rgba(0, 0, 0, 0.05),
+    0 0 0 3px rgba(14, 165, 233, 0.1);
+  outline: none;
+}
+
+.input-medsight::placeholder {
+  color: var(--medsight-primary-400);
+  opacity: 0.7;
+}
+
+.input-medsight:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+/* Medical Input Variants */
+.input-medsight-error {
+  border-color: var(--medsight-abnormal);
+  box-shadow: 
+    inset 0 2px 8px rgba(0, 0, 0, 0.05),
+    0 0 0 3px rgba(239, 68, 68, 0.1);
+}
+
+.input-medsight-success {
+  border-color: var(--medsight-normal);
+  box-shadow: 
+    inset 0 2px 8px rgba(0, 0, 0, 0.05),
+    0 0 0 3px rgba(16, 185, 129, 0.1);
+}
+
+/* Input Sizes */
+.input-medsight-sm {
+  padding: 8px 12px;
+  font-size: var(--medsight-text-metadata);
+  min-height: var(--medsight-input-height-sm);
+}
+
+.input-medsight-lg {
+  padding: 16px 20px;
+  font-size: var(--medsight-text-patient);
+  min-height: var(--medsight-input-height-lg);
+}
+
+/* Medical Textarea */
+.textarea-medsight {
+  min-height: 120px;
+  resize: vertical;
+}
+
+/* Medical Select */
+.select-medsight {
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+  background-position: right 12px center;
+  background-repeat: no-repeat;
+  background-size: 16px;
+  padding-right: 40px;
+  cursor: pointer;
+}
+
+/* Medical Checkbox */
+.checkbox-medsight {
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--medsight-primary-400);
+  border-radius: 4px;
+  background: transparent;
+  cursor: pointer;
+  position: relative;
+  transition: var(--medsight-transition-fast);
+}
+
+.checkbox-medsight:checked {
+  background: var(--medsight-primary-500);
+  border-color: var(--medsight-primary-500);
+}
+
+.checkbox-medsight:checked::after {
+  content: '✓';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: white;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+/* Medical Radio */
+.radio-medsight {
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--medsight-primary-400);
+  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+  position: relative;
+  transition: var(--medsight-transition-fast);
+}
+
+.radio-medsight:checked {
+  border-color: var(--medsight-primary-500);
+}
+
+.radio-medsight:checked::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 8px;
+  height: 8px;
+  background: var(--medsight-primary-500);
+  border-radius: 50%;
+}
+
+/* ============================================================================ */
+/* MEDICAL MODAL COMPONENTS - CLINICAL DIALOG INTERFACES */
+/* ============================================================================ */
+
+/* Medical Modal Overlay */
+.modal-medsight-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(8px);
+  z-index: var(--medsight-z-modal);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--medsight-space-lg);
+  animation: modal-fade-in 0.3s ease-out;
+}
+
+/* Medical Modal Content */
+.modal-medsight {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(40px) var(--medsight-saturate-high);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 
+    0 32px 100px rgba(0, 0, 0, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  border-radius: var(--medsight-radius-modal);
+  padding: var(--medsight-space-2xl);
+  max-width: var(--medsight-modal-width-md);
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+  animation: modal-slide-up 0.3s ease-out;
+}
+
+.modal-medsight-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--medsight-space-lg);
+  padding-bottom: var(--medsight-space-md);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.modal-medsight-title {
+  font-size: var(--medsight-text-patient);
+  font-weight: var(--medsight-weight-semibold);
+  color: white;
+  margin: 0;
+}
+
+.modal-medsight-close {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  cursor: pointer;
+  transition: var(--medsight-transition-fast);
+}
+
+.modal-medsight-close:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.modal-medsight-body {
+  margin-bottom: var(--medsight-space-lg);
+  color: rgba(255, 255, 255, 0.9);
+  line-height: var(--medsight-line-height);
+}
+
+.modal-medsight-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--medsight-space-sm);
+  padding-top: var(--medsight-space-md);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Modal Sizes */
+.modal-medsight-sm {
+  max-width: var(--medsight-modal-width-sm);
+}
+
+.modal-medsight-lg {
+  max-width: var(--medsight-modal-width-lg);
+}
+
+.modal-medsight-xl {
+  max-width: var(--medsight-modal-width-xl);
+}
+
+/* ============================================================================ */
+/* MEDICAL NAVIGATION COMPONENTS - CLINICAL WORKFLOW NAVIGATION */
+/* ============================================================================ */
+
+/* Medical Navigation Bar */
+.nav-medsight {
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: var(--medsight-blur-lg) var(--medsight-saturate);
+  border-bottom: 1px solid rgba(14, 165, 233, 0.1);
+  padding: var(--medsight-space-md) var(--medsight-space-lg);
+  height: var(--medsight-nav-height);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: var(--medsight-z-navigation);
+}
+
+.nav-medsight-brand {
+  display: flex;
+  align-items: center;
+  gap: var(--medsight-space-sm);
+  font-size: var(--medsight-text-patient);
+  font-weight: var(--medsight-weight-bold);
+  color: var(--medsight-primary-700);
+  text-decoration: none;
+}
+
+.nav-medsight-items {
+  display: flex;
+  align-items: center;
+  gap: var(--medsight-space-md);
+}
+
+.nav-medsight-item {
+  padding: var(--medsight-space-sm) var(--medsight-space-md);
+  border-radius: var(--medsight-radius-status);
+  color: var(--medsight-primary-700);
+  text-decoration: none;
+  font-family: var(--medsight-font-primary);
+  font-weight: var(--medsight-weight-medium);
+  transition: var(--medsight-transition-fast);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--medsight-space-xs);
+}
+
+.nav-medsight-item:hover {
+  background: rgba(14, 165, 233, 0.1);
+  color: var(--medsight-primary-900);
+  transform: translateY(-1px);
+}
+
+.nav-medsight-item.active {
+  background: var(--medsight-primary-500);
+  color: white;
+  box-shadow: 0 4px 12px rgba(14, 165, 233, 0.3);
+}
+
+/* Medical Breadcrumb */
+.breadcrumb-medsight {
+  display: flex;
+  align-items: center;
+  gap: var(--medsight-space-xs);
+  font-size: var(--medsight-text-metadata);
+  color: var(--medsight-primary-600);
+  margin-bottom: var(--medsight-space-md);
+}
+
+.breadcrumb-medsight-item {
+  color: var(--medsight-primary-600);
+  text-decoration: none;
+  transition: var(--medsight-transition-fast);
+}
+
+.breadcrumb-medsight-item:hover {
+  color: var(--medsight-primary-800);
+}
+
+.breadcrumb-medsight-separator {
+  color: var(--medsight-primary-400);
+  margin: 0 var(--medsight-space-xs);
+}
+
+.breadcrumb-medsight-current {
+  color: var(--medsight-primary-800);
+  font-weight: var(--medsight-weight-medium);
+}
+
+/* ============================================================================ */
+/* MEDICAL PROGRESS COMPONENTS - CLINICAL WORKFLOW PROGRESS */
+/* ============================================================================ */
+
+/* Medical Progress Bar */
+.progress-medsight {
+  background: rgba(14, 165, 233, 0.1);
+  backdrop-filter: var(--medsight-blur-sm);
+  border: 1px solid rgba(14, 165, 233, 0.15);
+  border-radius: var(--medsight-radius-full);
+  overflow: hidden;
+  height: 8px;
+  position: relative;
+}
+
+.progress-medsight-fill {
+  background: linear-gradient(90deg, 
+    rgba(14, 165, 233, 0.8) 0%, 
+    rgba(14, 165, 233, 1) 100%);
+  backdrop-filter: var(--medsight-blur-sm);
+  box-shadow: 0 0 16px rgba(14, 165, 233, 0.4);
+  height: 100%;
+  transition: width var(--medsight-duration-slow) var(--medsight-ease-out-smooth);
+  border-radius: var(--medsight-radius-full);
+}
+
+/* Progress Variants */
+.progress-medsight-success .progress-medsight-fill {
+  background: linear-gradient(90deg, 
+    rgba(16, 185, 129, 0.8) 0%, 
+    rgba(16, 185, 129, 1) 100%);
+  box-shadow: 0 0 16px rgba(16, 185, 129, 0.4);
+}
+
+.progress-medsight-warning .progress-medsight-fill {
+  background: linear-gradient(90deg, 
+    rgba(245, 158, 11, 0.8) 0%, 
+    rgba(245, 158, 11, 1) 100%);
+  box-shadow: 0 0 16px rgba(245, 158, 11, 0.4);
+}
+
+.progress-medsight-critical .progress-medsight-fill {
+  background: linear-gradient(90deg, 
+    rgba(220, 38, 38, 0.8) 0%, 
+    rgba(220, 38, 38, 1) 100%);
+  box-shadow: 0 0 16px rgba(220, 38, 38, 0.4);
+}
+
+/* Progress with Label */
+.progress-medsight-labeled {
+  position: relative;
+  margin-bottom: var(--medsight-space-sm);
+}
+
+.progress-medsight-label {
+  font-size: var(--medsight-text-caption);
+  color: var(--medsight-primary-600);
+  margin-bottom: var(--medsight-space-xs);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* ============================================================================ */
+/* MEDICAL BADGE COMPONENTS - STATUS INDICATORS */
+/* ============================================================================ */
+
+/* Medical Badge Base */
+.badge-medsight {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--medsight-space-xs);
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: var(--medsight-text-ai);
+  font-weight: var(--medsight-weight-medium);
+  line-height: 1;
+  border: 1px solid transparent;
+  backdrop-filter: var(--medsight-blur-md);
+}
+
+/* Badge Variants */
+.badge-medsight-primary {
+  background: rgba(14, 165, 233, 0.1);
+  color: var(--medsight-primary-700);
+  border-color: rgba(14, 165, 233, 0.2);
+}
+
+.badge-medsight-normal {
+  background: rgba(16, 185, 129, 0.1);
+  color: var(--medsight-normal);
+  border-color: rgba(16, 185, 129, 0.2);
+}
+
+.badge-medsight-abnormal {
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--medsight-abnormal);
+  border-color: rgba(239, 68, 68, 0.2);
+}
+
+.badge-medsight-critical {
+  background: rgba(220, 38, 38, 0.1);
+  color: var(--medsight-critical);
+  border-color: rgba(220, 38, 38, 0.2);
+  animation: pulse-critical 2s infinite;
+}
+
+.badge-medsight-pending {
+  background: rgba(245, 158, 11, 0.1);
+  color: var(--medsight-pending);
+  border-color: rgba(245, 158, 11, 0.2);
+}
+
+/* Badge with Dot */
+.badge-medsight-dot::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+/* ============================================================================ */
+/* MEDICAL TABLE COMPONENTS - DATA DISPLAY */
+/* ============================================================================ */
+
+/* Medical Table Container */
+.table-medsight-container {
+  background: rgba(255, 255, 255, 0.04);
+  backdrop-filter: var(--medsight-blur-md);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--medsight-radius-input);
+  overflow: hidden;
+  box-shadow: var(--medsight-shadow-sm);
+}
+
+/* Medical Table */
+.table-medsight {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--medsight-font-primary);
+}
+
+.table-medsight-header {
+  background: rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.table-medsight th {
+  padding: var(--medsight-space-sm) var(--medsight-space-md);
+  text-align: left;
+  font-size: var(--medsight-text-metadata);
+  font-weight: var(--medsight-weight-semibold);
+  color: var(--medsight-primary-700);
+  text-transform: uppercase;
+  letter-spacing: var(--medsight-letter-spacing-wide);
+}
+
+.table-medsight td {
+  padding: var(--medsight-space-sm) var(--medsight-space-md);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  color: var(--medsight-primary-800);
+  vertical-align: middle;
+}
+
+.table-medsight tbody tr:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.table-medsight tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* ============================================================================ */
+/* MEDICAL COMPONENT ANIMATIONS */
+/* ============================================================================ */
+
+@keyframes button-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes modal-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes modal-slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse-critical {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.02);
+  }
+}
+
+/* ============================================================================ */
+/* RESPONSIVE MEDICAL COMPONENTS */
+/* ============================================================================ */
+
+@media (max-width: 768px) {
+  .btn-medsight {
+    padding: var(--medsight-button-padding-sm);
+    font-size: 0.8125rem;
+  }
+  
+  .card-medsight {
+    padding: var(--medsight-card-padding-sm);
+  }
+  
+  .modal-medsight {
+    padding: var(--medsight-space-lg);
+    border-radius: var(--medsight-radius-card);
+    margin: var(--medsight-space-md);
+  }
+  
+  .nav-medsight {
+    padding: var(--medsight-space-sm) var(--medsight-space-md);
+    height: var(--medsight-nav-height-mobile);
+  }
+  
+  .nav-medsight-items {
+    gap: var(--medsight-space-sm);
+  }
+  
+  .table-medsight-container {
+    overflow-x: auto;
+  }
+}
+
+@media (min-width: 1024px) {
+  .btn-medsight {
+    padding: var(--medsight-button-padding-lg);
+  }
+  
+  .card-medsight {
+    padding: var(--medsight-card-padding-lg);
+  }
+  
+  .modal-medsight {
+    max-width: var(--medsight-modal-width-lg);
+  }
+}
+
+/* ============================================================================ */
+/* ACCESSIBILITY MEDICAL COMPONENTS */
+/* ============================================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  .btn-medsight,
+  .card-medsight,
+  .input-medsight,
+  .nav-medsight-item,
+  .progress-medsight-fill {
+    transition: none;
+  }
+  
+  .badge-medsight-critical,
+  .btn-medsight-critical {
+    animation: none;
+  }
+  
+  .modal-medsight-overlay,
+  .modal-medsight {
+    animation: none;
+  }
+}
+
+@media (prefers-contrast: high) {
+  .btn-medsight {
+    border: 2px solid white;
+  }
+  
+  .card-medsight,
+  .input-medsight,
+  .modal-medsight {
+    background: rgba(255, 255, 255, 0.2);
+    border: 2px solid rgba(255, 255, 255, 0.4);
+    backdrop-filter: var(--medsight-blur-sm);
+  }
+  
+  .nav-medsight {
+    background: rgba(255, 255, 255, 0.3);
+    border-bottom: 2px solid rgba(255, 255, 255, 0.5);
+  }
+  
+  .badge-medsight-normal,
+  .badge-medsight-abnormal,
+  .badge-medsight-critical,
+  .badge-medsight-pending {
+    border-width: 2px;
+  }
+}
+
+/* ============================================================================ */
+/* DARK MODE MEDICAL COMPONENTS */
+/* ============================================================================ */
+
+@media (prefers-color-scheme: dark) {
+  .card-medsight {
+    background: linear-gradient(135deg, 
+      rgba(14, 165, 233, 0.08) 0%, 
+      rgba(16, 185, 129, 0.06) 100%);
+    border: 1px solid rgba(14, 165, 233, 0.15);
+    box-shadow: 
+      0 8px 32px rgba(0, 0, 0, 0.3),
+      inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  }
+  
+  .input-medsight {
+    background: rgba(0, 0, 0, 0.15);
+    border: 1px solid rgba(14, 165, 233, 0.2);
+    color: white;
+  }
+  
+  .input-medsight::placeholder {
+    color: rgba(255, 255, 255, 0.5);
+  }
+  
+  .modal-medsight {
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(14, 165, 233, 0.2);
+  }
+  
+  .nav-medsight {
+    background: rgba(0, 0, 0, 0.2);
+    border-bottom: 1px solid rgba(14, 165, 233, 0.15);
+  }
+  
+  .table-medsight-container {
+    background: rgba(0, 0, 0, 0.15);
+    border: 1px solid rgba(14, 165, 233, 0.15);
+  }
+  
+  .table-medsight-header {
+    background: rgba(0, 0, 0, 0.2);
+  }
+  
+  .table-medsight th {
+    color: rgba(255, 255, 255, 0.9);
+  }
+  
+  .table-medsight td {
+    color: rgba(255, 255, 255, 0.8);
+    border-bottom-color: rgba(255, 255, 255, 0.1);
+  }
+  
+  .table-medsight tbody tr:hover {
+    background: rgba(255, 255, 255, 0.05);
+  }
+}
+
+/* ============================================================================ */
+/* PRINT MODE MEDICAL COMPONENTS */
+/* ============================================================================ */
+
+@media print {
+  .btn-medsight,
+  .nav-medsight,
+  .modal-medsight-overlay {
+    display: none !important;
+  }
+  
+  .card-medsight,
+  .input-medsight,
+  .table-medsight-container {
+    background: white !important;
+    border: 1px solid #ccc !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+  }
+  
+  .card-medsight-title,
+  .table-medsight th,
+  .table-medsight td,
+  .badge-medsight {
+    color: black !important;
+  }
+  
+  .table-medsight-header {
+    background: #f5f5f5 !important;
+  }
+  
+  .badge-medsight-normal,
+  .badge-medsight-abnormal,
+  .badge-medsight-critical,
+  .badge-medsight-pending {
+    background: #f0f0f0 !important;
+    border: 1px solid #ccc !important;
+  }
+} 

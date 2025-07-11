@@ -1,0 +1,1116 @@
+/* ============================================================================ */
+/* MEDSIGHT PRO ACCESSIBILITY SYSTEM - WCAG AA COMPLIANCE FOR MEDICAL INTERFACES */
+/* ============================================================================ */
+
+/* Medical-Grade Accessibility Standards for Clinical Environments */
+
+/* ============================================================================ */
+/* ENHANCED CONTRAST & VISIBILITY - MEDICAL INTERFACE REQUIREMENTS */
+/* ============================================================================ */
+
+/* High Contrast Mode Support */
+@media (prefers-contrast: high) {
+  :root {
+    /* Enhanced Medical Color Contrast */
+    --medsight-primary-500: #0369a1;
+    --medsight-primary-600: #075985;
+    --medsight-primary-700: #0c4a6e;
+    --medsight-primary-800: #0f172a;
+    --medsight-primary-900: #020617;
+    
+    /* Medical Status Colors - High Contrast */
+    --medsight-normal: #047857;        /* Enhanced green contrast */
+    --medsight-abnormal: #dc2626;      /* Enhanced red contrast */
+    --medsight-critical: #991b1b;      /* Enhanced critical contrast */
+    --medsight-pending: #d97706;       /* Enhanced orange contrast */
+    
+    /* AI Confidence - High Contrast */
+    --medsight-ai-high: #047857;       /* Enhanced high confidence */
+    --medsight-ai-medium: #d97706;     /* Enhanced medium confidence */
+    --medsight-ai-low: #991b1b;        /* Enhanced low confidence */
+    
+    /* Background and Text Contrast */
+    --medsight-bg-primary: #ffffff;
+    --medsight-bg-secondary: #f8fafc;
+    --medsight-text-primary: #000000;
+    --medsight-text-secondary: #374151;
+    --medsight-border-contrast: #4b5563;
+  }
+  
+  /* Glass Effects - High Contrast Mode */
+  .medsight-glass {
+    background: rgba(255, 255, 255, 0.95);
+    border: 2px solid var(--medsight-border-contrast);
+    backdrop-filter: blur(8px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+  }
+  
+  .medsight-viewer-glass {
+    background: rgba(0, 0, 0, 0.9);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+  }
+  
+  .medsight-control-glass {
+    background: rgba(255, 255, 255, 0.98);
+    border: 2px solid var(--medsight-primary-600);
+  }
+  
+  .medsight-ai-glass {
+    background: rgba(255, 255, 255, 0.95);
+    border: 2px solid var(--medsight-ai-high);
+  }
+  
+  /* Medical Component High Contrast */
+  .btn-medsight {
+    border: 2px solid var(--medsight-primary-600);
+    font-weight: 600;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  }
+  
+  .card-medsight {
+    border: 2px solid var(--medsight-border-contrast);
+    background: var(--medsight-bg-primary);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  }
+  
+  .input-medsight {
+    border: 2px solid var(--medsight-primary-600);
+    background: var(--medsight-bg-primary);
+    color: var(--medsight-text-primary);
+  }
+  
+  .input-medsight:focus {
+    border: 3px solid var(--medsight-primary-700);
+    box-shadow: 0 0 0 3px rgba(3, 105, 161, 0.3);
+  }
+  
+  /* Medical Status High Contrast */
+  .badge-medsight-normal {
+    background: var(--medsight-normal);
+    color: white;
+    border: 2px solid var(--medsight-normal);
+  }
+  
+  .badge-medsight-abnormal {
+    background: var(--medsight-abnormal);
+    color: white;
+    border: 2px solid var(--medsight-abnormal);
+  }
+  
+  .badge-medsight-critical {
+    background: var(--medsight-critical);
+    color: white;
+    border: 2px solid var(--medsight-critical);
+  }
+  
+  .badge-medsight-pending {
+    background: var(--medsight-pending);
+    color: white;
+    border: 2px solid var(--medsight-pending);
+  }
+}
+
+/* ============================================================================ */
+/* REDUCED MOTION - MEDICAL ENVIRONMENT SAFETY */
+/* ============================================================================ */
+
+/* Respect Reduced Motion Preferences for Medical Safety */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  
+  /* Disable Medical Animations */
+  .medsight-glass,
+  .medsight-viewer-glass,
+  .medsight-control-glass,
+  .medsight-ai-glass {
+    transition: none !important;
+    animation: none !important;
+    transform: none !important;
+  }
+  
+  /* Disable Medical Component Animations */
+  .btn-medsight,
+  .card-medsight,
+  .input-medsight,
+  .modal-medsight,
+  .nav-medsight-item,
+  .progress-medsight-fill,
+  .badge-medsight-critical {
+    transition: none !important;
+    animation: none !important;
+    transform: none !important;
+  }
+  
+  /* Disable Medical Status Animations */
+  .pulse-critical,
+  .pulse-confidence,
+  .medical-shimmer {
+    animation: none !important;
+  }
+  
+  /* Disable Medical Loading Animations */
+  .btn-medsight-loading::after,
+  .spinner-medsight,
+  .loading-medsight {
+    animation: none !important;
+  }
+  
+  /* Static Medical Indicators */
+  .medsight-confidence-high,
+  .medsight-confidence-medium,
+  .medsight-confidence-low {
+    animation: none !important;
+  }
+}
+
+/* ============================================================================ */
+/* FOCUS MANAGEMENT - MEDICAL KEYBOARD NAVIGATION */
+/* ============================================================================ */
+
+/* Enhanced Focus Indicators for Medical Interfaces */
+:focus-visible {
+  outline: 3px solid var(--medsight-primary-500);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Medical Component Focus States */
+.btn-medsight:focus-visible {
+  outline: 3px solid var(--medsight-primary-600);
+  outline-offset: 2px;
+  box-shadow: 
+    0 0 0 6px rgba(14, 165, 233, 0.2),
+    0 4px 16px rgba(14, 165, 233, 0.3);
+}
+
+.card-medsight:focus-visible {
+  outline: 3px solid var(--medsight-primary-500);
+  outline-offset: 2px;
+  border-color: var(--medsight-primary-500);
+}
+
+.input-medsight:focus-visible {
+  outline: 3px solid var(--medsight-primary-600);
+  outline-offset: 2px;
+  border-color: var(--medsight-primary-600);
+  box-shadow: 
+    0 0 0 3px rgba(14, 165, 233, 0.2),
+    0 2px 8px rgba(14, 165, 233, 0.1);
+}
+
+.nav-medsight-item:focus-visible {
+  outline: 3px solid var(--medsight-primary-600);
+  outline-offset: 2px;
+  background: rgba(14, 165, 233, 0.1);
+}
+
+/* Medical Modal Focus Management */
+.modal-medsight:focus-visible {
+  outline: 3px solid var(--medsight-primary-600);
+  outline-offset: -3px;
+}
+
+/* Medical Form Focus Ring */
+.form-medsight input:focus-visible,
+.form-medsight select:focus-visible,
+.form-medsight textarea:focus-visible {
+  outline: 3px solid var(--medsight-primary-600);
+  outline-offset: 2px;
+  border-color: var(--medsight-primary-600);
+}
+
+/* Medical Interactive Elements Focus */
+.clickable-medsight:focus-visible,
+.interactive-medsight:focus-visible {
+  outline: 3px solid var(--medsight-primary-600);
+  outline-offset: 2px;
+  background: rgba(14, 165, 233, 0.1);
+}
+
+/* Medical Status Focus States */
+.badge-medsight:focus-visible {
+  outline: 3px solid var(--medsight-primary-600);
+  outline-offset: 2px;
+}
+
+/* Medical Table Focus */
+.table-medsight tbody tr:focus-visible {
+  outline: 3px solid var(--medsight-primary-600);
+  outline-offset: 2px;
+  background: rgba(14, 165, 233, 0.1);
+}
+
+/* ============================================================================ */
+/* SCREEN READER SUPPORT - MEDICAL CONTEXT */
+/* ============================================================================ */
+
+/* Screen Reader Only Content for Medical Context */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.sr-only-focusable:focus,
+.sr-only-focusable:active {
+  position: static;
+  width: auto;
+  height: auto;
+  padding: var(--medsight-space-sm);
+  margin: 0;
+  overflow: visible;
+  clip: auto;
+  white-space: normal;
+  background: var(--medsight-primary-500);
+  color: white;
+  border-radius: var(--medsight-radius-sm);
+  font-weight: 600;
+}
+
+/* Medical Skip Links */
+.skip-link {
+  position: absolute;
+  top: -40px;
+  left: 6px;
+  background: var(--medsight-primary-600);
+  color: white;
+  padding: 8px;
+  text-decoration: none;
+  border-radius: 4px;
+  font-weight: 600;
+  z-index: 10000;
+}
+
+.skip-link:focus {
+  top: 6px;
+  outline: 3px solid var(--medsight-primary-300);
+}
+
+/* Medical Content Landmarks */
+.medical-landmark {
+  position: relative;
+}
+
+.medical-landmark::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: var(--medsight-primary-500);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.medical-landmark:focus-within::before {
+  opacity: 1;
+}
+
+/* Medical Status Announcements */
+.medical-status-announcement {
+  position: absolute;
+  left: -10000px;
+  top: auto;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+.medical-status-announcement.announce {
+  position: static;
+  width: auto;
+  height: auto;
+  padding: var(--medsight-space-sm);
+  background: var(--medsight-primary-50);
+  border: 1px solid var(--medsight-primary-200);
+  border-radius: var(--medsight-radius-sm);
+  font-size: var(--medsight-text-caption);
+  color: var(--medsight-primary-800);
+  margin-bottom: var(--medsight-space-sm);
+}
+
+/* ============================================================================ */
+/* MEDICAL TYPOGRAPHY ACCESSIBILITY */
+/* ============================================================================ */
+
+/* Enhanced Medical Text Readability */
+.text-medsight-accessible {
+  font-size: clamp(1rem, 2.5vw, 1.125rem);
+  line-height: 1.6;
+  letter-spacing: 0.01em;
+  color: var(--medsight-text-primary, #1f2937);
+  font-weight: 400;
+}
+
+/* Medical Header Accessibility */
+.heading-medsight-accessible {
+  font-size: clamp(1.25rem, 4vw, 1.5rem);
+  line-height: 1.4;
+  letter-spacing: -0.01em;
+  color: var(--medsight-text-primary, #1f2937);
+  font-weight: 600;
+  margin-bottom: var(--medsight-space-md);
+}
+
+/* Medical Label Accessibility */
+.label-medsight-accessible {
+  font-size: 1rem;
+  line-height: 1.5;
+  color: var(--medsight-text-primary, #1f2937);
+  font-weight: 500;
+  margin-bottom: var(--medsight-space-xs);
+  display: block;
+}
+
+/* Medical Required Field Indicators */
+.required-medsight {
+  color: var(--medsight-critical);
+  font-weight: 600;
+  margin-left: 2px;
+}
+
+.required-medsight::before {
+  content: ' *';
+  color: var(--medsight-critical);
+  font-weight: 600;
+}
+
+/* Medical Error Text Accessibility */
+.error-text-medsight {
+  color: var(--medsight-abnormal);
+  font-size: 0.875rem;
+  line-height: 1.5;
+  margin-top: var(--medsight-space-xs);
+  font-weight: 500;
+}
+
+/* Medical Success Text Accessibility */
+.success-text-medsight {
+  color: var(--medsight-normal);
+  font-size: 0.875rem;
+  line-height: 1.5;
+  margin-top: var(--medsight-space-xs);
+  font-weight: 500;
+}
+
+/* Medical Help Text Accessibility */
+.help-text-medsight {
+  color: var(--medsight-primary-600);
+  font-size: 0.875rem;
+  line-height: 1.5;
+  margin-top: var(--medsight-space-xs);
+}
+
+/* ============================================================================ */
+/* MEDICAL FORM ACCESSIBILITY */
+/* ============================================================================ */
+
+/* Enhanced Medical Form Labels */
+.form-medsight label {
+  display: block;
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--medsight-text-primary, #1f2937);
+  margin-bottom: var(--medsight-space-xs);
+  line-height: 1.5;
+}
+
+.form-medsight label[for] {
+  cursor: pointer;
+}
+
+/* Medical Form Groups */
+.form-group-medsight {
+  margin-bottom: var(--medsight-space-md);
+}
+
+.form-group-medsight.has-error {
+  border-left: 4px solid var(--medsight-abnormal);
+  padding-left: var(--medsight-space-sm);
+}
+
+.form-group-medsight.has-success {
+  border-left: 4px solid var(--medsight-normal);
+  padding-left: var(--medsight-space-sm);
+}
+
+/* Medical Fieldset Accessibility */
+.fieldset-medsight {
+  border: 2px solid var(--medsight-primary-200);
+  border-radius: var(--medsight-radius-card);
+  padding: var(--medsight-space-md);
+  margin-bottom: var(--medsight-space-lg);
+}
+
+.fieldset-medsight legend {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--medsight-primary-700);
+  padding: 0 var(--medsight-space-sm);
+  margin-bottom: var(--medsight-space-sm);
+}
+
+/* Medical Radio/Checkbox Groups */
+.radio-group-medsight,
+.checkbox-group-medsight {
+  display: flex;
+  flex-direction: column;
+  gap: var(--medsight-space-sm);
+}
+
+.radio-group-medsight label,
+.checkbox-group-medsight label {
+  display: flex;
+  align-items: center;
+  gap: var(--medsight-space-sm);
+  cursor: pointer;
+  font-weight: 400;
+}
+
+.radio-group-medsight input[type="radio"],
+.checkbox-group-medsight input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  margin: 0;
+  accent-color: var(--medsight-primary-500);
+}
+
+/* ============================================================================ */
+/* MEDICAL COLOR ACCESSIBILITY */
+/* ============================================================================ */
+
+/* Ensure Medical Color Contrast Ratios */
+.text-medsight-contrast {
+  color: var(--medsight-text-primary, #1f2937);
+  background: var(--medsight-bg-primary, #ffffff);
+}
+
+.text-medsight-contrast-secondary {
+  color: var(--medsight-text-secondary, #6b7280);
+  background: var(--medsight-bg-secondary, #f9fafb);
+}
+
+/* Medical Status Colors - Accessible Contrast */
+.status-normal-accessible {
+  background: var(--medsight-normal);
+  color: white;
+  font-weight: 600;
+}
+
+.status-abnormal-accessible {
+  background: var(--medsight-abnormal);
+  color: white;
+  font-weight: 600;
+}
+
+.status-critical-accessible {
+  background: var(--medsight-critical);
+  color: white;
+  font-weight: 600;
+}
+
+.status-pending-accessible {
+  background: var(--medsight-pending);
+  color: white;
+  font-weight: 600;
+}
+
+/* Medical Color Blind Support */
+.colorblind-pattern-normal {
+  background: var(--medsight-normal);
+  background-image: repeating-linear-gradient(
+    45deg,
+    transparent,
+    transparent 2px,
+    rgba(255, 255, 255, 0.1) 2px,
+    rgba(255, 255, 255, 0.1) 4px
+  );
+}
+
+.colorblind-pattern-abnormal {
+  background: var(--medsight-abnormal);
+  background-image: repeating-linear-gradient(
+    -45deg,
+    transparent,
+    transparent 2px,
+    rgba(255, 255, 255, 0.1) 2px,
+    rgba(255, 255, 255, 0.1) 4px
+  );
+}
+
+.colorblind-pattern-critical {
+  background: var(--medsight-critical);
+  background-image: repeating-linear-gradient(
+    90deg,
+    transparent,
+    transparent 2px,
+    rgba(255, 255, 255, 0.1) 2px,
+    rgba(255, 255, 255, 0.1) 4px
+  );
+}
+
+/* ============================================================================ */
+/* MEDICAL KEYBOARD NAVIGATION */
+/* ============================================================================ */
+
+/* Enhanced Medical Keyboard Navigation */
+.keyboard-navigation-medsight {
+  position: relative;
+}
+
+.keyboard-navigation-medsight:focus-within {
+  outline: 2px solid var(--medsight-primary-500);
+  outline-offset: 2px;
+}
+
+/* Medical Tab Navigation */
+.tab-navigation-medsight {
+  display: flex;
+  gap: 0;
+  border-bottom: 2px solid var(--medsight-primary-200);
+}
+
+.tab-navigation-medsight button {
+  padding: var(--medsight-space-sm) var(--medsight-space-md);
+  border: none;
+  background: transparent;
+  color: var(--medsight-primary-600);
+  font-weight: 500;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s ease;
+}
+
+.tab-navigation-medsight button:hover {
+  background: rgba(14, 165, 233, 0.1);
+  color: var(--medsight-primary-800);
+}
+
+.tab-navigation-medsight button:focus-visible {
+  outline: 3px solid var(--medsight-primary-500);
+  outline-offset: 2px;
+  background: rgba(14, 165, 233, 0.1);
+}
+
+.tab-navigation-medsight button[aria-selected="true"] {
+  background: var(--medsight-primary-500);
+  color: white;
+  border-bottom-color: var(--medsight-primary-600);
+}
+
+/* Medical Dropdown Navigation */
+.dropdown-medsight {
+  position: relative;
+}
+
+.dropdown-medsight-trigger:focus-visible {
+  outline: 3px solid var(--medsight-primary-500);
+  outline-offset: 2px;
+}
+
+.dropdown-medsight-content {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background: white;
+  border: 2px solid var(--medsight-primary-200);
+  border-radius: var(--medsight-radius-card);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  min-width: 200px;
+}
+
+.dropdown-medsight-item {
+  padding: var(--medsight-space-sm) var(--medsight-space-md);
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.dropdown-medsight-item:hover {
+  background: rgba(14, 165, 233, 0.1);
+}
+
+.dropdown-medsight-item:focus-visible {
+  outline: 3px solid var(--medsight-primary-500);
+  outline-offset: -2px;
+  background: rgba(14, 165, 233, 0.1);
+}
+
+/* ============================================================================ */
+/* MEDICAL RESPONSIVE ACCESSIBILITY */
+/* ============================================================================ */
+
+/* Mobile Medical Accessibility */
+@media (max-width: 768px) {
+  .btn-medsight {
+    min-height: 44px;
+    min-width: 44px;
+    padding: var(--medsight-space-sm) var(--medsight-space-md);
+    font-size: 1rem;
+  }
+  
+  .input-medsight {
+    min-height: 44px;
+    font-size: 1rem;
+    padding: var(--medsight-space-sm) var(--medsight-space-md);
+  }
+  
+  .text-medsight-accessible {
+    font-size: 1rem;
+    line-height: 1.6;
+  }
+  
+  .heading-medsight-accessible {
+    font-size: 1.25rem;
+    line-height: 1.4;
+  }
+  
+  /* Mobile Focus Management */
+  :focus-visible {
+    outline-width: 2px;
+    outline-offset: 1px;
+  }
+  
+  /* Mobile Medical Navigation */
+  .nav-medsight-item {
+    min-height: 44px;
+    padding: var(--medsight-space-sm) var(--medsight-space-md);
+    font-size: 1rem;
+  }
+  
+  /* Mobile Medical Forms */
+  .form-group-medsight {
+    margin-bottom: var(--medsight-space-lg);
+  }
+  
+  .label-medsight-accessible {
+    font-size: 1rem;
+    margin-bottom: var(--medsight-space-sm);
+  }
+  
+  /* Mobile Medical Modal */
+  .modal-medsight {
+    margin: var(--medsight-space-sm);
+    max-width: calc(100vw - 2 * var(--medsight-space-sm));
+  }
+  
+  /* Mobile Medical Table */
+  .table-medsight-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .table-medsight th,
+  .table-medsight td {
+    padding: var(--medsight-space-sm);
+    font-size: 0.875rem;
+    white-space: nowrap;
+  }
+}
+
+/* Tablet Medical Accessibility */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .btn-medsight {
+    min-height: 40px;
+    min-width: 40px;
+  }
+  
+  .input-medsight {
+    min-height: 40px;
+  }
+  
+  .text-medsight-accessible {
+    font-size: 1rem;
+  }
+  
+  .heading-medsight-accessible {
+    font-size: 1.375rem;
+  }
+}
+
+/* ============================================================================ */
+/* MEDICAL PRINT ACCESSIBILITY */
+/* ============================================================================ */
+
+@media print {
+  /* High Contrast for Medical Printing */
+  .medsight-glass,
+  .medsight-viewer-glass,
+  .medsight-control-glass,
+  .medsight-ai-glass {
+    background: white !important;
+    border: 2px solid black !important;
+    backdrop-filter: none !important;
+    box-shadow: none !important;
+  }
+  
+  .btn-medsight {
+    display: none !important;
+  }
+  
+  .text-medsight-accessible,
+  .heading-medsight-accessible,
+  .label-medsight-accessible {
+    color: black !important;
+  }
+  
+  .status-normal-accessible {
+    background: #f0f0f0 !important;
+    color: black !important;
+    border: 2px solid black !important;
+  }
+  
+  .status-abnormal-accessible,
+  .status-critical-accessible {
+    background: #e0e0e0 !important;
+    color: black !important;
+    border: 2px solid black !important;
+    font-weight: 700 !important;
+  }
+  
+  .status-pending-accessible {
+    background: #f5f5f5 !important;
+    color: black !important;
+    border: 2px solid black !important;
+  }
+  
+  /* Print Medical Forms */
+  .form-medsight input,
+  .form-medsight select,
+  .form-medsight textarea {
+    border: 2px solid black !important;
+    background: white !important;
+    color: black !important;
+  }
+  
+  .form-medsight label {
+    color: black !important;
+    font-weight: 600 !important;
+  }
+  
+  .required-medsight::before {
+    content: ' (Required)' !important;
+    color: black !important;
+  }
+  
+  /* Print Medical Tables */
+  .table-medsight {
+    border: 2px solid black !important;
+    background: white !important;
+  }
+  
+  .table-medsight th,
+  .table-medsight td {
+    border: 1px solid black !important;
+    background: white !important;
+    color: black !important;
+  }
+  
+  .table-medsight th {
+    background: #f0f0f0 !important;
+    font-weight: 700 !important;
+  }
+}
+
+/* ============================================================================ */
+/* MEDICAL ASSISTIVE TECHNOLOGY SUPPORT */
+/* ============================================================================ */
+
+/* Voice Control Support */
+.voice-control-medsight {
+  position: relative;
+}
+
+.voice-control-medsight::before {
+  content: attr(data-voice-command);
+  position: absolute;
+  top: -30px;
+  left: 0;
+  font-size: 0.75rem;
+  color: var(--medsight-primary-600);
+  background: var(--medsight-primary-50);
+  padding: 2px 6px;
+  border-radius: 3px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.voice-control-medsight:focus-visible::before {
+  opacity: 1;
+}
+
+/* Switch Control Support */
+.switch-control-medsight {
+  position: relative;
+  z-index: 1;
+}
+
+.switch-control-medsight:focus-visible {
+  outline: 4px solid var(--medsight-primary-500);
+  outline-offset: 2px;
+  background: rgba(14, 165, 233, 0.1);
+}
+
+/* Eye Tracking Support */
+.eye-tracking-medsight {
+  position: relative;
+}
+
+.eye-tracking-medsight::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border: 2px solid transparent;
+  border-radius: inherit;
+  transition: border-color 0.2s ease;
+}
+
+.eye-tracking-medsight:hover::after {
+  border-color: var(--medsight-primary-500);
+}
+
+/* Medical Gesture Support */
+.gesture-support-medsight {
+  touch-action: manipulation;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+.gesture-support-medsight:focus-visible {
+  outline: 3px solid var(--medsight-primary-500);
+  outline-offset: 2px;
+}
+
+/* ============================================================================ */
+/* MEDICAL ACCESSIBILITY UTILITIES */
+/* ============================================================================ */
+
+/* Medical Focus Trap */
+.focus-trap-medsight {
+  position: relative;
+}
+
+.focus-trap-medsight .focus-trap-start,
+.focus-trap-medsight .focus-trap-end {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Medical Live Region */
+.live-region-medsight {
+  position: absolute;
+  left: -10000px;
+  top: auto;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+.live-region-medsight[aria-live="polite"] {
+  /* Polite announcements for non-critical medical updates */
+  position: absolute;
+  left: -10000px;
+  top: auto;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+.live-region-medsight[aria-live="assertive"] {
+  /* Assertive announcements for critical medical alerts */
+  position: absolute;
+  left: -10000px;
+  top: auto;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+/* Medical Progress Indicator */
+.progress-accessible-medsight {
+  position: relative;
+}
+
+.progress-accessible-medsight::after {
+  content: attr(aria-valuenow) '% complete';
+  position: absolute;
+  left: -10000px;
+  top: auto;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+/* Medical Status Reader */
+.status-reader-medsight {
+  position: absolute;
+  left: -10000px;
+  top: auto;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+.status-reader-medsight.announce {
+  position: static;
+  width: auto;
+  height: auto;
+  padding: var(--medsight-space-xs);
+  background: var(--medsight-primary-50);
+  border: 1px solid var(--medsight-primary-200);
+  border-radius: var(--medsight-radius-sm);
+  font-size: 0.875rem;
+  color: var(--medsight-primary-800);
+}
+
+/* ============================================================================ */
+/* MEDICAL ACCESSIBILITY VALIDATION */
+/* ============================================================================ */
+
+/* Development Mode Accessibility Checker */
+.accessibility-checker-medsight {
+  position: fixed;
+  top: 10px;
+  right: 10px;
+  background: var(--medsight-critical);
+  color: white;
+  padding: var(--medsight-space-sm);
+  border-radius: var(--medsight-radius-sm);
+  font-size: 0.75rem;
+  z-index: 10000;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.accessibility-checker-medsight.visible {
+  opacity: 1;
+  pointer-events: all;
+}
+
+/* Missing Alt Text Warning */
+img:not([alt]) {
+  border: 3px solid var(--medsight-critical) !important;
+  position: relative;
+}
+
+img:not([alt])::after {
+  content: 'Missing Alt Text';
+  position: absolute;
+  top: 0;
+  left: 0;
+  background: var(--medsight-critical);
+  color: white;
+  padding: 2px 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+/* Missing Label Warning */
+input:not([aria-label]):not([aria-labelledby]):not([id]) {
+  border: 3px solid var(--medsight-critical) !important;
+}
+
+/* Low Contrast Warning */
+.low-contrast-warning {
+  position: relative;
+}
+
+.low-contrast-warning::before {
+  content: 'Low Contrast';
+  position: absolute;
+  top: -20px;
+  left: 0;
+  background: var(--medsight-critical);
+  color: white;
+  padding: 2px 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: 2px;
+}
+
+/* ============================================================================ */
+/* MEDICAL ACCESSIBILITY DOCUMENTATION */
+/* ============================================================================ */
+
+/*
+MEDICAL ACCESSIBILITY FEATURES IMPLEMENTED:
+
+1. WCAG AA Compliance
+   - Enhanced contrast ratios for medical interfaces
+   - Proper color contrast for all medical status indicators
+   - Keyboard navigation support for all interactive elements
+   - Focus management for complex medical workflows
+
+2. Medical Environment Considerations
+   - Reduced motion support for medical safety
+   - High contrast mode for medical displays
+   - Screen reader support for medical context
+   - Voice control compatibility for hands-free operation
+
+3. Clinical Workflow Accessibility
+   - Enhanced focus indicators for medical components
+   - Keyboard navigation for medical forms and tables
+   - Screen reader announcements for medical status changes
+   - Mobile accessibility for clinical mobility
+
+4. Medical Compliance
+   - HIPAA-compliant accessible design
+   - Medical professional workflow support
+   - Clinical environment lighting considerations
+   - Medical device compatibility
+
+5. Assistive Technology Support
+   - Voice control integration
+   - Switch control support
+   - Eye tracking compatibility
+   - Gesture support for medical interfaces
+
+6. Medical Form Accessibility
+   - Proper labeling for medical fields
+   - Error handling for medical data validation
+   - Required field indicators
+   - Help text for medical procedures
+
+7. Medical Data Accessibility
+   - Accessible medical status indicators
+   - Color-blind friendly medical visualizations
+   - Pattern support for medical status
+   - Print accessibility for medical reports
+
+USAGE GUIDELINES:
+- Use medical-specific classes for enhanced accessibility
+- Test with medical professionals and assistive technology
+- Validate against WCAG AA standards
+- Consider medical environment constraints
+- Ensure compatibility with medical devices
+- Test keyboard navigation for clinical workflows
+- Validate screen reader announcements for medical context
+*/ 

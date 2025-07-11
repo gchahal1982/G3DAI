@@ -69,12 +69,12 @@ src/
 │   ├── DICOMProcessor.ts        // DICOM processing engine
 │   ├── ImagingModalities.ts     // Medical imaging modalities
 │   └── [5 other medical systems]
-├── medical-integration/         // Medical system integrations
+├── integration/                 // Medical system integrations
 │   ├── MedicalAnalytics.ts      // Medical analytics
 │   ├── MedicalAPI.ts           // Medical API integrations
 │   └── [4 other integration systems]
-├── medical-production/          // Production medical systems
-├── medical-xr/                  // Medical XR/VR systems
+├── production/                  // Production medical systems
+├── xr/                          // Medical XR/VR systems
 │   ├── CollaborativeReview.ts   // Multi-user medical review
 │   ├── HolographicImaging.ts    // Holographic medical display
 │   └── [4 other XR systems]
@@ -157,7 +157,7 @@ src/medical-ai/
 #### **0.3 Medical XR Integration** (5 weeks, 3 XR specialists)
 ```typescript
 // Medical XR capabilities:
-src/medical-xr/
+src/xr/
 ├── MedicalVR.ts                 // 2,500 lines - VR medical visualization
 ├── MedicalAR.ts                 // 2,200 lines - AR diagnostic overlay
 ├── HolographicImaging.ts        // 2,000 lines - Holographic medical display

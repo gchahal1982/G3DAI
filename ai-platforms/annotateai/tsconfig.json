@@ -16,7 +16,7 @@
     "moduleResolution": "node",
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "jsx": "react-jsx",
+    "jsx": "preserve",
     "downlevelIteration": true,
     "baseUrl": ".",
     "paths": {
@@ -24,24 +24,33 @@
         "../../shared/*"
       ],
       "@shared/ui/*": [
-        "../../shared/ui/src/*"
+        "../../shared/components/ui/*"
+      ],
+      "@shared/components/*": [
+        "../../shared/components/*"
       ],
       "@shared/api/*": [
-        "../../shared/api-gateway/src/*"
+        "../../shared/api-client/api-gateway/*"
       ],
-      "@backend/*": [
-        "../../backend/src/*"
+      "@infrastructure/*": [
+        "../../infrastructure/*"
       ],
       "@/*": [
         "./src/*"
       ]
     },
-    "incremental": true
+    "incremental": true,
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ]
   },
   "include": [
     "next-env.d.ts",
     "**/*.ts",
-    "**/*.tsx"
+    "**/*.tsx",
+    ".next/types/**/*.ts"
   ],
   "exclude": [
     "node_modules",

@@ -1,0 +1,773 @@
+/* MedSight Pro Medical-Grade Typography System */
+/* Enhanced readability for clinical workflows and medical data display */
+
+/* ============================================================================ */
+/* MEDICAL FONT IMPORTS AND SETUP */
+/* ============================================================================ */
+
+/* Import Inter Variable for medical interfaces */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+/* Import Geist for display typography */
+@import url('https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700;800&display=swap');
+
+/* Import Geist Mono for medical data */
+@import url('https://fonts.googleapis.com/css2?family=Geist+Mono:wght@300;400;500;600;700&display=swap');
+
+/* ============================================================================ */
+/* BASE MEDICAL TYPOGRAPHY SETUP */
+/* ============================================================================ */
+
+/* Base medical typography for clinical readability */
+body {
+  font-family: var(--medsight-font-primary);
+  font-size: var(--medsight-text-findings);
+  line-height: var(--medsight-line-height);
+  letter-spacing: var(--medsight-letter-spacing);
+  color: var(--medsight-primary-900);
+  font-weight: var(--medsight-weight-normal);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  font-feature-settings: 'kern' 1, 'liga' 1, 'calt' 1, 'pnum' 1, 'tnum' 0, 'onum' 0, 'lnum' 1, 'dlig' 0;
+}
+
+/* Enhanced readability for medical interfaces */
+html {
+  font-size: 16px;
+  scroll-behavior: smooth;
+}
+
+/* ============================================================================ */
+/* MEDICAL TEXT SIZE HIERARCHY - CLINICAL INFORMATION DISPLAY */
+/* ============================================================================ */
+
+/* Patient Information Typography - Most Important */
+.text-medsight-patient {
+  font-size: var(--medsight-text-patient);
+  font-weight: var(--medsight-weight-semibold);
+  color: var(--medsight-primary-900);
+  line-height: var(--medsight-line-height-loose);
+  letter-spacing: var(--medsight-letter-spacing);
+  margin-bottom: var(--medsight-space-sm);
+}
+
+/* Medical Findings Typography - Clinical Content */
+.text-medsight-findings {
+  font-size: var(--medsight-text-findings);
+  color: var(--medsight-primary-800);
+  line-height: var(--medsight-line-height);
+  letter-spacing: var(--medsight-letter-spacing);
+  margin-bottom: var(--medsight-space-sm);
+}
+
+/* DICOM Metadata Typography - Technical Information */
+.text-medsight-metadata {
+  font-size: var(--medsight-text-metadata);
+  color: var(--medsight-primary-600);
+  font-family: var(--medsight-font-mono);
+  line-height: var(--medsight-line-height-tight);
+  letter-spacing: 0.025em;
+  margin-bottom: var(--medsight-space-xs);
+}
+
+/* AI Metrics Typography - AI Analysis Data */
+.text-medsight-ai {
+  font-size: var(--medsight-text-ai);
+  font-weight: var(--medsight-weight-medium);
+  line-height: var(--medsight-line-height-tight);
+  letter-spacing: var(--medsight-letter-spacing);
+}
+
+/* Caption Typography - Image and Data Captions */
+.text-medsight-caption {
+  font-size: var(--medsight-text-caption);
+  color: var(--medsight-primary-500);
+  line-height: var(--medsight-line-height-tight);
+  letter-spacing: var(--medsight-letter-spacing-wide);
+  text-transform: uppercase;
+  font-weight: var(--medsight-weight-medium);
+}
+
+/* ============================================================================ */
+/* MEDICAL HEADING HIERARCHY - CLINICAL SECTION ORGANIZATION */
+/* ============================================================================ */
+
+/* Medical Page Title - H1 */
+.h1-medsight {
+  font-size: 2.25rem;      /* 36px */
+  font-weight: var(--medsight-weight-bold);
+  color: var(--medsight-primary-900);
+  line-height: 1.2;
+  letter-spacing: -0.025em;
+  margin-bottom: var(--medsight-space-lg);
+  font-family: var(--medsight-font-display);
+}
+
+/* Medical Section Title - H2 */
+.h2-medsight {
+  font-size: 1.875rem;     /* 30px */
+  font-weight: var(--medsight-weight-semibold);
+  color: var(--medsight-primary-800);
+  line-height: 1.3;
+  letter-spacing: -0.015em;
+  margin-bottom: var(--medsight-space-md);
+  margin-top: var(--medsight-space-xl);
+}
+
+/* Medical Subsection Title - H3 */
+.h3-medsight {
+  font-size: 1.5rem;       /* 24px */
+  font-weight: var(--medsight-weight-semibold);
+  color: var(--medsight-primary-700);
+  line-height: 1.4;
+  letter-spacing: -0.01em;
+  margin-bottom: var(--medsight-space-sm);
+  margin-top: var(--medsight-space-lg);
+}
+
+/* Medical Component Title - H4 */
+.h4-medsight {
+  font-size: 1.25rem;      /* 20px */
+  font-weight: var(--medsight-weight-medium);
+  color: var(--medsight-primary-700);
+  line-height: var(--medsight-line-height);
+  letter-spacing: var(--medsight-letter-spacing);
+  margin-bottom: var(--medsight-space-sm);
+  margin-top: var(--medsight-space-md);
+}
+
+/* Medical Detail Title - H5 */
+.h5-medsight {
+  font-size: 1.125rem;     /* 18px */
+  font-weight: var(--medsight-weight-medium);
+  color: var(--medsight-primary-600);
+  line-height: var(--medsight-line-height);
+  letter-spacing: var(--medsight-letter-spacing);
+  margin-bottom: var(--medsight-space-xs);
+  margin-top: var(--medsight-space-md);
+}
+
+/* Medical Label - H6 */
+.h6-medsight {
+  font-size: 1rem;         /* 16px */
+  font-weight: var(--medsight-weight-medium);
+  color: var(--medsight-primary-600);
+  line-height: var(--medsight-line-height);
+  letter-spacing: var(--medsight-letter-spacing-wide);
+  text-transform: uppercase;
+  margin-bottom: var(--medsight-space-xs);
+  margin-top: var(--medsight-space-sm);
+}
+
+/* ============================================================================ */
+/* MEDICAL COLOR TYPOGRAPHY VARIANTS */
+/* ============================================================================ */
+
+/* Primary Medical Blue Text */
+.text-medsight-primary {
+  color: var(--medsight-primary-500);
+  font-family: var(--medsight-font-primary);
+  line-height: var(--medsight-line-height);
+  letter-spacing: var(--medsight-letter-spacing);
+}
+
+/* Secondary Medical Green Text */
+.text-medsight-secondary {
+  color: var(--medsight-secondary-500);
+  font-family: var(--medsight-font-primary);
+  line-height: var(--medsight-line-height);
+  letter-spacing: var(--medsight-letter-spacing);
+}
+
+/* Accent Medical Gold Text */
+.text-medsight-accent {
+  color: var(--medsight-accent-500);
+  font-family: var(--medsight-font-primary);
+  line-height: var(--medsight-line-height);
+  letter-spacing: var(--medsight-letter-spacing);
+}
+
+/* Medical Status Text Colors */
+.text-medsight-normal {
+  color: var(--medsight-normal);
+  font-weight: var(--medsight-weight-medium);
+}
+
+.text-medsight-abnormal {
+  color: var(--medsight-abnormal);
+  font-weight: var(--medsight-weight-medium);
+}
+
+.text-medsight-critical {
+  color: var(--medsight-critical);
+  font-weight: var(--medsight-weight-semibold);
+  animation: text-pulse-critical 2s infinite;
+}
+
+.text-medsight-pending {
+  color: var(--medsight-pending);
+  font-weight: var(--medsight-weight-medium);
+}
+
+.text-medsight-reviewed {
+  color: var(--medsight-reviewed);
+  font-weight: var(--medsight-weight-medium);
+}
+
+/* AI Confidence Text Colors */
+.text-medsight-ai-high {
+  color: var(--medsight-ai-high);
+  font-weight: var(--medsight-weight-medium);
+}
+
+.text-medsight-ai-medium {
+  color: var(--medsight-ai-medium);
+  font-weight: var(--medsight-weight-medium);
+}
+
+.text-medsight-ai-low {
+  color: var(--medsight-ai-low);
+  font-weight: var(--medsight-weight-medium);
+}
+
+/* ============================================================================ */
+/* MEDICAL DATA FORMATTING - CLINICAL INFORMATION DISPLAY */
+/* ============================================================================ */
+
+/* Medical Values - Numeric Medical Data */
+.medical-value {
+  font-family: var(--medsight-font-mono);
+  font-size: var(--medsight-text-findings);
+  font-weight: var(--medsight-weight-semibold);
+  color: var(--medsight-primary-700);
+  background: rgba(14, 165, 233, 0.08);
+  padding: 2px 6px;
+  border-radius: 4px;
+  letter-spacing: 0.05em;
+}
+
+/* Medical Units - Unit Labels for Values */
+.medical-unit {
+  font-family: var(--medsight-font-primary);
+  font-size: var(--medsight-text-metadata);
+  color: var(--medsight-primary-500);
+  margin-left: 2px;
+  font-weight: var(--medsight-weight-normal);
+}
+
+/* Medical Timestamps - Date and Time Display */
+.medical-timestamp {
+  font-family: var(--medsight-font-mono);
+  font-size: var(--medsight-text-metadata);
+  color: var(--medsight-primary-600);
+  letter-spacing: 0.025em;
+  white-space: nowrap;
+}
+
+/* Medical IDs - Patient and Study IDs */
+.medical-id {
+  font-family: var(--medsight-font-mono);
+  font-size: var(--medsight-text-metadata);
+  color: var(--medsight-primary-500);
+  background: rgba(14, 165, 233, 0.05);
+  padding: 1px 4px;
+  border-radius: 3px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+/* Medical Coordinates - Image Coordinates */
+.medical-coordinates {
+  font-family: var(--medsight-font-mono);
+  font-size: var(--medsight-text-ai);
+  color: var(--medsight-primary-600);
+  letter-spacing: 0.05em;
+}
+
+/* Medical Percentages - AI Confidence and Other Percentages */
+.medical-percentage {
+  font-family: var(--medsight-font-mono);
+  font-size: var(--medsight-text-ai);
+  font-weight: var(--medsight-weight-semibold);
+  letter-spacing: 0.025em;
+}
+
+/* ============================================================================ */
+/* MEDICAL TABLE TYPOGRAPHY - DATA TABLE FORMATTING */
+/* ============================================================================ */
+
+/* Medical Table Headers */
+.medical-table-header {
+  font-family: var(--medsight-font-primary);
+  font-size: var(--medsight-text-metadata);
+  font-weight: var(--medsight-weight-semibold);
+  color: var(--medsight-primary-700);
+  text-transform: uppercase;
+  letter-spacing: var(--medsight-letter-spacing-wide);
+  line-height: var(--medsight-line-height-tight);
+  padding: var(--medsight-space-sm) var(--medsight-space-md);
+}
+
+/* Medical Table Cells */
+.medical-table-cell {
+  font-family: var(--medsight-font-primary);
+  font-size: var(--medsight-text-findings);
+  color: var(--medsight-primary-800);
+  line-height: var(--medsight-line-height);
+  padding: var(--medsight-space-sm) var(--medsight-space-md);
+  vertical-align: middle;
+}
+
+/* Medical Table Data - Numeric Values */
+.medical-table-data {
+  font-family: var(--medsight-font-mono);
+  font-size: var(--medsight-text-findings);
+  color: var(--medsight-primary-700);
+  text-align: right;
+  letter-spacing: 0.025em;
+}
+
+/* ============================================================================ */
+/* MEDICAL FORM TYPOGRAPHY - CLINICAL INPUT FORMATTING */
+/* ============================================================================ */
+
+/* Medical Form Labels */
+.medical-label {
+  font-family: var(--medsight-font-primary);
+  font-size: var(--medsight-text-metadata);
+  font-weight: var(--medsight-weight-medium);
+  color: var(--medsight-primary-700);
+  line-height: var(--medsight-line-height);
+  letter-spacing: var(--medsight-letter-spacing);
+  margin-bottom: var(--medsight-space-xs);
+  display: block;
+}
+
+/* Medical Required Field Indicators */
+.medical-required::after {
+  content: ' *';
+  color: var(--medsight-critical);
+  font-weight: var(--medsight-weight-bold);
+}
+
+/* Medical Field Help Text */
+.medical-help-text {
+  font-family: var(--medsight-font-primary);
+  font-size: var(--medsight-text-caption);
+  color: var(--medsight-primary-500);
+  line-height: var(--medsight-line-height-tight);
+  margin-top: var(--medsight-space-xs);
+  font-style: italic;
+}
+
+/* Medical Error Text */
+.medical-error-text {
+  font-family: var(--medsight-font-primary);
+  font-size: var(--medsight-text-caption);
+  color: var(--medsight-abnormal);
+  line-height: var(--medsight-line-height-tight);
+  margin-top: var(--medsight-space-xs);
+  font-weight: var(--medsight-weight-medium);
+}
+
+/* Medical Success Text */
+.medical-success-text {
+  font-family: var(--medsight-font-primary);
+  font-size: var(--medsight-text-caption);
+  color: var(--medsight-normal);
+  line-height: var(--medsight-line-height-tight);
+  margin-top: var(--medsight-space-xs);
+  font-weight: var(--medsight-weight-medium);
+}
+
+/* ============================================================================ */
+/* MEDICAL LINK AND INTERACTIVE TYPOGRAPHY */
+/* ============================================================================ */
+
+/* Medical Links */
+.medical-link {
+  color: var(--medsight-primary-600);
+  text-decoration: none;
+  font-weight: var(--medsight-weight-medium);
+  border-bottom: 1px solid transparent;
+  transition: var(--medsight-transition-fast);
+  cursor: pointer;
+}
+
+.medical-link:hover {
+  color: var(--medsight-primary-700);
+  border-bottom-color: var(--medsight-primary-400);
+}
+
+.medical-link:focus {
+  outline: 2px solid var(--medsight-primary-400);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* Medical Button Text */
+.medical-button-text {
+  font-family: var(--medsight-font-primary);
+  font-weight: var(--medsight-weight-semibold);
+  letter-spacing: var(--medsight-letter-spacing);
+  line-height: 1;
+}
+
+/* ============================================================================ */
+/* MEDICAL LIST TYPOGRAPHY - CLINICAL LISTS */
+/* ============================================================================ */
+
+/* Medical Unordered Lists */
+.medical-list {
+  list-style: none;
+  padding-left: 0;
+  margin: var(--medsight-space-md) 0;
+}
+
+.medical-list li {
+  position: relative;
+  padding-left: var(--medsight-space-lg);
+  margin-bottom: var(--medsight-space-sm);
+  line-height: var(--medsight-line-height);
+}
+
+.medical-list li::before {
+  content: '●';
+  color: var(--medsight-primary-500);
+  position: absolute;
+  left: var(--medsight-space-xs);
+  top: 0;
+  font-size: 0.8em;
+}
+
+/* Medical Ordered Lists */
+.medical-ordered-list {
+  list-style: none;
+  counter-reset: medical-counter;
+  padding-left: 0;
+  margin: var(--medsight-space-md) 0;
+}
+
+.medical-ordered-list li {
+  position: relative;
+  padding-left: var(--medsight-space-xl);
+  margin-bottom: var(--medsight-space-sm);
+  line-height: var(--medsight-line-height);
+  counter-increment: medical-counter;
+}
+
+.medical-ordered-list li::before {
+  content: counter(medical-counter);
+  position: absolute;
+  left: 0;
+  top: 0;
+  background: var(--medsight-primary-500);
+  color: white;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--medsight-text-caption);
+  font-weight: var(--medsight-weight-semibold);
+  font-family: var(--medsight-font-mono);
+}
+
+/* Medical Definition Lists */
+.medical-definition-list dt {
+  font-weight: var(--medsight-weight-semibold);
+  color: var(--medsight-primary-700);
+  margin-top: var(--medsight-space-md);
+  margin-bottom: var(--medsight-space-xs);
+}
+
+.medical-definition-list dd {
+  margin-left: var(--medsight-space-md);
+  margin-bottom: var(--medsight-space-sm);
+  color: var(--medsight-primary-800);
+  line-height: var(--medsight-line-height);
+}
+
+/* ============================================================================ */
+/* MEDICAL CODE AND TECHNICAL TYPOGRAPHY */
+/* ============================================================================ */
+
+/* Medical Code Blocks - DICOM Data, IDs, etc. */
+.medical-code {
+  font-family: var(--medsight-font-mono);
+  font-size: var(--medsight-text-metadata);
+  background: rgba(14, 165, 233, 0.05);
+  border: 1px solid rgba(14, 165, 233, 0.1);
+  border-radius: var(--medsight-radius-sm);
+  padding: var(--medsight-space-sm) var(--medsight-space-md);
+  color: var(--medsight-primary-700);
+  letter-spacing: 0.025em;
+  line-height: var(--medsight-line-height-tight);
+  overflow-x: auto;
+  white-space: pre;
+}
+
+/* Inline Medical Code */
+.medical-code-inline {
+  font-family: var(--medsight-font-mono);
+  font-size: 0.9em;
+  background: rgba(14, 165, 233, 0.08);
+  border-radius: 3px;
+  padding: 1px 4px;
+  color: var(--medsight-primary-700);
+  letter-spacing: 0.025em;
+}
+
+/* ============================================================================ */
+/* MEDICAL BLOCKQUOTE AND CITATIONS */
+/* ============================================================================ */
+
+/* Medical Blockquotes - Clinical Notes */
+.medical-blockquote {
+  border-left: 4px solid var(--medsight-primary-400);
+  padding-left: var(--medsight-space-md);
+  margin: var(--medsight-space-lg) 0;
+  font-style: italic;
+  color: var(--medsight-primary-700);
+  line-height: var(--medsight-line-height-loose);
+  background: rgba(14, 165, 233, 0.02);
+  padding: var(--medsight-space-md);
+  border-radius: var(--medsight-radius-sm);
+}
+
+/* Medical Citations */
+.medical-citation {
+  font-size: var(--medsight-text-caption);
+  color: var(--medsight-primary-500);
+  font-style: normal;
+  margin-top: var(--medsight-space-xs);
+}
+
+/* ============================================================================ */
+/* MEDICAL TYPOGRAPHY ANIMATIONS */
+/* ============================================================================ */
+
+@keyframes text-pulse-critical {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+@keyframes text-glow-ai {
+  0%, 100% {
+    text-shadow: 0 0 5px rgba(14, 165, 233, 0.3);
+  }
+  50% {
+    text-shadow: 0 0 10px rgba(14, 165, 233, 0.5);
+  }
+}
+
+/* ============================================================================ */
+/* RESPONSIVE MEDICAL TYPOGRAPHY */
+/* ============================================================================ */
+
+@media (max-width: 768px) {
+  .h1-medsight {
+    font-size: 1.875rem;    /* 30px */
+    margin-bottom: var(--medsight-space-md);
+  }
+  
+  .h2-medsight {
+    font-size: 1.5rem;      /* 24px */
+    margin-bottom: var(--medsight-space-sm);
+  }
+  
+  .h3-medsight {
+    font-size: 1.25rem;     /* 20px */
+  }
+  
+  .text-medsight-patient {
+    font-size: 1rem;        /* 16px */
+  }
+  
+  .medical-code {
+    font-size: var(--medsight-text-caption);
+    padding: var(--medsight-space-xs) var(--medsight-space-sm);
+  }
+}
+
+@media (min-width: 1024px) {
+  .h1-medsight {
+    font-size: 2.5rem;      /* 40px */
+  }
+  
+  .h2-medsight {
+    font-size: 2rem;        /* 32px */
+  }
+  
+  .medical-code {
+    font-size: var(--medsight-text-metadata);
+  }
+}
+
+/* ============================================================================ */
+/* MEDICAL ACCESSIBILITY TYPOGRAPHY */
+/* ============================================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  .text-medsight-critical {
+    animation: none;
+  }
+  
+  .medical-link {
+    transition: none;
+  }
+}
+
+@media (prefers-contrast: high) {
+  body {
+    color: #000;
+  }
+  
+  .text-medsight-primary,
+  .text-medsight-secondary,
+  .text-medsight-accent {
+    color: #000;
+  }
+  
+  .medical-value,
+  .medical-id,
+  .medical-code {
+    background: #fff;
+    border: 2px solid #000;
+    color: #000;
+  }
+  
+  .medical-link {
+    color: #0000ff;
+    border-bottom: 2px solid #0000ff;
+  }
+}
+
+/* ============================================================================ */
+/* DARK MODE MEDICAL TYPOGRAPHY */
+/* ============================================================================ */
+
+@media (prefers-color-scheme: dark) {
+  body {
+    color: rgba(255, 255, 255, 0.9);
+  }
+  
+  .h1-medsight,
+  .h2-medsight,
+  .h3-medsight,
+  .h4-medsight,
+  .h5-medsight,
+  .h6-medsight {
+    color: white;
+  }
+  
+  .text-medsight-findings {
+    color: rgba(255, 255, 255, 0.8);
+  }
+  
+  .text-medsight-metadata {
+    color: rgba(255, 255, 255, 0.7);
+  }
+  
+  .medical-value,
+  .medical-id {
+    background: rgba(14, 165, 233, 0.2);
+    color: rgba(255, 255, 255, 0.9);
+  }
+  
+  .medical-code {
+    background: rgba(14, 165, 233, 0.1);
+    border-color: rgba(14, 165, 233, 0.2);
+    color: rgba(255, 255, 255, 0.8);
+  }
+  
+  .medical-blockquote {
+    background: rgba(14, 165, 233, 0.05);
+    color: rgba(255, 255, 255, 0.8);
+  }
+  
+  .medical-label {
+    color: rgba(255, 255, 255, 0.9);
+  }
+  
+  .medical-help-text {
+    color: rgba(255, 255, 255, 0.6);
+  }
+}
+
+/* ============================================================================ */
+/* PRINT MODE MEDICAL TYPOGRAPHY */
+/* ============================================================================ */
+
+@media print {
+  body {
+    font-size: 12pt;
+    line-height: 1.5;
+    color: #000;
+  }
+  
+  .h1-medsight,
+  .h2-medsight,
+  .h3-medsight,
+  .h4-medsight,
+  .h5-medsight,
+  .h6-medsight {
+    color: #000;
+    page-break-after: avoid;
+  }
+  
+  .text-medsight-primary,
+  .text-medsight-secondary,
+  .text-medsight-accent,
+  .text-medsight-normal,
+  .text-medsight-abnormal,
+  .text-medsight-critical,
+  .text-medsight-pending,
+  .text-medsight-reviewed {
+    color: #000 !important;
+  }
+  
+  .medical-value,
+  .medical-id,
+  .medical-code {
+    background: #f5f5f5 !important;
+    color: #000 !important;
+    border: 1px solid #ccc !important;
+  }
+  
+  .medical-blockquote {
+    background: #f9f9f9 !important;
+    color: #000 !important;
+    border-left-color: #666 !important;
+  }
+  
+  .medical-link {
+    color: #000 !important;
+    text-decoration: underline !important;
+    border-bottom: none !important;
+  }
+  
+  /* Print-specific medical typography */
+  .medical-page-header {
+    font-size: 14pt;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 20pt;
+    border-bottom: 2pt solid #000;
+    padding-bottom: 10pt;
+  }
+  
+  .medical-page-footer {
+    font-size: 10pt;
+    text-align: center;
+    margin-top: 20pt;
+    border-top: 1pt solid #666;
+    padding-top: 10pt;
+  }
+} 

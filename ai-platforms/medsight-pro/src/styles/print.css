@@ -1,0 +1,1271 @@
+/* ============================================================================ */
+/* MEDSIGHT PRO PRINT SYSTEM - MEDICAL REPORT PRINTING */
+/* ============================================================================ */
+
+/* Medical-Grade Print Styles for Clinical Documentation */
+
+/* ============================================================================ */
+/* PRINT RESET & BASE STYLES */
+/* ============================================================================ */
+
+@media print {
+  /* Print Reset */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+  
+  /* Base Print Styles */
+  html {
+    font-size: 12pt;
+    line-height: 1.4;
+    color: #000000;
+    background: #ffffff;
+  }
+  
+  body {
+    margin: 0;
+    padding: 0;
+    font-family: "Times New Roman", serif;
+    color: #000000;
+    background: #ffffff;
+    -webkit-print-color-adjust: exact;
+    color-adjust: exact;
+  }
+  
+  /* Page Setup */
+  @page {
+    size: letter;
+    margin: 0.75in;
+    orphans: 3;
+    widows: 3;
+  }
+  
+  @page :first {
+    margin-top: 1in;
+  }
+  
+  @page :left {
+    margin-left: 1in;
+    margin-right: 0.5in;
+  }
+  
+  @page :right {
+    margin-left: 0.5in;
+    margin-right: 1in;
+  }
+  
+  /* Medical Report Page Header */
+  @page {
+    @top-left {
+      content: "MedSight Pro Medical Report";
+      font-size: 8pt;
+      color: #666666;
+    }
+    
+    @top-right {
+      content: "Page " counter(page) " of " counter(pages);
+      font-size: 8pt;
+      color: #666666;
+    }
+    
+    @bottom-center {
+      content: "Confidential Medical Information - HIPAA Protected";
+      font-size: 8pt;
+      color: #666666;
+      font-weight: bold;
+    }
+  }
+}
+
+/* ============================================================================ */
+/* MEDICAL DOCUMENT STRUCTURE */
+/* ============================================================================ */
+
+@media print {
+  /* Medical Document Header */
+  .medical-document-header {
+    border-bottom: 2px solid #000000;
+    padding-bottom: 12pt;
+    margin-bottom: 18pt;
+    page-break-after: avoid;
+  }
+  
+  .medical-document-title {
+    font-size: 18pt;
+    font-weight: bold;
+    color: #000000;
+    margin: 0 0 6pt 0;
+    text-align: center;
+    letter-spacing: 0.5pt;
+  }
+  
+  .medical-document-subtitle {
+    font-size: 14pt;
+    color: #333333;
+    margin: 0 0 12pt 0;
+    text-align: center;
+    font-style: italic;
+  }
+  
+  .medical-document-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-top: 12pt;
+    font-size: 10pt;
+  }
+  
+  .medical-document-logo {
+    max-width: 120pt;
+    max-height: 60pt;
+    object-fit: contain;
+  }
+  
+  /* Medical Document Sections */
+  .medical-section {
+    margin-bottom: 18pt;
+    page-break-inside: avoid;
+  }
+  
+  .medical-section-title {
+    font-size: 14pt;
+    font-weight: bold;
+    color: #000000;
+    margin: 0 0 8pt 0;
+    padding-bottom: 2pt;
+    border-bottom: 1px solid #333333;
+    page-break-after: avoid;
+  }
+  
+  .medical-section-content {
+    font-size: 11pt;
+    line-height: 1.4;
+    color: #000000;
+  }
+  
+  /* Medical Subsections */
+  .medical-subsection {
+    margin: 12pt 0;
+    padding-left: 12pt;
+  }
+  
+  .medical-subsection-title {
+    font-size: 12pt;
+    font-weight: bold;
+    color: #000000;
+    margin: 0 0 6pt 0;
+    page-break-after: avoid;
+  }
+  
+  .medical-subsection-content {
+    font-size: 10pt;
+    line-height: 1.4;
+    color: #000000;
+  }
+}
+
+/* ============================================================================ */
+/* PATIENT INFORMATION PRINTING */
+/* ============================================================================ */
+
+@media print {
+  /* Patient Information Block */
+  .patient-info-block {
+    border: 2px solid #000000;
+    padding: 12pt;
+    margin: 12pt 0;
+    background: #f8f8f8;
+    page-break-inside: avoid;
+  }
+  
+  .patient-info-title {
+    font-size: 12pt;
+    font-weight: bold;
+    color: #000000;
+    margin: 0 0 8pt 0;
+    text-align: center;
+    border-bottom: 1px solid #333333;
+    padding-bottom: 4pt;
+  }
+  
+  .patient-info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12pt;
+    margin-top: 8pt;
+  }
+  
+  .patient-info-item {
+    display: flex;
+    justify-content: space-between;
+    font-size: 10pt;
+    line-height: 1.3;
+    border-bottom: 1px dotted #cccccc;
+    padding-bottom: 2pt;
+  }
+  
+  .patient-info-label {
+    font-weight: bold;
+    color: #000000;
+  }
+  
+  .patient-info-value {
+    color: #000000;
+    text-align: right;
+  }
+  
+  /* Critical Patient Alerts */
+  .patient-alert-critical {
+    background: #ffeeee !important;
+    border: 2px solid #cc0000 !important;
+    padding: 8pt !important;
+    margin: 8pt 0 !important;
+    font-weight: bold !important;
+    color: #cc0000 !important;
+    text-align: center !important;
+    page-break-inside: avoid !important;
+  }
+  
+  .patient-alert-warning {
+    background: #fff8e1 !important;
+    border: 2px solid #ff9800 !important;
+    padding: 8pt !important;
+    margin: 8pt 0 !important;
+    font-weight: bold !important;
+    color: #e65100 !important;
+    text-align: center !important;
+    page-break-inside: avoid !important;
+  }
+}
+
+/* ============================================================================ */
+/* MEDICAL DATA TABLES */
+/* ============================================================================ */
+
+@media print {
+  /* Medical Table Container */
+  .medical-table-container {
+    margin: 12pt 0;
+    page-break-inside: avoid;
+    width: 100%;
+  }
+  
+  .medical-table {
+    width: 100%;
+    border-collapse: collapse;
+    border: 2px solid #000000;
+    margin: 6pt 0;
+    font-size: 9pt;
+  }
+  
+  .medical-table caption {
+    font-size: 11pt;
+    font-weight: bold;
+    color: #000000;
+    margin-bottom: 6pt;
+    text-align: left;
+    caption-side: top;
+  }
+  
+  /* Medical Table Headers */
+  .medical-table thead {
+    background: #e0e0e0 !important;
+    -webkit-print-color-adjust: exact;
+    color-adjust: exact;
+  }
+  
+  .medical-table th {
+    border: 1px solid #000000;
+    padding: 6pt 8pt;
+    font-weight: bold;
+    color: #000000;
+    text-align: left;
+    vertical-align: top;
+    background: #e0e0e0 !important;
+    -webkit-print-color-adjust: exact;
+    color-adjust: exact;
+  }
+  
+  /* Medical Table Data */
+  .medical-table td {
+    border: 1px solid #333333;
+    padding: 4pt 8pt;
+    color: #000000;
+    vertical-align: top;
+    line-height: 1.3;
+  }
+  
+  .medical-table tbody tr:nth-child(even) {
+    background: #f9f9f9 !important;
+    -webkit-print-color-adjust: exact;
+    color-adjust: exact;
+  }
+  
+  /* Medical Data Types */
+  .medical-data-normal {
+    color: #006400 !important;
+    font-weight: bold !important;
+  }
+  
+  .medical-data-abnormal {
+    color: #cc0000 !important;
+    font-weight: bold !important;
+    background: #ffeeee !important;
+    -webkit-print-color-adjust: exact;
+    color-adjust: exact;
+  }
+  
+  .medical-data-critical {
+    color: #990000 !important;
+    font-weight: bold !important;
+    background: #ffe0e0 !important;
+    border: 1px solid #cc0000 !important;
+    -webkit-print-color-adjust: exact;
+    color-adjust: exact;
+  }
+  
+  .medical-data-pending {
+    color: #ff6600 !important;
+    font-weight: bold !important;
+    font-style: italic !important;
+  }
+  
+  /* Medical Units */
+  .medical-unit {
+    font-size: 8pt;
+    color: #666666;
+    font-style: italic;
+  }
+  
+  /* Medical Reference Ranges */
+  .medical-reference {
+    font-size: 8pt;
+    color: #666666;
+    border-left: 2px solid #cccccc;
+    padding-left: 4pt;
+    margin-left: 4pt;
+  }
+}
+
+/* ============================================================================ */
+/* MEDICAL IMAGING PRINTING */
+/* ============================================================================ */
+
+@media print {
+  /* Medical Image Container */
+  .medical-image-container {
+    page-break-inside: avoid;
+    margin: 12pt 0;
+    text-align: center;
+  }
+  
+  .medical-image {
+    max-width: 100%;
+    max-height: 4in;
+    border: 1px solid #333333;
+    margin: 6pt 0;
+    background: #ffffff;
+  }
+  
+  .medical-image-caption {
+    font-size: 9pt;
+    color: #000000;
+    font-style: italic;
+    margin-top: 4pt;
+    text-align: center;
+  }
+  
+  .medical-image-annotations {
+    font-size: 8pt;
+    color: #333333;
+    margin-top: 6pt;
+    text-align: left;
+    border-top: 1px solid #cccccc;
+    padding-top: 4pt;
+  }
+  
+  /* DICOM Print Information */
+  .dicom-info {
+    font-size: 8pt;
+    color: #666666;
+    margin: 4pt 0;
+    font-family: monospace;
+  }
+  
+  .dicom-info-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8pt;
+    margin: 6pt 0;
+    font-size: 7pt;
+  }
+  
+  .dicom-info-item {
+    border: 1px solid #cccccc;
+    padding: 2pt 4pt;
+    background: #f8f8f8;
+  }
+  
+  /* Medical Image Grid */
+  .medical-image-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12pt;
+    margin: 12pt 0;
+    page-break-inside: avoid;
+  }
+  
+  .medical-image-grid-item {
+    text-align: center;
+  }
+  
+  .medical-image-grid .medical-image {
+    max-height: 2.5in;
+  }
+}
+
+/* ============================================================================ */
+/* AI ANALYSIS PRINTING */
+/* ============================================================================ */
+
+@media print {
+  /* AI Analysis Block */
+  .ai-analysis-block {
+    border: 2px solid #0066cc;
+    padding: 12pt;
+    margin: 12pt 0;
+    background: #f0f8ff !important;
+    page-break-inside: avoid;
+    -webkit-print-color-adjust: exact;
+    color-adjust: exact;
+  }
+  
+  .ai-analysis-title {
+    font-size: 12pt;
+    font-weight: bold;
+    color: #0066cc !important;
+    margin: 0 0 8pt 0;
+    text-align: center;
+    -webkit-print-color-adjust: exact;
+    color-adjust: exact;
+  }
+  
+  .ai-analysis-content {
+    font-size: 10pt;
+    line-height: 1.4;
+    color: #000000;
+  }
+  
+  /* AI Confidence Indicators */
+  .ai-confidence {
+    display: inline-block;
+    padding: 2pt 6pt;
+    border-radius: 3pt;
+    font-size: 8pt;
+    font-weight: bold;
+    margin-left: 4pt;
+  }
+  
+  .ai-confidence-high {
+    background: #e8f5e8 !important;
+    color: #006400 !important;
+    border: 1px solid #006400 !important;
+    -webkit-print-color-adjust: exact;
+    color-adjust: exact;
+  }
+  
+  .ai-confidence-medium {
+    background: #fff8e1 !important;
+    color: #ff6600 !important;
+    border: 1px solid #ff6600 !important;
+    -webkit-print-color-adjust: exact;
+    color-adjust: exact;
+  }
+  
+  .ai-confidence-low {
+    background: #ffeeee !important;
+    color: #cc0000 !important;
+    border: 1px solid #cc0000 !important;
+    -webkit-print-color-adjust: exact;
+    color-adjust: exact;
+  }
+  
+  /* AI Findings List */
+  .ai-findings-list {
+    margin: 8pt 0;
+    padding-left: 0;
+    list-style: none;
+  }
+  
+  .ai-finding-item {
+    margin: 4pt 0;
+    padding: 4pt 8pt;
+    border-left: 3px solid #0066cc;
+    background: #fafafa;
+    font-size: 9pt;
+  }
+  
+  .ai-finding-location {
+    font-weight: bold;
+    color: #000000;
+  }
+  
+  .ai-finding-description {
+    color: #333333;
+    margin-top: 2pt;
+  }
+}
+
+/* ============================================================================ */
+/* MEDICAL CHARTS & GRAPHS */
+/* ============================================================================ */
+
+@media print {
+  /* Chart Container */
+  .medical-chart-container {
+    page-break-inside: avoid;
+    margin: 12pt 0;
+    text-align: center;
+  }
+  
+  .medical-chart {
+    max-width: 100%;
+    max-height: 3in;
+    border: 1px solid #333333;
+    background: #ffffff !important;
+    -webkit-print-color-adjust: exact;
+    color-adjust: exact;
+  }
+  
+  .medical-chart-title {
+    font-size: 11pt;
+    font-weight: bold;
+    color: #000000;
+    margin: 6pt 0;
+    text-align: center;
+  }
+  
+  .medical-chart-legend {
+    font-size: 8pt;
+    color: #333333;
+    margin-top: 6pt;
+    text-align: left;
+  }
+  
+  /* Vital Signs Chart */
+  .vital-signs-chart {
+    width: 100%;
+    margin: 12pt 0;
+    page-break-inside: avoid;
+  }
+  
+  .vital-signs-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6pt;
+    border: 1px solid #333333;
+  }
+  
+  .vital-sign-cell {
+    border: 1px solid #cccccc;
+    padding: 4pt;
+    text-align: center;
+    font-size: 9pt;
+  }
+  
+  .vital-sign-value {
+    font-weight: bold;
+    font-size: 11pt;
+    color: #000000;
+  }
+  
+  .vital-sign-unit {
+    font-size: 8pt;
+    color: #666666;
+  }
+  
+  .vital-sign-trend {
+    font-size: 7pt;
+    margin-top: 2pt;
+  }
+  
+  .trend-up {
+    color: #cc0000 !important;
+  }
+  
+  .trend-down {
+    color: #006400 !important;
+  }
+  
+  .trend-stable {
+    color: #333333 !important;
+  }
+}
+
+/* ============================================================================ */
+/* MEDICAL SIGNATURES & AUTHORIZATION */
+/* ============================================================================ */
+
+@media print {
+  /* Signature Block */
+  .signature-block {
+    margin-top: 24pt;
+    page-break-inside: avoid;
+    border-top: 2px solid #333333;
+    padding-top: 12pt;
+  }
+  
+  .signature-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24pt;
+    margin-top: 12pt;
+  }
+  
+  .signature-line {
+    border-bottom: 1px solid #000000;
+    height: 18pt;
+    margin-bottom: 6pt;
+    position: relative;
+  }
+  
+  .signature-label {
+    font-size: 9pt;
+    color: #333333;
+    margin-top: 3pt;
+  }
+  
+  .signature-date {
+    font-size: 9pt;
+    color: #333333;
+    margin-top: 6pt;
+  }
+  
+  .signature-title {
+    font-size: 8pt;
+    color: #666666;
+    font-style: italic;
+  }
+  
+  /* Digital Signature Info */
+  .digital-signature-info {
+    font-size: 8pt;
+    color: #666666;
+    border: 1px solid #cccccc;
+    padding: 6pt;
+    margin-top: 12pt;
+    background: #f8f8f8;
+  }
+  
+  /* Medical Authorization */
+  .medical-authorization {
+    margin-top: 18pt;
+    padding: 12pt;
+    border: 2px solid #333333;
+    background: #f0f0f0 !important;
+    page-break-inside: avoid;
+    -webkit-print-color-adjust: exact;
+    color-adjust: exact;
+  }
+  
+  .authorization-title {
+    font-size: 11pt;
+    font-weight: bold;
+    color: #000000;
+    text-align: center;
+    margin-bottom: 8pt;
+  }
+  
+  .authorization-text {
+    font-size: 9pt;
+    line-height: 1.4;
+    color: #000000;
+  }
+}
+
+/* ============================================================================ */
+/* MEDICAL COMPLIANCE & LEGAL */
+/* ============================================================================ */
+
+@media print {
+  /* HIPAA Notice */
+  .hipaa-notice {
+    margin-top: 18pt;
+    padding: 8pt;
+    border: 1px solid #666666;
+    background: #f8f8f8 !important;
+    font-size: 8pt;
+    color: #333333;
+    text-align: center;
+    page-break-inside: avoid;
+    -webkit-print-color-adjust: exact;
+    color-adjust: exact;
+  }
+  
+  .hipaa-notice-title {
+    font-weight: bold;
+    margin-bottom: 4pt;
+    color: #000000;
+  }
+  
+  /* Medical Disclaimer */
+  .medical-disclaimer {
+    margin-top: 12pt;
+    padding: 6pt;
+    border: 1px solid #cccccc;
+    background: #fafafa !important;
+    font-size: 7pt;
+    color: #666666;
+    line-height: 1.3;
+    page-break-inside: avoid;
+    -webkit-print-color-adjust: exact;
+    color-adjust: exact;
+  }
+  
+  /* Document Verification */
+  .document-verification {
+    margin-top: 12pt;
+    font-size: 8pt;
+    color: #666666;
+    border-top: 1px solid #cccccc;
+    padding-top: 6pt;
+  }
+  
+  .verification-hash {
+    font-family: monospace;
+    font-size: 7pt;
+    color: #999999;
+    word-break: break-all;
+  }
+  
+  /* Print Timestamp */
+  .print-timestamp {
+    position: fixed;
+    bottom: 0.5in;
+    right: 0.75in;
+    font-size: 7pt;
+    color: #999999;
+  }
+  
+  .print-timestamp::before {
+    content: "Printed: " attr(data-timestamp);
+  }
+}
+
+/* ============================================================================ */
+/* LABORATORY RESULTS PRINTING */
+/* ============================================================================ */
+
+@media print {
+  /* Lab Results Section */
+  .lab-results-section {
+    margin: 12pt 0;
+    page-break-inside: avoid;
+  }
+  
+  .lab-results-header {
+    background: #e8f4fd !important;
+    border: 2px solid #0066cc;
+    padding: 8pt;
+    margin-bottom: 8pt;
+    text-align: center;
+    -webkit-print-color-adjust: exact;
+    color-adjust: exact;
+  }
+  
+  .lab-results-title {
+    font-size: 12pt;
+    font-weight: bold;
+    color: #0066cc !important;
+    margin: 0;
+    -webkit-print-color-adjust: exact;
+    color-adjust: exact;
+  }
+  
+  .lab-results-date {
+    font-size: 9pt;
+    color: #333333;
+    margin-top: 3pt;
+  }
+  
+  /* Lab Test Table */
+  .lab-test-table {
+    width: 100%;
+    border-collapse: collapse;
+    border: 2px solid #000000;
+    font-size: 9pt;
+    margin: 6pt 0;
+  }
+  
+  .lab-test-table th {
+    background: #f0f0f0 !important;
+    border: 1px solid #000000;
+    padding: 6pt;
+    font-weight: bold;
+    color: #000000;
+    text-align: center;
+    -webkit-print-color-adjust: exact;
+    color-adjust: exact;
+  }
+  
+  .lab-test-table td {
+    border: 1px solid #333333;
+    padding: 4pt 6pt;
+    color: #000000;
+    text-align: center;
+  }
+  
+  .lab-test-name {
+    text-align: left !important;
+    font-weight: bold;
+  }
+  
+  .lab-test-value {
+    font-weight: bold;
+    text-align: right !important;
+  }
+  
+  .lab-test-reference {
+    font-size: 8pt;
+    color: #666666;
+    text-align: center !important;
+  }
+  
+  .lab-test-flag {
+    font-weight: bold;
+    text-align: center !important;
+  }
+  
+  /* Lab Flag Colors */
+  .lab-flag-high {
+    color: #cc0000 !important;
+    background: #ffeeee !important;
+    -webkit-print-color-adjust: exact;
+    color-adjust: exact;
+  }
+  
+  .lab-flag-low {
+    color: #0066cc !important;
+    background: #e8f4fd !important;
+    -webkit-print-color-adjust: exact;
+    color-adjust: exact;
+  }
+  
+  .lab-flag-critical {
+    color: #990000 !important;
+    background: #ffe0e0 !important;
+    font-weight: bold !important;
+    border: 1px solid #cc0000 !important;
+    -webkit-print-color-adjust: exact;
+    color-adjust: exact;
+  }
+}
+
+/* ============================================================================ */
+/* RADIOLOGY REPORTS PRINTING */
+/* ============================================================================ */
+
+@media print {
+  /* Radiology Report Section */
+  .radiology-report-section {
+    margin: 12pt 0;
+    page-break-inside: avoid;
+  }
+  
+  .radiology-header {
+    background: #f0f8e8 !important;
+    border: 2px solid #006400;
+    padding: 8pt;
+    margin-bottom: 8pt;
+    text-align: center;
+    -webkit-print-color-adjust: exact;
+    color-adjust: exact;
+  }
+  
+  .radiology-title {
+    font-size: 12pt;
+    font-weight: bold;
+    color: #006400 !important;
+    margin: 0;
+    -webkit-print-color-adjust: exact;
+    color-adjust: exact;
+  }
+  
+  .radiology-modality {
+    font-size: 10pt;
+    color: #333333;
+    margin-top: 3pt;
+    font-style: italic;
+  }
+  
+  /* Radiology Findings */
+  .radiology-findings {
+    margin: 12pt 0;
+  }
+  
+  .findings-title {
+    font-size: 11pt;
+    font-weight: bold;
+    color: #000000;
+    margin: 8pt 0 4pt 0;
+    border-bottom: 1px solid #333333;
+    padding-bottom: 2pt;
+  }
+  
+  .findings-content {
+    font-size: 10pt;
+    line-height: 1.5;
+    color: #000000;
+    margin-left: 12pt;
+  }
+  
+  /* Radiology Impression */
+  .radiology-impression {
+    margin-top: 12pt;
+    padding: 8pt;
+    border: 2px solid #333333;
+    background: #f8f8f8 !important;
+    -webkit-print-color-adjust: exact;
+    color-adjust: exact;
+  }
+  
+  .impression-title {
+    font-size: 11pt;
+    font-weight: bold;
+    color: #000000;
+    margin: 0 0 6pt 0;
+    text-align: center;
+  }
+  
+  .impression-content {
+    font-size: 10pt;
+    line-height: 1.5;
+    color: #000000;
+  }
+  
+  /* Radiologist Signature */
+  .radiologist-signature {
+    margin-top: 18pt;
+    border-top: 1px solid #333333;
+    padding-top: 8pt;
+  }
+  
+  .radiologist-name {
+    font-size: 10pt;
+    font-weight: bold;
+    color: #000000;
+  }
+  
+  .radiologist-credentials {
+    font-size: 9pt;
+    color: #333333;
+    font-style: italic;
+  }
+  
+  .read-date {
+    font-size: 9pt;
+    color: #666666;
+    margin-top: 4pt;
+  }
+}
+
+/* ============================================================================ */
+/* PRINT OPTIMIZATION */
+/* ============================================================================ */
+
+@media print {
+  /* Hide Non-Printable Elements */
+  .no-print,
+  .btn-medsight,
+  .nav-medsight,
+  .modal-medsight,
+  .tooltip,
+  .dropdown-menu,
+  .sidebar,
+  nav,
+  .navigation,
+  .header-controls,
+  .footer-controls,
+  .print-button,
+  .download-button,
+  .share-button,
+  .edit-button,
+  .delete-button,
+  .action-buttons,
+  .medsight-glass:not(.print-friendly) {
+    display: none !important;
+  }
+  
+  /* Show Print-Only Elements */
+  .print-only {
+    display: block !important;
+  }
+  
+  /* Print-Friendly Glass Elements */
+  .medsight-glass.print-friendly {
+    background: #ffffff !important;
+    border: 1px solid #333333 !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+    -webkit-print-color-adjust: exact;
+    color-adjust: exact;
+  }
+  
+  /* Force Page Breaks */
+  .page-break-before {
+    page-break-before: always !important;
+  }
+  
+  .page-break-after {
+    page-break-after: always !important;
+  }
+  
+  .page-break-inside-avoid {
+    page-break-inside: avoid !important;
+  }
+  
+  /* Print Layout Adjustments */
+  .print-full-width {
+    width: 100% !important;
+    max-width: none !important;
+  }
+  
+  .print-half-width {
+    width: 48% !important;
+    float: left !important;
+    margin-right: 4% !important;
+  }
+  
+  .print-clear {
+    clear: both !important;
+  }
+  
+  /* Medical Print Margins */
+  .medical-content {
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  
+  .medical-container {
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  
+  /* Link Handling */
+  a {
+    color: #000000 !important;
+    text-decoration: underline !important;
+  }
+  
+  a[href^="http"]:after {
+    content: " (" attr(href) ")";
+    font-size: 8pt;
+    color: #666666;
+  }
+  
+  /* Image Optimization */
+  img {
+    max-width: 100% !important;
+    height: auto !important;
+    -webkit-print-color-adjust: exact;
+    color-adjust: exact;
+  }
+  
+  /* Font Optimization */
+  * {
+    font-smooth: never !important;
+    -webkit-font-smoothing: none !important;
+    text-rendering: optimizeSpeed !important;
+  }
+  
+  /* Color Optimization */
+  .medical-normal,
+  .status-normal {
+    color: #006400 !important;
+  }
+  
+  .medical-abnormal,
+  .status-abnormal {
+    color: #cc0000 !important;
+  }
+  
+  .medical-critical,
+  .status-critical {
+    color: #990000 !important;
+    font-weight: bold !important;
+  }
+  
+  .medical-pending,
+  .status-pending {
+    color: #ff6600 !important;
+  }
+}
+
+/* ============================================================================ */
+/* PRINT MEDIA QUERIES */
+/* ============================================================================ */
+
+/* High DPI Printing */
+@media print and (min-resolution: 300dpi) {
+  html {
+    font-size: 14pt;
+  }
+  
+  .medical-table {
+    font-size: 10pt;
+  }
+  
+  .medical-image {
+    max-height: 5in;
+  }
+}
+
+/* Color Printing */
+@media print and (color) {
+  .medical-data-abnormal {
+    background: #ffcccc !important;
+  }
+  
+  .medical-data-critical {
+    background: #ffaaaa !important;
+  }
+  
+  .ai-analysis-block {
+    background: #e6f3ff !important;
+  }
+  
+  .lab-results-header {
+    background: #cceeff !important;
+  }
+  
+  .radiology-header {
+    background: #ccffcc !important;
+  }
+}
+
+/* Monochrome Printing */
+@media print and (monochrome) {
+  .medical-data-abnormal,
+  .medical-data-critical {
+    background: #e0e0e0 !important;
+    border: 2px solid #000000 !important;
+  }
+  
+  .ai-analysis-block,
+  .lab-results-header,
+  .radiology-header {
+    background: #f0f0f0 !important;
+    border: 2px solid #000000 !important;
+  }
+  
+  .medical-normal,
+  .medical-abnormal,
+  .medical-critical,
+  .medical-pending {
+    color: #000000 !important;
+  }
+}
+
+/* ============================================================================ */
+/* PRINT ACCESSIBILITY */
+/* ============================================================================ */
+
+@media print {
+  /* High Contrast Printing */
+  @media (prefers-contrast: high) {
+    * {
+      color: #000000 !important;
+      background: #ffffff !important;
+    }
+    
+    .medical-table,
+    .medical-section,
+    .patient-info-block {
+      border: 2px solid #000000 !important;
+    }
+    
+    .medical-data-abnormal,
+    .medical-data-critical {
+      background: #ffffff !important;
+      border: 3px solid #000000 !important;
+      font-weight: bold !important;
+    }
+  }
+  
+  /* Large Print Support */
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      font-size: 14pt;
+      line-height: 1.6;
+    }
+    
+    .medical-table {
+      font-size: 11pt;
+    }
+    
+    .medical-section-title {
+      font-size: 16pt;
+    }
+    
+    .medical-document-title {
+      font-size: 20pt;
+    }
+  }
+}
+
+/* ============================================================================ */
+/* PRINT DOCUMENTATION */
+/* ============================================================================ */
+
+/*
+MEDICAL PRINT SYSTEM FEATURES:
+
+1. Medical Document Structure
+   - Document headers with medical branding
+   - Patient information blocks
+   - Medical sections and subsections
+   - Signature and authorization blocks
+
+2. Medical Data Printing
+   - Laboratory results tables
+   - Radiology reports formatting
+   - Medical imaging with annotations
+   - AI analysis results
+
+3. Clinical Compliance
+   - HIPAA privacy notices
+   - Medical disclaimers
+   - Document verification
+   - Digital signature information
+
+4. Print Optimization
+   - Page break management
+   - Color/monochrome support
+   - High DPI printing
+   - Font and image optimization
+
+5. Medical Safety
+   - Critical values highlighting
+   - Patient alert printing
+   - Medical status indicators
+   - Emergency information formatting
+
+6. Accessibility
+   - High contrast printing
+   - Large print support
+   - Screen reader compatibility
+   - Color-blind friendly formatting
+
+USAGE GUIDELINES:
+- Test print output on medical-grade printers
+- Verify HIPAA compliance in printed materials
+- Ensure critical medical information is highlighted
+- Validate print quality for medical documentation
+- Test color and monochrome printing modes
+- Verify patient privacy protection in printed reports
+- Ensure medical professional readability
+- Validate legal compliance for medical records
+*/ 

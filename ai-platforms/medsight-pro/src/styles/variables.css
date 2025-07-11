@@ -1,0 +1,441 @@
+/* MedSight Pro CSS Variables - Medical Design Tokens */
+/* Centralized design tokens for medical-grade platform interfaces */
+
+:root {
+  /* ============================================================================ */
+  /* MEDSIGHT PRO MEDICAL COLORS - EXACT UIUX.md SPECIFICATION */
+  /* ============================================================================ */
+  
+  /* Primary Medical Blue Scale - Trust, Healthcare, Precision */
+  --medsight-primary-50: #f0f9ff;
+  --medsight-primary-100: #e0f2fe;
+  --medsight-primary-200: #bae6fd;
+  --medsight-primary-300: #7dd3fc;
+  --medsight-primary-400: #38bdf8;
+  --medsight-primary-500: #0ea5e9;   /* Primary medical blue */
+  --medsight-primary-600: #0284c7;
+  --medsight-primary-700: #0369a1;
+  --medsight-primary-800: #075985;
+  --medsight-primary-900: #0c4a6e;
+
+  /* Secondary Medical Green Scale - Health, Safety, Positive Outcomes */
+  --medsight-secondary-50: #ecfdf5;
+  --medsight-secondary-100: #d1fae5;
+  --medsight-secondary-200: #a7f3d0;
+  --medsight-secondary-300: #6ee7b7;
+  --medsight-secondary-400: #34d399;
+  --medsight-secondary-500: #10b981;   /* Medical green */
+  --medsight-secondary-600: #059669;
+  --medsight-secondary-700: #047857;
+  --medsight-secondary-800: #065f46;
+  --medsight-secondary-900: #064e3b;
+
+  /* Accent Medical Gold Scale - Premium, Accuracy, Clinical Excellence */
+  --medsight-accent-50: #fffbeb;
+  --medsight-accent-100: #fef3c7;
+  --medsight-accent-200: #fde68a;
+  --medsight-accent-300: #fcd34d;
+  --medsight-accent-400: #fbbf24;
+  --medsight-accent-500: #f59e0b;     /* Medical gold */
+  --medsight-accent-600: #d97706;
+  --medsight-accent-700: #b45309;
+  --medsight-accent-800: #92400e;
+  --medsight-accent-900: #78350f;
+
+  /* ============================================================================ */
+  /* MEDICAL STATUS COLORS - CRITICAL CLINICAL INDICATORS */
+  /* ============================================================================ */
+  
+  /* Normal Medical Findings */
+  --medsight-normal: #10b981;
+  --medsight-normal-light: #a7f3d0;
+  --medsight-normal-dark: #047857;
+
+  /* Abnormal Medical Findings */
+  --medsight-abnormal: #ef4444;
+  --medsight-abnormal-light: #fca5a5;
+  --medsight-abnormal-dark: #dc2626;
+
+  /* Critical Medical Findings */
+  --medsight-critical: #dc2626;
+  --medsight-critical-light: #f87171;
+  --medsight-critical-dark: #b91c1c;
+
+  /* Pending Medical Review */
+  --medsight-pending: #f59e0b;
+  --medsight-pending-light: #fcd34d;
+  --medsight-pending-dark: #d97706;
+
+  /* Reviewed Medical Status */
+  --medsight-reviewed: #3b82f6;
+  --medsight-reviewed-light: #93c5fd;
+  --medsight-reviewed-dark: #2563eb;
+
+  /* ============================================================================ */
+  /* AI CONFIDENCE INDICATORS - MEDICAL AI ACCURACY */
+  /* ============================================================================ */
+  
+  /* High AI Confidence (90%+ accuracy) */
+  --medsight-ai-high: #059669;
+  --medsight-ai-high-light: #6ee7b7;
+  --medsight-ai-high-dark: #047857;
+
+  /* Medium AI Confidence (70-90% accuracy) */
+  --medsight-ai-medium: #d97706;
+  --medsight-ai-medium-light: #fcd34d;
+  --medsight-ai-medium-dark: #b45309;
+
+  /* Low AI Confidence (<70% accuracy) */
+  --medsight-ai-low: #dc2626;
+  --medsight-ai-low-light: #f87171;
+  --medsight-ai-low-dark: #b91c1c;
+
+  /* ============================================================================ */
+  /* MEDICAL TYPOGRAPHY - ENHANCED READABILITY */
+  /* ============================================================================ */
+  
+  /* Medical Font Stack */
+  --medsight-font-primary: 'Inter Variable', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --medsight-font-display: 'Geist', var(--medsight-font-primary);
+  --medsight-font-mono: 'Geist Mono', 'SF Mono', Consolas, monospace;
+
+  /* Medical Typography Metrics - Enhanced for Clinical Readability */
+  --medsight-line-height: 1.6;        /* Enhanced readability for medical text */
+  --medsight-line-height-tight: 1.4;  /* Compact medical metadata */
+  --medsight-line-height-loose: 1.8;  /* Patient information clarity */
+  --medsight-letter-spacing: 0.01em;  /* Medical text spacing */
+  --medsight-letter-spacing-wide: 0.025em;
+
+  /* Clinical Text Sizes - Medical Professional Interface */
+  --medsight-text-patient: 1.125rem;   /* 18px - Patient information */
+  --medsight-text-findings: 1rem;      /* 16px - Medical findings */
+  --medsight-text-metadata: 0.875rem;  /* 14px - DICOM metadata */
+  --medsight-text-ai: 0.8125rem;       /* 13px - AI metrics */
+  --medsight-text-caption: 0.75rem;    /* 12px - Image captions */
+
+  /* Medical Font Weights */
+  --medsight-weight-light: 300;
+  --medsight-weight-normal: 400;
+  --medsight-weight-medium: 500;
+  --medsight-weight-semibold: 600;
+  --medsight-weight-bold: 700;
+  --medsight-weight-extrabold: 800;
+
+  /* ============================================================================ */
+  /* MEDICAL SPACING SYSTEM - CLINICAL LAYOUT */
+  /* ============================================================================ */
+  
+  /* Base Spacing Scale */
+  --medsight-space-px: 1px;
+  --medsight-space-0: 0;
+  --medsight-space-1: 0.25rem;   /* 4px */
+  --medsight-space-2: 0.5rem;    /* 8px */
+  --medsight-space-3: 0.75rem;   /* 12px */
+  --medsight-space-4: 1rem;      /* 16px */
+  --medsight-space-5: 1.25rem;   /* 20px */
+  --medsight-space-6: 1.5rem;    /* 24px */
+  --medsight-space-8: 2rem;      /* 32px */
+  --medsight-space-10: 2.5rem;   /* 40px */
+  --medsight-space-12: 3rem;     /* 48px */
+  --medsight-space-16: 4rem;     /* 64px */
+  --medsight-space-20: 5rem;     /* 80px */
+  --medsight-space-24: 6rem;     /* 96px */
+  --medsight-space-32: 8rem;     /* 128px */
+
+  /* Medical Semantic Spacing */
+  --medsight-space-xs: var(--medsight-space-1);    /* 4px - Minimal spacing */
+  --medsight-space-sm: var(--medsight-space-2);    /* 8px - Small spacing */
+  --medsight-space-md: var(--medsight-space-4);    /* 16px - Medium spacing */
+  --medsight-space-lg: var(--medsight-space-6);    /* 24px - Large spacing */
+  --medsight-space-xl: var(--medsight-space-8);    /* 32px - Extra large */
+  --medsight-space-2xl: var(--medsight-space-12);  /* 48px - Double extra large */
+  --medsight-space-3xl: var(--medsight-space-16);  /* 64px - Triple extra large */
+
+  /* Medical Component Spacing */
+  --medsight-padding-component: var(--medsight-space-md);
+  --medsight-padding-card: var(--medsight-space-lg);
+  --medsight-padding-modal: var(--medsight-space-2xl);
+  --medsight-gap-elements: var(--medsight-space-sm);
+  --medsight-gap-sections: var(--medsight-space-xl);
+
+  /* ============================================================================ */
+  /* MEDICAL BORDER RADIUS - CLINICAL INTERFACE ROUNDING */
+  /* ============================================================================ */
+  
+  --medsight-radius-none: 0;
+  --medsight-radius-sm: 0.25rem;    /* 4px */
+  --medsight-radius-md: 0.5rem;     /* 8px */
+  --medsight-radius-lg: 0.75rem;    /* 12px */
+  --medsight-radius-xl: 1rem;       /* 16px */
+  --medsight-radius-2xl: 1.25rem;   /* 20px */
+  --medsight-radius-3xl: 1.5rem;    /* 24px */
+  --medsight-radius-full: 9999px;
+
+  /* Medical Component Radius */
+  --medsight-radius-button: var(--medsight-radius-xl);     /* 16px */
+  --medsight-radius-card: var(--medsight-radius-xl);       /* 16px */
+  --medsight-radius-input: var(--medsight-radius-lg);      /* 12px */
+  --medsight-radius-modal: var(--medsight-radius-2xl);     /* 20px */
+  --medsight-radius-status: var(--medsight-radius-md);     /* 8px */
+
+  /* ============================================================================ */
+  /* MEDICAL ANIMATION & TIMING - CLINICAL INTERFACE MOTION */
+  /* ============================================================================ */
+  
+  /* Medical Timing Functions */
+  --medsight-ease-linear: linear;
+  --medsight-ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --medsight-ease-out: cubic-bezier(0, 0, 0.2, 1);
+  --medsight-ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+  --medsight-ease-out-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+  --medsight-ease-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+
+  /* Medical Duration Scale */
+  --medsight-duration-instant: 0ms;
+  --medsight-duration-fast: 150ms;
+  --medsight-duration-normal: 300ms;
+  --medsight-duration-slow: 500ms;
+  --medsight-duration-slower: 700ms;
+  --medsight-duration-slowest: 1000ms;
+
+  /* Medical Animation Presets */
+  --medsight-transition-fast: all var(--medsight-duration-fast) var(--medsight-ease-out-smooth);
+  --medsight-transition-normal: all var(--medsight-duration-normal) var(--medsight-ease-out-smooth);
+  --medsight-transition-slow: all var(--medsight-duration-slow) var(--medsight-ease-out-smooth);
+
+  /* ============================================================================ */
+  /* MEDICAL SHADOWS - CLINICAL INTERFACE DEPTH */
+  /* ============================================================================ */
+  
+  /* Medical Shadow Scale */
+  --medsight-shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --medsight-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
+  --medsight-shadow-md: 0 4px 6px rgba(0, 0, 0, 0.07), 0 2px 4px rgba(0, 0, 0, 0.06);
+  --medsight-shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1), 0 4px 6px rgba(0, 0, 0, 0.05);
+  --medsight-shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.1), 0 8px 10px rgba(0, 0, 0, 0.04);
+  --medsight-shadow-2xl: 0 25px 50px rgba(0, 0, 0, 0.25);
+
+  /* Medical Glass Shadows */
+  --medsight-shadow-glass: 0 8px 32px rgba(14, 165, 233, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  --medsight-shadow-glass-hover: 0 12px 48px rgba(14, 165, 233, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  --medsight-shadow-viewer: 0 16px 64px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(14, 165, 233, 0.1);
+
+  /* Medical Status Shadows */
+  --medsight-shadow-normal: 0 4px 16px rgba(16, 185, 129, 0.1);
+  --medsight-shadow-abnormal: 0 4px 16px rgba(239, 68, 68, 0.1);
+  --medsight-shadow-critical: 0 4px 16px rgba(220, 38, 38, 0.2), 0 0 20px rgba(220, 38, 38, 0.1);
+  --medsight-shadow-pending: 0 4px 16px rgba(245, 158, 11, 0.1);
+
+  /* ============================================================================ */
+  /* MEDICAL BREAKPOINTS - RESPONSIVE CLINICAL INTERFACES */
+  /* ============================================================================ */
+  
+  --medsight-breakpoint-xs: 475px;   /* Large phones */
+  --medsight-breakpoint-sm: 640px;   /* Small tablets */
+  --medsight-breakpoint-md: 768px;   /* Medium tablets */
+  --medsight-breakpoint-lg: 1024px;  /* Small laptops */
+  --medsight-breakpoint-xl: 1280px;  /* Large laptops */
+  --medsight-breakpoint-2xl: 1536px; /* Desktop */
+  --medsight-breakpoint-3xl: 1920px; /* Large desktop */
+
+  /* ============================================================================ */
+  /* MEDICAL Z-INDEX SCALE - CLINICAL INTERFACE LAYERING */
+  /* ============================================================================ */
+  
+  --medsight-z-background: 1;        /* Background elements */
+  --medsight-z-content: 10;          /* Main content cards */
+  --medsight-z-interactive: 20;      /* Buttons, inputs */
+  --medsight-z-navigation: 30;       /* Navigation bars */
+  --medsight-z-modal: 40;            /* Modals, dropdowns */
+  --medsight-z-tooltip: 50;          /* Tooltips, alerts */
+  --medsight-z-critical: 60;         /* Critical medical alerts */
+
+  /* ============================================================================ */
+  /* MEDICAL GLASS EFFECT VARIABLES */
+  /* ============================================================================ */
+  
+  /* Glass Background Colors */
+  --medsight-glass-primary: linear-gradient(135deg, rgba(14, 165, 233, 0.06) 0%, rgba(16, 185, 129, 0.04) 100%);
+  --medsight-glass-viewer: rgba(0, 0, 0, 0.8);
+  --medsight-glass-control: rgba(14, 165, 233, 0.08);
+  --medsight-glass-ai: linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(14, 165, 233, 0.04) 100%);
+
+  /* Glass Backdrop Filters */
+  --medsight-blur-sm: blur(8px);
+  --medsight-blur-md: blur(16px);
+  --medsight-blur-lg: blur(24px);
+  --medsight-blur-xl: blur(32px);
+  --medsight-saturate: saturate(180%);
+  --medsight-saturate-high: saturate(200%);
+
+  /* Glass Border Colors */
+  --medsight-border-glass: rgba(14, 165, 233, 0.12);
+  --medsight-border-glass-hover: rgba(14, 165, 233, 0.2);
+  --medsight-border-viewer: rgba(14, 165, 233, 0.2);
+  --medsight-border-control: rgba(14, 165, 233, 0.15);
+
+  /* ============================================================================ */
+  /* MEDICAL PERFORMANCE VARIABLES */
+  /* ============================================================================ */
+  
+  /* Performance Optimization */
+  --medsight-will-change: backdrop-filter;
+  --medsight-transform-3d: translateZ(0);
+  --medsight-backface: hidden;
+  --medsight-contain: layout style paint;
+
+  /* ============================================================================ */
+  /* MEDICAL ACCESSIBILITY VARIABLES */
+  /* ============================================================================ */
+  
+  /* Focus Ring Colors */
+  --medsight-focus-ring: var(--medsight-primary-500);
+  --medsight-focus-ring-width: 2px;
+  --medsight-focus-ring-offset: 2px;
+
+  /* High Contrast Mode */
+  --medsight-high-contrast-bg: rgba(255, 255, 255, 0.2);
+  --medsight-high-contrast-border: rgba(255, 255, 255, 0.4);
+  --medsight-high-contrast-border-width: 2px;
+
+  /* ============================================================================ */
+  /* MEDICAL COMPONENT SIZE VARIABLES */
+  /* ============================================================================ */
+  
+  /* Button Sizes */
+  --medsight-button-height-sm: 32px;
+  --medsight-button-height-md: 40px;
+  --medsight-button-height-lg: 48px;
+  --medsight-button-padding-sm: 8px 16px;
+  --medsight-button-padding-md: 12px 24px;
+  --medsight-button-padding-lg: 16px 32px;
+
+  /* Input Sizes */
+  --medsight-input-height-sm: 32px;
+  --medsight-input-height-md: 40px;
+  --medsight-input-height-lg: 48px;
+  --medsight-input-padding: 12px 16px;
+
+  /* Modal Sizes */
+  --medsight-modal-width-sm: 400px;
+  --medsight-modal-width-md: 600px;
+  --medsight-modal-width-lg: 800px;
+  --medsight-modal-width-xl: 1000px;
+
+  /* Card Sizes */
+  --medsight-card-padding-sm: var(--medsight-space-md);
+  --medsight-card-padding-md: var(--medsight-space-lg);
+  --medsight-card-padding-lg: var(--medsight-space-xl);
+
+  /* ============================================================================ */
+  /* MEDICAL LAYOUT VARIABLES */
+  /* ============================================================================ */
+  
+  /* Container Widths */
+  --medsight-container-sm: 640px;
+  --medsight-container-md: 768px;
+  --medsight-container-lg: 1024px;
+  --medsight-container-xl: 1280px;
+  --medsight-container-2xl: 1536px;
+
+  /* Navigation Heights */
+  --medsight-nav-height: 64px;
+  --medsight-nav-height-mobile: 56px;
+  --medsight-sidebar-width: 280px;
+  --medsight-sidebar-width-collapsed: 80px;
+
+  /* Content Areas */
+  --medsight-content-max-width: 1200px;
+  --medsight-content-padding: var(--medsight-space-lg);
+  --medsight-section-spacing: var(--medsight-space-2xl);
+}
+
+/* ============================================================================ */
+/* DARK MODE MEDICAL VARIABLES */
+/* ============================================================================ */
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    /* Adjust medical colors for dark mode */
+    --medsight-primary-50: #0c4a6e;
+    --medsight-primary-100: #075985;
+    --medsight-primary-200: #0369a1;
+    --medsight-primary-300: #0284c7;
+    --medsight-primary-400: #0ea5e9;
+    --medsight-primary-500: #38bdf8;
+    --medsight-primary-600: #7dd3fc;
+    --medsight-primary-700: #bae6fd;
+    --medsight-primary-800: #e0f2fe;
+    --medsight-primary-900: #f0f9ff;
+
+    /* Dark mode glass effects */
+    --medsight-glass-primary: linear-gradient(135deg, rgba(14, 165, 233, 0.08) 0%, rgba(16, 185, 129, 0.06) 100%);
+    --medsight-glass-control: rgba(14, 165, 233, 0.12);
+    --medsight-border-glass: rgba(14, 165, 233, 0.15);
+    --medsight-border-glass-hover: rgba(14, 165, 233, 0.25);
+
+    /* Dark mode shadows */
+    --medsight-shadow-glass: 0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    --medsight-shadow-glass-hover: 0 12px 48px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  }
+}
+
+/* ============================================================================ */
+/* HIGH CONTRAST MODE MEDICAL VARIABLES */
+/* ============================================================================ */
+
+@media (prefers-contrast: high) {
+  :root {
+    /* High contrast medical interface adjustments */
+    --medsight-glass-primary: rgba(255, 255, 255, 0.2);
+    --medsight-border-glass: rgba(255, 255, 255, 0.4);
+    --medsight-border-glass-hover: rgba(255, 255, 255, 0.6);
+    --medsight-high-contrast-border-width: 3px;
+    
+    /* High contrast focus rings */
+    --medsight-focus-ring-width: 3px;
+    --medsight-focus-ring-offset: 3px;
+  }
+}
+
+/* ============================================================================ */
+/* REDUCED MOTION MEDICAL VARIABLES */
+/* ============================================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    /* Reduce motion for medical accessibility */
+    --medsight-duration-fast: 0.01ms;
+    --medsight-duration-normal: 0.01ms;
+    --medsight-duration-slow: 0.01ms;
+    --medsight-duration-slower: 0.01ms;
+    --medsight-duration-slowest: 0.01ms;
+    
+    --medsight-transition-fast: none;
+    --medsight-transition-normal: none;
+    --medsight-transition-slow: none;
+  }
+}
+
+/* ============================================================================ */
+/* PRINT MODE MEDICAL VARIABLES */
+/* ============================================================================ */
+
+@media print {
+  :root {
+    /* Medical print optimizations */
+    --medsight-glass-primary: white;
+    --medsight-glass-viewer: white;
+    --medsight-glass-control: white;
+    --medsight-border-glass: #ccc;
+    --medsight-shadow-glass: none;
+    --medsight-shadow-glass-hover: none;
+    
+    /* Print-friendly medical colors */
+    --medsight-primary-500: #000;
+    --medsight-normal: #000;
+    --medsight-abnormal: #000;
+    --medsight-critical: #000;
+    --medsight-pending: #000;
+  }
+} 

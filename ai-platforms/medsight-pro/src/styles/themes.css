@@ -1,0 +1,915 @@
+/* ============================================================================ */
+/* MEDSIGHT PRO THEME SYSTEM - MEDICAL ENVIRONMENT THEMES */
+/* ============================================================================ */
+
+/* Medical-Grade Theme System for Clinical Environments */
+
+/* ============================================================================ */
+/* THEME DETECTION & BASE VARIABLES */
+/* ============================================================================ */
+
+/* Base Theme Variables */
+:root {
+  /* Theme State Variables */
+  --medsight-theme-mode: 'light';
+  --medsight-theme-preference: 'auto';
+  --medsight-theme-contrast: 'normal';
+  
+  /* Medical Environment Variables */
+  --medsight-ambient-light: 'normal';
+  --medsight-display-type: 'standard';
+  --medsight-clinical-context: 'general';
+  
+  /* Theme Transition Variables */
+  --medsight-theme-transition: color 0.3s ease, background-color 0.3s ease, border-color 0.3s ease;
+  --medsight-theme-transition-fast: color 0.15s ease, background-color 0.15s ease;
+  --medsight-theme-transition-slow: color 0.5s ease, background-color 0.5s ease;
+}
+
+/* ============================================================================ */
+/* LIGHT THEME - DEFAULT MEDICAL INTERFACE */
+/* ============================================================================ */
+
+/* Light Theme Base */
+[data-theme="light"],
+:root {
+  /* Medical Primary Colors */
+  --medsight-primary-50: #f0f9ff;
+  --medsight-primary-100: #e0f2fe;
+  --medsight-primary-200: #bae6fd;
+  --medsight-primary-300: #7dd3fc;
+  --medsight-primary-400: #38bdf8;
+  --medsight-primary-500: #0ea5e9;
+  --medsight-primary-600: #0284c7;
+  --medsight-primary-700: #0369a1;
+  --medsight-primary-800: #075985;
+  --medsight-primary-900: #0c4a6e;
+  
+  /* Medical Secondary Colors */
+  --medsight-secondary-50: #f0fdf4;
+  --medsight-secondary-100: #dcfce7;
+  --medsight-secondary-200: #bbf7d0;
+  --medsight-secondary-300: #86efac;
+  --medsight-secondary-400: #4ade80;
+  --medsight-secondary-500: #10b981;
+  --medsight-secondary-600: #059669;
+  --medsight-secondary-700: #047857;
+  --medsight-secondary-800: #065f46;
+  --medsight-secondary-900: #064e3b;
+  
+  /* Medical Accent Colors */
+  --medsight-accent-50: #fffbeb;
+  --medsight-accent-100: #fef3c7;
+  --medsight-accent-200: #fde68a;
+  --medsight-accent-300: #fcd34d;
+  --medsight-accent-400: #fbbf24;
+  --medsight-accent-500: #f59e0b;
+  --medsight-accent-600: #d97706;
+  --medsight-accent-700: #b45309;
+  --medsight-accent-800: #92400e;
+  --medsight-accent-900: #78350f;
+  
+  /* Medical Status Colors */
+  --medsight-normal: #10b981;
+  --medsight-abnormal: #ef4444;
+  --medsight-critical: #dc2626;
+  --medsight-pending: #f59e0b;
+  --medsight-reviewed: #3b82f6;
+  
+  /* AI Confidence Colors */
+  --medsight-ai-high: #059669;
+  --medsight-ai-medium: #d97706;
+  --medsight-ai-low: #dc2626;
+  
+  /* Medical Neutral Colors */
+  --medsight-gray-50: #f9fafb;
+  --medsight-gray-100: #f3f4f6;
+  --medsight-gray-200: #e5e7eb;
+  --medsight-gray-300: #d1d5db;
+  --medsight-gray-400: #9ca3af;
+  --medsight-gray-500: #6b7280;
+  --medsight-gray-600: #4b5563;
+  --medsight-gray-700: #374151;
+  --medsight-gray-800: #1f2937;
+  --medsight-gray-900: #111827;
+  
+  /* Medical Text Colors */
+  --medsight-text-primary: #1f2937;
+  --medsight-text-secondary: #6b7280;
+  --medsight-text-tertiary: #9ca3af;
+  --medsight-text-inverse: #ffffff;
+  --medsight-text-link: #0369a1;
+  --medsight-text-error: #dc2626;
+  --medsight-text-success: #059669;
+  --medsight-text-warning: #d97706;
+  
+  /* Medical Background Colors */
+  --medsight-bg-primary: #ffffff;
+  --medsight-bg-secondary: #f9fafb;
+  --medsight-bg-tertiary: #f3f4f6;
+  --medsight-bg-overlay: rgba(0, 0, 0, 0.5);
+  --medsight-bg-glass: rgba(255, 255, 255, 0.06);
+  --medsight-bg-glass-strong: rgba(255, 255, 255, 0.12);
+  
+  /* Medical Border Colors */
+  --medsight-border-primary: #e5e7eb;
+  --medsight-border-secondary: #d1d5db;
+  --medsight-border-focus: #0ea5e9;
+  --medsight-border-error: #dc2626;
+  --medsight-border-success: #10b981;
+  
+  /* Medical Shadow Colors */
+  --medsight-shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --medsight-shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  --medsight-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --medsight-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --medsight-shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  
+  /* Medical Glass Effects */
+  --medsight-glass-bg: rgba(255, 255, 255, 0.06);
+  --medsight-glass-border: rgba(255, 255, 255, 0.12);
+  --medsight-glass-shadow: 0 8px 32px rgba(14, 165, 233, 0.08);
+  --medsight-blur-sm: blur(8px);
+  --medsight-blur-md: blur(16px);
+  --medsight-blur-lg: blur(24px);
+  --medsight-saturate: saturate(180%);
+}
+
+/* Light Theme Component Styles */
+[data-theme="light"] .medsight-glass,
+:root .medsight-glass {
+  background: linear-gradient(135deg, 
+    rgba(14, 165, 233, 0.06) 0%, 
+    rgba(16, 185, 129, 0.04) 100%);
+  backdrop-filter: var(--medsight-blur-lg) var(--medsight-saturate);
+  border: 1px solid rgba(14, 165, 233, 0.12);
+  box-shadow: 
+    0 8px 32px rgba(14, 165, 233, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="light"] .medsight-viewer-glass,
+:root .medsight-viewer-glass {
+  background: linear-gradient(135deg, 
+    rgba(0, 0, 0, 0.4) 0%, 
+    rgba(0, 0, 0, 0.3) 100%);
+  backdrop-filter: var(--medsight-blur-md);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="light"] .medsight-control-glass,
+:root .medsight-control-glass {
+  background: linear-gradient(135deg, 
+    rgba(255, 255, 255, 0.8) 0%, 
+    rgba(255, 255, 255, 0.6) 100%);
+  backdrop-filter: var(--medsight-blur-sm);
+  border: 1px solid rgba(14, 165, 233, 0.2);
+}
+
+/* ============================================================================ */
+/* DARK THEME - MEDICAL NIGHT MODE */
+/* ============================================================================ */
+
+/* Dark Theme Base */
+[data-theme="dark"] {
+  /* Medical Primary Colors - Dark Mode */
+  --medsight-primary-50: #0c4a6e;
+  --medsight-primary-100: #075985;
+  --medsight-primary-200: #0369a1;
+  --medsight-primary-300: #0284c7;
+  --medsight-primary-400: #0ea5e9;
+  --medsight-primary-500: #38bdf8;
+  --medsight-primary-600: #7dd3fc;
+  --medsight-primary-700: #bae6fd;
+  --medsight-primary-800: #e0f2fe;
+  --medsight-primary-900: #f0f9ff;
+  
+  /* Medical Secondary Colors - Dark Mode */
+  --medsight-secondary-50: #064e3b;
+  --medsight-secondary-100: #065f46;
+  --medsight-secondary-200: #047857;
+  --medsight-secondary-300: #059669;
+  --medsight-secondary-400: #10b981;
+  --medsight-secondary-500: #4ade80;
+  --medsight-secondary-600: #86efac;
+  --medsight-secondary-700: #bbf7d0;
+  --medsight-secondary-800: #dcfce7;
+  --medsight-secondary-900: #f0fdf4;
+  
+  /* Medical Accent Colors - Dark Mode */
+  --medsight-accent-50: #78350f;
+  --medsight-accent-100: #92400e;
+  --medsight-accent-200: #b45309;
+  --medsight-accent-300: #d97706;
+  --medsight-accent-400: #f59e0b;
+  --medsight-accent-500: #fbbf24;
+  --medsight-accent-600: #fcd34d;
+  --medsight-accent-700: #fde68a;
+  --medsight-accent-800: #fef3c7;
+  --medsight-accent-900: #fffbeb;
+  
+  /* Medical Status Colors - Dark Mode */
+  --medsight-normal: #22c55e;
+  --medsight-abnormal: #f87171;
+  --medsight-critical: #ef4444;
+  --medsight-pending: #fbbf24;
+  --medsight-reviewed: #60a5fa;
+  
+  /* AI Confidence Colors - Dark Mode */
+  --medsight-ai-high: #22c55e;
+  --medsight-ai-medium: #fbbf24;
+  --medsight-ai-low: #f87171;
+  
+  /* Medical Neutral Colors - Dark Mode */
+  --medsight-gray-50: #111827;
+  --medsight-gray-100: #1f2937;
+  --medsight-gray-200: #374151;
+  --medsight-gray-300: #4b5563;
+  --medsight-gray-400: #6b7280;
+  --medsight-gray-500: #9ca3af;
+  --medsight-gray-600: #d1d5db;
+  --medsight-gray-700: #e5e7eb;
+  --medsight-gray-800: #f3f4f6;
+  --medsight-gray-900: #f9fafb;
+  
+  /* Medical Text Colors - Dark Mode */
+  --medsight-text-primary: #f9fafb;
+  --medsight-text-secondary: #d1d5db;
+  --medsight-text-tertiary: #9ca3af;
+  --medsight-text-inverse: #1f2937;
+  --medsight-text-link: #60a5fa;
+  --medsight-text-error: #f87171;
+  --medsight-text-success: #22c55e;
+  --medsight-text-warning: #fbbf24;
+  
+  /* Medical Background Colors - Dark Mode */
+  --medsight-bg-primary: #111827;
+  --medsight-bg-secondary: #1f2937;
+  --medsight-bg-tertiary: #374151;
+  --medsight-bg-overlay: rgba(0, 0, 0, 0.75);
+  --medsight-bg-glass: rgba(0, 0, 0, 0.2);
+  --medsight-bg-glass-strong: rgba(0, 0, 0, 0.4);
+  
+  /* Medical Border Colors - Dark Mode */
+  --medsight-border-primary: #374151;
+  --medsight-border-secondary: #4b5563;
+  --medsight-border-focus: #38bdf8;
+  --medsight-border-error: #f87171;
+  --medsight-border-success: #22c55e;
+  
+  /* Medical Shadow Colors - Dark Mode */
+  --medsight-shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.25);
+  --medsight-shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.3), 0 1px 2px 0 rgba(0, 0, 0, 0.2);
+  --medsight-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+  --medsight-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.2);
+  --medsight-shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.4), 0 10px 10px -5px rgba(0, 0, 0, 0.3);
+  
+  /* Medical Glass Effects - Dark Mode */
+  --medsight-glass-bg: rgba(0, 0, 0, 0.2);
+  --medsight-glass-border: rgba(255, 255, 255, 0.1);
+  --medsight-glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+/* Dark Theme Component Styles */
+[data-theme="dark"] .medsight-glass {
+  background: linear-gradient(135deg, 
+    rgba(56, 189, 248, 0.08) 0%, 
+    rgba(34, 197, 94, 0.06) 100%);
+  backdrop-filter: var(--medsight-blur-lg) var(--medsight-saturate);
+  border: 1px solid rgba(56, 189, 248, 0.15);
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+[data-theme="dark"] .medsight-viewer-glass {
+  background: linear-gradient(135deg, 
+    rgba(0, 0, 0, 0.6) 0%, 
+    rgba(0, 0, 0, 0.5) 100%);
+  backdrop-filter: var(--medsight-blur-md);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .medsight-control-glass {
+  background: linear-gradient(135deg, 
+    rgba(0, 0, 0, 0.4) 0%, 
+    rgba(0, 0, 0, 0.3) 100%);
+  backdrop-filter: var(--medsight-blur-sm);
+  border: 1px solid rgba(56, 189, 248, 0.2);
+}
+
+/* ============================================================================ */
+/* AUTO THEME - SYSTEM PREFERENCE */
+/* ============================================================================ */
+
+/* Auto Theme Based on System Preference */
+@media (prefers-color-scheme: dark) {
+  [data-theme="auto"] {
+    /* Apply Dark Theme Variables */
+    --medsight-primary-50: #0c4a6e;
+    --medsight-primary-100: #075985;
+    --medsight-primary-200: #0369a1;
+    --medsight-primary-300: #0284c7;
+    --medsight-primary-400: #0ea5e9;
+    --medsight-primary-500: #38bdf8;
+    --medsight-primary-600: #7dd3fc;
+    --medsight-primary-700: #bae6fd;
+    --medsight-primary-800: #e0f2fe;
+    --medsight-primary-900: #f0f9ff;
+    
+    --medsight-text-primary: #f9fafb;
+    --medsight-text-secondary: #d1d5db;
+    --medsight-text-tertiary: #9ca3af;
+    --medsight-text-inverse: #1f2937;
+    
+    --medsight-bg-primary: #111827;
+    --medsight-bg-secondary: #1f2937;
+    --medsight-bg-tertiary: #374151;
+    
+    --medsight-border-primary: #374151;
+    --medsight-border-secondary: #4b5563;
+    
+    --medsight-normal: #22c55e;
+    --medsight-abnormal: #f87171;
+    --medsight-critical: #ef4444;
+    --medsight-pending: #fbbf24;
+    
+    --medsight-ai-high: #22c55e;
+    --medsight-ai-medium: #fbbf24;
+    --medsight-ai-low: #f87171;
+  }
+  
+  [data-theme="auto"] .medsight-glass {
+    background: linear-gradient(135deg, 
+      rgba(56, 189, 248, 0.08) 0%, 
+      rgba(34, 197, 94, 0.06) 100%);
+    border: 1px solid rgba(56, 189, 248, 0.15);
+    box-shadow: 
+      0 8px 32px rgba(0, 0, 0, 0.3),
+      inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  }
+}
+
+@media (prefers-color-scheme: light) {
+  [data-theme="auto"] {
+    /* Apply Light Theme Variables */
+    --medsight-primary-50: #f0f9ff;
+    --medsight-primary-100: #e0f2fe;
+    --medsight-primary-200: #bae6fd;
+    --medsight-primary-300: #7dd3fc;
+    --medsight-primary-400: #38bdf8;
+    --medsight-primary-500: #0ea5e9;
+    --medsight-primary-600: #0284c7;
+    --medsight-primary-700: #0369a1;
+    --medsight-primary-800: #075985;
+    --medsight-primary-900: #0c4a6e;
+    
+    --medsight-text-primary: #1f2937;
+    --medsight-text-secondary: #6b7280;
+    --medsight-text-tertiary: #9ca3af;
+    --medsight-text-inverse: #ffffff;
+    
+    --medsight-bg-primary: #ffffff;
+    --medsight-bg-secondary: #f9fafb;
+    --medsight-bg-tertiary: #f3f4f6;
+    
+    --medsight-border-primary: #e5e7eb;
+    --medsight-border-secondary: #d1d5db;
+    
+    --medsight-normal: #10b981;
+    --medsight-abnormal: #ef4444;
+    --medsight-critical: #dc2626;
+    --medsight-pending: #f59e0b;
+    
+    --medsight-ai-high: #059669;
+    --medsight-ai-medium: #d97706;
+    --medsight-ai-low: #dc2626;
+  }
+  
+  [data-theme="auto"] .medsight-glass {
+    background: linear-gradient(135deg, 
+      rgba(14, 165, 233, 0.06) 0%, 
+      rgba(16, 185, 129, 0.04) 100%);
+    border: 1px solid rgba(14, 165, 233, 0.12);
+    box-shadow: 
+      0 8px 32px rgba(14, 165, 233, 0.08),
+      inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  }
+}
+
+/* ============================================================================ */
+/* HIGH CONTRAST THEME - MEDICAL ACCESSIBILITY */
+/* ============================================================================ */
+
+/* High Contrast Theme for Medical Accessibility */
+[data-theme="high-contrast"] {
+  /* High Contrast Medical Colors */
+  --medsight-primary-500: #0369a1;
+  --medsight-primary-600: #075985;
+  --medsight-primary-700: #0c4a6e;
+  --medsight-primary-800: #0f172a;
+  --medsight-primary-900: #020617;
+  
+  /* High Contrast Medical Status */
+  --medsight-normal: #047857;
+  --medsight-abnormal: #dc2626;
+  --medsight-critical: #991b1b;
+  --medsight-pending: #d97706;
+  
+  /* High Contrast AI Confidence */
+  --medsight-ai-high: #047857;
+  --medsight-ai-medium: #d97706;
+  --medsight-ai-low: #991b1b;
+  
+  /* High Contrast Text */
+  --medsight-text-primary: #000000;
+  --medsight-text-secondary: #374151;
+  --medsight-text-tertiary: #4b5563;
+  --medsight-text-inverse: #ffffff;
+  
+  /* High Contrast Backgrounds */
+  --medsight-bg-primary: #ffffff;
+  --medsight-bg-secondary: #f8fafc;
+  --medsight-bg-tertiary: #f1f5f9;
+  
+  /* High Contrast Borders */
+  --medsight-border-primary: #4b5563;
+  --medsight-border-secondary: #374151;
+  --medsight-border-focus: #0369a1;
+  
+  /* High Contrast Glass Effects */
+  --medsight-glass-bg: rgba(255, 255, 255, 0.95);
+  --medsight-glass-border: rgba(75, 85, 99, 0.5);
+  --medsight-blur-sm: blur(4px);
+  --medsight-blur-md: blur(8px);
+  --medsight-blur-lg: blur(12px);
+}
+
+@media (prefers-contrast: high) {
+  :root {
+    /* High Contrast Medical Colors */
+    --medsight-primary-500: #0369a1;
+    --medsight-primary-600: #075985;
+    --medsight-primary-700: #0c4a6e;
+    --medsight-primary-800: #0f172a;
+    --medsight-primary-900: #020617;
+    
+    /* High Contrast Medical Status */
+    --medsight-normal: #047857;
+    --medsight-abnormal: #dc2626;
+    --medsight-critical: #991b1b;
+    --medsight-pending: #d97706;
+    
+    /* High Contrast AI Confidence */
+    --medsight-ai-high: #047857;
+    --medsight-ai-medium: #d97706;
+    --medsight-ai-low: #991b1b;
+    
+    /* High Contrast Text */
+    --medsight-text-primary: #000000;
+    --medsight-text-secondary: #374151;
+    --medsight-text-tertiary: #4b5563;
+    --medsight-text-inverse: #ffffff;
+    
+    /* High Contrast Backgrounds */
+    --medsight-bg-primary: #ffffff;
+    --medsight-bg-secondary: #f8fafc;
+    --medsight-bg-tertiary: #f1f5f9;
+    
+    /* High Contrast Borders */
+    --medsight-border-primary: #4b5563;
+    --medsight-border-secondary: #374151;
+    --medsight-border-focus: #0369a1;
+    
+    /* High Contrast Glass Effects */
+    --medsight-glass-bg: rgba(255, 255, 255, 0.95);
+    --medsight-glass-border: rgba(75, 85, 99, 0.5);
+    --medsight-blur-sm: blur(4px);
+    --medsight-blur-md: blur(8px);
+    --medsight-blur-lg: blur(12px);
+  }
+}
+
+[data-theme="high-contrast"] .medsight-glass {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: var(--medsight-blur-sm);
+  border: 2px solid var(--medsight-border-primary);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+}
+
+[data-theme="high-contrast"] .medsight-viewer-glass {
+  background: rgba(0, 0, 0, 0.9);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+[data-theme="high-contrast"] .medsight-control-glass {
+  background: rgba(255, 255, 255, 0.98);
+  border: 2px solid var(--medsight-primary-600);
+}
+
+@media (prefers-contrast: high) {
+  .medsight-glass {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: var(--medsight-blur-sm);
+    border: 2px solid var(--medsight-border-primary);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+  }
+  
+  .medsight-viewer-glass {
+    background: rgba(0, 0, 0, 0.9);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+  }
+  
+  .medsight-control-glass {
+    background: rgba(255, 255, 255, 0.98);
+    border: 2px solid var(--medsight-primary-600);
+  }
+}
+
+/* ============================================================================ */
+/* MEDICAL IMAGING THEME - DICOM OPTIMIZED */
+/* ============================================================================ */
+
+/* Medical Imaging Theme for DICOM Viewing */
+[data-theme="medical-imaging"] {
+  /* Medical Imaging Colors */
+  --medsight-primary-500: #1e40af;
+  --medsight-primary-600: #1e3a8a;
+  --medsight-primary-700: #1e3a8a;
+  
+  /* Medical Imaging Backgrounds */
+  --medsight-bg-primary: #0f172a;
+  --medsight-bg-secondary: #1e293b;
+  --medsight-bg-tertiary: #334155;
+  
+  /* Medical Imaging Text */
+  --medsight-text-primary: #f1f5f9;
+  --medsight-text-secondary: #cbd5e1;
+  --medsight-text-tertiary: #94a3b8;
+  
+  /* Medical Imaging Status Colors */
+  --medsight-normal: #22c55e;
+  --medsight-abnormal: #ff6b6b;
+  --medsight-critical: #ff4757;
+  --medsight-pending: #ffa502;
+  
+  /* Medical Imaging Glass Effects */
+  --medsight-glass-bg: rgba(0, 0, 0, 0.4);
+  --medsight-glass-border: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="medical-imaging"] .medsight-glass {
+  background: linear-gradient(135deg, 
+    rgba(30, 64, 175, 0.1) 0%, 
+    rgba(0, 0, 0, 0.3) 100%);
+  backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(241, 245, 249, 0.1);
+}
+
+[data-theme="medical-imaging"] .medsight-viewer-glass {
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* ============================================================================ */
+/* READING ROOM THEME - RADIOLOGIST OPTIMIZED */
+/* ============================================================================ */
+
+/* Reading Room Theme for Radiologists */
+[data-theme="reading-room"] {
+  /* Reading Room Colors */
+  --medsight-primary-500: #3730a3;
+  --medsight-primary-600: #312e81;
+  --medsight-primary-700: #2d2a7a;
+  
+  /* Reading Room Backgrounds */
+  --medsight-bg-primary: #000000;
+  --medsight-bg-secondary: #111111;
+  --medsight-bg-tertiary: #1a1a1a;
+  
+  /* Reading Room Text */
+  --medsight-text-primary: #ffffff;
+  --medsight-text-secondary: #d4d4d8;
+  --medsight-text-tertiary: #a1a1aa;
+  
+  /* Reading Room Status Colors */
+  --medsight-normal: #16a34a;
+  --medsight-abnormal: #dc2626;
+  --medsight-critical: #b91c1c;
+  --medsight-pending: #ea580c;
+  
+  /* Reading Room Glass Effects */
+  --medsight-glass-bg: rgba(0, 0, 0, 0.6);
+  --medsight-glass-border: rgba(255, 255, 255, 0.05);
+  --medsight-blur-sm: blur(6px);
+  --medsight-blur-md: blur(12px);
+  --medsight-blur-lg: blur(18px);
+}
+
+[data-theme="reading-room"] .medsight-glass {
+  background: linear-gradient(135deg, 
+    rgba(55, 48, 163, 0.08) 0%, 
+    rgba(0, 0, 0, 0.4) 100%);
+  backdrop-filter: var(--medsight-blur-md);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+[data-theme="reading-room"] .medsight-viewer-glass {
+  background: rgba(0, 0, 0, 0.9);
+  backdrop-filter: blur(4px);
+  border: none;
+}
+
+/* ============================================================================ */
+/* CLINICAL DASHBOARD THEME - GENERAL MEDICAL */
+/* ============================================================================ */
+
+/* Clinical Dashboard Theme */
+[data-theme="clinical-dashboard"] {
+  /* Clinical Dashboard Colors */
+  --medsight-primary-500: #0284c7;
+  --medsight-primary-600: #0369a1;
+  --medsight-primary-700: #075985;
+  
+  /* Clinical Dashboard Backgrounds */
+  --medsight-bg-primary: #fafafa;
+  --medsight-bg-secondary: #f5f5f5;
+  --medsight-bg-tertiary: #eeeeee;
+  
+  /* Clinical Dashboard Text */
+  --medsight-text-primary: #212121;
+  --medsight-text-secondary: #757575;
+  --medsight-text-tertiary: #9e9e9e;
+  
+  /* Clinical Dashboard Glass Effects */
+  --medsight-glass-bg: rgba(255, 255, 255, 0.8);
+  --medsight-glass-border: rgba(2, 132, 199, 0.15);
+}
+
+[data-theme="clinical-dashboard"] .medsight-glass {
+  background: linear-gradient(135deg, 
+    rgba(2, 132, 199, 0.05) 0%, 
+    rgba(255, 255, 255, 0.8) 100%);
+  backdrop-filter: blur(20px) saturate(160%);
+  border: 1px solid rgba(2, 132, 199, 0.15);
+}
+
+/* ============================================================================ */
+/* THEME TRANSITIONS */
+/* ============================================================================ */
+
+/* Smooth Theme Transitions */
+* {
+  transition: var(--medsight-theme-transition);
+}
+
+.medsight-theme-transition-fast {
+  transition: var(--medsight-theme-transition-fast);
+}
+
+.medsight-theme-transition-slow {
+  transition: var(--medsight-theme-transition-slow);
+}
+
+/* Disable Transitions During Theme Change */
+.theme-transitioning * {
+  transition: none !important;
+}
+
+/* Theme Loading State */
+.theme-loading {
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.theme-loaded {
+  opacity: 1;
+}
+
+/* ============================================================================ */
+/* MEDICAL ENVIRONMENT ADAPTATIONS */
+/* ============================================================================ */
+
+/* Bright Medical Environment */
+[data-medical-environment="bright"] {
+  --medsight-glass-opacity: 0.95;
+  --medsight-text-contrast: 1.2;
+  --medsight-border-contrast: 1.5;
+}
+
+/* Dim Medical Environment */
+[data-medical-environment="dim"] {
+  --medsight-glass-opacity: 0.7;
+  --medsight-text-contrast: 0.9;
+  --medsight-border-contrast: 0.8;
+}
+
+/* Emergency Medical Environment */
+[data-medical-environment="emergency"] {
+  --medsight-critical: #ff0000;
+  --medsight-abnormal: #ff4444;
+  --medsight-pending: #ffaa00;
+  --medsight-glass-bg: rgba(255, 0, 0, 0.05);
+}
+
+/* Surgical Medical Environment */
+[data-medical-environment="surgical"] {
+  --medsight-bg-primary: #f0f8ff;
+  --medsight-bg-secondary: #e6f3ff;
+  --medsight-text-primary: #003366;
+  --medsight-border-primary: #0066cc;
+}
+
+/* ============================================================================ */
+/* DEVICE-SPECIFIC THEMES */
+/* ============================================================================ */
+
+/* Medical Tablet Theme */
+@media (max-width: 1024px) {
+  [data-device="medical-tablet"] {
+    --medsight-glass-blur: blur(12px);
+    --medsight-text-size-scale: 1.1;
+    --medsight-touch-target-min: 44px;
+  }
+}
+
+/* Medical Workstation Theme */
+@media (min-width: 1920px) {
+  [data-device="medical-workstation"] {
+    --medsight-glass-blur: blur(32px);
+    --medsight-text-size-scale: 1.0;
+    --medsight-container-max: 1800px;
+  }
+}
+
+/* Medical Display Wall Theme */
+@media (min-width: 3840px) {
+  [data-device="medical-display-wall"] {
+    --medsight-glass-blur: blur(48px);
+    --medsight-text-size-scale: 1.2;
+    --medsight-container-max: 3200px;
+  }
+}
+
+/* ============================================================================ */
+/* THEME UTILITIES */
+/* ============================================================================ */
+
+/* Theme Selection Classes */
+.theme-light {
+  color-scheme: light;
+}
+
+.theme-dark {
+  color-scheme: dark;
+}
+
+.theme-auto {
+  color-scheme: light dark;
+}
+
+/* Theme Indicator */
+.theme-indicator {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  padding: 8px 12px;
+  background: var(--medsight-bg-primary);
+  border: 1px solid var(--medsight-border-primary);
+  border-radius: 6px;
+  font-size: 0.75rem;
+  color: var(--medsight-text-secondary);
+  z-index: 9999;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.theme-indicator.visible {
+  opacity: 1;
+}
+
+/* Theme Toggle Button */
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: var(--medsight-glass-bg);
+  backdrop-filter: var(--medsight-blur-sm);
+  border: 1px solid var(--medsight-border-primary);
+  border-radius: 6px;
+  color: var(--medsight-text-primary);
+  cursor: pointer;
+  transition: var(--medsight-theme-transition);
+}
+
+.theme-toggle:hover {
+  background: var(--medsight-glass-bg-strong);
+  border-color: var(--medsight-border-focus);
+}
+
+.theme-toggle:focus-visible {
+  outline: 2px solid var(--medsight-border-focus);
+  outline-offset: 2px;
+}
+
+/* Theme Persistence */
+.theme-persistent {
+  transition: var(--medsight-theme-transition-slow);
+}
+
+/* ============================================================================ */
+/* THEME VALIDATION & DEBUGGING */
+/* ============================================================================ */
+
+/* Development Mode Theme Debug */
+.theme-debug {
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  padding: 12px;
+  background: var(--medsight-bg-primary);
+  border: 2px solid var(--medsight-border-primary);
+  border-radius: 8px;
+  font-family: monospace;
+  font-size: 0.75rem;
+  color: var(--medsight-text-primary);
+  z-index: 9999;
+  max-width: 300px;
+}
+
+.theme-debug::before {
+  content: 'Theme: ' attr(data-current-theme);
+  display: block;
+  font-weight: bold;
+  margin-bottom: 8px;
+  color: var(--medsight-primary-600);
+}
+
+/* Theme Contrast Checker */
+.contrast-checker {
+  background: var(--medsight-bg-primary);
+  color: var(--medsight-text-primary);
+  border: 1px solid var(--medsight-border-primary);
+  padding: 16px;
+  margin: 16px 0;
+}
+
+.contrast-checker::after {
+  content: 'Contrast Ratio: ' attr(data-contrast-ratio);
+  display: block;
+  font-size: 0.875rem;
+  color: var(--medsight-text-secondary);
+  margin-top: 8px;
+}
+
+/* ============================================================================ */
+/* THEME DOCUMENTATION */
+/* ============================================================================ */
+
+/*
+MEDICAL THEME SYSTEM FEATURES:
+
+1. Multi-Theme Support
+   - Light theme (default medical interface)
+   - Dark theme (medical night mode)
+   - Auto theme (system preference)
+   - High contrast theme (medical accessibility)
+   - Medical imaging theme (DICOM optimized)
+   - Reading room theme (radiologist optimized)
+   - Clinical dashboard theme (general medical)
+
+2. Medical Environment Adaptations
+   - Bright medical environment adjustments
+   - Dim medical environment adjustments
+   - Emergency medical environment alerts
+   - Surgical medical environment optimization
+
+3. Device-Specific Optimizations
+   - Medical tablet theme adaptations
+   - Medical workstation optimizations
+   - Medical display wall configurations
+
+4. Accessibility Features
+   - High contrast mode support
+   - Reduced motion compatibility
+   - Screen reader optimizations
+   - Medical professional accessibility
+
+5. Performance Considerations
+   - Smooth theme transitions
+   - Efficient CSS variable management
+   - Hardware acceleration support
+   - Memory-optimized theme switching
+
+USAGE GUIDELINES:
+- Use data-theme attribute for theme selection
+- Test themes in actual medical environments
+- Validate contrast ratios for medical accessibility
+- Consider clinical workflow requirements
+- Test on medical devices and displays
+- Ensure HIPAA-compliant theme persistence
+- Validate with medical professionals
+- Test theme switching performance
+*/ 

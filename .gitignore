@@ -426,6 +426,54 @@ telemetry/
 # *.license
 
 # ===================================
+# CURSOR IDE & DEVELOPMENT FILES
+# ===================================
+
+# Cursor rules and configuration
+@generalrules.mdc
+.cursorrules
+.cursor/
+*.cursor-*
+
+# TypeScript compilation outputs
+tsc_output.txt
+*.tsc-output
+tsconfig.tsbuildinfo
+*.tsbuildinfo
+
+# ===================================
+# ADDITIONAL PROJECT-SPECIFIC
+# ===================================
+
+# Migration and script outputs
+migration-*.log
+script-outputs/
+consolidation-*.log
+
+# Generated configuration files (if they shouldn't be tracked)
+**/postcss.config.js.backup
+**/tailwind.config.js.backup
+**/next.config.js.backup
+
+# Platform-specific generated files
+ai-platforms/*/tailwind.config.js
+ai-platforms/*/postcss.config.js
+
+# Memory and debug files
+*.memory
+debug-*.log
+performance-*.log
+
+# Generated documentation
+docs/generated/
+docs/api-docs/
+**/api-documentation/
+
+# Build artifacts from scripts
+build-artifacts/
+script-temp/
+
+# ===================================
 # OPTIONAL: UNCOMMENT IF NEEDED
 # ===================================
 

@@ -211,6 +211,7 @@ export interface GlassCardProps {
     className?: string;
     onClick?: () => void;
     theme?: Partial<GlassmorphismTheme>;
+    style?: React.CSSProperties;
 }
 
 interface StyledGlassCardProps extends GlassCardProps {
@@ -298,6 +299,7 @@ export const GlassCard: React.FC<GlassCardProps> = ({
     className,
     onClick,
     theme,
+    style,
     ...props
 }) => {
     const mergedTheme = { ...baseGlassmorphismTheme, ...theme };
@@ -313,6 +315,7 @@ export const GlassCard: React.FC<GlassCardProps> = ({
             className={className}
             onClick={onClick}
             theme={mergedTheme}
+            style={style}
             {...props}
         >
             {children}
@@ -333,6 +336,8 @@ export interface GlassButtonProps {
     onClick?: () => void;
     className?: string;
     theme?: Partial<GlassmorphismTheme>;
+    style?: React.CSSProperties;
+    type?: 'button' | 'submit' | 'reset';
 }
 
 interface StyledGlassButtonProps extends GlassButtonProps {
@@ -450,6 +455,8 @@ export const GlassButton: React.FC<GlassButtonProps> = ({
     onClick,
     className,
     theme,
+    style,
+    type = 'button',
     ...props
 }) => {
     const mergedTheme = { ...baseGlassmorphismTheme, ...theme };
@@ -464,6 +471,8 @@ export const GlassButton: React.FC<GlassButtonProps> = ({
             onClick={onClick}
             className={className}
             theme={mergedTheme}
+            style={style}
+            type={type}
             {...props}
         >
             {icon && iconPosition === 'left' && icon}

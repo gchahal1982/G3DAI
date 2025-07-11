@@ -1,0 +1,1114 @@
+/* ============================================================================ */
+/* MEDSIGHT PRO ANIMATION SYSTEM - MEDICAL-APPROPRIATE ANIMATIONS */
+/* ============================================================================ */
+
+/* Medical-Safe Animation System for Clinical Environments */
+
+/* ============================================================================ */
+/* ANIMATION PERFORMANCE VARIABLES */
+/* ============================================================================ */
+
+:root {
+  /* Medical Animation Timing */
+  --medsight-duration-instant: 0.1s;
+  --medsight-duration-fast: 0.2s;
+  --medsight-duration-normal: 0.3s;
+  --medsight-duration-slow: 0.5s;
+  --medsight-duration-medical: 0.7s;
+  
+  /* Medical Animation Easing */
+  --medsight-ease-linear: linear;
+  --medsight-ease-out: cubic-bezier(0.4, 0, 0.2, 1);
+  --medsight-ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --medsight-ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+  --medsight-ease-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  --medsight-ease-medical: cubic-bezier(0.25, 0.1, 0.25, 1);
+  --medsight-ease-out-smooth: cubic-bezier(0.16, 1, 0.3, 1);
+  --medsight-ease-out-back: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  
+  /* Medical Animation Delays */
+  --medsight-delay-none: 0s;
+  --medsight-delay-short: 0.1s;
+  --medsight-delay-medium: 0.2s;
+  --medsight-delay-long: 0.3s;
+  
+  /* Medical Animation Distances */
+  --medsight-translate-sm: 4px;
+  --medsight-translate-md: 8px;
+  --medsight-translate-lg: 16px;
+  --medsight-translate-xl: 24px;
+  
+  /* Medical Animation Scales */
+  --medsight-scale-sm: 0.95;
+  --medsight-scale-md: 0.9;
+  --medsight-scale-lg: 0.85;
+  --medsight-scale-hover: 1.02;
+  --medsight-scale-active: 0.98;
+}
+
+/* ============================================================================ */
+/* MEDICAL COMPONENT TRANSITIONS */
+/* ============================================================================ */
+
+/* Medical Glass Effect Transitions */
+.medsight-glass {
+  transition: 
+    background var(--medsight-duration-normal) var(--medsight-ease-out),
+    border var(--medsight-duration-normal) var(--medsight-ease-out),
+    box-shadow var(--medsight-duration-normal) var(--medsight-ease-out),
+    transform var(--medsight-duration-normal) var(--medsight-ease-out);
+  will-change: background, border, box-shadow, transform;
+}
+
+.medsight-glass:hover {
+  transform: translateY(-2px);
+  transition-duration: var(--medsight-duration-fast);
+}
+
+.medsight-glass:active {
+  transform: translateY(0);
+  transition-duration: var(--medsight-duration-instant);
+}
+
+/* Medical Button Animations */
+.btn-medsight {
+  transition: 
+    background var(--medsight-duration-fast) var(--medsight-ease-out),
+    color var(--medsight-duration-fast) var(--medsight-ease-out),
+    border var(--medsight-duration-fast) var(--medsight-ease-out),
+    box-shadow var(--medsight-duration-normal) var(--medsight-ease-out),
+    transform var(--medsight-duration-fast) var(--medsight-ease-out);
+  will-change: background, color, border, box-shadow, transform;
+}
+
+.btn-medsight:hover {
+  transform: translateY(-1px);
+  box-shadow: 
+    0 6px 20px rgba(14, 165, 233, 0.15),
+    0 2px 8px rgba(14, 165, 233, 0.1);
+}
+
+.btn-medsight:active {
+  transform: scale(var(--medsight-scale-active));
+  transition-duration: var(--medsight-duration-instant);
+}
+
+.btn-medsight:focus-visible {
+  box-shadow: 
+    0 0 0 3px rgba(14, 165, 233, 0.3),
+    0 4px 16px rgba(14, 165, 233, 0.2);
+  transition-duration: var(--medsight-duration-instant);
+}
+
+/* Medical Card Animations */
+.card-medsight {
+  transition: 
+    background var(--medsight-duration-normal) var(--medsight-ease-out),
+    border var(--medsight-duration-normal) var(--medsight-ease-out),
+    box-shadow var(--medsight-duration-normal) var(--medsight-ease-out),
+    transform var(--medsight-duration-normal) var(--medsight-ease-out);
+  will-change: background, border, box-shadow, transform;
+}
+
+.card-medsight:hover {
+  transform: translateY(-2px);
+  box-shadow: 
+    0 12px 48px rgba(14, 165, 233, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+
+.card-medsight:focus-within {
+  border-color: var(--medsight-primary-500);
+  box-shadow: 
+    0 0 0 2px rgba(14, 165, 233, 0.2),
+    0 8px 32px rgba(14, 165, 233, 0.15);
+  transition-duration: var(--medsight-duration-fast);
+}
+
+/* Medical Input Animations */
+.input-medsight {
+  transition: 
+    border var(--medsight-duration-fast) var(--medsight-ease-out),
+    box-shadow var(--medsight-duration-fast) var(--medsight-ease-out),
+    background var(--medsight-duration-fast) var(--medsight-ease-out);
+  will-change: border, box-shadow, background;
+}
+
+.input-medsight:focus {
+  border-color: var(--medsight-primary-500);
+  box-shadow: 
+    0 0 0 3px rgba(14, 165, 233, 0.2),
+    0 2px 8px rgba(14, 165, 233, 0.1);
+  transition-duration: var(--medsight-duration-instant);
+}
+
+.input-medsight:hover:not(:focus) {
+  border-color: var(--medsight-primary-400);
+  transition-duration: var(--medsight-duration-fast);
+}
+
+/* Medical Navigation Animations */
+.nav-medsight-item {
+  transition: 
+    background var(--medsight-duration-fast) var(--medsight-ease-out),
+    color var(--medsight-duration-fast) var(--medsight-ease-out),
+    transform var(--medsight-duration-fast) var(--medsight-ease-out);
+  will-change: background, color, transform;
+}
+
+.nav-medsight-item:hover {
+  background: rgba(14, 165, 233, 0.1);
+  transform: translateY(-1px);
+}
+
+.nav-medsight-item:active {
+  transform: scale(var(--medsight-scale-active));
+  transition-duration: var(--medsight-duration-instant);
+}
+
+.nav-medsight-item.active {
+  background: var(--medsight-primary-500);
+  color: white;
+  box-shadow: 0 4px 12px rgba(14, 165, 233, 0.3);
+}
+
+/* Medical Modal Animations */
+.modal-medsight-overlay {
+  animation: modal-fade-in var(--medsight-duration-normal) var(--medsight-ease-out);
+  backdrop-filter: blur(8px);
+  transition: backdrop-filter var(--medsight-duration-normal) var(--medsight-ease-out);
+}
+
+.modal-medsight {
+  animation: modal-slide-up var(--medsight-duration-normal) var(--medsight-ease-out-smooth);
+  transform-origin: center bottom;
+}
+
+.modal-medsight.closing {
+  animation: modal-slide-down var(--medsight-duration-fast) var(--medsight-ease-in);
+}
+
+/* ============================================================================ */
+/* MEDICAL STATUS ANIMATIONS */
+/* ============================================================================ */
+
+/* Medical Critical Status Animation */
+.badge-medsight-critical,
+.status-medsight-critical {
+  animation: pulse-critical 2s infinite var(--medsight-ease-in-out);
+}
+
+@keyframes pulse-critical {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.7);
+  }
+  50% {
+    opacity: 0.9;
+    transform: scale(1.02);
+    box-shadow: 0 0 0 8px rgba(220, 38, 38, 0);
+  }
+}
+
+/* Medical AI Confidence Animation */
+.medsight-confidence-high {
+  position: relative;
+  overflow: hidden;
+}
+
+.medsight-confidence-high::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(5, 150, 105, 0.3),
+    transparent
+  );
+  animation: confidence-shimmer 3s infinite var(--medsight-ease-in-out);
+}
+
+@keyframes confidence-shimmer {
+  0% {
+    left: -100%;
+  }
+  50%, 100% {
+    left: 100%;
+  }
+}
+
+/* Medical Status Change Animation */
+.status-change-animation {
+  animation: status-change var(--medsight-duration-slow) var(--medsight-ease-out);
+}
+
+@keyframes status-change {
+  0% {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* Medical Loading Pulse */
+.medical-loading-pulse {
+  animation: medical-pulse 1.5s infinite var(--medsight-ease-in-out);
+}
+
+@keyframes medical-pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(1.03);
+  }
+}
+
+/* Medical Heartbeat Animation */
+.medical-heartbeat {
+  animation: heartbeat 1.2s infinite var(--medsight-ease-in-out);
+}
+
+@keyframes heartbeat {
+  0%, 100% {
+    transform: scale(1);
+  }
+  14% {
+    transform: scale(1.1);
+  }
+  28% {
+    transform: scale(1);
+  }
+  42% {
+    transform: scale(1.1);
+  }
+  70% {
+    transform: scale(1);
+  }
+}
+
+/* ============================================================================ */
+/* MEDICAL LOADING ANIMATIONS */
+/* ============================================================================ */
+
+/* Medical Spinner */
+.spinner-medsight {
+  width: 24px;
+  height: 24px;
+  border: 3px solid rgba(14, 165, 233, 0.2);
+  border-top: 3px solid var(--medsight-primary-500);
+  border-radius: 50%;
+  animation: medical-spin 1s linear infinite;
+  display: inline-block;
+}
+
+@keyframes medical-spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Medical Loading Button */
+.btn-medsight-loading {
+  position: relative;
+  color: transparent;
+  pointer-events: none;
+}
+
+.btn-medsight-loading::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 20px;
+  height: 20px;
+  border: 2px solid transparent;
+  border-top: 2px solid currentColor;
+  border-radius: 50%;
+  animation: button-spin 1s linear infinite;
+}
+
+@keyframes button-spin {
+  0% {
+    transform: translate(-50%, -50%) rotate(0deg);
+  }
+  100% {
+    transform: translate(-50%, -50%) rotate(360deg);
+  }
+}
+
+/* Medical Progress Bar Animation */
+.progress-medsight-fill {
+  transition: 
+    width var(--medsight-duration-slow) var(--medsight-ease-out),
+    background var(--medsight-duration-normal) var(--medsight-ease-out);
+  will-change: width, background;
+}
+
+.progress-medsight-indeterminate {
+  position: relative;
+  overflow: hidden;
+}
+
+.progress-medsight-indeterminate::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--medsight-primary-500),
+    transparent
+  );
+  animation: progress-indeterminate 2s infinite linear;
+}
+
+@keyframes progress-indeterminate {
+  0% {
+    left: -100%;
+  }
+  100% {
+    left: 100%;
+  }
+}
+
+/* Medical Skeleton Loading */
+.skeleton-medsight {
+  background: linear-gradient(
+    90deg,
+    var(--medsight-primary-100) 25%,
+    var(--medsight-primary-200) 50%,
+    var(--medsight-primary-100) 75%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s infinite linear;
+  border-radius: var(--medsight-radius-sm);
+}
+
+@keyframes skeleton-loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* Medical Dots Loading */
+.dots-loading-medsight {
+  display: inline-flex;
+  gap: 4px;
+}
+
+.dots-loading-medsight span {
+  width: 8px;
+  height: 8px;
+  background: var(--medsight-primary-500);
+  border-radius: 50%;
+  animation: dots-bounce 1.4s infinite ease-in-out both;
+}
+
+.dots-loading-medsight span:nth-child(1) {
+  animation-delay: -0.32s;
+}
+
+.dots-loading-medsight span:nth-child(2) {
+  animation-delay: -0.16s;
+}
+
+@keyframes dots-bounce {
+  0%, 80%, 100% {
+    transform: scale(0);
+    opacity: 0.5;
+  }
+  40% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* ============================================================================ */
+/* MEDICAL PAGE TRANSITION ANIMATIONS */
+/* ============================================================================ */
+
+/* Medical Page Enter Animation */
+.page-enter-medsight {
+  animation: page-enter var(--medsight-duration-slow) var(--medsight-ease-out);
+}
+
+@keyframes page-enter {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Medical Page Exit Animation */
+.page-exit-medsight {
+  animation: page-exit var(--medsight-duration-fast) var(--medsight-ease-in);
+}
+
+@keyframes page-exit {
+  0% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+}
+
+/* Medical Slide Transitions */
+.slide-enter-medsight {
+  animation: slide-enter var(--medsight-duration-normal) var(--medsight-ease-out);
+}
+
+@keyframes slide-enter {
+  0% {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.slide-exit-medsight {
+  animation: slide-exit var(--medsight-duration-normal) var(--medsight-ease-in);
+}
+
+@keyframes slide-exit {
+  0% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+}
+
+/* Medical Fade Transitions */
+.fade-enter-medsight {
+  animation: fade-enter var(--medsight-duration-normal) var(--medsight-ease-out);
+}
+
+@keyframes fade-enter {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+.fade-exit-medsight {
+  animation: fade-exit var(--medsight-duration-fast) var(--medsight-ease-in);
+}
+
+@keyframes fade-exit {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+/* ============================================================================ */
+/* MEDICAL MODAL ANIMATIONS */
+/* ============================================================================ */
+
+/* Modal Backdrop Animation */
+@keyframes modal-fade-in {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes modal-fade-out {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+/* Modal Content Animation */
+@keyframes modal-slide-up {
+  0% {
+    opacity: 0;
+    transform: translateY(30px) scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes modal-slide-down {
+  0% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(30px) scale(0.95);
+  }
+}
+
+/* Modal Scale Animation */
+@keyframes modal-scale-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes modal-scale-out {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+}
+
+/* ============================================================================ */
+/* MEDICAL NOTIFICATION ANIMATIONS */
+/* ============================================================================ */
+
+/* Medical Toast Animation */
+.toast-medsight {
+  animation: toast-slide-in var(--medsight-duration-normal) var(--medsight-ease-out-smooth);
+  transform-origin: top center;
+}
+
+.toast-medsight.removing {
+  animation: toast-slide-out var(--medsight-duration-fast) var(--medsight-ease-in);
+}
+
+@keyframes toast-slide-in {
+  0% {
+    opacity: 0;
+    transform: translateY(-100%) scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes toast-slide-out {
+  0% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-100%) scale(0.95);
+  }
+}
+
+/* Medical Alert Animation */
+.alert-medsight {
+  animation: alert-bounce-in var(--medsight-duration-slow) var(--medsight-ease-out-back);
+}
+
+@keyframes alert-bounce-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+  50% {
+    opacity: 1;
+  }
+  70% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* Medical Badge Animation */
+.badge-medsight-new {
+  animation: badge-bounce var(--medsight-duration-normal) var(--medsight-ease-bounce);
+}
+
+@keyframes badge-bounce {
+  0%, 20%, 53%, 80%, 100% {
+    transform: translate3d(0, 0, 0);
+  }
+  40%, 43% {
+    transform: translate3d(0, -8px, 0);
+  }
+  70% {
+    transform: translate3d(0, -4px, 0);
+  }
+  90% {
+    transform: translate3d(0, -2px, 0);
+  }
+}
+
+/* ============================================================================ */
+/* MEDICAL DATA VISUALIZATION ANIMATIONS */
+/* ============================================================================ */
+
+/* Medical Chart Animation */
+.chart-medsight-enter {
+  animation: chart-draw var(--medsight-duration-medical) var(--medsight-ease-out);
+}
+
+@keyframes chart-draw {
+  0% {
+    opacity: 0;
+    transform: scaleY(0);
+    transform-origin: bottom;
+  }
+  100% {
+    opacity: 1;
+    transform: scaleY(1);
+  }
+}
+
+/* Medical Counter Animation */
+.counter-medsight {
+  animation: counter-roll var(--medsight-duration-slow) var(--medsight-ease-out);
+}
+
+@keyframes counter-roll {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Medical Timeline Animation */
+.timeline-item-medsight {
+  animation: timeline-reveal var(--medsight-duration-normal) var(--medsight-ease-out);
+  animation-fill-mode: both;
+}
+
+.timeline-item-medsight:nth-child(1) { animation-delay: 0.1s; }
+.timeline-item-medsight:nth-child(2) { animation-delay: 0.2s; }
+.timeline-item-medsight:nth-child(3) { animation-delay: 0.3s; }
+.timeline-item-medsight:nth-child(4) { animation-delay: 0.4s; }
+.timeline-item-medsight:nth-child(5) { animation-delay: 0.5s; }
+
+@keyframes timeline-reveal {
+  0% {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* ============================================================================ */
+/* MEDICAL FOCUS ANIMATIONS */
+/* ============================================================================ */
+
+/* Medical Focus Ring Animation */
+.focus-ring-medsight {
+  position: relative;
+}
+
+.focus-ring-medsight:focus-visible::before {
+  content: '';
+  position: absolute;
+  top: -4px;
+  left: -4px;
+  right: -4px;
+  bottom: -4px;
+  border: 2px solid var(--medsight-primary-500);
+  border-radius: inherit;
+  animation: focus-ring-pulse 2s infinite var(--medsight-ease-in-out);
+}
+
+@keyframes focus-ring-pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(1.02);
+  }
+}
+
+/* Medical Focus Glow Animation */
+.focus-glow-medsight:focus-visible {
+  box-shadow: 
+    0 0 0 3px rgba(14, 165, 233, 0.3),
+    0 0 20px rgba(14, 165, 233, 0.2);
+  animation: focus-glow 0.3s var(--medsight-ease-out);
+}
+
+@keyframes focus-glow {
+  0% {
+    box-shadow: 
+      0 0 0 0 rgba(14, 165, 233, 0.3),
+      0 0 0 rgba(14, 165, 233, 0.2);
+  }
+  100% {
+    box-shadow: 
+      0 0 0 3px rgba(14, 165, 233, 0.3),
+      0 0 20px rgba(14, 165, 233, 0.2);
+  }
+}
+
+/* ============================================================================ */
+/* MEDICAL HOVER ANIMATIONS */
+/* ============================================================================ */
+
+/* Medical Lift Animation */
+.lift-medsight {
+  transition: 
+    transform var(--medsight-duration-fast) var(--medsight-ease-out),
+    box-shadow var(--medsight-duration-fast) var(--medsight-ease-out);
+}
+
+.lift-medsight:hover {
+  transform: translateY(-4px);
+  box-shadow: 
+    0 12px 40px rgba(14, 165, 233, 0.15),
+    0 4px 16px rgba(14, 165, 233, 0.1);
+}
+
+/* Medical Glow Animation */
+.glow-medsight {
+  position: relative;
+  transition: all var(--medsight-duration-normal) var(--medsight-ease-out);
+}
+
+.glow-medsight::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: inherit;
+  border-radius: inherit;
+  opacity: 0;
+  filter: blur(20px);
+  z-index: -1;
+  transition: opacity var(--medsight-duration-normal) var(--medsight-ease-out);
+}
+
+.glow-medsight:hover::before {
+  opacity: 0.3;
+}
+
+/* Medical Scale Animation */
+.scale-medsight {
+  transition: transform var(--medsight-duration-fast) var(--medsight-ease-out);
+}
+
+.scale-medsight:hover {
+  transform: scale(var(--medsight-scale-hover));
+}
+
+.scale-medsight:active {
+  transform: scale(var(--medsight-scale-active));
+  transition-duration: var(--medsight-duration-instant);
+}
+
+/* ============================================================================ */
+/* MEDICAL ACCESSIBILITY ANIMATIONS */
+/* ============================================================================ */
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  
+  /* Keep Critical Medical Animations */
+  .badge-medsight-critical,
+  .status-medsight-critical {
+    animation: none !important;
+    background: var(--medsight-critical) !important;
+    color: white !important;
+    font-weight: 700 !important;
+  }
+  
+  .medical-heartbeat,
+  .medical-loading-pulse,
+  .pulse-critical {
+    animation: none !important;
+  }
+  
+  /* Static Loading States */
+  .spinner-medsight {
+    animation: none !important;
+    border: 3px solid var(--medsight-primary-500) !important;
+    border-radius: 0 !important;
+    width: 20px !important;
+    height: 4px !important;
+  }
+  
+  .btn-medsight-loading::after {
+    animation: none !important;
+    content: 'Loading...' !important;
+    position: static !important;
+    transform: none !important;
+    border: none !important;
+    width: auto !important;
+    height: auto !important;
+    color: currentColor !important;
+  }
+  
+  /* Static Progress */
+  .progress-medsight-indeterminate::before {
+    animation: none !important;
+    left: 0 !important;
+    width: 50% !important;
+    background: var(--medsight-primary-500) !important;
+  }
+  
+  /* Static Skeleton */
+  .skeleton-medsight {
+    animation: none !important;
+    background: var(--medsight-primary-200) !important;
+  }
+}
+
+/* High Contrast Animation Adjustments */
+@media (prefers-contrast: high) {
+  .medsight-glass,
+  .btn-medsight,
+  .card-medsight {
+    transition-property: border, box-shadow !important;
+  }
+  
+  .focus-ring-medsight:focus-visible::before {
+    border-width: 3px !important;
+    animation-duration: 1s !important;
+  }
+  
+  .badge-medsight-critical {
+    animation: critical-blink 1s infinite step-end !important;
+  }
+  
+  @keyframes critical-blink {
+    0%, 50% {
+      background: var(--medsight-critical) !important;
+      color: white !important;
+    }
+    51%, 100% {
+      background: white !important;
+      color: var(--medsight-critical) !important;
+    }
+  }
+}
+
+/* ============================================================================ */
+/* MEDICAL ANIMATION UTILITIES */
+/* ============================================================================ */
+
+/* Animation Control Classes */
+.animate-pause {
+  animation-play-state: paused !important;
+}
+
+.animate-play {
+  animation-play-state: running !important;
+}
+
+.animate-delay-1 {
+  animation-delay: var(--medsight-delay-short) !important;
+}
+
+.animate-delay-2 {
+  animation-delay: var(--medsight-delay-medium) !important;
+}
+
+.animate-delay-3 {
+  animation-delay: var(--medsight-delay-long) !important;
+}
+
+/* Animation Speed Classes */
+.animate-fast {
+  animation-duration: var(--medsight-duration-fast) !important;
+}
+
+.animate-normal {
+  animation-duration: var(--medsight-duration-normal) !important;
+}
+
+.animate-slow {
+  animation-duration: var(--medsight-duration-slow) !important;
+}
+
+.animate-medical {
+  animation-duration: var(--medsight-duration-medical) !important;
+}
+
+/* Animation Easing Classes */
+.animate-ease-linear {
+  animation-timing-function: var(--medsight-ease-linear) !important;
+}
+
+.animate-ease-out {
+  animation-timing-function: var(--medsight-ease-out) !important;
+}
+
+.animate-ease-in-out {
+  animation-timing-function: var(--medsight-ease-in-out) !important;
+}
+
+.animate-ease-medical {
+  animation-timing-function: var(--medsight-ease-medical) !important;
+}
+
+/* Animation Fill Mode Classes */
+.animate-fill-both {
+  animation-fill-mode: both !important;
+}
+
+.animate-fill-forwards {
+  animation-fill-mode: forwards !important;
+}
+
+.animate-fill-backwards {
+  animation-fill-mode: backwards !important;
+}
+
+/* ============================================================================ */
+/* MEDICAL ANIMATION PERFORMANCE */
+/* ============================================================================ */
+
+/* Performance Optimizations */
+.animation-optimized {
+  contain: layout style paint;
+  will-change: auto;
+}
+
+.animation-gpu {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  perspective: 1000px;
+}
+
+.animation-smooth {
+  animation-fill-mode: both;
+  animation-timing-function: var(--medsight-ease-medical);
+}
+
+/* Hardware Acceleration Triggers */
+.hw-accelerated {
+  transform: translateZ(0);
+  will-change: transform, opacity;
+}
+
+.hw-accelerated-transform {
+  will-change: transform;
+}
+
+.hw-accelerated-opacity {
+  will-change: opacity;
+}
+
+/* ============================================================================ */
+/* MEDICAL ANIMATION DOCUMENTATION */
+/* ============================================================================ */
+
+/*
+MEDICAL ANIMATION SYSTEM FEATURES:
+
+1. Medical-Safe Animations
+   - Reduced motion support for medical safety
+   - Non-distracting animations for clinical focus
+   - Emergency status animations for critical alerts
+   - Performance-optimized for medical devices
+
+2. Clinical User Experience
+   - Smooth transitions for medical workflows
+   - Status change animations for medical updates
+   - Loading animations for medical data processing
+   - Focus animations for medical accessibility
+
+3. Medical Status Indicators
+   - Critical status pulsing animations
+   - AI confidence shimmer effects
+   - Medical heartbeat animations
+   - Status change notifications
+
+4. Performance Considerations
+   - Hardware acceleration for medical displays
+   - Reduced animation complexity for medical devices
+   - Optimized animation timing for clinical efficiency
+   - Memory-efficient animation patterns
+
+5. Accessibility Support
+   - Reduced motion preference compliance
+   - High contrast animation adjustments
+   - Screen reader compatible animations
+   - Keyboard navigation animations
+
+6. Medical Device Compatibility
+   - Touch device animation optimization
+   - Medical display refresh rate consideration
+   - Low-power device animation scaling
+   - Medical hardware acceleration support
+
+USAGE GUIDELINES:
+- Use medical-appropriate animation timing
+- Test animations on medical devices
+- Ensure accessibility compliance
+- Consider clinical environment constraints
+- Optimize for medical workflow efficiency
+- Maintain patient safety focus
+- Test with medical professionals
+- Validate performance on medical hardware
+*/ 
