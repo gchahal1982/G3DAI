@@ -1,590 +1,816 @@
-'use client'
+'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Alert } from '@/components/ui/Alert';
 import { 
-  Shield, 
-  Search, 
-  Filter, 
-  Eye, 
-  EyeOff, 
-  Check, 
-  X, 
-  AlertTriangle,
-  Download,
-  RefreshCw,
-  Grid,
-  List,
-  Users,
-  Lock,
-  Settings,
-  FileText,
-  Activity
-} from 'lucide-react';
+  LockClosedIcon,
+  LockOpenIcon,
+  ShieldCheckIcon,
+  ExclamationTriangleIcon,
+  DocumentIcon,
+  EyeIcon,
+  PencilIcon,
+  TrashIcon,
+  UserIcon,
+  CogIcon,
+  ClipboardDocumentListIcon,
+  BeakerIcon,
+  CpuChipIcon,
+  HeartIcon,
+  BuildingOfficeIcon,
+  ChartBarIcon,
+  CheckCircleIcon,
+  XCircleIcon,
+  InformationCircleIcon,
+  MagnifyingGlassIcon,
+  FunnelIcon,
+  ArrowPathIcon
+} from '@heroicons/react/24/outline';
 
-// Mock UI components for missing imports
-const Input = React.forwardRef<HTMLInputElement, React.InputHTMLAttributes<HTMLInputElement> & { className?: string }>(
-  ({ className, ...props }, ref) => (
-    <input
-      ref={ref}
-      className={`flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ${className}`}
-      {...props}
-    />
-  )
-);
-Input.displayName = 'Input';
-
-const Select = ({ value, onValueChange, children, ...props }: any) => (
-  <div className="relative">
-    <select
-      value={value}
-      onChange={(e) => onValueChange?.(e.target.value)}
-      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-      {...props}
-    >
-      {children}
-    </select>
-  </div>
-);
-
-const SelectTrigger = ({ children, className, ...props }: any) => <div className={className} {...props}>{children}</div>;
-const SelectValue = ({ placeholder }: any) => <option value="">{placeholder}</option>;
-const SelectContent = ({ children }: any) => <>{children}</>;
-const SelectItem = ({ value, children }: any) => <option value={value}>{children}</option>;
-
-const Checkbox = React.forwardRef<HTMLInputElement, React.InputHTMLAttributes<HTMLInputElement> & { 
-  className?: string; 
-  onCheckedChange?: (checked: boolean) => void;
-}>(
-  ({ className, onCheckedChange, ...props }, ref) => (
-    <input
-      ref={ref}
-      type="checkbox"
-      className={`peer h-4 w-4 shrink-0 rounded-sm border border-primary ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ${className}`}
-      onChange={(e) => onCheckedChange?.(e.target.checked)}
-      {...props}
-    />
-  )
-);
-Checkbox.displayName = 'Checkbox';
-
-const AlertDescription = ({ children, ...props }: any) => (
-  <div className="text-sm [&_p]:leading-relaxed" {...props}>
-    {children}
-  </div>
-);
-
-interface Role {
-  id: string;
-  name: string;
-  description: string;
-  permissions: string[];
-  isSystem: boolean;
-  userCount: number;
-  status: 'active' | 'inactive' | 'deprecated';
-  color: string;
-}
-
+// Permission Types
 interface Permission {
   id: string;
   name: string;
-  category: string;
   description: string;
+  category: 'medical_data' | 'patient_access' | 'procedures' | 'system_admin' | 'emergency' | 'audit_compliance';
+  subcategory?: string;
   riskLevel: 'low' | 'medium' | 'high' | 'critical';
-  isRequired: boolean;
-  dependencies: string[];
+  requiresApproval: boolean;
+  requiresSupervision: boolean;
+  auditRequired: boolean;
+  hipaaProtected: boolean;
+  emergencyOverride: boolean;
+  timeRestricted: boolean;
+  locationRestricted: boolean;
+  icon: React.ComponentType<any>;
+  color: string;
 }
 
-interface PermissionConflict {
+interface RolePermission {
   roleId: string;
-  permissionId: string;
-  conflictType: 'missing_dependency' | 'risk_combination' | 'deprecated_permission';
-  description: string;
+  roleName: string;
+  roleHierarchy: number;
+  permissions: {
+    [permissionId: string]: {
+      granted: boolean;
+      inherited: boolean;
+      restrictedBy?: string[];
+      conditions?: string[];
+      approvedBy?: string;
+      approvedAt?: Date;
+    };
+  };
 }
 
-const PermissionMatrix: React.FC = () => {
-  const [roles, setRoles] = useState<Role[]>([]);
-  const [permissions, setPermissions] = useState<Permission[]>([]);
-  const [conflicts, setConflicts] = useState<PermissionConflict[]>([]);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filterCategory, setFilterCategory] = useState<string>('all');
-  const [filterRiskLevel, setFilterRiskLevel] = useState<string>('all');
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-  const [showInactive, setShowInactive] = useState(false);
-  const [selectedRoles, setSelectedRoles] = useState<string[]>([]);
-  const [selectedPermissions, setSelectedPermissions] = useState<string[]>([]);
-  const [loading, setLoading] = useState(true);
+interface PermissionGroup {
+  id: string;
+  name: string;
+  description: string;
+  icon: React.ComponentType<any>;
+  color: string;
+  permissions: Permission[];
+}
 
-  useEffect(() => {
-    const fetchMatrixData = async () => {
-      try {
-        // Mock data - replace with actual API calls
-        const mockRoles: Role[] = [
-          {
-            id: '1',
-            name: 'Senior Radiologist',
-            description: 'Full access to all medical imaging and diagnostic tools',
-            permissions: ['read_all_studies', 'create_reports', 'approve_reports', 'manage_protocols', 'ai_analysis', 'audit_logs'],
-            isSystem: false,
-            userCount: 12,
-            status: 'active',
-            color: 'bg-blue-500'
-          },
-          {
-            id: '2',
-            name: 'Radiologist',
-            description: 'Standard radiologist access with reporting capabilities',
-            permissions: ['read_assigned_studies', 'create_reports', 'use_ai_tools', 'view_analytics', 'basic_measurements'],
-            isSystem: false,
-            userCount: 25,
-            status: 'active',
-            color: 'bg-green-500'
-          },
-          {
-            id: '3',
-            name: 'Radiology Technician',
-            description: 'Technical staff with limited diagnostic access',
-            permissions: ['upload_studies', 'view_protocols', 'basic_measurements', 'schedule_studies', 'view_tutorials'],
-            isSystem: false,
-            userCount: 18,
-            status: 'active',
-            color: 'bg-purple-500'
-          },
-          {
-            id: '4',
-            name: 'Medical Student',
-            description: 'Educational access with supervision requirements',
-            permissions: ['read_educational_studies', 'practice_tools', 'view_tutorials', 'basic_viewing'],
-            isSystem: false,
-            userCount: 8,
-            status: 'active',
-            color: 'bg-yellow-500'
-          },
-          {
-            id: '5',
-            name: 'System Administrator',
-            description: 'Full system access and configuration management',
-            permissions: ['system_admin', 'user_management', 'role_management', 'system_config', 'audit_logs', 'read_all_studies'],
-            isSystem: true,
-            userCount: 3,
-            status: 'active',
-            color: 'bg-red-500'
-          },
-          {
-            id: '6',
-            name: 'Quality Assurance',
-            description: 'Quality control and compliance monitoring',
-            permissions: ['view_analytics', 'audit_logs', 'manage_protocols', 'create_reports', 'quality_control'],
-            isSystem: false,
-            userCount: 5,
-            status: 'active',
-            color: 'bg-indigo-500'
-          },
-          {
-            id: '7',
-            name: 'Legacy Viewer',
-            description: 'Deprecated role for old system compatibility',
-            permissions: ['basic_viewing'],
-            isSystem: false,
-            userCount: 2,
-            status: 'deprecated',
-            color: 'bg-gray-500'
-          }
-        ];
-
-        const mockPermissions: Permission[] = [
-          // Critical System Permissions
-          { id: 'system_admin', name: 'System Administration', category: 'System', description: 'Full system administration access', riskLevel: 'critical', isRequired: false, dependencies: [] },
-          { id: 'user_management', name: 'User Management', category: 'System', description: 'Create and manage user accounts', riskLevel: 'high', isRequired: false, dependencies: [] },
-          { id: 'role_management', name: 'Role Management', category: 'System', description: 'Manage roles and permissions', riskLevel: 'critical', isRequired: false, dependencies: ['user_management'] },
-          { id: 'system_config', name: 'System Configuration', category: 'System', description: 'Configure system settings', riskLevel: 'high', isRequired: false, dependencies: [] },
-          { id: 'audit_logs', name: 'Audit Logs', category: 'System', description: 'Access audit and security logs', riskLevel: 'high', isRequired: false, dependencies: [] },
-          
-          // Patient Data Access
-          { id: 'read_all_studies', name: 'Read All Studies', category: 'Patient Data', description: 'Access to all medical studies', riskLevel: 'high', isRequired: false, dependencies: [] },
-          { id: 'read_assigned_studies', name: 'Read Assigned Studies', category: 'Patient Data', description: 'Access to assigned studies only', riskLevel: 'medium', isRequired: true, dependencies: [] },
-          { id: 'read_educational_studies', name: 'Read Educational Studies', category: 'Patient Data', description: 'Access to de-identified educational content', riskLevel: 'low', isRequired: false, dependencies: [] },
-          
-          // Clinical Operations
-          { id: 'create_reports', name: 'Create Reports', category: 'Clinical', description: 'Create and edit medical reports', riskLevel: 'high', isRequired: false, dependencies: ['read_assigned_studies'] },
-          { id: 'approve_reports', name: 'Approve Reports', category: 'Clinical', description: 'Final approval of medical reports', riskLevel: 'critical', isRequired: false, dependencies: ['create_reports'] },
-          { id: 'manage_protocols', name: 'Manage Protocols', category: 'Clinical', description: 'Manage imaging protocols', riskLevel: 'medium', isRequired: false, dependencies: [] },
-          { id: 'view_protocols', name: 'View Protocols', category: 'Clinical', description: 'View imaging protocols', riskLevel: 'low', isRequired: false, dependencies: [] },
-          { id: 'quality_control', name: 'Quality Control', category: 'Clinical', description: 'Quality assurance and control', riskLevel: 'medium', isRequired: false, dependencies: [] },
-          
-          // AI and Analytics
-          { id: 'ai_analysis', name: 'AI Analysis', category: 'AI Tools', description: 'Full access to AI diagnostic tools', riskLevel: 'high', isRequired: false, dependencies: ['read_all_studies'] },
-          { id: 'use_ai_tools', name: 'Use AI Tools', category: 'AI Tools', description: 'Standard AI tool access', riskLevel: 'medium', isRequired: false, dependencies: ['read_assigned_studies'] },
-          { id: 'practice_tools', name: 'Practice Tools', category: 'AI Tools', description: 'Educational AI tools', riskLevel: 'low', isRequired: false, dependencies: [] },
-          { id: 'view_analytics', name: 'View Analytics', category: 'Analytics', description: 'Access to system analytics', riskLevel: 'medium', isRequired: false, dependencies: [] },
-          
-          // Technical Operations
-          { id: 'upload_studies', name: 'Upload Studies', category: 'Technical', description: 'Upload medical studies', riskLevel: 'medium', isRequired: false, dependencies: [] },
-          { id: 'schedule_studies', name: 'Schedule Studies', category: 'Technical', description: 'Schedule imaging studies', riskLevel: 'medium', isRequired: false, dependencies: [] },
-          { id: 'basic_measurements', name: 'Basic Measurements', category: 'Technical', description: 'Basic measurement tools', riskLevel: 'low', isRequired: false, dependencies: [] },
-          
-          // Educational
-          { id: 'view_tutorials', name: 'View Tutorials', category: 'Educational', description: 'Access training materials', riskLevel: 'low', isRequired: false, dependencies: [] },
-          { id: 'basic_viewing', name: 'Basic Viewing', category: 'Educational', description: 'Basic image viewing capabilities', riskLevel: 'low', isRequired: false, dependencies: [] }
-        ];
-
-        // Calculate permission conflicts
-        const mockConflicts: PermissionConflict[] = [];
-        
-        mockRoles.forEach(role => {
-          role.permissions.forEach(permissionId => {
-            const permission = mockPermissions.find(p => p.id === permissionId);
-            if (permission) {
-              // Check for missing dependencies
-              permission.dependencies.forEach(depId => {
-                if (!role.permissions.includes(depId)) {
-                  mockConflicts.push({
-                    roleId: role.id,
-                    permissionId: permissionId,
-                    conflictType: 'missing_dependency',
-                    description: `Missing required dependency: ${mockPermissions.find(p => p.id === depId)?.name}`
-                  });
-                }
-              });
-            }
-          });
-        });
-
-        setRoles(mockRoles);
-        setPermissions(mockPermissions);
-        setConflicts(mockConflicts);
-        setLoading(false);
-      } catch (error) {
-        console.error('Error fetching matrix data:', error);
-        setLoading(false);
-      }
-    };
-
-    fetchMatrixData();
-  }, []);
-
-  const filteredRoles = roles.filter(role => {
-    if (!showInactive && role.status !== 'active') return false;
-    if (selectedRoles.length > 0 && !selectedRoles.includes(role.id)) return false;
-    return role.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-           role.description.toLowerCase().includes(searchTerm.toLowerCase());
-  });
-
-  const filteredPermissions = permissions.filter(permission => {
-    if (filterCategory !== 'all' && permission.category !== filterCategory) return false;
-    if (filterRiskLevel !== 'all' && permission.riskLevel !== filterRiskLevel) return false;
-    if (selectedPermissions.length > 0 && !selectedPermissions.includes(permission.id)) return false;
-    return permission.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-           permission.description.toLowerCase().includes(searchTerm.toLowerCase());
-  });
-
-  const categories = [...new Set(permissions.map(p => p.category))];
-  const riskLevels = ['low', 'medium', 'high', 'critical'];
-
-  const hasPermission = (roleId: string, permissionId: string): boolean => {
-    const role = roles.find(r => r.id === roleId);
-    return role ? role.permissions.includes(permissionId) : false;
-  };
-
-  const getRiskColor = (riskLevel: string) => {
-    switch (riskLevel) {
-      case 'low': return 'bg-green-100 text-green-800';
-      case 'medium': return 'bg-yellow-100 text-yellow-800';
-      case 'high': return 'bg-orange-100 text-orange-800';
-      case 'critical': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
-    }
-  };
-
-  const getConflictIcon = (roleId: string, permissionId: string) => {
-    const conflict = conflicts.find(c => c.roleId === roleId && c.permissionId === permissionId);
-    if (conflict) {
-      return <AlertTriangle className="w-3 h-3 text-red-500" />;
-    }
-    return null;
-  };
-
-  const toggleRoleSelection = (roleId: string) => {
-    setSelectedRoles(prev => 
-      prev.includes(roleId) 
-        ? prev.filter(id => id !== roleId)
-        : [...prev, roleId]
-    );
-  };
-
-  const togglePermissionSelection = (permissionId: string) => {
-    setSelectedPermissions(prev => 
-      prev.includes(permissionId) 
-        ? prev.filter(id => id !== permissionId)
-        : [...prev, permissionId]
-    );
-  };
-
-  const exportMatrix = () => {
-    // Implementation for exporting the permission matrix
-    console.log('Exporting permission matrix...');
-  };
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-96">
-        <RefreshCw className="w-8 h-8 animate-spin text-blue-500" />
-      </div>
-    );
+// Medical Permission Definitions
+const MEDICAL_PERMISSIONS: Permission[] = [
+  // Medical Data Access
+  {
+    id: 'read_patient_demographics',
+    name: 'Read Patient Demographics',
+    description: 'Access patient basic information (name, DOB, MRN)',
+    category: 'patient_access',
+    subcategory: 'demographics',
+    riskLevel: 'medium',
+    requiresApproval: false,
+    requiresSupervision: false,
+    auditRequired: true,
+    hipaaProtected: true,
+    emergencyOverride: true,
+    timeRestricted: false,
+    locationRestricted: false,
+    icon: UserIcon,
+    color: '#0ea5e9'
+  },
+  {
+    id: 'read_patient_medical_history',
+    name: 'Read Patient Medical History',
+    description: 'Access patient medical history and diagnoses',
+    category: 'patient_access',
+    subcategory: 'medical_history',
+    riskLevel: 'high',
+    requiresApproval: false,
+    requiresSupervision: false,
+    auditRequired: true,
+    hipaaProtected: true,
+    emergencyOverride: true,
+    timeRestricted: false,
+    locationRestricted: false,
+    icon: ClipboardDocumentListIcon,
+    color: '#ef4444'
+  },
+  {
+    id: 'write_patient_notes',
+    name: 'Write Patient Notes',
+    description: 'Create and modify patient clinical notes',
+    category: 'patient_access',
+    subcategory: 'clinical_notes',
+    riskLevel: 'high',
+    requiresApproval: false,
+    requiresSupervision: true,
+    auditRequired: true,
+    hipaaProtected: true,
+    emergencyOverride: true,
+    timeRestricted: false,
+    locationRestricted: false,
+    icon: PencilIcon,
+    color: '#f59e0b'
+  },
+  {
+    id: 'read_dicom_images',
+    name: 'Read DICOM Images',
+    description: 'Access and view medical imaging studies',
+    category: 'medical_data',
+    subcategory: 'imaging',
+    riskLevel: 'medium',
+    requiresApproval: false,
+    requiresSupervision: false,
+    auditRequired: true,
+    hipaaProtected: true,
+    emergencyOverride: true,
+    timeRestricted: false,
+    locationRestricted: false,
+    icon: CpuChipIcon,
+    color: '#10b981'
+  },
+  {
+    id: 'modify_dicom_images',
+    name: 'Modify DICOM Images',
+    description: 'Edit and annotate medical imaging studies',
+    category: 'medical_data',
+    subcategory: 'imaging',
+    riskLevel: 'high',
+    requiresApproval: true,
+    requiresSupervision: true,
+    auditRequired: true,
+    hipaaProtected: true,
+    emergencyOverride: false,
+    timeRestricted: false,
+    locationRestricted: true,
+    icon: PencilIcon,
+    color: '#ef4444'
+  },
+  {
+    id: 'create_radiology_reports',
+    name: 'Create Radiology Reports',
+    description: 'Generate and finalize radiology reports',
+    category: 'procedures',
+    subcategory: 'radiology',
+    riskLevel: 'high',
+    requiresApproval: false,
+    requiresSupervision: false,
+    auditRequired: true,
+    hipaaProtected: true,
+    emergencyOverride: true,
+    timeRestricted: false,
+    locationRestricted: false,
+    icon: DocumentIcon,
+    color: '#0ea5e9'
+  },
+  {
+    id: 'approve_radiology_reports',
+    name: 'Approve Radiology Reports',
+    description: 'Sign and approve radiology reports',
+    category: 'procedures',
+    subcategory: 'radiology',
+    riskLevel: 'critical',
+    requiresApproval: false,
+    requiresSupervision: false,
+    auditRequired: true,
+    hipaaProtected: true,
+    emergencyOverride: true,
+    timeRestricted: false,
+    locationRestricted: false,
+    icon: CheckCircleIcon,
+    color: '#10b981'
+  },
+  {
+    id: 'run_ai_analysis',
+    name: 'Run AI Analysis',
+    description: 'Execute AI-powered medical analysis',
+    category: 'procedures',
+    subcategory: 'ai_analysis',
+    riskLevel: 'medium',
+    requiresApproval: false,
+    requiresSupervision: false,
+    auditRequired: true,
+    hipaaProtected: true,
+    emergencyOverride: true,
+    timeRestricted: false,
+    locationRestricted: false,
+    icon: BeakerIcon,
+    color: '#7c3aed'
+  },
+  {
+    id: 'manage_users',
+    name: 'Manage Users',
+    description: 'Create, modify, and delete user accounts',
+    category: 'system_admin',
+    subcategory: 'user_management',
+    riskLevel: 'critical',
+    requiresApproval: true,
+    requiresSupervision: false,
+    auditRequired: true,
+    hipaaProtected: false,
+    emergencyOverride: false,
+    timeRestricted: false,
+    locationRestricted: true,
+    icon: UserIcon,
+    color: '#dc2626'
+  },
+  {
+    id: 'manage_roles',
+    name: 'Manage Roles',
+    description: 'Create and modify user roles and permissions',
+    category: 'system_admin',
+    subcategory: 'role_management',
+    riskLevel: 'critical',
+    requiresApproval: true,
+    requiresSupervision: false,
+    auditRequired: true,
+    hipaaProtected: false,
+    emergencyOverride: false,
+    timeRestricted: false,
+    locationRestricted: true,
+    icon: ShieldCheckIcon,
+    color: '#dc2626'
+  },
+  {
+    id: 'system_configuration',
+    name: 'System Configuration',
+    description: 'Modify system settings and configurations',
+    category: 'system_admin',
+    subcategory: 'configuration',
+    riskLevel: 'critical',
+    requiresApproval: true,
+    requiresSupervision: false,
+    auditRequired: true,
+    hipaaProtected: false,
+    emergencyOverride: false,
+    timeRestricted: false,
+    locationRestricted: true,
+    icon: CogIcon,
+    color: '#dc2626'
+  },
+  {
+    id: 'emergency_access_override',
+    name: 'Emergency Access Override',
+    description: 'Override access restrictions in emergency situations',
+    category: 'emergency',
+    subcategory: 'override',
+    riskLevel: 'critical',
+    requiresApproval: true,
+    requiresSupervision: true,
+    auditRequired: true,
+    hipaaProtected: true,
+    emergencyOverride: false,
+    timeRestricted: true,
+    locationRestricted: false,
+    icon: ExclamationTriangleIcon,
+    color: '#dc2626'
+  },
+  {
+    id: 'view_audit_logs',
+    name: 'View Audit Logs',
+    description: 'Access system and user audit logs',
+    category: 'audit_compliance',
+    subcategory: 'audit_logs',
+    riskLevel: 'high',
+    requiresApproval: false,
+    requiresSupervision: false,
+    auditRequired: true,
+    hipaaProtected: false,
+    emergencyOverride: false,
+    timeRestricted: false,
+    locationRestricted: true,
+    icon: EyeIcon,
+    color: '#059669'
+  },
+  {
+    id: 'export_compliance_reports',
+    name: 'Export Compliance Reports',
+    description: 'Generate and export compliance reports',
+    category: 'audit_compliance',
+    subcategory: 'reporting',
+    riskLevel: 'high',
+    requiresApproval: true,
+    requiresSupervision: false,
+    auditRequired: true,
+    hipaaProtected: false,
+    emergencyOverride: false,
+    timeRestricted: false,
+    locationRestricted: true,
+    icon: ChartBarIcon,
+    color: '#059669'
+  },
+  {
+    id: 'cardiac_procedures',
+    name: 'Cardiac Procedures',
+    description: 'Access cardiac imaging and procedures',
+    category: 'procedures',
+    subcategory: 'cardiology',
+    riskLevel: 'high',
+    requiresApproval: false,
+    requiresSupervision: false,
+    auditRequired: true,
+    hipaaProtected: true,
+    emergencyOverride: true,
+    timeRestricted: false,
+    locationRestricted: false,
+    icon: HeartIcon,
+    color: '#ef4444'
   }
+];
+
+// Permission Groups
+const PERMISSION_GROUPS: PermissionGroup[] = [
+  {
+    id: 'patient_access',
+    name: 'Patient Access',
+    description: 'Patient demographic and medical record access',
+    icon: UserIcon,
+    color: '#0ea5e9',
+    permissions: MEDICAL_PERMISSIONS.filter(p => p.category === 'patient_access')
+  },
+  {
+    id: 'medical_data',
+    name: 'Medical Data',
+    description: 'Medical imaging and clinical data access',
+    icon: CpuChipIcon,
+    color: '#10b981',
+    permissions: MEDICAL_PERMISSIONS.filter(p => p.category === 'medical_data')
+  },
+  {
+    id: 'procedures',
+    name: 'Medical Procedures',
+    description: 'Medical procedures and clinical workflows',
+    icon: BeakerIcon,
+    color: '#7c3aed',
+    permissions: MEDICAL_PERMISSIONS.filter(p => p.category === 'procedures')
+  },
+  {
+    id: 'system_admin',
+    name: 'System Administration',
+    description: 'System configuration and user management',
+    icon: CogIcon,
+    color: '#dc2626',
+    permissions: MEDICAL_PERMISSIONS.filter(p => p.category === 'system_admin')
+  },
+  {
+    id: 'emergency',
+    name: 'Emergency Access',
+    description: 'Emergency override and critical access',
+    icon: ExclamationTriangleIcon,
+    color: '#dc2626',
+    permissions: MEDICAL_PERMISSIONS.filter(p => p.category === 'emergency')
+  },
+  {
+    id: 'audit_compliance',
+    name: 'Audit & Compliance',
+    description: 'Audit logs and compliance reporting',
+    icon: ShieldCheckIcon,
+    color: '#059669',
+    permissions: MEDICAL_PERMISSIONS.filter(p => p.category === 'audit_compliance')
+  }
+];
+
+// Mock roles
+const MOCK_ROLES: RolePermission[] = [
+  {
+    roleId: 'chief-radiology',
+    roleName: 'Chief of Radiology',
+    roleHierarchy: 7,
+    permissions: {
+      'read_patient_demographics': { granted: true, inherited: false },
+      'read_patient_medical_history': { granted: true, inherited: false },
+      'write_patient_notes': { granted: true, inherited: false },
+      'read_dicom_images': { granted: true, inherited: false },
+      'modify_dicom_images': { granted: true, inherited: false },
+      'create_radiology_reports': { granted: true, inherited: false },
+      'approve_radiology_reports': { granted: true, inherited: false },
+      'run_ai_analysis': { granted: true, inherited: false },
+      'manage_users': { granted: true, inherited: false, restrictedBy: ['department'] },
+      'view_audit_logs': { granted: true, inherited: false },
+      'emergency_access_override': { granted: true, inherited: false }
+    }
+  },
+  {
+    roleId: 'attending-radiologist',
+    roleName: 'Attending Radiologist',
+    roleHierarchy: 4,
+    permissions: {
+      'read_patient_demographics': { granted: true, inherited: false },
+      'read_patient_medical_history': { granted: true, inherited: false },
+      'write_patient_notes': { granted: true, inherited: false },
+      'read_dicom_images': { granted: true, inherited: false },
+      'create_radiology_reports': { granted: true, inherited: false },
+      'approve_radiology_reports': { granted: true, inherited: false },
+      'run_ai_analysis': { granted: true, inherited: false }
+    }
+  },
+  {
+    roleId: 'radiology-resident',
+    roleName: 'Radiology Resident',
+    roleHierarchy: 2,
+    permissions: {
+      'read_patient_demographics': { granted: true, inherited: false },
+      'read_patient_medical_history': { granted: true, inherited: false },
+      'write_patient_notes': { granted: true, inherited: false, conditions: ['requires_supervision'] },
+      'read_dicom_images': { granted: true, inherited: false },
+      'create_radiology_reports': { granted: true, inherited: false, conditions: ['requires_supervision'] },
+      'run_ai_analysis': { granted: true, inherited: false }
+    }
+  },
+  {
+    roleId: 'system-admin',
+    roleName: 'System Administrator',
+    roleHierarchy: 8,
+    permissions: {
+      'manage_users': { granted: true, inherited: false },
+      'manage_roles': { granted: true, inherited: false },
+      'system_configuration': { granted: true, inherited: false },
+      'view_audit_logs': { granted: true, inherited: false },
+      'export_compliance_reports': { granted: true, inherited: false }
+    }
+  }
+];
+
+export default function PermissionMatrix() {
+  const [rolePermissions, setRolePermissions] = useState<RolePermission[]>(MOCK_ROLES);
+  const [selectedRole, setSelectedRole] = useState<string>('');
+  const [selectedGroup, setSelectedGroup] = useState<string>('all');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [showOnlyGranted, setShowOnlyGranted] = useState(false);
+  const [showDetails, setShowDetails] = useState(false);
+
+  // Filter permissions based on search and filters
+  const filteredPermissions = MEDICAL_PERMISSIONS.filter(permission => {
+    const matchesSearch = permission.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         permission.description.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesGroup = selectedGroup === 'all' || permission.category === selectedGroup;
+    return matchesSearch && matchesGroup;
+  });
+
+  const getRiskLevelColor = (riskLevel: string): string => {
+    switch (riskLevel) {
+      case 'low': return 'text-medsight-secondary';
+      case 'medium': return 'text-medsight-accent';
+      case 'high': return 'text-orange-600';
+      case 'critical': return 'text-medsight-critical';
+      default: return 'text-gray-500';
+    }
+  };
+
+  const getRiskLevelBg = (riskLevel: string): string => {
+    switch (riskLevel) {
+      case 'low': return 'bg-medsight-secondary/10';
+      case 'medium': return 'bg-medsight-accent/10';
+      case 'high': return 'bg-orange-600/10';
+      case 'critical': return 'bg-medsight-critical/10';
+      default: return 'bg-gray-100';
+    }
+  };
+
+  const getPermissionStatus = (roleId: string, permissionId: string) => {
+    const role = rolePermissions.find(r => r.roleId === roleId);
+    if (!role) return null;
+    return role.permissions[permissionId] || null;
+  };
+
+  const togglePermission = (roleId: string, permissionId: string) => {
+    setRolePermissions(prevRoles => 
+      prevRoles.map(role => {
+        if (role.roleId === roleId) {
+          const currentStatus = role.permissions[permissionId];
+          return {
+            ...role,
+            permissions: {
+              ...role.permissions,
+              [permissionId]: {
+                granted: !currentStatus?.granted,
+                inherited: false,
+                conditions: currentStatus?.conditions || []
+              }
+            }
+          };
+        }
+        return role;
+      })
+    );
+  };
+
+  const getRolePermissionCount = (roleId: string) => {
+    const role = rolePermissions.find(r => r.roleId === roleId);
+    if (!role) return 0;
+    return Object.values(role.permissions).filter(p => p.granted).length;
+  };
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="space-y-6">
       {/* Header */}
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Permission Matrix</h1>
-          <p className="text-gray-600 mt-1">Visual overview of roles and their assigned permissions</p>
-        </div>
-        <div className="flex space-x-2">
-          <Button variant="outline" onClick={() => setViewMode(viewMode === 'grid' ? 'list' : 'grid')}>
-            {viewMode === 'grid' ? <List className="w-4 h-4 mr-2" /> : <Grid className="w-4 h-4 mr-2" />}
-            {viewMode === 'grid' ? 'List View' : 'Grid View'}
-          </Button>
-          <Button variant="outline" onClick={exportMatrix}>
-            <Download className="w-4 h-4 mr-2" />
-            Export
-          </Button>
-        </div>
-      </div>
-
-      {/* Controls */}
-      <div className="flex flex-wrap gap-4 items-center">
-        <div className="relative flex-1 min-w-64">
-          <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-          <Input
-            placeholder="Search roles and permissions..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10"
-          />
-        </div>
-        
-        <Select value={filterCategory} onValueChange={setFilterCategory}>
-          <SelectTrigger className="w-48">
-            <SelectValue placeholder="Filter by category" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Categories</SelectItem>
-            {categories.map(category => (
-              <SelectItem key={category} value={category}>{category}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-
-        <Select value={filterRiskLevel} onValueChange={setFilterRiskLevel}>
-          <SelectTrigger className="w-48">
-            <SelectValue placeholder="Filter by risk level" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Risk Levels</SelectItem>
-            {riskLevels.map(level => (
-              <SelectItem key={level} value={level}>{level.charAt(0).toUpperCase() + level.slice(1)}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-
-        <div className="flex items-center space-x-2">
-          <Checkbox
-            id="show-inactive"
-            checked={showInactive}
-            onCheckedChange={(checked) => setShowInactive(checked as boolean)}
-          />
-          <label htmlFor="show-inactive" className="text-sm font-medium">
-            Show inactive roles
-          </label>
+      <div className="medsight-glass p-6 rounded-xl">
+        <div className="flex justify-between items-start">
+          <div>
+            <h2 className="text-xl font-semibold text-medsight-primary mb-2">
+              Medical Permission Matrix
+            </h2>
+            <p className="text-gray-600">
+              Manage medical data access permissions and role-based access control
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setShowDetails(!showDetails)}
+              className={`btn-medsight ${showDetails ? 'bg-medsight-primary text-white' : ''}`}
+            >
+              <InformationCircleIcon className="w-4 h-4 mr-2" />
+              {showDetails ? 'Hide Details' : 'Show Details'}
+            </button>
+            <button className="btn-medsight flex items-center gap-2">
+              <ArrowPathIcon className="w-4 h-4" />
+              Refresh
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Total Roles</p>
-                <p className="text-2xl font-bold text-gray-900">{filteredRoles.length}</p>
+      {/* Filters and Search */}
+      <div className="medsight-glass p-6 rounded-xl">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          {/* Search */}
+          <div className="relative">
+            <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Search permissions..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="input-medsight pl-10 w-full"
+            />
+          </div>
+
+          {/* Role Filter */}
+          <select
+            value={selectedRole}
+            onChange={(e) => setSelectedRole(e.target.value)}
+            className="input-medsight"
+          >
+            <option value="">All Roles</option>
+            {rolePermissions.map(role => (
+              <option key={role.roleId} value={role.roleId}>
+                {role.roleName}
+              </option>
+            ))}
+          </select>
+
+          {/* Group Filter */}
+          <select
+            value={selectedGroup}
+            onChange={(e) => setSelectedGroup(e.target.value)}
+            className="input-medsight"
+          >
+            <option value="all">All Categories</option>
+            {PERMISSION_GROUPS.map(group => (
+              <option key={group.id} value={group.id}>
+                {group.name}
+              </option>
+            ))}
+          </select>
+
+          {/* View Options */}
+          <div className="flex items-center gap-2">
+            <label className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                checked={showOnlyGranted}
+                onChange={(e) => setShowOnlyGranted(e.target.checked)}
+                className="rounded border-medsight-primary/20"
+              />
+              <span className="text-sm text-gray-700">Granted Only</span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      {/* Permission Groups Overview */}
+      <div className="medsight-glass p-6 rounded-xl">
+        <h3 className="text-lg font-semibold text-medsight-primary mb-4">
+          Permission Categories
+        </h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {PERMISSION_GROUPS.map(group => {
+            const Icon = group.icon;
+            return (
+              <div key={group.id} className="medsight-control-glass p-4 rounded-lg">
+                <div className="flex items-center gap-3 mb-2">
+                  <Icon className="w-5 h-5" style={{ color: group.color }} />
+                  <h4 className="font-semibold text-medsight-primary">
+                    {group.name}
+                  </h4>
+                </div>
+                <p className="text-sm text-gray-600 mb-2">
+                  {group.description}
+                </p>
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-gray-500">
+                    {group.permissions.length} permissions
+                  </span>
+                  <span className="text-medsight-primary">
+                    {group.permissions.filter(p => p.riskLevel === 'critical').length} critical
+                  </span>
+                </div>
               </div>
-              <Users className="w-8 h-8 text-blue-500" />
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Total Permissions</p>
-                <p className="text-2xl font-bold text-gray-900">{filteredPermissions.length}</p>
-              </div>
-              <Shield className="w-8 h-8 text-green-500" />
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Permission Conflicts</p>
-                <p className="text-2xl font-bold text-red-600">{conflicts.length}</p>
-              </div>
-              <AlertTriangle className="w-8 h-8 text-red-500" />
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">System Roles</p>
-                <p className="text-2xl font-bold text-orange-600">{roles.filter(r => r.isSystem).length}</p>
-              </div>
-              <Settings className="w-8 h-8 text-orange-500" />
-            </div>
-          </CardContent>
-        </Card>
+            );
+          })}
+        </div>
       </div>
 
       {/* Permission Matrix */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center">
-            <Grid className="w-5 h-5 mr-2" />
-            Permission Matrix
-          </CardTitle>
-          <CardDescription>
-            Interactive matrix showing which roles have which permissions
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {viewMode === 'grid' ? (
-            <div className="overflow-x-auto">
-              <table className="min-w-full">
-                <thead>
-                  <tr>
-                    <th className="text-left p-2 font-medium text-gray-900 sticky left-0 bg-white border-r">
-                      Permission
-                    </th>
-                    {filteredRoles.map(role => (
-                      <th key={role.id} className="text-center p-2 min-w-32">
-                        <div className="flex flex-col items-center space-y-1">
-                          <div className={`w-4 h-4 rounded-full ${role.color}`}></div>
-                          <span className="text-xs font-medium truncate max-w-24" title={role.name}>
-                            {role.name}
-                          </span>
-                          <Badge variant="outline" className="text-xs">
-                            {role.userCount}
-                          </Badge>
-                        </div>
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredPermissions.map(permission => (
-                    <tr key={permission.id} className="border-t hover:bg-gray-50">
-                      <td className="p-2 sticky left-0 bg-white border-r">
-                        <div className="flex items-center space-x-2">
-                          <div className="flex-1">
-                            <div className="font-medium text-sm">{permission.name}</div>
-                            <div className="text-xs text-gray-500">{permission.category}</div>
-                          </div>
-                          <div className="flex items-center space-x-1">
-                            <Badge className={getRiskColor(permission.riskLevel)} variant="secondary">
+      <div className="medsight-glass rounded-xl overflow-hidden">
+        <div className="px-6 py-4 border-b border-gray-200">
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-semibold text-medsight-primary">
+              Permission Matrix ({filteredPermissions.length} permissions)
+            </h3>
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-gray-600">
+                {rolePermissions.length} roles
+              </span>
+            </div>
+          </div>
+        </div>
+        
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Permission
+                </th>
+                {rolePermissions.map(role => (
+                  <th key={role.roleId} className="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider min-w-32">
+                    <div className="flex flex-col items-center">
+                      <span className="mb-1">{role.roleName}</span>
+                      <span className="text-xs text-medsight-primary">
+                        Level {role.roleHierarchy}
+                      </span>
+                      <span className="text-xs text-gray-400">
+                        {getRolePermissionCount(role.roleId)} perms
+                      </span>
+                    </div>
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {filteredPermissions.map(permission => {
+                const Icon = permission.icon;
+                return (
+                  <tr key={permission.id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center gap-3">
+                        <Icon className="w-5 h-5 flex-shrink-0" style={{ color: permission.color }} />
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="text-sm font-medium text-gray-900">
+                              {permission.name}
+                            </span>
+                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${getRiskLevelBg(permission.riskLevel)} ${getRiskLevelColor(permission.riskLevel)}`}>
                               {permission.riskLevel}
-                            </Badge>
-                            {permission.isRequired && (
-                              <Badge variant="outline" className="text-xs">
-                                Required
-                              </Badge>
-                            )}
+                            </span>
                           </div>
+                          <div className="text-sm text-gray-500 truncate">
+                            {permission.description}
+                          </div>
+                          {showDetails && (
+                            <div className="flex flex-wrap gap-1 mt-2">
+                              {permission.hipaaProtected && (
+                                <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded">
+                                  HIPAA
+                                </span>
+                              )}
+                              {permission.requiresApproval && (
+                                <span className="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs rounded">
+                                  Approval Required
+                                </span>
+                              )}
+                              {permission.requiresSupervision && (
+                                <span className="px-2 py-1 bg-orange-100 text-orange-800 text-xs rounded">
+                                  Supervision Required
+                                </span>
+                              )}
+                              {permission.emergencyOverride && (
+                                <span className="px-2 py-1 bg-red-100 text-red-800 text-xs rounded">
+                                  Emergency Override
+                                </span>
+                              )}
+                            </div>
+                          )}
                         </div>
-                      </td>
-                      {filteredRoles.map(role => (
-                        <td key={role.id} className="p-2 text-center">
-                          <div className="flex items-center justify-center space-x-1">
-                            {hasPermission(role.id, permission.id) ? (
-                              <Check className="w-4 h-4 text-green-500" />
-                            ) : (
-                              <X className="w-4 h-4 text-gray-300" />
+                      </div>
+                    </td>
+                    {rolePermissions.map(role => {
+                      const status = getPermissionStatus(role.roleId, permission.id);
+                      return (
+                        <td key={role.roleId} className="px-3 py-4 whitespace-nowrap text-center">
+                          <div className="flex flex-col items-center gap-1">
+                            <button
+                              onClick={() => togglePermission(role.roleId, permission.id)}
+                              className={`w-6 h-6 rounded-full flex items-center justify-center transition-colors ${
+                                status?.granted
+                                  ? 'bg-medsight-secondary text-white'
+                                  : 'bg-gray-200 text-gray-400 hover:bg-gray-300'
+                              }`}
+                            >
+                              {status?.granted ? (
+                                <CheckCircleIcon className="w-4 h-4" />
+                              ) : (
+                                <XCircleIcon className="w-4 h-4" />
+                              )}
+                            </button>
+                            {showDetails && status && (
+                              <div className="flex flex-col items-center gap-1 text-xs">
+                                {status.inherited && (
+                                  <span className="text-blue-600">Inherited</span>
+                                )}
+                                {status.conditions && status.conditions.length > 0 && (
+                                  <span className="text-orange-600">Conditional</span>
+                                )}
+                                {status.restrictedBy && status.restrictedBy.length > 0 && (
+                                  <span className="text-red-600">Restricted</span>
+                                )}
+                              </div>
                             )}
-                            {getConflictIcon(role.id, permission.id)}
                           </div>
                         </td>
-                      ))}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {filteredRoles.map(role => (
-                <div key={role.id} className="border rounded-lg p-4">
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center space-x-3">
-                      <div className={`w-4 h-4 rounded-full ${role.color}`}></div>
-                      <div>
-                        <h3 className="font-medium">{role.name}</h3>
-                        <p className="text-sm text-gray-600">{role.description}</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <Badge variant="outline">{role.userCount} users</Badge>
-                      {role.isSystem && <Lock className="w-4 h-4 text-orange-500" />}
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
-                    {role.permissions.map(permissionId => {
-                      const permission = permissions.find(p => p.id === permissionId);
-                      if (!permission) return null;
-                      
-                      const hasConflict = conflicts.some(c => c.roleId === role.id && c.permissionId === permissionId);
-                      
-                      return (
-                        <div key={permissionId} className={`flex items-center space-x-2 p-2 rounded ${hasConflict ? 'bg-red-50' : 'bg-gray-50'}`}>
-                          <Check className="w-3 h-3 text-green-500" />
-                          <span className="text-sm">{permission.name}</span>
-                          <Badge className={getRiskColor(permission.riskLevel)} variant="secondary">
-                            {permission.riskLevel}
-                          </Badge>
-                          {hasConflict && <AlertTriangle className="w-3 h-3 text-red-500" />}
-                        </div>
                       );
                     })}
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </div>
 
-      {/* Conflicts Alert */}
-      {conflicts.length > 0 && (
-        <Alert>
-          <AlertTriangle className="h-4 w-4" />
-          <AlertDescription>
-            <strong>Permission Conflicts Detected:</strong> {conflicts.length} conflicts found in the permission matrix.
-            These may indicate missing dependencies or security risks that need to be addressed.
-          </AlertDescription>
-        </Alert>
-      )}
+      {/* Permission Statistics */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="medsight-glass p-4 rounded-lg">
+          <div className="flex items-center gap-3">
+            <ShieldCheckIcon className="w-8 h-8 text-medsight-primary" />
+            <div>
+              <div className="text-2xl font-bold text-medsight-primary">
+                {MEDICAL_PERMISSIONS.length}
+              </div>
+              <div className="text-sm text-gray-600">Total Permissions</div>
+            </div>
+          </div>
+        </div>
+
+        <div className="medsight-glass p-4 rounded-lg">
+          <div className="flex items-center gap-3">
+            <ExclamationTriangleIcon className="w-8 h-8 text-medsight-critical" />
+            <div>
+              <div className="text-2xl font-bold text-medsight-critical">
+                {MEDICAL_PERMISSIONS.filter(p => p.riskLevel === 'critical').length}
+              </div>
+              <div className="text-sm text-gray-600">Critical Risk</div>
+            </div>
+          </div>
+        </div>
+
+        <div className="medsight-glass p-4 rounded-lg">
+          <div className="flex items-center gap-3">
+            <LockClosedIcon className="w-8 h-8 text-medsight-accent" />
+            <div>
+              <div className="text-2xl font-bold text-medsight-accent">
+                {MEDICAL_PERMISSIONS.filter(p => p.hipaaProtected).length}
+              </div>
+              <div className="text-sm text-gray-600">HIPAA Protected</div>
+            </div>
+          </div>
+        </div>
+
+        <div className="medsight-glass p-4 rounded-lg">
+          <div className="flex items-center gap-3">
+            <EyeIcon className="w-8 h-8 text-medsight-secondary" />
+            <div>
+              <div className="text-2xl font-bold text-medsight-secondary">
+                {MEDICAL_PERMISSIONS.filter(p => p.requiresSupervision).length}
+              </div>
+              <div className="text-sm text-gray-600">Require Supervision</div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
-};
-
-export default PermissionMatrix; 
+} 

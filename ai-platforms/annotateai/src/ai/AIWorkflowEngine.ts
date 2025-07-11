@@ -630,6 +630,25 @@ export interface ExecutionError {
     data?: any;
 }
 
+// Additional interfaces for AI Workflow page
+export interface WorkflowTemplate {
+    id: string;
+    name: string;
+    description: string;
+    category: string;
+    version: string;
+    config: WorkflowConfig;
+}
+
+export interface WorkflowMetrics {
+    totalExecutions: number;
+    completedExecutions: number;
+    failedExecutions: number;
+    successRate: number;
+    averageDuration: number;
+    resourceUtilization: ResourceUsage;
+}
+
 /**
  * G3D-powered AI workflow orchestration engine
  */
@@ -1211,6 +1230,346 @@ export class AIWorkflowEngine {
 
     private generateId(): string {
         return `${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    }
+
+    /**
+     * Initialize the workflow engine
+     */
+    public async initialize(): Promise<void> {
+        await this.start();
+    }
+
+    /**
+     * List all registered workflows
+     */
+    public listWorkflows(): WorkflowConfig[] {
+        return Array.from(this.workflows.values());
+    }
+
+    /**
+     * List workflow templates
+     */
+    public listTemplates(): WorkflowTemplate[] {
+        // Mock templates for now
+        return [
+            {
+                id: 'annotation-pipeline',
+                name: 'Annotation Pipeline',
+                description: 'Standard annotation workflow with AI assistance',
+                category: 'annotation',
+                version: '1.0.0',
+                config: this.workflows.get('annotation-pipeline') || this.createDefaultWorkflow()
+            },
+            {
+                id: 'quality-control',
+                name: 'Quality Control',
+                description: 'Automated quality validation workflow',
+                category: 'validation',
+                version: '1.0.0',
+                config: this.createDefaultWorkflow()
+            }
+        ];
+    }
+
+    /**
+     * List all executions
+     */
+    public listExecutions(): WorkflowExecution[] {
+        return Array.from(this.executions.values());
+    }
+
+    /**
+     * Get workflow metrics
+     */
+    public getWorkflowMetrics(workflowId?: string): WorkflowMetrics {
+        const executions = workflowId 
+            ? Array.from(this.executions.values()).filter(e => e.workflowId === workflowId)
+            : Array.from(this.executions.values());
+
+        const totalExecutions = executions.length;
+        const completedExecutions = executions.filter(e => e.status === 'completed').length;
+        const failedExecutions = executions.filter(e => e.status === 'failed').length;
+        const avgDuration = executions.reduce((sum, e) => sum + (e.metrics?.duration || 0), 0) / totalExecutions || 0;
+
+        return {
+            totalExecutions,
+            completedExecutions,
+            failedExecutions,
+            successRate: totalExecutions > 0 ? (completedExecutions / totalExecutions) * 100 : 0,
+            averageDuration: avgDuration,
+            resourceUtilization: this.getResourceUsage()
+        };
+    }
+
+    /**
+     * Create a new workflow
+     */
+    public createWorkflow(name: string, description: string, tasks: TaskDefinition[] = []): WorkflowConfig {
+        const workflow: WorkflowConfig = {
+            id: this.generateId(),
+            name,
+            description,
+            version: '1.0.0',
+            tasks,
+            dependencies: { nodes: [], edges: [], cycles: [], criticalPath: [] },
+            scheduling: this.getDefaultSchedulingConfig(),
+            execution: this.getDefaultExecutionConfig(),
+            monitoring: this.getDefaultMonitoringConfig(),
+            optimization: this.getDefaultOptimizationConfig()
+        };
+
+        this.registerWorkflow(workflow);
+        return workflow;
+    }
+
+    /**
+     * Stop a running execution
+     */
+    public async stopExecution(executionId: string): Promise<void> {
+        await this.cancelExecution(executionId);
+    }
+
+    /**
+     * Delete a workflow
+     */
+    public deleteWorkflow(workflowId: string): boolean {
+        // Cancel any running executions for this workflow
+        const runningExecutions = Array.from(this.executions.values())
+            .filter(e => e.workflowId === workflowId && e.status === 'running');
+        
+        runningExecutions.forEach(e => this.cancelExecution(e.id));
+
+        // Remove workflow
+        return this.workflows.delete(workflowId);
+    }
+
+    /**
+     * Clone a workflow
+     */
+    public cloneWorkflow(workflowId: string, newName?: string): WorkflowConfig | null {
+        const original = this.workflows.get(workflowId);
+        if (!original) return null;
+
+        const cloned: WorkflowConfig = {
+            ...original,
+            id: this.generateId(),
+            name: newName || `${original.name} (Copy)`,
+            version: '1.0.0'
+        };
+
+        this.registerWorkflow(cloned);
+        return cloned;
+    }
+
+    /**
+     * Create default workflow configuration
+     */
+    private createDefaultWorkflow(): WorkflowConfig {
+        return {
+            id: this.generateId(),
+            name: 'Default Workflow',
+            description: 'Default workflow configuration',
+            version: '1.0.0',
+            tasks: [],
+            dependencies: { nodes: [], edges: [], cycles: [], criticalPath: [] },
+            scheduling: this.getDefaultSchedulingConfig(),
+            execution: this.getDefaultExecutionConfig(),
+            monitoring: this.getDefaultMonitoringConfig(),
+            optimization: this.getDefaultOptimizationConfig()
+        };
+    }
+
+    /**
+     * Get default scheduling configuration
+     */
+    private getDefaultSchedulingConfig(): SchedulingConfig {
+        return {
+            strategy: 'adaptive',
+            concurrency: {
+                maxConcurrent: 4,
+                maxPerType: {
+                    data_preprocessing: 2,
+                    feature_extraction: 2,
+                    model_training: 1,
+                    model_inference: 4,
+                    post_processing: 2,
+                    validation: 2,
+                    annotation: 3,
+                    augmentation: 2,
+                    quality_control: 2,
+                    export: 1,
+                    notification: 5,
+                    custom: 2
+                },
+                resourceSharing: true,
+                deadlockDetection: true
+            },
+            priority: {
+                enabled: true,
+                algorithm: 'priority',
+                weights: { low: 1, normal: 2, high: 3, critical: 4 }
+            },
+            loadBalancing: {
+                enabled: true,
+                algorithm: 'least_loaded',
+                metrics: ['cpu', 'memory']
+            },
+            failover: {
+                enabled: true,
+                retryPolicy: {
+                    maxAttempts: 3,
+                    backoffStrategy: 'exponential',
+                    baseDelay: 1000,
+                    maxDelay: 10000,
+                    jitter: true
+                },
+                fallbackTasks: {},
+                circuitBreaker: {
+                    enabled: true,
+                    failureThreshold: 5,
+                    resetTimeout: 60000,
+                    halfOpenMaxCalls: 3
+                }
+            }
+        };
+    }
+
+    /**
+     * Get default execution configuration
+     */
+    private getDefaultExecutionConfig(): ExecutionConfig {
+        return {
+            environment: {
+                sandbox: true,
+                permissions: [],
+                limits: {
+                    maxExecutionTime: 300000,
+                    maxMemory: 512 * 1024 * 1024,
+                    maxCPU: 80,
+                    maxNetwork: 100 * 1024 * 1024
+                },
+                context: {
+                    workflowId: '',
+                    sessionId: '',
+                    userId: '',
+                    environment: 'production',
+                    variables: {}
+                }
+            },
+            isolation: {
+                enabled: true,
+                level: 'process',
+                resourceIsolation: true,
+                networkIsolation: false
+            },
+            security: {
+                authentication: true,
+                authorization: true,
+                encryption: {
+                    enabled: true,
+                    algorithm: 'AES-256',
+                    keyRotation: true,
+                    dataAtRest: true,
+                    dataInTransit: true
+                },
+                audit: {
+                    enabled: true,
+                    events: ['task_start', 'task_complete', 'task_fail'],
+                    storage: 'indexeddb',
+                    retention: 30
+                }
+            },
+            logging: {
+                level: 'info',
+                format: 'json',
+                destinations: [{ type: 'console', configuration: {}, filters: [] }],
+                structured: true,
+                sampling: { enabled: false, rate: 1.0, adaptive: false }
+            },
+            metrics: {
+                enabled: true,
+                collectors: [
+                    { type: 'performance', metrics: ['duration', 'throughput'], interval: 1000 }
+                ],
+                exporters: [],
+                aggregation: { window: 60000, functions: ['avg', 'max'], retention: 86400 }
+            }
+        };
+    }
+
+    /**
+     * Get default monitoring configuration
+     */
+    private getDefaultMonitoringConfig(): MonitoringConfig {
+        return {
+            healthCheck: {
+                enabled: true,
+                interval: 30000,
+                timeout: 5000,
+                checks: []
+            },
+            alerting: {
+                enabled: true,
+                rules: [],
+                channels: [],
+                throttling: {
+                    enabled: true,
+                    window: 300000,
+                    maxAlerts: 10,
+                    cooldown: 60000
+                }
+            },
+            tracing: {
+                enabled: true,
+                samplingRate: 0.1,
+                exporters: [],
+                correlation: {
+                    enabled: true,
+                    headers: ['x-trace-id'],
+                    propagation: true
+                }
+            },
+            profiling: {
+                enabled: false,
+                types: ['cpu', 'memory'],
+                interval: 10000,
+                duration: 5000
+            }
+        };
+    }
+
+    /**
+     * Get default optimization configuration
+     */
+    private getDefaultOptimizationConfig(): OptimizationConfig {
+        return {
+            enabled: true,
+            strategies: [
+                { type: 'task_fusion', enabled: true, parameters: {} },
+                { type: 'pipeline_optimization', enabled: true, parameters: {} }
+            ],
+            autoTuning: {
+                enabled: false,
+                algorithm: 'bayesian',
+                objectives: [],
+                constraints: []
+            },
+            caching: {
+                enabled: true,
+                levels: [
+                    { name: 'L1', type: 'memory', size: 100 * 1024 * 1024, ttl: 3600 }
+                ],
+                policies: [
+                    { type: 'lru', parameters: {} }
+                ],
+                storage: { type: 'indexeddb', configuration: {} }
+            },
+            prefetching: {
+                enabled: false,
+                strategies: [],
+                predictors: []
+            }
+        };
     }
 
     /**

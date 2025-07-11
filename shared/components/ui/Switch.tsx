@@ -4,6 +4,7 @@ interface SwitchProps {
   label?: string;
   checked?: boolean;
   onChange?: (checked: boolean) => void;
+  onCheckedChange?: (checked: boolean) => void;
   disabled?: boolean;
   className?: string;
 }
@@ -12,11 +13,13 @@ export const Switch: React.FC<SwitchProps> = ({
   label, 
   checked = false,
   onChange,
+  onCheckedChange,
   disabled = false,
   className = ''
 }) => {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     onChange?.(e.target.checked);
+    onCheckedChange?.(e.target.checked);
   };
 
   return (

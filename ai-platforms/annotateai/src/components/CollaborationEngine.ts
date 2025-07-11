@@ -41,7 +41,7 @@ interface VRConfig {
     handTracking: boolean;
 }
 
-interface User {
+export interface User {
     id: string;
     name: string;
     email: string;
@@ -109,7 +109,7 @@ interface UserStatistics {
     accuracy: number;
 }
 
-enum UserRole {
+export enum UserRole {
     VIEWER = 'viewer',
     ANNOTATOR = 'annotator',
     REVIEWER = 'reviewer',
@@ -117,7 +117,7 @@ enum UserRole {
     OWNER = 'owner'
 }
 
-enum Permission {
+export enum Permission {
     VIEW = 'view',
     ANNOTATE = 'annotate',
     EDIT = 'edit',
@@ -136,7 +136,7 @@ interface ResourcePermission {
     roles: UserRole[];
 }
 
-interface CollaborationSession {
+export interface CollaborationSession {
     id: string;
     name: string;
     description: string;
@@ -150,7 +150,7 @@ interface CollaborationSession {
     state: SessionState;
 }
 
-interface CollaborativeAnnotation {
+export interface CollaborativeAnnotation {
     id: string;
     type: string;
     data: any;
@@ -166,7 +166,7 @@ interface CollaborativeAnnotation {
     status: AnnotationStatus;
 }
 
-interface Comment {
+export interface Comment {
     id: string;
     text: string;
     author: string;
@@ -175,7 +175,7 @@ interface Comment {
     replies: Comment[];
 }
 
-interface Review {
+export interface Review {
     id: string;
     reviewer: string;
     timestamp: number;
@@ -191,7 +191,7 @@ interface ReviewChange {
     accepted: boolean;
 }
 
-enum AnnotationStatus {
+export enum AnnotationStatus {
     DRAFT = 'draft',
     PENDING_REVIEW = 'pending_review',
     APPROVED = 'approved',
@@ -220,7 +220,7 @@ enum ChangeAction {
     SPLIT = 'split'
 }
 
-interface Conflict {
+export interface Conflict {
     id: string;
     timestamp: number;
     type: ConflictType;
@@ -231,7 +231,7 @@ interface Conflict {
     resolved: boolean;
 }
 
-enum ConflictType {
+export enum ConflictType {
     CONCURRENT_EDIT = 'concurrent_edit',
     PERMISSION_DENIED = 'permission_denied',
     RESOURCE_LOCKED = 'resource_locked',

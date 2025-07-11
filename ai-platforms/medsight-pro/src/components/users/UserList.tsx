@@ -1,741 +1,624 @@
-'use client'
+'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Alert, AlertDescription } from '@/components/ui/Alert';
 import { 
-  Users, 
-  UserPlus, 
-  UserX, 
   Search, 
   Filter, 
-  MoreHorizontal, 
-  Edit, 
-  Trash2, 
-  Eye, 
+  MoreVertical, 
+  UserCheck, 
+  UserX, 
+  Shield, 
+  Clock, 
   Mail, 
   Phone, 
-  MapPin, 
   Award, 
-  Building2, 
-  Calendar, 
-  Clock, 
-  Shield, 
-  AlertTriangle, 
-  CheckCircle, 
+  Building,
+  CheckCircle,
+  AlertTriangle,
   XCircle,
-  Download,
-  RefreshCw,
-  Settings,
-  Activity,
-  Lock,
-  Unlock
+  Edit,
+  Trash2,
+  Eye,
+  Key,
+  Activity
 } from 'lucide-react';
 
-interface User {
+interface MedicalUser {
   id: string;
-  email: string;
   firstName: string;
   lastName: string;
-  roles: string[];
-  department: string;
-  licenseNumber: string;
-  licenseState: string;
-  specialization: string;
+  email: string;
   phone: string;
-  address: string;
+  medicalLicense: string;
+  npiNumber: string;
+  specialization: string[];
+  department: string;
+  role: string;
+  roleTitle: string;
+  hierarchy: number;
+  hospitalAffiliation: string;
   isActive: boolean;
-  isVerified: boolean;
   lastLogin: Date;
   createdAt: Date;
-  updatedAt: Date;
+  sessionCount: number;
+  emergencyAccess: boolean;
+  complianceStatus: 'compliant' | 'warning' | 'non-compliant';
+  licenseExpiry: Date;
+  trainingStatus: 'current' | 'due' | 'overdue';
   profilePicture?: string;
 }
 
-interface Role {
-  id: string;
-  name: string;
-  color: string;
+interface UserListProps {
+  onUserSelect?: (user: MedicalUser) => void;
+  selectedUsers?: string[];
+  onSelectionChange?: (selectedIds: string[]) => void;
+  showActions?: boolean;
+  showFilters?: boolean;
+  maxHeight?: string;
 }
 
-interface UserStats {
-  totalUsers: number;
-  activeUsers: number;
-  inactiveUsers: number;
-  pendingVerification: number;
-  recentLogins: number;
-  newUsersThisMonth: number;
-}
-
-const UserList: React.FC = () => {
-  const [users, setUsers] = useState<User[]>([]);
-  const [roles, setRoles] = useState<Role[]>([]);
-  const [stats, setStats] = useState<UserStats>({
-    totalUsers: 0,
-    activeUsers: 0,
-    inactiveUsers: 0,
-    pendingVerification: 0,
-    recentLogins: 0,
-    newUsersThisMonth: 0
-  });
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filterDepartment, setFilterDepartment] = useState<string>('all');
-  const [filterRole, setFilterRole] = useState<string>('all');
-  const [filterStatus, setFilterStatus] = useState<string>('all');
-  const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
-  const [sortBy, setSortBy] = useState<'name' | 'email' | 'department' | 'lastLogin' | 'createdAt'>('name');
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+export default function UserList({ 
+  onUserSelect, 
+  selectedUsers = [], 
+  onSelectionChange, 
+  showActions = true, 
+  showFilters = true,
+  maxHeight = "600px"
+}: UserListProps) {
+  const [users, setUsers] = useState<MedicalUser[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterRole, setFilterRole] = useState('all');
+  const [filterDepartment, setFilterDepartment] = useState('all');
+  const [filterStatus, setFilterStatus] = useState('all');
+  const [sortBy, setSortBy] = useState<'name' | 'role' | 'department' | 'lastLogin'>('name');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+  const [showUserModal, setShowUserModal] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<MedicalUser | null>(null);
 
   useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        // Mock data - replace with actual API calls
-        const mockUsers: User[] = [
-          {
-            id: '1',
-            email: 'sarah.johnson@hospital.com',
-            firstName: 'Sarah',
-            lastName: 'Johnson',
-            roles: ['1', '2'],
-            department: 'Radiology',
-            licenseNumber: 'MD123456',
-            licenseState: 'CA',
-            specialization: 'Diagnostic Radiology',
-            phone: '(555) 123-4567',
-            address: '123 Medical Center Dr, San Francisco, CA 94102',
-            isActive: true,
-            isVerified: true,
-            lastLogin: new Date('2024-01-25T10:30:00Z'),
-            createdAt: new Date('2024-01-01T00:00:00Z'),
-            updatedAt: new Date('2024-01-25T10:30:00Z')
-          },
-          {
-            id: '2',
-            email: 'mark.chen@hospital.com',
-            firstName: 'Mark',
-            lastName: 'Chen',
-            roles: ['2'],
-            department: 'Radiology',
-            licenseNumber: 'MD789012',
-            licenseState: 'NY',
-            specialization: 'Interventional Radiology',
-            phone: '(555) 234-5678',
-            address: '456 Hospital Ave, New York, NY 10001',
-            isActive: true,
-            isVerified: true,
-            lastLogin: new Date('2024-01-24T15:45:00Z'),
-            createdAt: new Date('2024-01-05T00:00:00Z'),
-            updatedAt: new Date('2024-01-24T15:45:00Z')
-          },
-          {
-            id: '3',
-            email: 'lisa.rodriguez@hospital.com',
-            firstName: 'Lisa',
-            lastName: 'Rodriguez',
-            roles: ['3'],
-            department: 'Radiology',
-            licenseNumber: 'RT345678',
-            licenseState: 'TX',
-            specialization: 'Radiologic Technology',
-            phone: '(555) 345-6789',
-            address: '789 Healthcare Blvd, Houston, TX 77001',
-            isActive: true,
-            isVerified: true,
-            lastLogin: new Date('2024-01-25T08:15:00Z'),
-            createdAt: new Date('2024-01-10T00:00:00Z'),
-            updatedAt: new Date('2024-01-25T08:15:00Z')
-          },
-          {
-            id: '4',
-            email: 'john.smith@hospital.com',
-            firstName: 'John',
-            lastName: 'Smith',
-            roles: ['4'],
-            department: 'Education',
-            licenseNumber: 'MS901234',
-            licenseState: 'FL',
-            specialization: 'Medical Student',
-            phone: '(555) 456-7890',
-            address: '101 University St, Miami, FL 33101',
-            isActive: true,
-            isVerified: false,
-            lastLogin: new Date('2024-01-23T14:20:00Z'),
-            createdAt: new Date('2024-01-15T00:00:00Z'),
-            updatedAt: new Date('2024-01-23T14:20:00Z')
-          },
-          {
-            id: '5',
-            email: 'admin@hospital.com',
-            firstName: 'System',
-            lastName: 'Administrator',
-            roles: ['5'],
-            department: 'IT',
-            licenseNumber: 'IT567890',
-            licenseState: 'CA',
-            specialization: 'System Administration',
-            phone: '(555) 567-8901',
-            address: '123 Medical Center Dr, San Francisco, CA 94102',
-            isActive: true,
-            isVerified: true,
-            lastLogin: new Date('2024-01-25T11:00:00Z'),
-            createdAt: new Date('2024-01-01T00:00:00Z'),
-            updatedAt: new Date('2024-01-25T11:00:00Z')
-          },
-          {
-            id: '6',
-            email: 'jane.doe@hospital.com',
-            firstName: 'Jane',
-            lastName: 'Doe',
-            roles: ['6'],
-            department: 'Quality',
-            licenseNumber: 'QA123456',
-            licenseState: 'IL',
-            specialization: 'Quality Assurance',
-            phone: '(555) 678-9012',
-            address: '456 Medical Plaza, Chicago, IL 60601',
-            isActive: false,
-            isVerified: true,
-            lastLogin: new Date('2024-01-20T09:30:00Z'),
-            createdAt: new Date('2024-01-08T00:00:00Z'),
-            updatedAt: new Date('2024-01-20T09:30:00Z')
-          },
-          {
-            id: '7',
-            email: 'mike.wilson@hospital.com',
-            firstName: 'Mike',
-            lastName: 'Wilson',
-            roles: ['2'],
-            department: 'Emergency',
-            licenseNumber: 'MD111222',
-            licenseState: 'WA',
-            specialization: 'Emergency Medicine',
-            phone: '(555) 789-0123',
-            address: '789 Emergency Ave, Seattle, WA 98101',
-            isActive: true,
-            isVerified: false,
-            lastLogin: new Date('2024-01-22T12:00:00Z'),
-            createdAt: new Date('2024-01-20T00:00:00Z'),
-            updatedAt: new Date('2024-01-22T12:00:00Z')
-          },
-          {
-            id: '8',
-            email: 'anna.kim@hospital.com',
-            firstName: 'Anna',
-            lastName: 'Kim',
-            roles: ['3'],
-            department: 'Cardiology',
-            licenseNumber: 'RT444555',
-            licenseState: 'OR',
-            specialization: 'Cardiac Imaging',
-            phone: '(555) 890-1234',
-            address: '321 Heart Center Dr, Portland, OR 97201',
-            isActive: true,
-            isVerified: true,
-            lastLogin: new Date('2024-01-25T09:45:00Z'),
-            createdAt: new Date('2024-01-12T00:00:00Z'),
-            updatedAt: new Date('2024-01-25T09:45:00Z')
-          }
-        ];
-
-        const mockRoles: Role[] = [
-          { id: '1', name: 'Senior Radiologist', color: 'bg-blue-500' },
-          { id: '2', name: 'Radiologist', color: 'bg-green-500' },
-          { id: '3', name: 'Radiology Technician', color: 'bg-purple-500' },
-          { id: '4', name: 'Medical Student', color: 'bg-yellow-500' },
-          { id: '5', name: 'System Administrator', color: 'bg-red-500' },
-          { id: '6', name: 'Quality Assurance', color: 'bg-indigo-500' }
-        ];
-
-        const mockStats: UserStats = {
-          totalUsers: mockUsers.length,
-          activeUsers: mockUsers.filter(u => u.isActive).length,
-          inactiveUsers: mockUsers.filter(u => !u.isActive).length,
-          pendingVerification: mockUsers.filter(u => !u.isVerified).length,
-          recentLogins: mockUsers.filter(u => {
-            const yesterday = new Date();
-            yesterday.setDate(yesterday.getDate() - 1);
-            return u.lastLogin > yesterday;
-          }).length,
-          newUsersThisMonth: mockUsers.filter(u => {
-            const thisMonth = new Date();
-            thisMonth.setDate(1);
-            return u.createdAt > thisMonth;
-          }).length
-        };
-
-        setUsers(mockUsers);
-        setRoles(mockRoles);
-        setStats(mockStats);
-        setLoading(false);
-      } catch (error) {
-        console.error('Error fetching users:', error);
-        setLoading(false);
-      }
-    };
-
-    fetchUsers();
+    loadUsers();
   }, []);
 
-  const filteredUsers = users.filter(user => {
-    const matchesSearch = 
-      user.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.licenseNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.specialization.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchesDepartment = filterDepartment === 'all' || user.department === filterDepartment;
-    const matchesRole = filterRole === 'all' || user.roles.includes(filterRole);
-    const matchesStatus = filterStatus === 'all' || 
-      (filterStatus === 'active' && user.isActive) ||
-      (filterStatus === 'inactive' && !user.isActive) ||
-      (filterStatus === 'verified' && user.isVerified) ||
-      (filterStatus === 'unverified' && !user.isVerified);
-    
-    return matchesSearch && matchesDepartment && matchesRole && matchesStatus;
-  });
+  const loadUsers = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const response = await fetch('/api/admin/users/list', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Medical-Context': 'user-management',
+        },
+      });
 
-  const sortedUsers = [...filteredUsers].sort((a, b) => {
-    let aValue: any = a[sortBy];
-    let bValue: any = b[sortBy];
-    
-    if (sortBy === 'name') {
-      aValue = `${a.firstName} ${a.lastName}`;
-      bValue = `${b.firstName} ${b.lastName}`;
+      if (!response.ok) {
+        throw new Error('Failed to load users');
+      }
+
+      const data = await response.json();
+      setUsers(data.users);
+    } catch (error) {
+      console.error('Users loading error:', error);
+      setError(error instanceof Error ? error.message : 'Unknown error');
+      
+      // Mock data for development
+      loadMockData();
+    } finally {
+      setLoading(false);
     }
-    
-    if (aValue < bValue) return sortOrder === 'asc' ? -1 : 1;
-    if (aValue > bValue) return sortOrder === 'asc' ? 1 : -1;
-    return 0;
-  });
-
-  const departments = [...new Set(users.map(u => u.department))];
-
-  const getUserRoles = (userId: string) => {
-    const user = users.find(u => u.id === userId);
-    if (!user) return [];
-    return user.roles.map(roleId => roles.find(r => r.id === roleId)).filter(Boolean) as Role[];
   };
 
-  const handleSort = (field: typeof sortBy) => {
-    if (sortBy === field) {
-      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+  const loadMockData = () => {
+    const mockUsers: MedicalUser[] = [
+      {
+        id: 'user-001',
+        firstName: 'Sarah',
+        lastName: 'Chen',
+        email: 'sarah.chen@hospital.com',
+        phone: '+1 (555) 123-4567',
+        medicalLicense: 'MD-CA-12345',
+        npiNumber: '1234567890',
+        specialization: ['Radiology', 'Nuclear Medicine'],
+        department: 'Radiology',
+        role: 'radiologist',
+        roleTitle: 'Senior Radiologist',
+        hierarchy: 7,
+        hospitalAffiliation: 'Metro General Hospital',
+        isActive: true,
+        lastLogin: new Date(Date.now() - 2 * 60 * 60 * 1000),
+        createdAt: new Date(Date.now() - 180 * 24 * 60 * 60 * 1000),
+        sessionCount: 342,
+        emergencyAccess: false,
+        complianceStatus: 'compliant',
+        licenseExpiry: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
+        trainingStatus: 'current'
+      },
+      {
+        id: 'user-002',
+        firstName: 'Michael',
+        lastName: 'Rodriguez',
+        email: 'michael.rodriguez@hospital.com',
+        phone: '+1 (555) 234-5678',
+        medicalLicense: 'MD-CA-23456',
+        npiNumber: '2345678901',
+        specialization: ['Emergency Medicine', 'Trauma'],
+        department: 'Emergency Medicine',
+        role: 'emergency-physician',
+        roleTitle: 'Emergency Physician',
+        hierarchy: 8,
+        hospitalAffiliation: 'Metro General Hospital',
+        isActive: true,
+        lastLogin: new Date(Date.now() - 30 * 60 * 1000),
+        createdAt: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000),
+        sessionCount: 156,
+        emergencyAccess: true,
+        complianceStatus: 'compliant',
+        licenseExpiry: new Date(Date.now() + 200 * 24 * 60 * 60 * 1000),
+        trainingStatus: 'current'
+      },
+      {
+        id: 'user-003',
+        firstName: 'Emily',
+        lastName: 'Johnson',
+        email: 'emily.johnson@hospital.com',
+        phone: '+1 (555) 345-6789',
+        medicalLicense: 'MD-CA-34567',
+        npiNumber: '3456789012',
+        specialization: ['Internal Medicine'],
+        department: 'Internal Medicine',
+        role: 'resident',
+        roleTitle: 'Medical Resident',
+        hierarchy: 4,
+        hospitalAffiliation: 'Metro General Hospital',
+        isActive: true,
+        lastLogin: new Date(Date.now() - 6 * 60 * 60 * 1000),
+        createdAt: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000),
+        sessionCount: 89,
+        emergencyAccess: false,
+        complianceStatus: 'warning',
+        licenseExpiry: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000),
+        trainingStatus: 'due'
+      },
+      {
+        id: 'user-004',
+        firstName: 'David',
+        lastName: 'Kim',
+        email: 'david.kim@hospital.com',
+        phone: '+1 (555) 456-7890',
+        medicalLicense: 'MD-CA-45678',
+        npiNumber: '4567890123',
+        specialization: ['Cardiology', 'Interventional Cardiology'],
+        department: 'Cardiology',
+        role: 'attending-physician',
+        roleTitle: 'Attending Cardiologist',
+        hierarchy: 8,
+        hospitalAffiliation: 'Metro General Hospital',
+        isActive: false,
+        lastLogin: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
+        createdAt: new Date(Date.now() - 120 * 24 * 60 * 60 * 1000),
+        sessionCount: 234,
+        emergencyAccess: false,
+        complianceStatus: 'non-compliant',
+        licenseExpiry: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
+        trainingStatus: 'overdue'
+      },
+      {
+        id: 'user-005',
+        firstName: 'Jessica',
+        lastName: 'Williams',
+        email: 'jessica.williams@hospital.com',
+        phone: '+1 (555) 567-8901',
+        medicalLicense: 'MD-CA-56789',
+        npiNumber: '5678901234',
+        specialization: ['Anesthesiology'],
+        department: 'Anesthesiology',
+        role: 'attending-physician',
+        roleTitle: 'Chief of Anesthesiology',
+        hierarchy: 9,
+        hospitalAffiliation: 'Metro General Hospital',
+        isActive: true,
+        lastLogin: new Date(Date.now() - 1 * 60 * 60 * 1000),
+        createdAt: new Date(Date.now() - 240 * 24 * 60 * 60 * 1000),
+        sessionCount: 567,
+        emergencyAccess: true,
+        complianceStatus: 'compliant',
+        licenseExpiry: new Date(Date.now() + 500 * 24 * 60 * 60 * 1000),
+        trainingStatus: 'current'
+      }
+    ];
+
+    setUsers(mockUsers);
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'compliant': return 'text-medsight-normal';
+      case 'warning': return 'text-medsight-pending';
+      case 'non-compliant': return 'text-medsight-critical';
+      default: return 'text-slate-600';
+    }
+  };
+
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case 'compliant': return <CheckCircle className="w-4 h-4 text-medsight-normal" />;
+      case 'warning': return <AlertTriangle className="w-4 h-4 text-medsight-pending" />;
+      case 'non-compliant': return <XCircle className="w-4 h-4 text-medsight-critical" />;
+      default: return <CheckCircle className="w-4 h-4 text-slate-400" />;
+    }
+  };
+
+  const getRoleColor = (hierarchy: number) => {
+    if (hierarchy >= 8) return 'text-medsight-critical';
+    if (hierarchy >= 6) return 'text-medsight-pending';
+    if (hierarchy >= 4) return 'text-medsight-secondary';
+    return 'text-medsight-normal';
+  };
+
+  const formatLastLogin = (date: Date) => {
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMins = Math.floor(diffMs / (1000 * 60));
+    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+    if (diffMins < 60) {
+      return `${diffMins} minutes ago`;
+    } else if (diffHours < 24) {
+      return `${diffHours} hours ago`;
     } else {
-      setSortBy(field);
-      setSortOrder('asc');
+      return `${diffDays} days ago`;
     }
   };
 
-  const handleToggleUserStatus = (userId: string) => {
-    setUsers(users.map(u => 
-      u.id === userId 
-        ? { ...u, isActive: !u.isActive, updatedAt: new Date() }
-        : u
-    ));
+  const filteredAndSortedUsers = users
+    .filter(user => {
+      const matchesSearch = 
+        user.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        user.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        user.medicalLicense.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        user.department.toLowerCase().includes(searchTerm.toLowerCase());
+      
+      const matchesRole = filterRole === 'all' || user.role === filterRole;
+      const matchesDepartment = filterDepartment === 'all' || user.department === filterDepartment;
+      const matchesStatus = filterStatus === 'all' || 
+        (filterStatus === 'active' && user.isActive) ||
+        (filterStatus === 'inactive' && !user.isActive);
+
+      return matchesSearch && matchesRole && matchesDepartment && matchesStatus;
+    })
+    .sort((a, b) => {
+      let aValue, bValue;
+      
+      switch (sortBy) {
+        case 'name':
+          aValue = `${a.firstName} ${a.lastName}`;
+          bValue = `${b.firstName} ${b.lastName}`;
+          break;
+        case 'role':
+          aValue = a.roleTitle;
+          bValue = b.roleTitle;
+          break;
+        case 'department':
+          aValue = a.department;
+          bValue = b.department;
+          break;
+        case 'lastLogin':
+          aValue = a.lastLogin.getTime();
+          bValue = b.lastLogin.getTime();
+          break;
+        default:
+          aValue = a.firstName;
+          bValue = b.firstName;
+      }
+
+      if (sortOrder === 'asc') {
+        return aValue > bValue ? 1 : -1;
+      } else {
+        return aValue < bValue ? 1 : -1;
+      }
+    });
+
+  const handleUserSelect = (user: MedicalUser) => {
+    setSelectedUser(user);
+    onUserSelect?.(user);
   };
 
-  const handleDeleteUser = (userId: string) => {
-    setUsers(users.filter(u => u.id !== userId));
+  const handleSelectionToggle = (userId: string) => {
+    const newSelection = selectedUsers.includes(userId)
+      ? selectedUsers.filter(id => id !== userId)
+      : [...selectedUsers, userId];
+    onSelectionChange?.(newSelection);
   };
 
-  const handleVerifyUser = (userId: string) => {
-    setUsers(users.map(u => 
-      u.id === userId 
-        ? { ...u, isVerified: true, updatedAt: new Date() }
-        : u
-    ));
-  };
-
-  const toggleUserSelection = (userId: string) => {
-    setSelectedUsers(prev => 
-      prev.includes(userId) 
-        ? prev.filter(id => id !== userId)
-        : [...prev, userId]
-    );
-  };
-
-  const selectAllUsers = () => {
-    if (selectedUsers.length === sortedUsers.length) {
-      setSelectedUsers([]);
-    } else {
-      setSelectedUsers(sortedUsers.map(u => u.id));
-    }
-  };
-
-  const exportUsers = () => {
-    // Implementation for exporting users
-    console.log('Exporting users...');
-  };
-
-  const getStatusIcon = (user: User) => {
-    if (!user.isActive) return <XCircle className="w-4 h-4 text-red-500" />;
-    if (!user.isVerified) return <AlertTriangle className="w-4 h-4 text-yellow-500" />;
-    return <CheckCircle className="w-4 h-4 text-green-500" />;
-  };
-
-  const getStatusText = (user: User) => {
-    if (!user.isActive) return 'Inactive';
-    if (!user.isVerified) return 'Pending Verification';
-    return 'Active';
-  };
-
-  const getStatusColor = (user: User) => {
-    if (!user.isActive) return 'bg-red-100 text-red-800';
-    if (!user.isVerified) return 'bg-yellow-100 text-yellow-800';
-    return 'bg-green-100 text-green-800';
+  const handleSelectAll = () => {
+    const allIds = filteredAndSortedUsers.map(user => user.id);
+    onSelectionChange?.(selectedUsers.length === allIds.length ? [] : allIds);
   };
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-96">
-        <RefreshCw className="w-8 h-8 animate-spin text-blue-500" />
+      <div className="medsight-glass p-8 rounded-xl">
+        <div className="flex items-center justify-center">
+          <div className="w-8 h-8 border-4 border-medsight-primary border-t-transparent rounded-full animate-spin"></div>
+          <span className="ml-4 text-medsight-primary">Loading medical professionals...</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (error && !users.length) {
+    return (
+      <div className="medsight-glass p-8 rounded-xl border-medsight-critical/20">
+        <div className="text-center">
+          <XCircle className="w-12 h-12 text-medsight-critical mx-auto mb-4" />
+          <div className="text-lg font-medium text-medsight-critical mb-2">
+            Error Loading Users
+          </div>
+          <div className="text-sm text-medsight-critical/70 mb-4">
+            {error}
+          </div>
+          <button onClick={loadUsers} className="btn-medsight">
+            Retry Loading
+          </button>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="p-6 space-y-6">
-      {/* Header */}
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">User Management</h1>
-          <p className="text-gray-600 mt-1">Manage medical professionals and their accounts</p>
-        </div>
-        <div className="flex space-x-2">
-          <Button variant="outline" onClick={exportUsers}>
-            <Download className="w-4 h-4 mr-2" />
-            Export
-          </Button>
-          <Button>
-            <UserPlus className="w-4 h-4 mr-2" />
-            Add User
-          </Button>
-        </div>
-      </div>
-
-      {/* Statistics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Total Users</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.totalUsers}</p>
-              </div>
-              <Users className="w-8 h-8 text-blue-500" />
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Active</p>
-                <p className="text-2xl font-bold text-green-600">{stats.activeUsers}</p>
-              </div>
-              <CheckCircle className="w-8 h-8 text-green-500" />
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Inactive</p>
-                <p className="text-2xl font-bold text-red-600">{stats.inactiveUsers}</p>
-              </div>
-              <XCircle className="w-8 h-8 text-red-500" />
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Pending</p>
-                <p className="text-2xl font-bold text-yellow-600">{stats.pendingVerification}</p>
-              </div>
-              <AlertTriangle className="w-8 h-8 text-yellow-500" />
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Recent Logins</p>
-                <p className="text-2xl font-bold text-purple-600">{stats.recentLogins}</p>
-              </div>
-              <Activity className="w-8 h-8 text-purple-500" />
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">New This Month</p>
-                <p className="text-2xl font-bold text-indigo-600">{stats.newUsersThisMonth}</p>
-              </div>
-              <Calendar className="w-8 h-8 text-indigo-500" />
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
+    <div className="space-y-6">
       {/* Search and Filters */}
-      <div className="flex flex-wrap gap-4 items-center">
-        <div className="relative flex-1 min-w-64">
-          <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-          <Input
-            placeholder="Search users..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10"
-          />
-        </div>
-        
-        <Select value={filterDepartment} onValueChange={setFilterDepartment}>
-          <SelectTrigger className="w-48">
-            <SelectValue placeholder="Filter by department" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Departments</SelectItem>
-            {departments.map(dept => (
-              <SelectItem key={dept} value={dept}>{dept}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-
-        <Select value={filterRole} onValueChange={setFilterRole}>
-          <SelectTrigger className="w-48">
-            <SelectValue placeholder="Filter by role" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Roles</SelectItem>
-            {roles.map(role => (
-              <SelectItem key={role.id} value={role.id}>{role.name}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-
-        <Select value={filterStatus} onValueChange={setFilterStatus}>
-          <SelectTrigger className="w-48">
-            <SelectValue placeholder="Filter by status" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Status</SelectItem>
-            <SelectItem value="active">Active</SelectItem>
-            <SelectItem value="inactive">Inactive</SelectItem>
-            <SelectItem value="verified">Verified</SelectItem>
-            <SelectItem value="unverified">Unverified</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-
-      {/* Users Table */}
-      <Card>
-        <CardHeader>
-          <div className="flex justify-between items-center">
-            <div>
-              <CardTitle>Users ({sortedUsers.length})</CardTitle>
-              <CardDescription>
-                Manage user accounts and their details
-              </CardDescription>
+      {showFilters && (
+        <div className="medsight-glass p-6 rounded-xl">
+          <div className="flex flex-col lg:flex-row gap-4">
+            {/* Search */}
+            <div className="flex-1 relative">
+              <Search className="absolute left-3 top-3 w-4 h-4 text-slate-400" />
+              <input
+                type="text"
+                placeholder="Search medical professionals..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="input-medsight pl-10 w-full"
+              />
             </div>
-            <div className="flex items-center space-x-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={selectAllUsers}
+
+            {/* Role Filter */}
+            <select
+              value={filterRole}
+              onChange={(e) => setFilterRole(e.target.value)}
+              className="input-medsight min-w-[200px]"
+            >
+              <option value="all">All Roles</option>
+              <option value="attending-physician">Attending Physician</option>
+              <option value="radiologist">Radiologist</option>
+              <option value="emergency-physician">Emergency Physician</option>
+              <option value="resident">Resident</option>
+              <option value="medical-admin">Medical Admin</option>
+            </select>
+
+            {/* Department Filter */}
+            <select
+              value={filterDepartment}
+              onChange={(e) => setFilterDepartment(e.target.value)}
+              className="input-medsight min-w-[200px]"
+            >
+              <option value="all">All Departments</option>
+              <option value="Radiology">Radiology</option>
+              <option value="Emergency Medicine">Emergency Medicine</option>
+              <option value="Internal Medicine">Internal Medicine</option>
+              <option value="Cardiology">Cardiology</option>
+              <option value="Anesthesiology">Anesthesiology</option>
+            </select>
+
+            {/* Status Filter */}
+            <select
+              value={filterStatus}
+              onChange={(e) => setFilterStatus(e.target.value)}
+              className="input-medsight min-w-[150px]"
+            >
+              <option value="all">All Status</option>
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+            </select>
+          </div>
+
+          {/* Sort Controls */}
+          <div className="flex items-center justify-between mt-4 pt-4 border-t border-slate-200">
+            <div className="flex items-center space-x-4">
+              <span className="text-sm text-slate-600">Sort by:</span>
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value as any)}
+                className="input-medsight text-sm"
               >
-                {selectedUsers.length === sortedUsers.length ? 'Deselect All' : 'Select All'}
-              </Button>
-              {selectedUsers.length > 0 && (
-                <Badge variant="secondary">
-                  {selectedUsers.length} selected
-                </Badge>
-              )}
+                <option value="name">Name</option>
+                <option value="role">Role</option>
+                <option value="department">Department</option>
+                <option value="lastLogin">Last Login</option>
+              </select>
+              <button
+                onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
+                className="btn-medsight text-sm"
+              >
+                {sortOrder === 'asc' ? '↑' : '↓'}
+              </button>
+            </div>
+            <div className="text-sm text-slate-600">
+              {filteredAndSortedUsers.length} of {users.length} users
             </div>
           </div>
-        </CardHeader>
-        <CardContent>
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b">
-                  <th className="text-left p-2">
-                    <Checkbox
-                      checked={selectedUsers.length === sortedUsers.length && sortedUsers.length > 0}
-                      onCheckedChange={selectAllUsers}
+        </div>
+      )}
+
+      {/* User List */}
+      <div className="medsight-glass rounded-xl overflow-hidden">
+        <div className="overflow-x-auto" style={{ maxHeight }}>
+          <table className="w-full">
+            <thead className="bg-slate-50 border-b border-slate-200">
+              <tr>
+                {onSelectionChange && (
+                  <th className="px-6 py-4 text-left">
+                    <input
+                      type="checkbox"
+                      checked={selectedUsers.length === filteredAndSortedUsers.length && filteredAndSortedUsers.length > 0}
+                      onChange={handleSelectAll}
+                      className="rounded border-slate-300 text-medsight-primary"
                     />
                   </th>
-                  <th className="text-left p-2 cursor-pointer" onClick={() => handleSort('name')}>
-                    <div className="flex items-center space-x-1">
-                      <span>User</span>
-                      {sortBy === 'name' && <span>{sortOrder === 'asc' ? '↑' : '↓'}</span>}
-                    </div>
-                  </th>
-                  <th className="text-left p-2 cursor-pointer" onClick={() => handleSort('department')}>
-                    <div className="flex items-center space-x-1">
-                      <span>Department</span>
-                      {sortBy === 'department' && <span>{sortOrder === 'asc' ? '↑' : '↓'}</span>}
-                    </div>
-                  </th>
-                  <th className="text-left p-2">License</th>
-                  <th className="text-left p-2">Roles</th>
-                  <th className="text-left p-2">Status</th>
-                  <th className="text-left p-2 cursor-pointer" onClick={() => handleSort('lastLogin')}>
-                    <div className="flex items-center space-x-1">
-                      <span>Last Login</span>
-                      {sortBy === 'lastLogin' && <span>{sortOrder === 'asc' ? '↑' : '↓'}</span>}
-                    </div>
-                  </th>
-                  <th className="text-left p-2">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {sortedUsers.map(user => (
-                  <tr key={user.id} className="border-b hover:bg-gray-50">
-                    <td className="p-2">
-                      <Checkbox
+                )}
+                <th className="px-6 py-4 text-left text-sm font-medium text-slate-600">Professional</th>
+                <th className="px-6 py-4 text-left text-sm font-medium text-slate-600">Role & Department</th>
+                <th className="px-6 py-4 text-left text-sm font-medium text-slate-600">Credentials</th>
+                <th className="px-6 py-4 text-left text-sm font-medium text-slate-600">Status</th>
+                <th className="px-6 py-4 text-left text-sm font-medium text-slate-600">Last Activity</th>
+                {showActions && (
+                  <th className="px-6 py-4 text-left text-sm font-medium text-slate-600">Actions</th>
+                )}
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-200">
+              {filteredAndSortedUsers.map((user) => (
+                <tr 
+                  key={user.id} 
+                  className="hover:bg-slate-50 cursor-pointer"
+                  onClick={() => handleUserSelect(user)}
+                >
+                  {onSelectionChange && (
+                    <td className="px-6 py-4">
+                      <input
+                        type="checkbox"
                         checked={selectedUsers.includes(user.id)}
-                        onCheckedChange={() => toggleUserSelection(user.id)}
+                        onChange={() => handleSelectionToggle(user.id)}
+                        onClick={(e) => e.stopPropagation()}
+                        className="rounded border-slate-300 text-medsight-primary"
                       />
                     </td>
-                    <td className="p-2">
-                      <div className="flex items-center space-x-3">
-                        <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                          <span className="text-blue-600 font-medium">
-                            {user.firstName[0]}{user.lastName[0]}
-                          </span>
+                  )}
+                  <td className="px-6 py-4">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-10 h-10 bg-medsight-primary/10 rounded-full flex items-center justify-center">
+                        <span className="text-medsight-primary font-medium">
+                          {user.firstName[0]}{user.lastName[0]}
+                        </span>
+                      </div>
+                      <div>
+                        <div className="font-medium text-slate-900">
+                          {user.firstName} {user.lastName}
                         </div>
-                        <div>
-                          <div className="font-medium">{user.firstName} {user.lastName}</div>
-                          <div className="text-sm text-gray-500">{user.email}</div>
-                        </div>
+                        <div className="text-sm text-slate-600">{user.email}</div>
                       </div>
-                    </td>
-                    <td className="p-2">
-                      <div className="flex items-center space-x-1">
-                        <Building2 className="w-4 h-4 text-gray-400" />
-                        <span>{user.department}</span>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4">
+                    <div className="space-y-1">
+                      <div className={`font-medium ${getRoleColor(user.hierarchy)}`}>
+                        {user.roleTitle}
                       </div>
-                    </td>
-                    <td className="p-2">
-                      <div className="flex items-center space-x-1">
-                        <Award className="w-4 h-4 text-gray-400" />
-                        <span className="text-sm">{user.licenseNumber}</span>
-                        <Badge variant="outline" className="ml-1">
-                          {user.licenseState}
-                        </Badge>
-                      </div>
-                    </td>
-                    <td className="p-2">
-                      <div className="flex flex-wrap gap-1">
-                        {getUserRoles(user.id).slice(0, 2).map(role => (
-                          <Badge key={role.id} variant="secondary" className="text-xs">
-                            {role.name}
-                          </Badge>
-                        ))}
-                        {getUserRoles(user.id).length > 2 && (
-                          <Badge variant="outline" className="text-xs">
-                            +{getUserRoles(user.id).length - 2}
-                          </Badge>
-                        )}
-                      </div>
-                    </td>
-                    <td className="p-2">
+                      <div className="text-sm text-slate-600">{user.department}</div>
                       <div className="flex items-center space-x-2">
-                        {getStatusIcon(user)}
-                        <Badge className={getStatusColor(user)} variant="secondary">
-                          {getStatusText(user)}
-                        </Badge>
-                      </div>
-                    </td>
-                    <td className="p-2">
-                      <div className="flex items-center space-x-1">
-                        <Clock className="w-4 h-4 text-gray-400" />
-                        <span className="text-sm">{user.lastLogin.toLocaleDateString()}</span>
-                      </div>
-                    </td>
-                    <td className="p-2">
-                      <div className="flex space-x-1">
-                        <Button variant="ghost" size="sm">
-                          <Eye className="w-4 h-4" />
-                        </Button>
-                        <Button variant="ghost" size="sm">
-                          <Edit className="w-4 h-4" />
-                        </Button>
-                        <Button 
-                          variant="ghost" 
-                          size="sm"
-                          onClick={() => handleToggleUserStatus(user.id)}
-                        >
-                          {user.isActive ? <Lock className="w-4 h-4" /> : <Unlock className="w-4 h-4" />}
-                        </Button>
-                        {!user.isVerified && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleVerifyUser(user.id)}
-                          >
-                            <CheckCircle className="w-4 h-4" />
-                          </Button>
+                        <div className="text-xs text-slate-500">Level {user.hierarchy}</div>
+                        {user.emergencyAccess && (
+                          <div className="px-2 py-1 rounded-full text-xs bg-medsight-critical/10 text-medsight-critical">
+                            Emergency Access
+                          </div>
                         )}
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleDeleteUser(user.id)}
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4">
+                    <div className="space-y-1">
+                      <div className="text-sm font-medium text-slate-900">{user.medicalLicense}</div>
+                      <div className="text-sm text-slate-600">NPI: {user.npiNumber}</div>
+                      <div className="text-xs text-slate-500">
+                        {user.specialization.join(', ')}
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4">
+                    <div className="space-y-2">
+                      <div className="flex items-center space-x-2">
+                        {user.isActive ? (
+                          <UserCheck className="w-4 h-4 text-medsight-normal" />
+                        ) : (
+                          <UserX className="w-4 h-4 text-slate-400" />
+                        )}
+                        <span className="text-sm font-medium">
+                          {user.isActive ? 'Active' : 'Inactive'}
+                        </span>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        {getStatusIcon(user.complianceStatus)}
+                        <span className={`text-sm ${getStatusColor(user.complianceStatus)}`}>
+                          {user.complianceStatus}
+                        </span>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4">
+                    <div className="space-y-1">
+                      <div className="text-sm text-slate-900">{formatLastLogin(user.lastLogin)}</div>
+                      <div className="text-xs text-slate-500">{user.sessionCount} sessions</div>
+                    </div>
+                  </td>
+                  {showActions && (
+                    <td className="px-6 py-4">
+                      <div className="flex items-center space-x-2">
+                        <button 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedUser(user);
+                            // setShowUserModal(true); // This state is not defined in the new code
+                          }}
+                          className="p-2 text-slate-400 hover:text-medsight-primary rounded-lg hover:bg-medsight-primary/10"
                         >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
+                          <Eye className="w-4 h-4" />
+                        </button>
+                        <button 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            // Handle edit user
+                          }}
+                          className="p-2 text-slate-400 hover:text-medsight-secondary rounded-lg hover:bg-medsight-secondary/10"
+                        >
+                          <Edit className="w-4 h-4" />
+                        </button>
+                        <button 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            // Handle assign role
+                          }}
+                          className="p-2 text-slate-400 hover:text-medsight-pending rounded-lg hover:bg-medsight-pending/10"
+                        >
+                          <Key className="w-4 h-4" />
+                        </button>
                       </div>
                     </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Alerts */}
-      <div className="space-y-4">
-        {stats.pendingVerification > 0 && (
-          <Alert>
-            <AlertTriangle className="h-4 w-4" />
-            <AlertDescription>
-              <strong>{stats.pendingVerification} users pending verification.</strong> 
-              Review and verify new user accounts to ensure proper access controls.
-            </AlertDescription>
-          </Alert>
-        )}
-        
-        {selectedUsers.length > 0 && (
-          <Alert>
-            <Users className="h-4 w-4" />
-            <AlertDescription>
-              <strong>{selectedUsers.length} users selected.</strong> 
-              Bulk actions are available for selected users.
-            </AlertDescription>
-          </Alert>
-        )}
+                  )}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
+
+      {/* Empty State */}
+      {filteredAndSortedUsers.length === 0 && (
+        <div className="medsight-glass p-8 rounded-xl text-center">
+          <Search className="w-12 h-12 text-slate-400 mx-auto mb-4" />
+          <div className="text-lg font-medium text-slate-600 mb-2">
+            No medical professionals found
+          </div>
+          <div className="text-sm text-slate-500">
+            Try adjusting your search criteria or filters
+          </div>
+        </div>
+      )}
     </div>
   );
-};
-
-export default UserList; 
+} 

@@ -1,568 +1,662 @@
-'use client'
+'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Alert, AlertDescription } from '@/components/ui/Alert';
 import { 
-  Shield, 
-  Users, 
-  Settings, 
-  Plus, 
-  Edit, 
-  Trash2, 
-  Search,
-  UserCheck,
-  Lock,
-  Unlock,
-  Eye,
-  EyeOff,
-  CheckCircle,
-  XCircle,
-  AlertTriangle
-} from 'lucide-react';
+  UserIcon, 
+  ShieldCheckIcon, 
+  BuildingOfficeIcon, 
+  ExclamationTriangleIcon,
+  EyeIcon,
+  PlusIcon,
+  PencilIcon,
+  TrashIcon,
+  UserGroupIcon,
+  ClockIcon,
+  CheckCircleIcon,
+  XCircleIcon,
+  AcademicCapIcon,
+  HeartIcon,
+  BeakerIcon,
+  CpuChipIcon,
+  MagnifyingGlassIcon
+} from '@heroicons/react/24/outline';
 
-interface Role {
+// Medical Role Types
+interface MedicalRole {
   id: string;
   name: string;
-  description: string;
+  category: 'clinical' | 'administrative' | 'technical' | 'emergency';
+  hierarchy: number; // 1-10 scale, 10 being highest
+  department?: string;
   permissions: string[];
-  isSystem: boolean;
-  userCount: number;
-  status: 'active' | 'inactive' | 'deprecated';
+  description: string;
+  requirements: string[];
+  isActive: boolean;
+  isEmergencyAccess: boolean;
+  supervisorRequired: boolean;
+  auditLevel: 'standard' | 'enhanced' | 'maximum';
   createdAt: Date;
-  updatedAt: Date;
+  lastModified: Date;
 }
 
-interface Permission {
+interface RoleHierarchy {
+  level: number;
+  title: string;
+  description: string;
+  departments: string[];
+  minYearsExperience: number;
+  requiresSupervision: boolean;
+}
+
+interface Department {
   id: string;
   name: string;
-  category: string;
-  description: string;
-  riskLevel: 'low' | 'medium' | 'high' | 'critical';
+  icon: React.ComponentType<any>;
+  color: string;
+  specializations: string[];
+  chiefRole?: string;
+  attendingRoles?: string[];
+  residentRoles?: string[];
 }
 
-interface RoleTemplate {
-  id: string;
-  name: string;
-  description: string;
-  permissions: string[];
-  targetRole: string;
-}
+// Medical Role Hierarchy Definition
+const MEDICAL_HIERARCHY: RoleHierarchy[] = [
+  {
+    level: 1,
+    title: 'Medical Student',
+    description: 'Medical students in clinical rotations',
+    departments: ['All'],
+    minYearsExperience: 0,
+    requiresSupervision: true
+  },
+  {
+    level: 2,
+    title: 'Resident',
+    description: 'Medical residents in training',
+    departments: ['All'],
+    minYearsExperience: 0,
+    requiresSupervision: true
+  },
+  {
+    level: 3,
+    title: 'Fellow',
+    description: 'Fellowship-trained specialists',
+    departments: ['Radiology', 'Cardiology', 'Oncology', 'Neurology'],
+    minYearsExperience: 3,
+    requiresSupervision: false
+  },
+  {
+    level: 4,
+    title: 'Attending Physician',
+    description: 'Board-certified attending physicians',
+    departments: ['All'],
+    minYearsExperience: 3,
+    requiresSupervision: false
+  },
+  {
+    level: 5,
+    title: 'Senior Attending',
+    description: 'Senior attending physicians with supervisory responsibilities',
+    departments: ['All'],
+    minYearsExperience: 5,
+    requiresSupervision: false
+  },
+  {
+    level: 6,
+    title: 'Section Chief',
+    description: 'Section chiefs and department leaders',
+    departments: ['All'],
+    minYearsExperience: 7,
+    requiresSupervision: false
+  },
+  {
+    level: 7,
+    title: 'Department Chair',
+    description: 'Department chairs and directors',
+    departments: ['All'],
+    minYearsExperience: 10,
+    requiresSupervision: false
+  },
+  {
+    level: 8,
+    title: 'Chief Medical Officer',
+    description: 'Chief Medical Officers and VP Medical Affairs',
+    departments: ['Administration'],
+    minYearsExperience: 15,
+    requiresSupervision: false
+  }
+];
 
-const RoleManagement: React.FC = () => {
-  const [roles, setRoles] = useState<Role[]>([]);
-  const [permissions, setPermissions] = useState<Permission[]>([]);
-  const [templates, setTemplates] = useState<RoleTemplate[]>([]);
-  const [selectedRole, setSelectedRole] = useState<Role | null>(null);
+// Medical Departments
+const MEDICAL_DEPARTMENTS: Department[] = [
+  {
+    id: 'radiology',
+    name: 'Radiology',
+    icon: CpuChipIcon,
+    color: '#0ea5e9',
+    specializations: ['Diagnostic Radiology', 'Interventional Radiology', 'Nuclear Medicine', 'Neuroradiology'],
+    chiefRole: 'Chief of Radiology',
+    attendingRoles: ['Radiologist', 'Interventional Radiologist', 'Nuclear Medicine Physician'],
+    residentRoles: ['Radiology Resident', 'Nuclear Medicine Resident']
+  },
+  {
+    id: 'cardiology',
+    name: 'Cardiology',
+    icon: HeartIcon,
+    color: '#ef4444',
+    specializations: ['Interventional Cardiology', 'Electrophysiology', 'Heart Failure', 'Preventive Cardiology'],
+    chiefRole: 'Chief of Cardiology',
+    attendingRoles: ['Cardiologist', 'Interventional Cardiologist', 'Electrophysiologist'],
+    residentRoles: ['Cardiology Fellow', 'EP Fellow']
+  },
+  {
+    id: 'oncology',
+    name: 'Oncology',
+    icon: BeakerIcon,
+    color: '#7c3aed',
+    specializations: ['Medical Oncology', 'Radiation Oncology', 'Surgical Oncology', 'Hematology'],
+    chiefRole: 'Chief of Oncology',
+    attendingRoles: ['Medical Oncologist', 'Radiation Oncologist', 'Hematologist'],
+    residentRoles: ['Oncology Fellow', 'Hematology Fellow']
+  },
+  {
+    id: 'neurology',
+    name: 'Neurology',
+    icon: CpuChipIcon,
+    color: '#059669',
+    specializations: ['Neurology', 'Neurosurgery', 'Neurointensive Care', 'Neuroradiology'],
+    chiefRole: 'Chief of Neurology',
+    attendingRoles: ['Neurologist', 'Neurosurgeon', 'Neurointensivist'],
+    residentRoles: ['Neurology Resident', 'Neurosurgery Resident']
+  },
+  {
+    id: 'emergency',
+    name: 'Emergency Medicine',
+    icon: ExclamationTriangleIcon,
+    color: '#dc2626',
+    specializations: ['Emergency Medicine', 'Trauma', 'Critical Care', 'Toxicology'],
+    chiefRole: 'Chief of Emergency Medicine',
+    attendingRoles: ['Emergency Physician', 'Trauma Surgeon', 'Critical Care Physician'],
+    residentRoles: ['Emergency Medicine Resident', 'Trauma Surgery Resident']
+  },
+  {
+    id: 'administration',
+    name: 'Administration',
+    icon: BuildingOfficeIcon,
+    color: '#f59e0b',
+    specializations: ['Medical Administration', 'Quality', 'Compliance', 'IT'],
+    chiefRole: 'Chief Medical Officer',
+    attendingRoles: ['Medical Director', 'Quality Director', 'Compliance Officer'],
+    residentRoles: []
+  }
+];
+
+// Mock data for existing roles
+const MOCK_ROLES: MedicalRole[] = [
+  {
+    id: 'chief-radiology',
+    name: 'Chief of Radiology',
+    category: 'clinical',
+    hierarchy: 7,
+    department: 'Radiology',
+    permissions: ['read_all_studies', 'write_all_studies', 'admin_department', 'supervise_residents'],
+    description: 'Department head for radiology services',
+    requirements: ['Board certification in Radiology', '10+ years experience', 'Administrative training'],
+    isActive: true,
+    isEmergencyAccess: false,
+    supervisorRequired: false,
+    auditLevel: 'enhanced',
+    createdAt: new Date('2024-01-15'),
+    lastModified: new Date('2024-01-15')
+  },
+  {
+    id: 'attending-radiologist',
+    name: 'Attending Radiologist',
+    category: 'clinical',
+    hierarchy: 4,
+    department: 'Radiology',
+    permissions: ['read_assigned_studies', 'write_reports', 'supervise_residents'],
+    description: 'Board-certified radiologist',
+    requirements: ['Board certification in Radiology', '3+ years experience'],
+    isActive: true,
+    isEmergencyAccess: false,
+    supervisorRequired: false,
+    auditLevel: 'standard',
+    createdAt: new Date('2024-01-15'),
+    lastModified: new Date('2024-01-15')
+  },
+  {
+    id: 'radiology-resident',
+    name: 'Radiology Resident',
+    category: 'clinical',
+    hierarchy: 2,
+    department: 'Radiology',
+    permissions: ['read_assigned_studies', 'write_preliminary_reports'],
+    description: 'Radiology resident in training',
+    requirements: ['Medical degree', 'Radiology residency enrollment'],
+    isActive: true,
+    isEmergencyAccess: false,
+    supervisorRequired: true,
+    auditLevel: 'enhanced',
+    createdAt: new Date('2024-01-15'),
+    lastModified: new Date('2024-01-15')
+  },
+  {
+    id: 'emergency-access',
+    name: 'Emergency Access',
+    category: 'emergency',
+    hierarchy: 6,
+    permissions: ['read_all_studies', 'emergency_override'],
+    description: 'Emergency access for critical cases',
+    requirements: ['Active medical license', 'Emergency authorization'],
+    isActive: true,
+    isEmergencyAccess: true,
+    supervisorRequired: true,
+    auditLevel: 'maximum',
+    createdAt: new Date('2024-01-15'),
+    lastModified: new Date('2024-01-15')
+  },
+  {
+    id: 'system-admin',
+    name: 'System Administrator',
+    category: 'administrative',
+    hierarchy: 8,
+    department: 'Administration',
+    permissions: ['admin_all', 'user_management', 'system_config'],
+    description: 'System administrator with full access',
+    requirements: ['IT certification', 'Medical informatics training'],
+    isActive: true,
+    isEmergencyAccess: false,
+    supervisorRequired: false,
+    auditLevel: 'maximum',
+    createdAt: new Date('2024-01-15'),
+    lastModified: new Date('2024-01-15')
+  }
+];
+
+export default function RoleManagement() {
+  const [roles, setRoles] = useState<MedicalRole[]>(MOCK_ROLES);
+  const [selectedRole, setSelectedRole] = useState<MedicalRole | null>(null);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterStatus, setFilterStatus] = useState<'all' | 'active' | 'inactive' | 'deprecated'>('all');
-  const [isCreating, setIsCreating] = useState(false);
-  const [editingRole, setEditingRole] = useState<Role | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [filterCategory, setFilterCategory] = useState<string>('all');
+  const [filterDepartment, setFilterDepartment] = useState<string>('all');
+  const [filterHierarchy, setFilterHierarchy] = useState<string>('all');
 
-  useEffect(() => {
-    const fetchRoleData = async () => {
-      try {
-        // Mock data - replace with actual API calls
-        const mockRoles: Role[] = [
-          {
-            id: '1',
-            name: 'Senior Radiologist',
-            description: 'Full access to all medical imaging and diagnostic tools',
-            permissions: ['read_all_studies', 'create_reports', 'approve_reports', 'manage_protocols', 'ai_analysis'],
-            isSystem: false,
-            userCount: 12,
-            status: 'active',
-            createdAt: new Date('2024-01-15'),
-            updatedAt: new Date('2024-01-15')
-          },
-          {
-            id: '2',
-            name: 'Radiologist',
-            description: 'Standard radiologist access with reporting capabilities',
-            permissions: ['read_assigned_studies', 'create_reports', 'use_ai_tools', 'view_analytics'],
-            isSystem: false,
-            userCount: 25,
-            status: 'active',
-            createdAt: new Date('2024-01-10'),
-            updatedAt: new Date('2024-01-20')
-          },
-          {
-            id: '3',
-            name: 'Radiology Technician',
-            description: 'Technical staff with limited diagnostic access',
-            permissions: ['upload_studies', 'view_protocols', 'basic_measurements', 'schedule_studies'],
-            isSystem: false,
-            userCount: 18,
-            status: 'active',
-            createdAt: new Date('2024-01-08'),
-            updatedAt: new Date('2024-01-12')
-          },
-          {
-            id: '4',
-            name: 'Medical Student',
-            description: 'Educational access with supervision requirements',
-            permissions: ['read_educational_studies', 'practice_tools', 'view_tutorials'],
-            isSystem: false,
-            userCount: 8,
-            status: 'active',
-            createdAt: new Date('2024-01-05'),
-            updatedAt: new Date('2024-01-10')
-          },
-          {
-            id: '5',
-            name: 'System Administrator',
-            description: 'Full system access and configuration management',
-            permissions: ['system_admin', 'user_management', 'role_management', 'system_config', 'audit_logs'],
-            isSystem: true,
-            userCount: 3,
-            status: 'active',
-            createdAt: new Date('2024-01-01'),
-            updatedAt: new Date('2024-01-25')
-          },
-          {
-            id: '6',
-            name: 'Legacy Viewer',
-            description: 'Deprecated role for old system compatibility',
-            permissions: ['basic_viewing'],
-            isSystem: false,
-            userCount: 2,
-            status: 'deprecated',
-            createdAt: new Date('2023-12-01'),
-            updatedAt: new Date('2023-12-01')
-          }
-        ];
-
-        const mockPermissions: Permission[] = [
-          // Patient Data Access
-          { id: 'read_all_studies', name: 'Read All Studies', category: 'Patient Data', description: 'Access to all medical studies', riskLevel: 'high' },
-          { id: 'read_assigned_studies', name: 'Read Assigned Studies', category: 'Patient Data', description: 'Access to assigned studies only', riskLevel: 'medium' },
-          { id: 'read_educational_studies', name: 'Read Educational Studies', category: 'Patient Data', description: 'Access to de-identified educational content', riskLevel: 'low' },
-          
-          // Reporting & Documentation
-          { id: 'create_reports', name: 'Create Reports', category: 'Reporting', description: 'Create and edit medical reports', riskLevel: 'high' },
-          { id: 'approve_reports', name: 'Approve Reports', category: 'Reporting', description: 'Final approval of medical reports', riskLevel: 'critical' },
-          { id: 'view_analytics', name: 'View Analytics', category: 'Reporting', description: 'Access to system analytics', riskLevel: 'medium' },
-          
-          // AI & Advanced Tools
-          { id: 'ai_analysis', name: 'AI Analysis', category: 'AI Tools', description: 'Full access to AI diagnostic tools', riskLevel: 'high' },
-          { id: 'use_ai_tools', name: 'Use AI Tools', category: 'AI Tools', description: 'Standard AI tool access', riskLevel: 'medium' },
-          { id: 'practice_tools', name: 'Practice Tools', category: 'AI Tools', description: 'Educational AI tools', riskLevel: 'low' },
-          
-          // System Management
-          { id: 'system_admin', name: 'System Administration', category: 'System', description: 'Full system administration', riskLevel: 'critical' },
-          { id: 'user_management', name: 'User Management', category: 'System', description: 'Manage user accounts', riskLevel: 'high' },
-          { id: 'role_management', name: 'Role Management', category: 'System', description: 'Manage roles and permissions', riskLevel: 'critical' },
-          { id: 'system_config', name: 'System Configuration', category: 'System', description: 'Configure system settings', riskLevel: 'high' },
-          { id: 'audit_logs', name: 'Audit Logs', category: 'System', description: 'Access audit and security logs', riskLevel: 'high' },
-          
-          // Technical Operations
-          { id: 'upload_studies', name: 'Upload Studies', category: 'Technical', description: 'Upload medical studies', riskLevel: 'medium' },
-          { id: 'manage_protocols', name: 'Manage Protocols', category: 'Technical', description: 'Manage imaging protocols', riskLevel: 'medium' },
-          { id: 'view_protocols', name: 'View Protocols', category: 'Technical', description: 'View imaging protocols', riskLevel: 'low' },
-          { id: 'basic_measurements', name: 'Basic Measurements', category: 'Technical', description: 'Basic measurement tools', riskLevel: 'low' },
-          { id: 'schedule_studies', name: 'Schedule Studies', category: 'Technical', description: 'Schedule imaging studies', riskLevel: 'medium' },
-          
-          // Educational
-          { id: 'view_tutorials', name: 'View Tutorials', category: 'Educational', description: 'Access training materials', riskLevel: 'low' },
-          { id: 'basic_viewing', name: 'Basic Viewing', category: 'Educational', description: 'Basic image viewing', riskLevel: 'low' }
-        ];
-
-        const mockTemplates: RoleTemplate[] = [
-          {
-            id: '1',
-            name: 'New Radiologist',
-            description: 'Standard permissions for newly hired radiologists',
-            permissions: ['read_assigned_studies', 'create_reports', 'use_ai_tools', 'view_analytics'],
-            targetRole: 'radiologist'
-          },
-          {
-            id: '2',
-            name: 'Emergency Radiologist',
-            description: 'Enhanced permissions for emergency department radiologists',
-            permissions: ['read_all_studies', 'create_reports', 'ai_analysis', 'view_analytics'],
-            targetRole: 'emergency_radiologist'
-          },
-          {
-            id: '3',
-            name: 'Research Radiologist',
-            description: 'Permissions for research-focused radiologists',
-            permissions: ['read_all_studies', 'create_reports', 'ai_analysis', 'view_analytics', 'manage_protocols'],
-            targetRole: 'research_radiologist'
-          }
-        ];
-
-        setRoles(mockRoles);
-        setPermissions(mockPermissions);
-        setTemplates(mockTemplates);
-        setLoading(false);
-      } catch (error) {
-        console.error('Error fetching role data:', error);
-        setLoading(false);
-      }
-    };
-
-    fetchRoleData();
-  }, []);
-
+  // Filter roles based on search and filters
   const filteredRoles = roles.filter(role => {
     const matchesSearch = role.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          role.description.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesFilter = filterStatus === 'all' || role.status === filterStatus;
-    return matchesSearch && matchesFilter;
+    const matchesCategory = filterCategory === 'all' || role.category === filterCategory;
+    const matchesDepartment = filterDepartment === 'all' || role.department === filterDepartment;
+    const matchesHierarchy = filterHierarchy === 'all' || role.hierarchy.toString() === filterHierarchy;
+    
+    return matchesSearch && matchesCategory && matchesDepartment && matchesHierarchy;
   });
 
-  const getStatusColor = (status: Role['status']) => {
-    switch (status) {
-      case 'active': return 'bg-green-100 text-green-800';
-      case 'inactive': return 'bg-gray-100 text-gray-800';
-      case 'deprecated': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
+  const getRoleHierarchyName = (level: number): string => {
+    const hierarchy = MEDICAL_HIERARCHY.find(h => h.level === level);
+    return hierarchy ? hierarchy.title : `Level ${level}`;
+  };
+
+  const getRoleCategoryColor = (category: string): string => {
+    switch (category) {
+      case 'clinical': return 'text-medsight-primary';
+      case 'administrative': return 'text-medsight-accent';
+      case 'technical': return 'text-medsight-secondary';
+      case 'emergency': return 'text-medsight-critical';
+      default: return 'text-gray-500';
     }
   };
 
-  const getRiskColor = (riskLevel: Permission['riskLevel']) => {
-    switch (riskLevel) {
-      case 'low': return 'bg-green-100 text-green-800';
-      case 'medium': return 'bg-yellow-100 text-yellow-800';
-      case 'high': return 'bg-orange-100 text-orange-800';
-      case 'critical': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
-    }
+  const getDepartmentIcon = (department: string) => {
+    const dept = MEDICAL_DEPARTMENTS.find(d => d.name === department);
+    return dept ? dept.icon : UserIcon;
   };
-
-  const getPermissionsByCategory = (categoryName: string) => {
-    return permissions.filter(permission => permission.category === categoryName);
-  };
-
-  const categories = [...new Set(permissions.map(p => p.category))];
 
   const handleCreateRole = () => {
-    setIsCreating(true);
-    setEditingRole(null);
+    setIsCreateModalOpen(true);
   };
 
-  const handleEditRole = (role: Role) => {
-    setEditingRole(role);
-    setIsCreating(false);
-  };
-
-  const handleSaveRole = (roleData: Partial<Role>) => {
-    if (editingRole) {
-      // Update existing role
-      setRoles(roles.map(r => r.id === editingRole.id ? { ...r, ...roleData, updatedAt: new Date() } : r));
-    } else {
-      // Create new role
-      const newRole: Role = {
-        id: Date.now().toString(),
-        name: roleData.name || '',
-        description: roleData.description || '',
-        permissions: roleData.permissions || [],
-        isSystem: false,
-        userCount: 0,
-        status: 'active',
-        createdAt: new Date(),
-        updatedAt: new Date()
-      };
-      setRoles([...roles, newRole]);
-    }
-    setIsCreating(false);
-    setEditingRole(null);
+  const handleEditRole = (role: MedicalRole) => {
+    setSelectedRole(role);
+    setIsEditModalOpen(true);
   };
 
   const handleDeleteRole = (roleId: string) => {
-    const role = roles.find(r => r.id === roleId);
-    if (role && !role.isSystem && role.userCount === 0) {
-      setRoles(roles.filter(r => r.id !== roleId));
+    if (confirm('Are you sure you want to delete this role? This action cannot be undone.')) {
+      setRoles(roles.filter(role => role.id !== roleId));
     }
   };
 
   const handleToggleRoleStatus = (roleId: string) => {
-    setRoles(roles.map(r => 
-      r.id === roleId 
-        ? { ...r, status: r.status === 'active' ? 'inactive' : 'active', updatedAt: new Date() }
-        : r
+    setRoles(roles.map(role => 
+      role.id === roleId ? { ...role, isActive: !role.isActive } : role
     ));
   };
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-96">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
-      </div>
-    );
-  }
-
   return (
-    <div className="p-6 space-y-6">
+    <div className="space-y-6">
       {/* Header */}
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Role Management</h1>
-          <p className="text-gray-600 mt-1">Manage user roles and permissions for medical professionals</p>
+      <div className="medsight-glass p-6 rounded-xl">
+        <div className="flex justify-between items-start">
+          <div>
+            <h2 className="text-xl font-semibold text-medsight-primary mb-2">
+              Medical Role Management
+            </h2>
+            <p className="text-gray-600">
+              Manage medical professional roles, permissions, and hierarchies
+            </p>
+          </div>
+          <button
+            onClick={handleCreateRole}
+            className="btn-medsight flex items-center gap-2"
+          >
+            <PlusIcon className="w-4 h-4" />
+            Create New Role
+          </button>
         </div>
-        <Button onClick={handleCreateRole} className="bg-blue-600 hover:bg-blue-700">
-          <Plus className="w-4 h-4 mr-2" />
-          Create Role
-        </Button>
       </div>
 
       {/* Search and Filters */}
-      <div className="flex space-x-4">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-          <Input
-            placeholder="Search roles..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10"
-          />
+      <div className="medsight-glass p-6 rounded-xl">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          {/* Search */}
+          <div className="relative">
+            <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Search roles..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="input-medsight pl-10 w-full"
+            />
+          </div>
+
+          {/* Category Filter */}
+          <select
+            value={filterCategory}
+            onChange={(e) => setFilterCategory(e.target.value)}
+            className="input-medsight"
+          >
+            <option value="all">All Categories</option>
+            <option value="clinical">Clinical</option>
+            <option value="administrative">Administrative</option>
+            <option value="technical">Technical</option>
+            <option value="emergency">Emergency</option>
+          </select>
+
+          {/* Department Filter */}
+          <select
+            value={filterDepartment}
+            onChange={(e) => setFilterDepartment(e.target.value)}
+            className="input-medsight"
+          >
+            <option value="all">All Departments</option>
+            {MEDICAL_DEPARTMENTS.map(dept => (
+              <option key={dept.id} value={dept.name}>
+                {dept.name}
+              </option>
+            ))}
+          </select>
+
+          {/* Hierarchy Filter */}
+          <select
+            value={filterHierarchy}
+            onChange={(e) => setFilterHierarchy(e.target.value)}
+            className="input-medsight"
+          >
+            <option value="all">All Levels</option>
+            {MEDICAL_HIERARCHY.map(level => (
+              <option key={level.level} value={level.level.toString()}>
+                {level.title}
+              </option>
+            ))}
+          </select>
         </div>
-        <Select value={filterStatus} onValueChange={(value: any) => setFilterStatus(value)}>
-          <SelectTrigger className="w-40">
-            <SelectValue placeholder="Filter by status" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Status</SelectItem>
-            <SelectItem value="active">Active</SelectItem>
-            <SelectItem value="inactive">Inactive</SelectItem>
-            <SelectItem value="deprecated">Deprecated</SelectItem>
-          </SelectContent>
-        </Select>
       </div>
 
-      <Tabs defaultValue="roles" className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="roles">Roles</TabsTrigger>
-          <TabsTrigger value="permissions">Permissions</TabsTrigger>
-          <TabsTrigger value="templates">Templates</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="roles" className="space-y-4">
-          {/* Roles Overview */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <Card>
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600">Total Roles</p>
-                    <p className="text-2xl font-bold text-gray-900">{roles.length}</p>
-                  </div>
-                  <Shield className="w-8 h-8 text-blue-500" />
-                </div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600">Active Roles</p>
-                    <p className="text-2xl font-bold text-green-600">{roles.filter(r => r.status === 'active').length}</p>
-                  </div>
-                  <CheckCircle className="w-8 h-8 text-green-500" />
-                </div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600">System Roles</p>
-                    <p className="text-2xl font-bold text-orange-600">{roles.filter(r => r.isSystem).length}</p>
-                  </div>
-                  <Settings className="w-8 h-8 text-orange-500" />
-                </div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600">Total Users</p>
-                    <p className="text-2xl font-bold text-purple-600">{roles.reduce((sum, r) => sum + r.userCount, 0)}</p>
-                  </div>
-                  <Users className="w-8 h-8 text-purple-500" />
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Roles List */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {filteredRoles.map((role) => (
-              <Card key={role.id} className="hover:shadow-lg transition-shadow">
-                <CardHeader className="pb-3">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <CardTitle className="text-lg flex items-center space-x-2">
-                        <span>{role.name}</span>
-                        {role.isSystem && <Lock className="w-4 h-4 text-orange-500" />}
-                      </CardTitle>
-                      <CardDescription>{role.description}</CardDescription>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <Badge className={getStatusColor(role.status)} variant="secondary">
-                        {role.status}
-                      </Badge>
-                      <div className="flex space-x-1">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleEditRole(role)}
-                          disabled={role.isSystem}
-                        >
-                          <Edit className="w-4 h-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleToggleRoleStatus(role.id)}
-                          disabled={role.isSystem}
-                        >
-                          {role.status === 'active' ? 
-                            <EyeOff className="w-4 h-4" /> : 
-                            <Eye className="w-4 h-4" />
-                          }
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleDeleteRole(role.id)}
-                          disabled={role.isSystem || role.userCount > 0}
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-gray-600">Users assigned:</span>
-                      <span className="font-medium">{role.userCount}</span>
-                    </div>
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-gray-600">Permissions:</span>
-                      <span className="font-medium">{role.permissions.length}</span>
-                    </div>
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-gray-600">Last updated:</span>
-                      <span className="font-medium">{role.updatedAt.toLocaleDateString()}</span>
-                    </div>
-                    <div className="flex flex-wrap gap-1 mt-2">
-                      {role.permissions.slice(0, 3).map((permissionId) => {
-                        const permission = permissions.find(p => p.id === permissionId);
-                        return permission ? (
-                          <Badge key={permissionId} variant="outline" className="text-xs">
-                            {permission.name}
-                          </Badge>
-                        ) : null;
-                      })}
-                      {role.permissions.length > 3 && (
-                        <Badge variant="outline" className="text-xs">
-                          +{role.permissions.length - 3} more
-                        </Badge>
-                      )}
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </TabsContent>
-
-        <TabsContent value="permissions" className="space-y-4">
-          {/* Permissions by Category */}
-          {categories.map((category) => (
-            <Card key={category}>
-              <CardHeader>
-                <CardTitle className="text-lg">{category}</CardTitle>
-                <CardDescription>
-                  Permissions related to {category.toLowerCase()} operations
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {getPermissionsByCategory(category).map((permission) => (
-                    <div key={permission.id} className="border rounded-lg p-4">
-                      <div className="flex items-center justify-between mb-2">
-                        <h4 className="font-medium">{permission.name}</h4>
-                        <Badge className={getRiskColor(permission.riskLevel)} variant="secondary">
-                          {permission.riskLevel}
-                        </Badge>
-                      </div>
-                      <p className="text-sm text-gray-600">{permission.description}</p>
-                      <div className="mt-2 text-xs text-gray-500">
-                        Used in {roles.filter(r => r.permissions.includes(permission.id)).length} roles
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+      {/* Role Hierarchy Overview */}
+      <div className="medsight-glass p-6 rounded-xl">
+        <h3 className="text-lg font-semibold text-medsight-primary mb-4">
+          Medical Role Hierarchy
+        </h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {MEDICAL_HIERARCHY.slice().reverse().map(level => (
+            <div key={level.level} className="medsight-control-glass p-4 rounded-lg">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-medium text-gray-600">Level {level.level}</span>
+                <AcademicCapIcon className="w-4 h-4 text-medsight-primary" />
+              </div>
+              <h4 className="font-semibold text-medsight-primary mb-1">
+                {level.title}
+              </h4>
+              <p className="text-sm text-gray-600 mb-2">
+                {level.description}
+              </p>
+              <div className="flex items-center justify-between text-xs text-gray-500">
+                <span>{level.minYearsExperience}+ years</span>
+                {level.requiresSupervision && (
+                  <span className="text-medsight-accent">Supervised</span>
+                )}
+              </div>
+            </div>
           ))}
-        </TabsContent>
+        </div>
+      </div>
 
-        <TabsContent value="templates" className="space-y-4">
-          {/* Role Templates */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {templates.map((template) => (
-              <Card key={template.id}>
-                <CardHeader>
-                  <CardTitle className="text-lg">{template.name}</CardTitle>
-                  <CardDescription>{template.description}</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    <div className="text-sm">
-                      <span className="text-gray-600">Permissions included:</span>
-                      <span className="font-medium ml-2">{template.permissions.length}</span>
-                    </div>
-                    <div className="flex flex-wrap gap-1">
-                      {template.permissions.slice(0, 3).map((permissionId) => {
-                        const permission = permissions.find(p => p.id === permissionId);
-                        return permission ? (
-                          <Badge key={permissionId} variant="outline" className="text-xs">
-                            {permission.name}
-                          </Badge>
-                        ) : null;
-                      })}
-                      {template.permissions.length > 3 && (
-                        <Badge variant="outline" className="text-xs">
-                          +{template.permissions.length - 3} more
-                        </Badge>
-                      )}
-                    </div>
-                    <Button variant="outline" className="w-full mt-3">
-                      <Plus className="w-4 h-4 mr-2" />
-                      Use Template
-                    </Button>
+      {/* Medical Departments */}
+      <div className="medsight-glass p-6 rounded-xl">
+        <h3 className="text-lg font-semibold text-medsight-primary mb-4">
+          Medical Departments
+        </h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {MEDICAL_DEPARTMENTS.map(dept => {
+            const Icon = dept.icon;
+            return (
+              <div key={dept.id} className="medsight-control-glass p-4 rounded-lg">
+                <div className="flex items-center gap-3 mb-2">
+                  <Icon className="w-5 h-5" style={{ color: dept.color }} />
+                  <h4 className="font-semibold text-medsight-primary">
+                    {dept.name}
+                  </h4>
+                </div>
+                <div className="space-y-2">
+                  <div className="text-sm text-gray-600">
+                    <span className="font-medium">Chief:</span> {dept.chiefRole}
                   </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </TabsContent>
-      </Tabs>
+                  <div className="text-sm text-gray-600">
+                    <span className="font-medium">Specializations:</span>
+                    <div className="flex flex-wrap gap-1 mt-1">
+                      {dept.specializations.map(spec => (
+                        <span key={spec} className="px-2 py-1 bg-medsight-primary/10 text-medsight-primary rounded text-xs">
+                          {spec}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
 
-      {/* Alerts */}
-      <div className="space-y-4">
-        <Alert>
-          <AlertTriangle className="h-4 w-4" />
-          <AlertDescription>
-            <strong>Security Notice:</strong> Role changes may take up to 5 minutes to propagate across all systems.
-            Users will need to log out and log back in for changes to take effect.
-          </AlertDescription>
-        </Alert>
+      {/* Roles Table */}
+      <div className="medsight-glass rounded-xl overflow-hidden">
+        <div className="px-6 py-4 border-b border-gray-200">
+          <h3 className="text-lg font-semibold text-medsight-primary">
+            Medical Roles ({filteredRoles.length})
+          </h3>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Role
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Category
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Department
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Hierarchy
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Status
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {filteredRoles.map(role => {
+                const DeptIcon = getDepartmentIcon(role.department || '');
+                return (
+                  <tr key={role.id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center gap-3">
+                        <div className="flex-shrink-0">
+                          <DeptIcon className="w-5 h-5 text-medsight-primary" />
+                        </div>
+                        <div>
+                          <div className="text-sm font-medium text-gray-900">
+                            {role.name}
+                          </div>
+                          <div className="text-sm text-gray-500">
+                            {role.description}
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`text-sm font-medium ${getRoleCategoryColor(role.category)}`}>
+                        {role.category}
+                      </span>
+                      {role.isEmergencyAccess && (
+                        <div className="flex items-center gap-1 mt-1">
+                          <ExclamationTriangleIcon className="w-3 h-3 text-medsight-critical" />
+                          <span className="text-xs text-medsight-critical">Emergency</span>
+                        </div>
+                      )}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className="text-sm text-gray-900">
+                        {role.department || 'All Departments'}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-medium text-medsight-primary">
+                          {role.hierarchy}
+                        </span>
+                        <span className="text-sm text-gray-500">
+                          {getRoleHierarchyName(role.hierarchy)}
+                        </span>
+                      </div>
+                      {role.supervisorRequired && (
+                        <div className="flex items-center gap-1 mt-1">
+                          <EyeIcon className="w-3 h-3 text-medsight-accent" />
+                          <span className="text-xs text-medsight-accent">Supervised</span>
+                        </div>
+                      )}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => handleToggleRoleStatus(role.id)}
+                          className="flex items-center gap-1"
+                        >
+                          {role.isActive ? (
+                            <CheckCircleIcon className="w-4 h-4 text-medsight-secondary" />
+                          ) : (
+                            <XCircleIcon className="w-4 h-4 text-gray-400" />
+                          )}
+                          <span className={`text-sm ${role.isActive ? 'text-medsight-secondary' : 'text-gray-400'}`}>
+                            {role.isActive ? 'Active' : 'Inactive'}
+                          </span>
+                        </button>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => handleEditRole(role)}
+                          className="text-medsight-primary hover:text-medsight-primary/80"
+                        >
+                          <PencilIcon className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => handleDeleteRole(role.id)}
+                          className="text-medsight-critical hover:text-medsight-critical/80"
+                        >
+                          <TrashIcon className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Role Statistics */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="medsight-glass p-4 rounded-lg">
+          <div className="flex items-center gap-3">
+            <UserGroupIcon className="w-8 h-8 text-medsight-primary" />
+            <div>
+              <div className="text-2xl font-bold text-medsight-primary">
+                {roles.length}
+              </div>
+              <div className="text-sm text-gray-600">Total Roles</div>
+            </div>
+          </div>
+        </div>
+
+        <div className="medsight-glass p-4 rounded-lg">
+          <div className="flex items-center gap-3">
+            <CheckCircleIcon className="w-8 h-8 text-medsight-secondary" />
+            <div>
+              <div className="text-2xl font-bold text-medsight-secondary">
+                {roles.filter(r => r.isActive).length}
+              </div>
+              <div className="text-sm text-gray-600">Active Roles</div>
+            </div>
+          </div>
+        </div>
+
+        <div className="medsight-glass p-4 rounded-lg">
+          <div className="flex items-center gap-3">
+            <ExclamationTriangleIcon className="w-8 h-8 text-medsight-critical" />
+            <div>
+              <div className="text-2xl font-bold text-medsight-critical">
+                {roles.filter(r => r.isEmergencyAccess).length}
+              </div>
+              <div className="text-sm text-gray-600">Emergency Access</div>
+            </div>
+          </div>
+        </div>
+
+        <div className="medsight-glass p-4 rounded-lg">
+          <div className="flex items-center gap-3">
+            <EyeIcon className="w-8 h-8 text-medsight-accent" />
+            <div>
+              <div className="text-2xl font-bold text-medsight-accent">
+                {roles.filter(r => r.supervisorRequired).length}
+              </div>
+              <div className="text-sm text-gray-600">Supervised</div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
-};
-
-export default RoleManagement; 
+} 

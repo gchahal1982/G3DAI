@@ -2,339 +2,328 @@
 
 import React, { useState, useEffect } from 'react';
 import { 
-  ServerIcon,
-  CircleStackIcon,
-  CloudIcon,
-  WifiIcon,
-  CpuChipIcon,
-  BoltIcon,
-  ShieldCheckIcon,
-  ExclamationTriangleIcon,
-  CheckCircleIcon,
-  ClockIcon,
-  ArrowPathIcon,
-  ChartBarIcon,
-  EyeIcon,
-  Cog6ToothIcon,
-  SparklesIcon,
-  HeartIcon,
-  FireIcon,
-  SignalIcon
-} from '@heroicons/react/24/outline';
-import {
-  ServerIcon as ServerIconSolid,
-  CircleStackIcon as CircleStackIconSolid,
-  ShieldCheckIcon as ShieldCheckIconSolid,
-  CloudIcon as CloudIconSolid,
-  WifiIcon as WifiIconSolid,
-  EyeIcon as EyeIconSolid,
-  CheckCircleIcon as CheckCircleIconSolid,
-  ExclamationTriangleIcon as ExclamationTriangleIconSolid,
-  Cog6ToothIcon as Cog6ToothIconSolid,
-  ClockIcon as ClockIconSolid,
-  FireIcon as FireIconSolid,
-  HeartIcon as HeartIconSolid,
-  SparklesIcon as SparklesIconSolid
-} from '@heroicons/react/24/solid';
+  Activity, 
+  Server, 
+  Database, 
+  Cpu, 
+  MemoryStick, 
+  HardDrive, 
+  Network, 
+  Heart, 
+  CheckCircle, 
+  AlertTriangle, 
+  XCircle,
+  RefreshCw,
+  Monitor,
+  Shield,
+  Clock,
+  Zap,
+  TrendingUp,
+  TrendingDown,
+  Wifi,
+  Cloud,
+  Eye,
+  Settings
+} from 'lucide-react';
 
-interface SystemService {
-  id: string;
-  name: string;
-  status: 'online' | 'offline' | 'maintenance' | 'degraded';
-  uptime: number;
-  responseTime: number;
-  lastCheck: Date;
-  description: string;
-  icon: React.ComponentType<any>;
-  endpoint?: string;
-  version?: string;
-  instances?: number;
-  memory?: number;
-  cpu?: number;
-}
-
-interface SystemHealthData {
-  overall: 'healthy' | 'warning' | 'critical';
-  services: SystemService[];
-  performance: {
-    cpu: number;
-    memory: number;
-    storage: number;
-    network: number;
+interface SystemMetrics {
+  cpu: {
+    usage: number;
+    temperature: number;
+    load: number[];
+    status: 'healthy' | 'warning' | 'critical';
   };
-  uptime: string;
-  lastIncident: string;
-  activeIncidents: number;
-  scheduledMaintenance: MaintenanceWindow[];
+  memory: {
+    used: number;
+    total: number;
+    usage: number;
+    status: 'healthy' | 'warning' | 'critical';
+  };
+  storage: {
+    used: number;
+    total: number;
+    usage: number;
+    status: 'healthy' | 'warning' | 'critical';
+  };
+  network: {
+    latency: number;
+    bandwidth: number;
+    packetLoss: number;
+    status: 'healthy' | 'warning' | 'critical';
+  };
+  uptime: number;
+  lastUpdate: Date;
 }
 
-interface MaintenanceWindow {
-  id: string;
-  title: string;
-  description: string;
-  startTime: Date;
-  endTime: Date;
-  status: 'scheduled' | 'in-progress' | 'completed';
-  affectedServices: string[];
+interface MedicalSystemStatus {
+  dicomServer: {
+    status: 'online' | 'offline' | 'degraded';
+    responseTime: number;
+    studies: number;
+    connections: number;
+  };
+  aiEngine: {
+    status: 'online' | 'offline' | 'degraded';
+    modelsLoaded: number;
+    queueSize: number;
+    processedToday: number;
+  };
+  database: {
+    status: 'online' | 'offline' | 'degraded';
+    connections: number;
+    queries: number;
+    performance: number;
+  };
+  pacsConnections: {
+    status: 'online' | 'offline' | 'degraded';
+    activeConnections: number;
+    totalConfigured: number;
+  };
+  backupSystem: {
+    status: 'online' | 'offline' | 'degraded';
+    lastBackup: Date;
+    backupSize: number;
+    retention: number;
+  };
 }
 
 interface SystemHealthProps {
-  onRefresh?: () => void;
-  refreshing?: boolean;
+  refreshInterval?: number;
+  showDetails?: boolean;
+  compactView?: boolean;
 }
 
-export function SystemHealth({ onRefresh, refreshing = false }: SystemHealthProps) {
-  const [healthData, setHealthData] = useState<SystemHealthData | null>(null);
+export default function SystemHealth({ 
+  refreshInterval = 30000, 
+  showDetails = true, 
+  compactView = false 
+}: SystemHealthProps) {
+  const [metrics, setMetrics] = useState<SystemMetrics | null>(null);
+  const [medicalSystems, setMedicalSystems] = useState<MedicalSystemStatus | null>(null);
   const [loading, setLoading] = useState(true);
-  const [selectedService, setSelectedService] = useState<string | null>(null);
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [error, setError] = useState<string | null>(null);
+  const [autoRefresh, setAutoRefresh] = useState(true);
 
   useEffect(() => {
     loadSystemHealth();
-  }, []);
+    
+    if (autoRefresh) {
+      const interval = setInterval(loadSystemHealth, refreshInterval);
+      return () => clearInterval(interval);
+    }
+  }, [autoRefresh, refreshInterval]);
 
   const loadSystemHealth = async () => {
     try {
-      setLoading(true);
+      setError(null);
       
-      // Mock system health data
-      const mockData: SystemHealthData = {
-        overall: 'healthy',
-        services: [
-          {
-            id: 'dicom-server',
-            name: 'DICOM Server',
-            status: 'online',
-            uptime: 99.9,
-            responseTime: 45,
-            lastCheck: new Date(Date.now() - 30000),
-            description: 'DICOM image storage and retrieval service',
-            icon: ServerIconSolid,
-            endpoint: 'dicom.medsight.local:11112',
-            version: '3.6.7',
-            instances: 3,
-            memory: 68,
-            cpu: 45
-          },
-          {
-            id: 'ai-engine',
-            name: 'AI Processing Engine',
-            status: 'online',
-            uptime: 99.8,
-            responseTime: 120,
-            lastCheck: new Date(Date.now() - 15000),
-            description: 'Medical AI analysis and inference service',
-            icon: SparklesIconSolid,
-            endpoint: 'ai.medsight.local:8080',
-            version: '2.1.4',
-            instances: 5,
-            memory: 85,
-            cpu: 72
-          },
-          {
-            id: 'database',
-            name: 'Database Cluster',
-            status: 'online',
-            uptime: 99.95,
-            responseTime: 12,
-            lastCheck: new Date(Date.now() - 10000),
-            description: 'PostgreSQL database cluster for medical data',
-            icon: CircleStackIconSolid,
-            endpoint: 'db.medsight.local:5432',
-            version: '15.4',
-            instances: 3,
-            memory: 78,
-            cpu: 34
-          },
-          {
-            id: 'pacs',
-            name: 'PACS System',
-            status: 'online',
-            uptime: 99.7,
-            responseTime: 89,
-            lastCheck: new Date(Date.now() - 45000),
-            description: 'Picture Archiving and Communication System',
-            icon: CircleStackIconSolid,
-            endpoint: 'pacs.medsight.local:104',
-            version: '4.2.1',
-            instances: 2,
-            memory: 92,
-            cpu: 56
-          },
-          {
-            id: 'auth-service',
-            name: 'Authentication Service',
-            status: 'online',
-            uptime: 99.9,
-            responseTime: 34,
-            lastCheck: new Date(Date.now() - 20000),
-            description: 'User authentication and authorization',
-            icon: ShieldCheckIconSolid,
-            endpoint: 'auth.medsight.local:3000',
-            version: '1.8.2',
-            instances: 4,
-            memory: 45,
-            cpu: 28
-          },
-          {
-            id: 'storage',
-            name: 'Storage System',
-            status: 'degraded',
-            uptime: 98.5,
-            responseTime: 234,
-            lastCheck: new Date(Date.now() - 60000),
-            description: 'Distributed file storage for medical images',
-            icon: CloudIconSolid,
-            endpoint: 'storage.medsight.local:9000',
-            version: '7.0.33',
-            instances: 6,
-            memory: 94,
-            cpu: 67
-          },
-          {
-            id: 'network',
-            name: 'Network Infrastructure',
-            status: 'online',
-            uptime: 99.8,
-            responseTime: 8,
-            lastCheck: new Date(Date.now() - 5000),
-            description: 'Core network and connectivity services',
-            icon: WifiIconSolid,
-            endpoint: 'network.medsight.local',
-            version: '2.4.1',
-            instances: 8,
-            memory: 23,
-            cpu: 15
-          },
-          {
-            id: 'monitoring',
-            name: 'Monitoring System',
-            status: 'online',
-            uptime: 99.9,
-            responseTime: 67,
-            lastCheck: new Date(Date.now() - 25000),
-            description: 'System monitoring and alerting service',
-            icon: EyeIconSolid,
-            endpoint: 'monitor.medsight.local:9090',
-            version: '2.40.7',
-            instances: 2,
-            memory: 56,
-            cpu: 38
-          }
-        ],
-        performance: {
-          cpu: 48,
-          memory: 67,
-          storage: 82,
-          network: 91
+      const response = await fetch('/api/admin/system/health', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Medical-Context': 'system-health',
         },
-        uptime: '99.9%',
-        lastIncident: '15 days ago',
-        activeIncidents: 0,
-        scheduledMaintenance: [
-          {
-            id: 'maint-001',
-            title: 'Database Maintenance',
-            description: 'Routine database optimization and index rebuilding',
-            startTime: new Date(Date.now() + 24 * 60 * 60 * 1000),
-            endTime: new Date(Date.now() + 24 * 60 * 60 * 1000 + 2 * 60 * 60 * 1000),
-            status: 'scheduled',
-            affectedServices: ['database']
-          },
-          {
-            id: 'maint-002',
-            title: 'AI Model Update',
-            description: 'Deploy new AI model version with improved accuracy',
-            startTime: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
-            endTime: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000 + 30 * 60 * 1000),
-            status: 'scheduled',
-            affectedServices: ['ai-engine']
-          }
-        ]
-      };
+      });
 
-      setHealthData(mockData);
+      if (!response.ok) {
+        throw new Error('Failed to load system health data');
+      }
+
+      const data = await response.json();
+      setMetrics(data.metrics);
+      setMedicalSystems(data.medicalSystems);
     } catch (error) {
-      console.error('Error loading system health:', error);
+      console.error('System health error:', error);
+      setError(error instanceof Error ? error.message : 'Unknown error');
+      
+      // Mock data for development
+      loadMockData();
     } finally {
       setLoading(false);
     }
   };
 
+  const loadMockData = () => {
+    const mockMetrics: SystemMetrics = {
+      cpu: {
+        usage: 68.5,
+        temperature: 72,
+        load: [0.8, 1.2, 0.9],
+        status: 'healthy'
+      },
+      memory: {
+        used: 12.8,
+        total: 32,
+        usage: 40,
+        status: 'healthy'
+      },
+      storage: {
+        used: 2.4,
+        total: 10,
+        usage: 24,
+        status: 'healthy'
+      },
+      network: {
+        latency: 12,
+        bandwidth: 95.2,
+        packetLoss: 0.01,
+        status: 'healthy'
+      },
+      uptime: 87.5,
+      lastUpdate: new Date()
+    };
+
+    const mockMedicalSystems: MedicalSystemStatus = {
+      dicomServer: {
+        status: 'online',
+        responseTime: 145,
+        studies: 2847,
+        connections: 12
+      },
+      aiEngine: {
+        status: 'online',
+        modelsLoaded: 8,
+        queueSize: 3,
+        processedToday: 156
+      },
+      database: {
+        status: 'online',
+        connections: 24,
+        queries: 1245,
+        performance: 92.3
+      },
+      pacsConnections: {
+        status: 'degraded',
+        activeConnections: 3,
+        totalConfigured: 4
+      },
+      backupSystem: {
+        status: 'online',
+        lastBackup: new Date(Date.now() - 2 * 60 * 60 * 1000),
+        backupSize: 1.2,
+        retention: 30
+      }
+    };
+
+    setMetrics(mockMetrics);
+    setMedicalSystems(mockMedicalSystems);
+  };
+
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'online': return 'text-green-600 bg-green-50';
-      case 'degraded': return 'text-yellow-600 bg-yellow-50';
-      case 'maintenance': return 'text-blue-600 bg-blue-50';
-      case 'offline': return 'text-red-600 bg-red-50';
-      default: return 'text-gray-600 bg-gray-50';
+      case 'healthy':
+      case 'online':
+        return 'text-medsight-normal';
+      case 'warning':
+      case 'degraded':
+        return 'text-medsight-pending';
+      case 'critical':
+      case 'offline':
+        return 'text-medsight-critical';
+      default:
+        return 'text-slate-600';
     }
   };
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'online': return CheckCircleIconSolid;
-      case 'degraded': return ExclamationTriangleIconSolid;
-      case 'maintenance': return Cog6ToothIconSolid;
-      case 'offline': return FireIconSolid;
-      default: return ClockIconSolid;
+      case 'healthy':
+      case 'online':
+        return <CheckCircle className="w-4 h-4 text-medsight-normal" />;
+      case 'warning':
+      case 'degraded':
+        return <AlertTriangle className="w-4 h-4 text-medsight-pending" />;
+      case 'critical':
+      case 'offline':
+        return <XCircle className="w-4 h-4 text-medsight-critical" />;
+      default:
+        return <Monitor className="w-4 h-4 text-slate-400" />;
     }
   };
 
-  const formatTimeAgo = (date: Date) => {
-    const diff = Date.now() - date.getTime();
-    const minutes = Math.floor(diff / 60000);
-    const hours = Math.floor(minutes / 60);
+  const getUsageColor = (usage: number) => {
+    if (usage < 60) return 'text-medsight-normal';
+    if (usage < 80) return 'text-medsight-pending';
+    return 'text-medsight-critical';
+  };
+
+  const formatUptime = (hours: number) => {
     const days = Math.floor(hours / 24);
-
-    if (days > 0) return `${days}d ago`;
-    if (hours > 0) return `${hours}h ago`;
-    return `${minutes}m ago`;
+    const remainingHours = Math.floor(hours % 24);
+    return `${days}d ${remainingHours}h`;
   };
 
-  const formatDate = (date: Date) => {
-    return date.toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  };
-
-  const getPerformanceColor = (value: number) => {
-    if (value > 80) return 'text-red-500';
-    if (value > 60) return 'text-yellow-500';
-    return 'text-green-500';
-  };
-
-  const handleRefresh = () => {
-    loadSystemHealth();
-    if (onRefresh) onRefresh();
+  const formatBytes = (bytes: number) => {
+    if (bytes < 1024) return `${bytes} GB`;
+    return `${(bytes / 1024).toFixed(1)} TB`;
   };
 
   if (loading) {
     return (
-      <div className="medsight-glass rounded-xl p-6">
-        <div className="flex items-center justify-center h-64">
-          <div className="w-8 h-8 border-4 border-blue-400 border-t-transparent rounded-full animate-spin"></div>
+      <div className="medsight-glass p-8 rounded-xl">
+        <div className="flex items-center justify-center">
+          <div className="w-8 h-8 border-4 border-medsight-primary border-t-transparent rounded-full animate-spin"></div>
+          <span className="ml-4 text-medsight-primary">Loading system health...</span>
         </div>
       </div>
     );
   }
 
-  if (!healthData) {
+  if (error && !metrics) {
     return (
-      <div className="medsight-glass rounded-xl p-6">
-        <div className="text-center text-red-600">
-          <FireIconSolid className="w-12 h-12 mx-auto mb-4" />
-          <h3 className="text-lg font-semibold mb-2">Failed to Load System Health</h3>
-          <p className="text-sm mb-4">Unable to retrieve system health data</p>
-          <button 
-            onClick={handleRefresh}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-          >
+      <div className="medsight-glass p-8 rounded-xl border-medsight-critical/20">
+        <div className="text-center">
+          <XCircle className="w-12 h-12 text-medsight-critical mx-auto mb-4" />
+          <div className="text-lg font-medium text-medsight-critical mb-2">
+            System Health Error
+          </div>
+          <div className="text-sm text-medsight-critical/70 mb-4">
+            {error}
+          </div>
+          <button onClick={loadSystemHealth} className="btn-medsight">
+            <RefreshCw className="w-4 h-4 mr-2" />
             Retry
           </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (compactView) {
+    return (
+      <div className="medsight-glass p-4 rounded-xl">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-4">
+            <Heart className="w-5 h-5 text-medsight-normal" />
+            <div>
+              <div className="text-sm font-medium text-medsight-primary">System Health</div>
+              <div className="text-xs text-slate-600">All systems operational</div>
+            </div>
+          </div>
+          <div className="flex items-center space-x-3">
+            <div className="text-right">
+              <div className="text-sm font-medium text-medsight-normal">
+                {metrics?.cpu.usage.toFixed(1)}%
+              </div>
+              <div className="text-xs text-slate-500">CPU</div>
+            </div>
+            <div className="text-right">
+              <div className="text-sm font-medium text-medsight-normal">
+                {metrics?.memory.usage}%
+              </div>
+              <div className="text-xs text-slate-500">Memory</div>
+            </div>
+            <button
+              onClick={() => setAutoRefresh(!autoRefresh)}
+              className={`p-2 rounded-lg ${
+                autoRefresh 
+                  ? 'bg-medsight-primary/10 text-medsight-primary' 
+                  : 'bg-slate-100 text-slate-400'
+              }`}
+            >
+              <RefreshCw className={`w-4 h-4 ${autoRefresh ? 'animate-spin' : ''}`} />
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -343,289 +332,337 @@ export function SystemHealth({ onRefresh, refreshing = false }: SystemHealthProp
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 
-            className="text-2xl font-bold text-slate-800"
-            style={{ 
-              fontFamily: 'var(--font-primary)',
-              letterSpacing: '0.01em'
-            }}
-          >
-            System Health
-          </h2>
-          <p 
-            className="text-slate-600 mt-1"
-            style={{ 
-              fontFamily: 'var(--font-primary)',
-              letterSpacing: '0.01em'
-            }}
-          >
-            Real-time monitoring of all system components
-          </p>
-        </div>
-        <div className="flex items-center space-x-4">
-          <div className="flex items-center space-x-2">
-            <div className={`w-3 h-3 rounded-full ${
-              healthData.overall === 'healthy' ? 'bg-green-500 animate-pulse' :
-              healthData.overall === 'warning' ? 'bg-yellow-500' :
-              'bg-red-500'
-            }`}></div>
-            <span className="text-sm font-medium text-slate-700 capitalize">
-              {healthData.overall}
-            </span>
+      <div className="medsight-glass p-6 rounded-xl">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-2xl font-bold text-medsight-primary mb-2">
+              System Health Dashboard
+            </h2>
+            <p className="text-slate-600">
+              Real-time monitoring of medical system infrastructure
+            </p>
           </div>
-          <div className="flex bg-white/70 border border-white/20 rounded-lg p-1">
-            <button
-              onClick={() => setViewMode('grid')}
-              className={`px-3 py-1 text-sm font-medium rounded-md transition-colors ${
-                viewMode === 'grid' 
-                  ? 'bg-blue-500 text-white' 
-                  : 'text-slate-600 hover:text-slate-800'
-              }`}
-            >
-              Grid
-            </button>
-            <button
-              onClick={() => setViewMode('list')}
-              className={`px-3 py-1 text-sm font-medium rounded-md transition-colors ${
-                viewMode === 'list' 
-                  ? 'bg-blue-500 text-white' 
-                  : 'text-slate-600 hover:text-slate-800'
-              }`}
-            >
-              List
-            </button>
-          </div>
-          <button
-            onClick={handleRefresh}
-            disabled={refreshing}
-            className="flex items-center space-x-2 px-4 py-2 bg-white/70 border border-white/20 rounded-lg hover:bg-white/90 transition-colors disabled:opacity-50"
-          >
-            <ArrowPathIcon className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
-            <span className="text-sm font-medium">
-              {refreshing ? 'Refreshing...' : 'Refresh'}
-            </span>
-          </button>
-        </div>
-      </div>
-
-      {/* System Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="medsight-glass rounded-lg p-4">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium text-slate-600">System Uptime</span>
-            <HeartIconSolid className="w-5 h-5 text-green-500" />
-          </div>
-          <div className="text-2xl font-bold text-green-600">{healthData.uptime}</div>
-        </div>
-        <div className="medsight-glass rounded-lg p-4">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium text-slate-600">Active Services</span>
-            <ServerIconSolid className="w-5 h-5 text-blue-500" />
-          </div>
-          <div className="text-2xl font-bold text-blue-600">
-            {healthData.services.filter(s => s.status === 'online').length}/{healthData.services.length}
-          </div>
-        </div>
-        <div className="medsight-glass rounded-lg p-4">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium text-slate-600">Active Incidents</span>
-            <ExclamationTriangleIconSolid className="w-5 h-5 text-amber-500" />
-          </div>
-          <div className="text-2xl font-bold text-amber-600">{healthData.activeIncidents}</div>
-        </div>
-        <div className="medsight-glass rounded-lg p-4">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium text-slate-600">Last Incident</span>
-            <ClockIconSolid className="w-5 h-5 text-slate-500" />
-          </div>
-          <div className="text-sm font-medium text-slate-700">{healthData.lastIncident}</div>
-        </div>
-      </div>
-
-      {/* Performance Metrics */}
-      <div className="medsight-glass rounded-xl p-6">
-        <h3 className="text-lg font-semibold text-slate-800 mb-4">Performance Metrics</h3>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-          {Object.entries(healthData.performance).map(([metric, value]) => (
-            <div key={metric} className="text-center">
-              <div className="relative w-20 h-20 mx-auto mb-3">
-                <svg className="w-20 h-20 transform -rotate-90">
-                  <circle
-                    cx="40"
-                    cy="40"
-                    r="36"
-                    stroke="currentColor"
-                    strokeWidth="4"
-                    fill="none"
-                    className="text-slate-200"
-                  />
-                  <circle
-                    cx="40"
-                    cy="40"
-                    r="36"
-                    stroke="currentColor"
-                    strokeWidth="4"
-                    fill="none"
-                    strokeDasharray={`${2 * Math.PI * 36}`}
-                    strokeDashoffset={`${2 * Math.PI * 36 * (1 - value / 100)}`}
-                    className={`transition-all duration-500 ${getPerformanceColor(value)}`}
-                  />
-                </svg>
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="text-lg font-bold text-slate-700">{value}%</span>
-                </div>
-              </div>
-              <span className="text-sm text-slate-600 capitalize font-medium">{metric}</span>
+          <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-2">
+              <button
+                onClick={() => setAutoRefresh(!autoRefresh)}
+                className={`p-2 rounded-lg ${
+                  autoRefresh 
+                    ? 'bg-medsight-primary/10 text-medsight-primary' 
+                    : 'bg-slate-100 text-slate-400'
+                }`}
+              >
+                <RefreshCw className={`w-4 h-4 ${autoRefresh ? 'animate-spin' : ''}`} />
+              </button>
+              <span className="text-sm text-slate-600">
+                {autoRefresh ? 'Auto-refresh' : 'Manual refresh'}
+              </span>
             </div>
-          ))}
+            <button onClick={loadSystemHealth} className="btn-medsight">
+              <RefreshCw className="w-4 h-4 mr-2" />
+              Refresh
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* Services Status */}
-      <div className="medsight-glass rounded-xl p-6">
-        <h3 className="text-lg font-semibold text-slate-800 mb-4">Service Status</h3>
-        
-        {viewMode === 'grid' ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {healthData.services.map((service) => {
-              const StatusIcon = getStatusIcon(service.status);
-              return (
-                <div
-                  key={service.id}
-                  className={`p-4 rounded-lg border-2 cursor-pointer transition-all duration-200 hover:shadow-lg ${
-                    selectedService === service.id ? 'border-blue-500 bg-blue-50' : 'border-white/20 bg-white/50'
-                  }`}
-                  onClick={() => setSelectedService(selectedService === service.id ? null : service.id)}
-                >
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center space-x-3">
-                      <service.icon className="w-8 h-8 text-blue-600" />
-                      <div>
-                        <h4 className="font-semibold text-slate-800 text-sm">{service.name}</h4>
-                        <p className="text-xs text-slate-600">{service.version}</p>
-                      </div>
-                    </div>
-                    <div className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(service.status)}`}>
-                      <StatusIcon className="w-3 h-3 inline mr-1" />
-                      {service.status}
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <div className="flex justify-between text-sm">
-                      <span className="text-slate-600">Uptime</span>
-                      <span className="font-medium text-slate-800">{service.uptime}%</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-slate-600">Response Time</span>
-                      <span className="font-medium text-slate-800">{service.responseTime}ms</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-slate-600">Last Check</span>
-                      <span className="font-medium text-slate-800">{formatTimeAgo(service.lastCheck)}</span>
-                    </div>
-                  </div>
-                  
-                  {selectedService === service.id && (
-                    <div className="mt-4 pt-4 border-t border-white/20 space-y-2">
-                      <p className="text-xs text-slate-600">{service.description}</p>
-                      {service.endpoint && (
-                        <div className="text-xs text-slate-600">
-                          <span className="font-medium">Endpoint:</span> {service.endpoint}
-                        </div>
-                      )}
-                      {service.instances && (
-                        <div className="flex justify-between text-xs">
-                          <span className="text-slate-600">Instances:</span>
-                          <span className="font-medium">{service.instances}</span>
-                        </div>
-                      )}
-                      {service.memory && (
-                        <div className="flex justify-between text-xs">
-                          <span className="text-slate-600">Memory Usage:</span>
-                          <span className="font-medium">{service.memory}%</span>
-                        </div>
-                      )}
-                      {service.cpu && (
-                        <div className="flex justify-between text-xs">
-                          <span className="text-slate-600">CPU Usage:</span>
-                          <span className="font-medium">{service.cpu}%</span>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-              );
-            })}
+      {/* System Metrics */}
+      {metrics && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {/* CPU Usage */}
+          <div className="medsight-glass p-6 rounded-xl">
+            <div className="flex items-center justify-between mb-4">
+              <div className="p-3 rounded-lg bg-medsight-primary/10">
+                <Cpu className="w-6 h-6 text-medsight-primary" />
+              </div>
+              {getStatusIcon(metrics.cpu.status)}
+            </div>
+            <div className="text-2xl font-bold text-medsight-primary mb-1">
+              {metrics.cpu.usage.toFixed(1)}%
+            </div>
+            <div className="text-sm text-slate-600 mb-2">CPU Usage</div>
+            <div className="text-xs text-slate-500">
+              Temp: {metrics.cpu.temperature}°C
+            </div>
           </div>
-        ) : (
-          <div className="space-y-2">
-            {healthData.services.map((service) => {
-              const StatusIcon = getStatusIcon(service.status);
-              return (
-                <div
-                  key={service.id}
-                  className="flex items-center justify-between p-4 rounded-lg bg-white/50 border border-white/20 hover:bg-white/70 transition-colors"
-                >
-                  <div className="flex items-center space-x-4">
-                    <service.icon className="w-8 h-8 text-blue-600" />
-                    <div>
-                      <h4 className="font-semibold text-slate-800">{service.name}</h4>
-                      <p className="text-sm text-slate-600">{service.description}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center space-x-6">
-                    <div className="text-right">
-                      <div className="text-sm font-medium text-slate-800">{service.uptime}%</div>
-                      <div className="text-xs text-slate-600">Uptime</div>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-sm font-medium text-slate-800">{service.responseTime}ms</div>
-                      <div className="text-xs text-slate-600">Response</div>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-sm font-medium text-slate-800">{formatTimeAgo(service.lastCheck)}</div>
-                      <div className="text-xs text-slate-600">Last Check</div>
-                    </div>
-                    <div className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(service.status)}`}>
-                      <StatusIcon className="w-3 h-3 inline mr-1" />
-                      {service.status}
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </div>
 
-      {/* Scheduled Maintenance */}
-      {healthData.scheduledMaintenance.length > 0 && (
-        <div className="medsight-glass rounded-xl p-6">
-          <h3 className="text-lg font-semibold text-slate-800 mb-4">Scheduled Maintenance</h3>
-          <div className="space-y-4">
-            {healthData.scheduledMaintenance.map((maintenance) => (
-              <div key={maintenance.id} className="flex items-center justify-between p-4 bg-blue-50 rounded-lg border border-blue-200">
-                <div>
-                  <h4 className="font-semibold text-blue-800">{maintenance.title}</h4>
-                  <p className="text-sm text-blue-600 mt-1">{maintenance.description}</p>
-                  <div className="flex items-center space-x-4 mt-2 text-xs text-blue-600">
-                    <span>Start: {formatDate(maintenance.startTime)}</span>
-                    <span>End: {formatDate(maintenance.endTime)}</span>
-                  </div>
+                     {/* Memory Usage */}
+           <div className="medsight-glass p-6 rounded-xl">
+             <div className="flex items-center justify-between mb-4">
+               <div className="p-3 rounded-lg bg-medsight-secondary/10">
+                 <MemoryStick className="w-6 h-6 text-medsight-secondary" />
+               </div>
+              {getStatusIcon(metrics.memory.status)}
+            </div>
+            <div className="text-2xl font-bold text-medsight-secondary mb-1">
+              {metrics.memory.usage}%
+            </div>
+            <div className="text-sm text-slate-600 mb-2">Memory Usage</div>
+            <div className="text-xs text-slate-500">
+              {formatBytes(metrics.memory.used)} / {formatBytes(metrics.memory.total)}
+            </div>
+          </div>
+
+          {/* Storage Usage */}
+          <div className="medsight-glass p-6 rounded-xl">
+            <div className="flex items-center justify-between mb-4">
+              <div className="p-3 rounded-lg bg-medsight-accent/10">
+                <HardDrive className="w-6 h-6 text-medsight-accent" />
+              </div>
+              {getStatusIcon(metrics.storage.status)}
+            </div>
+            <div className="text-2xl font-bold text-medsight-accent mb-1">
+              {metrics.storage.usage}%
+            </div>
+            <div className="text-sm text-slate-600 mb-2">Storage Usage</div>
+            <div className="text-xs text-slate-500">
+              {formatBytes(metrics.storage.used)} / {formatBytes(metrics.storage.total)}
+            </div>
+          </div>
+
+          {/* Network Status */}
+          <div className="medsight-glass p-6 rounded-xl">
+            <div className="flex items-center justify-between mb-4">
+              <div className="p-3 rounded-lg bg-medsight-ai-high/10">
+                <Network className="w-6 h-6 text-medsight-ai-high" />
+              </div>
+              {getStatusIcon(metrics.network.status)}
+            </div>
+            <div className="text-2xl font-bold text-medsight-ai-high mb-1">
+              {metrics.network.latency}ms
+            </div>
+            <div className="text-sm text-slate-600 mb-2">Network Latency</div>
+            <div className="text-xs text-slate-500">
+              {metrics.network.bandwidth}% bandwidth
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Medical Systems Status */}
+      {medicalSystems && (
+        <div className="medsight-glass p-6 rounded-xl">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h3 className="text-xl font-bold text-medsight-primary">
+                Medical Systems Status
+              </h3>
+              <p className="text-slate-600 mt-1">
+                Status of critical medical infrastructure components
+              </p>
+            </div>
+            <button className="btn-medsight">
+              <Settings className="w-4 h-4 mr-2" />
+              Configure
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {/* DICOM Server */}
+            <div className="medsight-control-glass p-4 rounded-lg">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center space-x-3">
+                  <Monitor className="w-5 h-5 text-medsight-primary" />
+                  <h4 className="font-medium text-medsight-primary">DICOM Server</h4>
                 </div>
-                <div className="text-right">
-                  <div className="px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium">
-                    {maintenance.status}
-                  </div>
-                  <div className="text-xs text-blue-600 mt-1">
-                    {maintenance.affectedServices.length} service(s)
-                  </div>
+                {getStatusIcon(medicalSystems.dicomServer.status)}
+              </div>
+              <div className="space-y-2">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-slate-600">Response Time</span>
+                  <span className="text-sm font-medium">{medicalSystems.dicomServer.responseTime}ms</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-slate-600">Studies</span>
+                  <span className="text-sm font-medium">{medicalSystems.dicomServer.studies}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-slate-600">Connections</span>
+                  <span className="text-sm font-medium">{medicalSystems.dicomServer.connections}</span>
                 </div>
               </div>
-            ))}
+            </div>
+
+            {/* AI Engine */}
+            <div className="medsight-control-glass p-4 rounded-lg">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center space-x-3">
+                  <Zap className="w-5 h-5 text-medsight-primary" />
+                  <h4 className="font-medium text-medsight-primary">AI Engine</h4>
+                </div>
+                {getStatusIcon(medicalSystems.aiEngine.status)}
+              </div>
+              <div className="space-y-2">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-slate-600">Models Loaded</span>
+                  <span className="text-sm font-medium">{medicalSystems.aiEngine.modelsLoaded}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-slate-600">Queue Size</span>
+                  <span className="text-sm font-medium">{medicalSystems.aiEngine.queueSize}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-slate-600">Processed Today</span>
+                  <span className="text-sm font-medium">{medicalSystems.aiEngine.processedToday}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Database */}
+            <div className="medsight-control-glass p-4 rounded-lg">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center space-x-3">
+                  <Database className="w-5 h-5 text-medsight-primary" />
+                  <h4 className="font-medium text-medsight-primary">Database</h4>
+                </div>
+                {getStatusIcon(medicalSystems.database.status)}
+              </div>
+              <div className="space-y-2">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-slate-600">Connections</span>
+                  <span className="text-sm font-medium">{medicalSystems.database.connections}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-slate-600">Queries/min</span>
+                  <span className="text-sm font-medium">{medicalSystems.database.queries}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-slate-600">Performance</span>
+                  <span className="text-sm font-medium">{medicalSystems.database.performance}%</span>
+                </div>
+              </div>
+            </div>
+
+            {/* PACS Connections */}
+            <div className="medsight-control-glass p-4 rounded-lg">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center space-x-3">
+                  <Wifi className="w-5 h-5 text-medsight-primary" />
+                  <h4 className="font-medium text-medsight-primary">PACS Connections</h4>
+                </div>
+                {getStatusIcon(medicalSystems.pacsConnections.status)}
+              </div>
+              <div className="space-y-2">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-slate-600">Active</span>
+                  <span className="text-sm font-medium">{medicalSystems.pacsConnections.activeConnections}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-slate-600">Configured</span>
+                  <span className="text-sm font-medium">{medicalSystems.pacsConnections.totalConfigured}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-slate-600">Status</span>
+                  <span className={`text-sm font-medium ${getStatusColor(medicalSystems.pacsConnections.status)}`}>
+                    {medicalSystems.pacsConnections.status}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Backup System */}
+            <div className="medsight-control-glass p-4 rounded-lg">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center space-x-3">
+                  <Cloud className="w-5 h-5 text-medsight-primary" />
+                  <h4 className="font-medium text-medsight-primary">Backup System</h4>
+                </div>
+                {getStatusIcon(medicalSystems.backupSystem.status)}
+              </div>
+              <div className="space-y-2">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-slate-600">Last Backup</span>
+                  <span className="text-sm font-medium">
+                    {medicalSystems.backupSystem.lastBackup.toLocaleTimeString()}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-slate-600">Size</span>
+                  <span className="text-sm font-medium">{formatBytes(medicalSystems.backupSystem.backupSize)}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-slate-600">Retention</span>
+                  <span className="text-sm font-medium">{medicalSystems.backupSystem.retention} days</span>
+                </div>
+              </div>
+            </div>
+
+            {/* System Uptime */}
+            <div className="medsight-control-glass p-4 rounded-lg">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center space-x-3">
+                  <Clock className="w-5 h-5 text-medsight-primary" />
+                  <h4 className="font-medium text-medsight-primary">System Uptime</h4>
+                </div>
+                <CheckCircle className="w-4 h-4 text-medsight-normal" />
+              </div>
+              <div className="space-y-2">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-slate-600">Uptime</span>
+                  <span className="text-sm font-medium">
+                    {metrics && formatUptime(metrics.uptime)}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-slate-600">Availability</span>
+                  <span className="text-sm font-medium text-medsight-normal">99.9%</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-slate-600">Last Update</span>
+                  <span className="text-sm font-medium">
+                    {metrics && metrics.lastUpdate.toLocaleTimeString()}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* System Performance Trends */}
+      {showDetails && (
+        <div className="medsight-glass p-6 rounded-xl">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h3 className="text-xl font-bold text-medsight-primary">
+                Performance Trends
+              </h3>
+              <p className="text-slate-600 mt-1">
+                Historical performance metrics and trends
+              </p>
+            </div>
+            <button className="btn-medsight">
+              <Eye className="w-4 h-4 mr-2" />
+              View Details
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="medsight-control-glass p-4 rounded-lg">
+              <div className="flex items-center justify-between mb-3">
+                <h4 className="font-medium text-medsight-primary">CPU Performance</h4>
+                <TrendingUp className="w-4 h-4 text-medsight-normal" />
+              </div>
+              <div className="text-2xl font-bold text-medsight-primary mb-1">
+                {metrics?.cpu.usage.toFixed(1)}%
+              </div>
+              <div className="text-sm text-slate-600">
+                Average usage over last 24 hours
+              </div>
+            </div>
+
+            <div className="medsight-control-glass p-4 rounded-lg">
+              <div className="flex items-center justify-between mb-3">
+                <h4 className="font-medium text-medsight-primary">Memory Efficiency</h4>
+                <TrendingUp className="w-4 h-4 text-medsight-normal" />
+              </div>
+              <div className="text-2xl font-bold text-medsight-secondary mb-1">
+                {metrics?.memory.usage}%
+              </div>
+              <div className="text-sm text-slate-600">
+                Memory utilization trend
+              </div>
+            </div>
           </div>
         </div>
       )}

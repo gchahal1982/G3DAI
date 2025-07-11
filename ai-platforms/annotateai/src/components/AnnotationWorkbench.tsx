@@ -51,6 +51,16 @@ import {
     TabsTrigger
 } from '../../../../shared/components/ui';
 
+// Phase 2.1 Integration Components
+import XRAnnotationInterface from './xr/XRAnnotationInterface';
+import ThreeDReconstructionPanel from './3d/ThreeDReconstructionPanel';
+import PhysicsSimulationPanel from './physics/PhysicsSimulationPanel';
+import AdvancedCollaborationDashboard from './collaboration/AdvancedCollaborationDashboard';
+import SplineEditingTools from './geometry/SplineEditingTools';
+import SpatialAnalysisPanel from './spatial/SpatialAnalysisPanel';
+import MeshProcessingTools from './mesh/MeshProcessingTools';
+import { UserRole } from './CollaborationEngine';
+
 // Icons
 import {
     PlayIcon,
@@ -85,7 +95,11 @@ import {
     ChatBubbleLeftEllipsisIcon as MessageCircleIcon,
     ExclamationTriangleIcon as AlertTriangleIcon,
     CheckCircleIcon,
-    XCircleIcon
+    XCircleIcon,
+    CubeIcon,
+    AdjustmentsHorizontalIcon,
+    BeakerIcon,
+    ChartBarIcon
 } from '@heroicons/react/24/outline';
 
 // Types and interfaces
@@ -192,6 +206,17 @@ export const AnnotationWorkbench: React.FC<WorkbenchProps> = ({
     const [aiSuggestions, setAISuggestions] = useState<any[]>([]);
     const [isAIProcessing, setIsAIProcessing] = useState(false);
 
+    // Phase 2.1 Integration State
+    const [xrMode, setXRMode] = useState(false);
+    const [xrDeviceConnected, setXRDeviceConnected] = useState(false);
+    const [show3DReconstruction, setShow3DReconstruction] = useState(false);
+    const [showPhysicsSimulation, setShowPhysicsSimulation] = useState(false);
+    const [showAdvancedCollaboration, setShowAdvancedCollaboration] = useState(false);
+    const [showSplineTools, setShowSplineTools] = useState(false);
+    const [showSpatialAnalysis, setShowSpatialAnalysis] = useState(false);
+    const [showMeshProcessing, setShowMeshProcessing] = useState(false);
+    const [activePanel, setActivePanel] = useState<string | null>(null);
+
     // Video-specific state
     const [currentFrame, setCurrentFrame] = useState(0);
     const [totalFrames, setTotalFrames] = useState(0);
@@ -252,6 +277,33 @@ export const AnnotationWorkbench: React.FC<WorkbenchProps> = ({
             description: 'AI-powered annotation suggestions',
             active: selectedTool === 'ai-assist',
             category: 'ai'
+        },
+        {
+            id: 'xr-mode',
+            name: 'XR Mode',
+            icon: EyeIcon,
+            hotkey: 'x',
+            description: 'Extended reality annotation mode',
+            active: xrMode,
+            category: 'ai'
+        },
+        {
+            id: 'spline-editor',
+            name: 'Spline Editor',
+            icon: PencilIcon,
+            hotkey: 's',
+            description: 'Advanced spline editing tools',
+            active: showSplineTools,
+            category: 'drawing'
+        },
+        {
+            id: 'mesh-processing',
+            name: 'Mesh Processing',
+            icon: CubeIcon,
+            hotkey: 'm',
+            description: '3D mesh processing and analysis',
+            active: showMeshProcessing,
+            category: 'measurement'
         }
     ], [selectedTool]);
 
@@ -457,6 +509,9 @@ export const AnnotationWorkbench: React.FC<WorkbenchProps> = ({
     useHotkeys('p', () => selectTool('polygon'));
     useHotkeys('c', () => selectTool('circle'));
     useHotkeys('a', () => selectTool('ai-assist'));
+    useHotkeys('x', () => setXRMode(!xrMode));
+    useHotkeys('s', () => setShowSplineTools(!showSplineTools));
+    useHotkeys('m', () => setShowMeshProcessing(!showMeshProcessing));
     useHotkeys('ctrl+s', (e) => {
         e.preventDefault();
         handleSave();
@@ -675,7 +730,7 @@ export const AnnotationWorkbench: React.FC<WorkbenchProps> = ({
                                 }`}
                                 title={`${tool.name} (${tool.hotkey})`}
                             >
-                                <IconComponent className="w-5 h-5" />
+                                <IconComponent />
                             </button>
                         );
                     })}
@@ -780,30 +835,282 @@ export const AnnotationWorkbench: React.FC<WorkbenchProps> = ({
                     </div>
                 </div>
 
-                {/* Right sidebar - Properties and Quality */}
+                {/* Right sidebar - Properties and Phase 2.1 Tools */}
                 <div className="w-80 bg-white/5 backdrop-blur-xl border-l border-white/10 flex flex-col">
                     <div className="flex-1 flex flex-col">
-                        <div className="flex bg-white/10 rounded-lg m-3 p-1">
-                            <button className="flex-1 px-3 py-2 text-sm rounded-md bg-indigo-600 text-white">
-                                Properties
-                            </button>
-                            <button className="flex-1 px-3 py-2 text-sm rounded-md text-white/70 hover:text-white">
-                                Quality
-                            </button>
-                            <button className="flex-1 px-3 py-2 text-sm rounded-md text-white/70 hover:text-white">
-                                AI
-                            </button>
-                        </div>
+                        <Tabs defaultValue="properties" className="flex-1 flex flex-col">
+                            <TabsList className="grid w-full grid-cols-2 m-3">
+                                <TabsTrigger value="properties">Properties</TabsTrigger>
+                                <TabsTrigger value="advanced">Advanced</TabsTrigger>
+                            </TabsList>
 
-                        <div className="flex-1 p-4">
-                            <PropertiesPanel
-                                session={session}
-                                selectedAnnotations={selectedAnnotations}
-                                project={project}
-                            />
-                        </div>
+                            <TabsContent value="properties" className="flex-1 p-4">
+                                <PropertiesPanel
+                                    session={session}
+                                    selectedAnnotations={selectedAnnotations}
+                                    project={project}
+                                />
+                            </TabsContent>
+
+                            <TabsContent value="advanced" className="flex-1 p-4 space-y-4">
+                                {/* Phase 2.1 Component Toggles */}
+                                <div className="space-y-3">
+                                    <div className="flex items-center justify-between p-3 bg-white/10 rounded-lg">
+                                        <div className="flex items-center gap-2">
+                                            <EyeIcon className="w-4 h-4 text-blue-400" />
+                                            <span className="text-sm text-white">XR Mode</span>
+                                        </div>
+                                        <button
+                                            onClick={() => setXRMode(!xrMode)}
+                                            className={`w-10 h-6 rounded-full transition-colors ${
+                                                xrMode ? 'bg-blue-600' : 'bg-gray-600'
+                                            }`}
+                                        >
+                                            <div className={`w-4 h-4 bg-white rounded-full transition-transform ${
+                                                xrMode ? 'translate-x-5' : 'translate-x-1'
+                                            }`} />
+                                        </button>
+                                    </div>
+
+                                    <div className="flex items-center justify-between p-3 bg-white/10 rounded-lg">
+                                        <div className="flex items-center gap-2">
+                                            <CubeIcon className="w-4 h-4 text-purple-400" />
+                                            <span className="text-sm text-white">3D Reconstruction</span>
+                                        </div>
+                                        <button
+                                            onClick={() => setShow3DReconstruction(!show3DReconstruction)}
+                                            className={`w-10 h-6 rounded-full transition-colors ${
+                                                show3DReconstruction ? 'bg-purple-600' : 'bg-gray-600'
+                                            }`}
+                                        >
+                                            <div className={`w-4 h-4 bg-white rounded-full transition-transform ${
+                                                show3DReconstruction ? 'translate-x-5' : 'translate-x-1'
+                                            }`} />
+                                        </button>
+                                    </div>
+
+                                    <div className="flex items-center justify-between p-3 bg-white/10 rounded-lg">
+                                        <div className="flex items-center gap-2">
+                                            <BeakerIcon className="w-4 h-4 text-green-400" />
+                                            <span className="text-sm text-white">Physics Simulation</span>
+                                        </div>
+                                        <button
+                                            onClick={() => setShowPhysicsSimulation(!showPhysicsSimulation)}
+                                            className={`w-10 h-6 rounded-full transition-colors ${
+                                                showPhysicsSimulation ? 'bg-green-600' : 'bg-gray-600'
+                                            }`}
+                                        >
+                                            <div className={`w-4 h-4 bg-white rounded-full transition-transform ${
+                                                showPhysicsSimulation ? 'translate-x-5' : 'translate-x-1'
+                                            }`} />
+                                        </button>
+                                    </div>
+
+                                    <div className="flex items-center justify-between p-3 bg-white/10 rounded-lg">
+                                        <div className="flex items-center gap-2">
+                                            <UsersIcon className="w-4 h-4 text-orange-400" />
+                                            <span className="text-sm text-white">Advanced Collaboration</span>
+                                        </div>
+                                        <button
+                                            onClick={() => setShowAdvancedCollaboration(!showAdvancedCollaboration)}
+                                            className={`w-10 h-6 rounded-full transition-colors ${
+                                                showAdvancedCollaboration ? 'bg-orange-600' : 'bg-gray-600'
+                                            }`}
+                                        >
+                                            <div className={`w-4 h-4 bg-white rounded-full transition-transform ${
+                                                showAdvancedCollaboration ? 'translate-x-5' : 'translate-x-1'
+                                            }`} />
+                                        </button>
+                                    </div>
+
+                                    <div className="flex items-center justify-between p-3 bg-white/10 rounded-lg">
+                                        <div className="flex items-center gap-2">
+                                            <PencilIcon className="w-4 h-4 text-cyan-400" />
+                                            <span className="text-sm text-white">Spline Tools</span>
+                                        </div>
+                                        <button
+                                            onClick={() => setShowSplineTools(!showSplineTools)}
+                                            className={`w-10 h-6 rounded-full transition-colors ${
+                                                showSplineTools ? 'bg-cyan-600' : 'bg-gray-600'
+                                            }`}
+                                        >
+                                            <div className={`w-4 h-4 bg-white rounded-full transition-transform ${
+                                                showSplineTools ? 'translate-x-5' : 'translate-x-1'
+                                            }`} />
+                                        </button>
+                                    </div>
+
+                                    <div className="flex items-center justify-between p-3 bg-white/10 rounded-lg">
+                                        <div className="flex items-center gap-2">
+                                            <ChartBarIcon className="w-4 h-4 text-red-400" />
+                                            <span className="text-sm text-white">Spatial Analysis</span>
+                                        </div>
+                                        <button
+                                            onClick={() => setShowSpatialAnalysis(!showSpatialAnalysis)}
+                                            className={`w-10 h-6 rounded-full transition-colors ${
+                                                showSpatialAnalysis ? 'bg-red-600' : 'bg-gray-600'
+                                            }`}
+                                        >
+                                            <div className={`w-4 h-4 bg-white rounded-full transition-transform ${
+                                                showSpatialAnalysis ? 'translate-x-5' : 'translate-x-1'
+                                            }`} />
+                                        </button>
+                                    </div>
+
+                                    <div className="flex items-center justify-between p-3 bg-white/10 rounded-lg">
+                                        <div className="flex items-center gap-2">
+                                            <AdjustmentsHorizontalIcon className="w-4 h-4 text-yellow-400" />
+                                            <span className="text-sm text-white">Mesh Processing</span>
+                                        </div>
+                                        <button
+                                            onClick={() => setShowMeshProcessing(!showMeshProcessing)}
+                                            className={`w-10 h-6 rounded-full transition-colors ${
+                                                showMeshProcessing ? 'bg-yellow-600' : 'bg-gray-600'
+                                            }`}
+                                        >
+                                            <div className={`w-4 h-4 bg-white rounded-full transition-transform ${
+                                                showMeshProcessing ? 'translate-x-5' : 'translate-x-1'
+                                            }`} />
+                                        </button>
+                                    </div>
+                                </div>
+                            </TabsContent>
+                        </Tabs>
                     </div>
                 </div>
+
+                {/* Phase 2.1 Component Panels */}
+                <AnimatePresence>
+                    {xrMode && (
+                        <motion.div
+                            initial={{ opacity: 0, x: 100 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            exit={{ opacity: 0, x: 100 }}
+                            className="fixed top-16 right-4 w-96 max-h-[calc(100vh-80px)] overflow-y-auto z-50"
+                        >
+                            <XRAnnotationInterface
+                                onSessionStart={(session) => setXRDeviceConnected(true)}
+                                onSessionEnd={() => setXRDeviceConnected(false)}
+                            />
+                        </motion.div>
+                    )}
+
+                    {show3DReconstruction && (
+                        <motion.div
+                            initial={{ opacity: 0, x: 100 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            exit={{ opacity: 0, x: 100 }}
+                            className="fixed top-16 right-4 w-96 max-h-[calc(100vh-80px)] overflow-y-auto z-50"
+                        >
+                            <ThreeDReconstructionPanel />
+                        </motion.div>
+                    )}
+
+                    {showPhysicsSimulation && (
+                        <motion.div
+                            initial={{ opacity: 0, x: 100 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            exit={{ opacity: 0, x: 100 }}
+                            className="fixed top-16 right-4 w-96 max-h-[calc(100vh-80px)] overflow-y-auto z-50"
+                        >
+                            <PhysicsSimulationPanel
+                                projectId={projectId}
+                                sessionId={sessionId}
+                            />
+                        </motion.div>
+                    )}
+
+                    {showAdvancedCollaboration && (
+                        <motion.div
+                            initial={{ opacity: 0, x: 100 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            exit={{ opacity: 0, x: 100 }}
+                            className="fixed top-16 right-4 w-96 max-h-[calc(100vh-80px)] overflow-y-auto z-50"
+                        >
+                            <AdvancedCollaborationDashboard 
+                                sessionId={sessionId || 'default-session'}
+                                currentUser={{
+                                    id: 'current-user',
+                                    name: 'Current User',
+                                    email: 'user@example.com',
+                                    role: UserRole.ANNOTATOR,
+                                    avatar: {
+                                        model: 'default',
+                                        position: { x: 0, y: 0, z: 0 },
+                                        rotation: { x: 0, y: 0, z: 0 },
+                                        scale: { x: 1, y: 1, z: 1 },
+                                        color: { r: 0.5, g: 0.5, b: 0.5, a: 1 },
+                                        visibility: true,
+                                        animations: []
+                                    },
+                                    presence: {
+                                        status: 'online',
+                                        lastSeen: Date.now(),
+                                        currentTool: 'select',
+                                        activeRegion: { min: { x: 0, y: 0, z: 0 }, max: { x: 1, y: 1, z: 1 } },
+                                        cursor: {
+                                            position: { x: 0, y: 0, z: 0 },
+                                            visible: true,
+                                            color: { r: 0.5, g: 0.5, b: 0.5, a: 1 },
+                                            size: 10,
+                                            shape: 'circle'
+                                        }
+                                    },
+                                    tools: {
+                                        activeTool: 'select',
+                                        settings: {},
+                                        history: [],
+                                        shortcuts: {}
+                                    },
+                                    permissions: [],
+                                    statistics: {
+                                        sessionsCount: 0,
+                                        totalTime: 0,
+                                        annotationsCreated: 0,
+                                        annotationsModified: 0,
+                                        collaborationScore: 0,
+                                        accuracy: 0
+                                    }
+                                }}
+                            />
+                        </motion.div>
+                    )}
+
+                    {showSplineTools && (
+                        <motion.div
+                            initial={{ opacity: 0, x: 100 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            exit={{ opacity: 0, x: 100 }}
+                            className="fixed top-16 right-4 w-96 max-h-[calc(100vh-80px)] overflow-y-auto z-50"
+                        >
+                            <SplineEditingTools />
+                        </motion.div>
+                    )}
+
+                    {showSpatialAnalysis && (
+                        <motion.div
+                            initial={{ opacity: 0, x: 100 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            exit={{ opacity: 0, x: 100 }}
+                            className="fixed top-16 right-4 w-96 max-h-[calc(100vh-80px)] overflow-y-auto z-50"
+                        >
+                            <SpatialAnalysisPanel />
+                        </motion.div>
+                    )}
+
+                    {showMeshProcessing && (
+                        <motion.div
+                            initial={{ opacity: 0, x: 100 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            exit={{ opacity: 0, x: 100 }}
+                            className="fixed top-16 right-4 w-96 max-h-[calc(100vh-80px)] overflow-y-auto z-50"
+                        >
+                            <MeshProcessingTools
+                                projectId={projectId}
+                            />
+                        </motion.div>
+                    )}
+                </AnimatePresence>
             </div>
 
             {/* Bottom status bar */}

@@ -1,391 +1,383 @@
-'use client'
+'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Alert, AlertDescription } from '@/components/ui/Alert';
 import { 
-  Users, 
-  UserPlus, 
-  UserMinus, 
-  Search, 
-  Filter, 
-  Shield, 
-  Clock, 
-  Calendar, 
-  Mail, 
-  Phone, 
-  MapPin, 
-  Award, 
-  Building2, 
-  Check, 
-  X, 
-  AlertTriangle, 
-  History, 
-  Settings,
-  Eye,
-  Edit,
-  Save,
-  RefreshCw
-} from 'lucide-react';
+  UserIcon,
+  ShieldCheckIcon,
+  PlusIcon,
+  PencilIcon,
+  TrashIcon,
+  CheckCircleIcon,
+  XCircleIcon,
+  ClockIcon,
+  ExclamationTriangleIcon,
+  AcademicCapIcon,
+  BuildingOfficeIcon,
+  EnvelopeIcon,
+  PhoneIcon,
+  MagnifyingGlassIcon,
+  FunnelIcon,
+  ArrowPathIcon,
+  UserGroupIcon,
+  EyeIcon,
+  CalendarIcon,
+  DocumentTextIcon,
+  InformationCircleIcon,
+  CheckIcon,
+  XMarkIcon,
+  ClipboardDocumentCheckIcon,
+  IdentificationIcon,
+  GlobeAltIcon,
+  MapPinIcon
+} from '@heroicons/react/24/outline';
 
-interface User {
+// User and Role Types
+interface MedicalUser {
   id: string;
-  email: string;
   firstName: string;
   lastName: string;
-  roles: string[];
-  department: string;
-  licenseNumber: string;
-  licenseState: string;
-  specialization: string;
+  email: string;
   phone: string;
-  isActive: boolean;
+  medicalLicenseNumber: string;
+  npiNumber: string;
+  specializations: string[];
+  department: string;
+  organization: string;
+  location: string;
+  currentRoles: AssignedRole[];
+  status: 'active' | 'inactive' | 'suspended' | 'pending';
   lastLogin: Date;
+  licenseExpiry: Date;
+  employmentStatus: 'full_time' | 'part_time' | 'contract' | 'locum';
+  profilePicture?: string;
   createdAt: Date;
-  updatedAt: Date;
+  lastModified: Date;
+}
+
+interface AssignedRole {
+  roleId: string;
+  roleName: string;
+  roleHierarchy: number;
+  assignedAt: Date;
+  assignedBy: string;
+  expiresAt?: Date;
+  isActive: boolean;
+  isTemporary: boolean;
+  conditions?: string[];
+  approvedBy?: string;
+  approvalRequired: boolean;
+  approvalStatus: 'pending' | 'approved' | 'rejected';
+}
+
+interface RoleAssignmentHistory {
+  id: string;
+  userId: string;
+  roleId: string;
+  action: 'assigned' | 'removed' | 'modified';
+  performedBy: string;
+  performedAt: Date;
+  reason: string;
+  previousData?: any;
+  newData?: any;
+  approvalStatus: 'pending' | 'approved' | 'rejected';
 }
 
 interface Role {
   id: string;
   name: string;
+  hierarchy: number;
+  category: 'clinical' | 'administrative' | 'technical' | 'emergency';
+  department?: string;
   description: string;
-  permissions: string[];
-  userCount: number;
-  isSystem: boolean;
-  status: 'active' | 'inactive' | 'deprecated';
-  color: string;
-}
-
-interface RoleAssignment {
-  id: string;
-  userId: string;
-  roleId: string;
-  assignedBy: string;
-  assignedAt: Date;
-  expiresAt?: Date;
+  requiresApproval: boolean;
+  maxDuration?: number; // in days
   isActive: boolean;
-  reason: string;
 }
 
-interface BulkAssignmentRequest {
-  userIds: string[];
-  roleIds: string[];
-  reason: string;
-  expiresAt?: Date;
-}
+// Mock data
+const MOCK_USERS: MedicalUser[] = [
+  {
+    id: 'user-001',
+    firstName: 'Dr. Sarah',
+    lastName: 'Johnson',
+    email: 'sarah.johnson@medcenter.com',
+    phone: '(555) 123-4567',
+    medicalLicenseNumber: 'MD-12345',
+    npiNumber: '1234567890',
+    specializations: ['Radiology', 'Diagnostic Imaging'],
+    department: 'Radiology',
+    organization: 'Metro Medical Center',
+    location: 'New York, NY',
+    currentRoles: [
+      {
+        roleId: 'attending-radiologist',
+        roleName: 'Attending Radiologist',
+        roleHierarchy: 4,
+        assignedAt: new Date('2024-01-15'),
+        assignedBy: 'Dr. Michael Chen',
+        isActive: true,
+        isTemporary: false,
+        approvedBy: 'Dr. Michael Chen',
+        approvalRequired: false,
+        approvalStatus: 'approved'
+      }
+    ],
+    status: 'active',
+    lastLogin: new Date('2024-01-20'),
+    licenseExpiry: new Date('2025-12-31'),
+    employmentStatus: 'full_time',
+    createdAt: new Date('2024-01-01'),
+    lastModified: new Date('2024-01-15')
+  },
+  {
+    id: 'user-002',
+    firstName: 'Dr. Michael',
+    lastName: 'Chen',
+    email: 'michael.chen@medcenter.com',
+    phone: '(555) 234-5678',
+    medicalLicenseNumber: 'MD-67890',
+    npiNumber: '0987654321',
+    specializations: ['Radiology', 'Interventional Radiology'],
+    department: 'Radiology',
+    organization: 'Metro Medical Center',
+    location: 'New York, NY',
+    currentRoles: [
+      {
+        roleId: 'chief-radiology',
+        roleName: 'Chief of Radiology',
+        roleHierarchy: 7,
+        assignedAt: new Date('2024-01-01'),
+        assignedBy: 'System Admin',
+        isActive: true,
+        isTemporary: false,
+        approvedBy: 'System Admin',
+        approvalRequired: true,
+        approvalStatus: 'approved'
+      }
+    ],
+    status: 'active',
+    lastLogin: new Date('2024-01-21'),
+    licenseExpiry: new Date('2025-06-30'),
+    employmentStatus: 'full_time',
+    createdAt: new Date('2023-12-01'),
+    lastModified: new Date('2024-01-01')
+  },
+  {
+    id: 'user-003',
+    firstName: 'Dr. Emily',
+    lastName: 'Rodriguez',
+    email: 'emily.rodriguez@medcenter.com',
+    phone: '(555) 345-6789',
+    medicalLicenseNumber: 'MD-11111',
+    npiNumber: '1111111111',
+    specializations: ['Radiology'],
+    department: 'Radiology',
+    organization: 'Metro Medical Center',
+    location: 'New York, NY',
+    currentRoles: [
+      {
+        roleId: 'radiology-resident',
+        roleName: 'Radiology Resident',
+        roleHierarchy: 2,
+        assignedAt: new Date('2024-01-10'),
+        assignedBy: 'Dr. Michael Chen',
+        isActive: true,
+        isTemporary: true,
+        expiresAt: new Date('2025-01-10'),
+        approvedBy: 'Dr. Michael Chen',
+        approvalRequired: false,
+        approvalStatus: 'approved'
+      }
+    ],
+    status: 'active',
+    lastLogin: new Date('2024-01-19'),
+    licenseExpiry: new Date('2025-03-31'),
+    employmentStatus: 'full_time',
+    createdAt: new Date('2024-01-01'),
+    lastModified: new Date('2024-01-10')
+  },
+  {
+    id: 'user-004',
+    firstName: 'John',
+    lastName: 'Smith',
+    email: 'john.smith@medcenter.com',
+    phone: '(555) 456-7890',
+    medicalLicenseNumber: 'RT-22222',
+    npiNumber: '2222222222',
+    specializations: ['Radiology Technology'],
+    department: 'Radiology',
+    organization: 'Metro Medical Center',
+    location: 'New York, NY',
+    currentRoles: [
+      {
+        roleId: 'radiology-tech',
+        roleName: 'Radiology Technician',
+        roleHierarchy: 1,
+        assignedAt: new Date('2024-01-05'),
+        assignedBy: 'Dr. Michael Chen',
+        isActive: true,
+        isTemporary: false,
+        approvedBy: 'Dr. Sarah Johnson',
+        approvalRequired: false,
+        approvalStatus: 'approved'
+      }
+    ],
+    status: 'active',
+    lastLogin: new Date('2024-01-18'),
+    licenseExpiry: new Date('2025-09-30'),
+    employmentStatus: 'part_time',
+    createdAt: new Date('2024-01-01'),
+    lastModified: new Date('2024-01-05')
+  },
+  {
+    id: 'user-005',
+    firstName: 'Dr. Lisa',
+    lastName: 'Wang',
+    email: 'lisa.wang@medcenter.com',
+    phone: '(555) 567-8901',
+    medicalLicenseNumber: 'MD-33333',
+    npiNumber: '3333333333',
+    specializations: ['Cardiology'],
+    department: 'Cardiology',
+    organization: 'Metro Medical Center',
+    location: 'New York, NY',
+    currentRoles: [
+      {
+        roleId: 'attending-cardiologist',
+        roleName: 'Attending Cardiologist',
+        roleHierarchy: 4,
+        assignedAt: new Date('2024-01-12'),
+        assignedBy: 'Dr. Robert Kim',
+        isActive: false,
+        isTemporary: false,
+        approvedBy: 'Dr. Robert Kim',
+        approvalRequired: false,
+        approvalStatus: 'pending'
+      }
+    ],
+    status: 'pending',
+    lastLogin: new Date('2024-01-16'),
+    licenseExpiry: new Date('2025-11-30'),
+    employmentStatus: 'full_time',
+    createdAt: new Date('2024-01-01'),
+    lastModified: new Date('2024-01-12')
+  }
+];
 
-const UserRoleAssignment: React.FC = () => {
-  const [users, setUsers] = useState<User[]>([]);
-  const [roles, setRoles] = useState<Role[]>([]);
-  const [assignments, setAssignments] = useState<RoleAssignment[]>([]);
+const MOCK_ROLES: Role[] = [
+  {
+    id: 'chief-radiology',
+    name: 'Chief of Radiology',
+    hierarchy: 7,
+    category: 'clinical',
+    department: 'Radiology',
+    description: 'Department head for radiology services',
+    requiresApproval: true,
+    isActive: true
+  },
+  {
+    id: 'attending-radiologist',
+    name: 'Attending Radiologist',
+    hierarchy: 4,
+    category: 'clinical',
+    department: 'Radiology',
+    description: 'Board-certified radiologist',
+    requiresApproval: false,
+    isActive: true
+  },
+  {
+    id: 'radiology-resident',
+    name: 'Radiology Resident',
+    hierarchy: 2,
+    category: 'clinical',
+    department: 'Radiology',
+    description: 'Radiology resident in training',
+    requiresApproval: false,
+    maxDuration: 365,
+    isActive: true
+  },
+  {
+    id: 'radiology-tech',
+    name: 'Radiology Technician',
+    hierarchy: 1,
+    category: 'technical',
+    department: 'Radiology',
+    description: 'Radiology technician',
+    requiresApproval: false,
+    isActive: true
+  },
+  {
+    id: 'system-admin',
+    name: 'System Administrator',
+    hierarchy: 8,
+    category: 'administrative',
+    description: 'System administrator with full access',
+    requiresApproval: true,
+    isActive: true
+  }
+];
+
+export default function UserRoleAssignment() {
+  const [users, setUsers] = useState<MedicalUser[]>(MOCK_USERS);
+  const [roles, setRoles] = useState<Role[]>(MOCK_ROLES);
+  const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
+  const [selectedRole, setSelectedRole] = useState<string>('');
   const [searchTerm, setSearchTerm] = useState('');
+  const [filterStatus, setFilterStatus] = useState<string>('all');
   const [filterDepartment, setFilterDepartment] = useState<string>('all');
   const [filterRole, setFilterRole] = useState<string>('all');
-  const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
-  const [selectedUser, setSelectedUser] = useState<User | null>(null);
-  const [isAssignmentDialogOpen, setIsAssignmentDialogOpen] = useState(false);
-  const [isBulkAssignmentOpen, setIsBulkAssignmentOpen] = useState(false);
-  const [bulkAssignmentData, setBulkAssignmentData] = useState<BulkAssignmentRequest>({
-    userIds: [],
-    roleIds: [],
-    reason: '',
-    expiresAt: undefined
-  });
-  const [loading, setLoading] = useState(true);
+  const [showAssignModal, setShowAssignModal] = useState(false);
+  const [showUserDetails, setShowUserDetails] = useState<string | null>(null);
+  const [bulkAssignMode, setBulkAssignMode] = useState(false);
+  const [assignmentReason, setAssignmentReason] = useState('');
+  const [temporaryAssignment, setTemporaryAssignment] = useState(false);
+  const [expiryDate, setExpiryDate] = useState('');
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        // Mock data - replace with actual API calls
-        const mockUsers: User[] = [
-          {
-            id: '1',
-            email: 'sarah.johnson@hospital.com',
-            firstName: 'Sarah',
-            lastName: 'Johnson',
-            roles: ['1', '2'], // Senior Radiologist, Radiologist
-            department: 'Radiology',
-            licenseNumber: 'MD123456',
-            licenseState: 'CA',
-            specialization: 'Diagnostic Radiology',
-            phone: '(555) 123-4567',
-            isActive: true,
-            lastLogin: new Date('2024-01-25T10:30:00Z'),
-            createdAt: new Date('2024-01-01T00:00:00Z'),
-            updatedAt: new Date('2024-01-25T10:30:00Z')
-          },
-          {
-            id: '2',
-            email: 'mark.chen@hospital.com',
-            firstName: 'Mark',
-            lastName: 'Chen',
-            roles: ['2'], // Radiologist
-            department: 'Radiology',
-            licenseNumber: 'MD789012',
-            licenseState: 'NY',
-            specialization: 'Interventional Radiology',
-            phone: '(555) 234-5678',
-            isActive: true,
-            lastLogin: new Date('2024-01-24T15:45:00Z'),
-            createdAt: new Date('2024-01-05T00:00:00Z'),
-            updatedAt: new Date('2024-01-24T15:45:00Z')
-          },
-          {
-            id: '3',
-            email: 'lisa.rodriguez@hospital.com',
-            firstName: 'Lisa',
-            lastName: 'Rodriguez',
-            roles: ['3'], // Radiology Technician
-            department: 'Radiology',
-            licenseNumber: 'RT345678',
-            licenseState: 'TX',
-            specialization: 'Radiologic Technology',
-            phone: '(555) 345-6789',
-            isActive: true,
-            lastLogin: new Date('2024-01-25T08:15:00Z'),
-            createdAt: new Date('2024-01-10T00:00:00Z'),
-            updatedAt: new Date('2024-01-25T08:15:00Z')
-          },
-          {
-            id: '4',
-            email: 'john.smith@hospital.com',
-            firstName: 'John',
-            lastName: 'Smith',
-            roles: ['4'], // Medical Student
-            department: 'Education',
-            licenseNumber: 'MS901234',
-            licenseState: 'FL',
-            specialization: 'Medical Student',
-            phone: '(555) 456-7890',
-            isActive: true,
-            lastLogin: new Date('2024-01-23T14:20:00Z'),
-            createdAt: new Date('2024-01-15T00:00:00Z'),
-            updatedAt: new Date('2024-01-23T14:20:00Z')
-          },
-          {
-            id: '5',
-            email: 'admin@hospital.com',
-            firstName: 'System',
-            lastName: 'Administrator',
-            roles: ['5'], // System Administrator
-            department: 'IT',
-            licenseNumber: 'IT567890',
-            licenseState: 'CA',
-            specialization: 'System Administration',
-            phone: '(555) 567-8901',
-            isActive: true,
-            lastLogin: new Date('2024-01-25T11:00:00Z'),
-            createdAt: new Date('2024-01-01T00:00:00Z'),
-            updatedAt: new Date('2024-01-25T11:00:00Z')
-          },
-          {
-            id: '6',
-            email: 'jane.doe@hospital.com',
-            firstName: 'Jane',
-            lastName: 'Doe',
-            roles: ['6'], // Quality Assurance
-            department: 'Quality',
-            licenseNumber: 'QA123456',
-            licenseState: 'IL',
-            specialization: 'Quality Assurance',
-            phone: '(555) 678-9012',
-            isActive: false,
-            lastLogin: new Date('2024-01-20T09:30:00Z'),
-            createdAt: new Date('2024-01-08T00:00:00Z'),
-            updatedAt: new Date('2024-01-20T09:30:00Z')
-          }
-        ];
-
-        const mockRoles: Role[] = [
-          {
-            id: '1',
-            name: 'Senior Radiologist',
-            description: 'Full access to all medical imaging and diagnostic tools',
-            permissions: ['read_all_studies', 'create_reports', 'approve_reports', 'manage_protocols', 'ai_analysis'],
-            userCount: 12,
-            isSystem: false,
-            status: 'active',
-            color: 'bg-blue-500'
-          },
-          {
-            id: '2',
-            name: 'Radiologist',
-            description: 'Standard radiologist access with reporting capabilities',
-            permissions: ['read_assigned_studies', 'create_reports', 'use_ai_tools', 'view_analytics'],
-            userCount: 25,
-            isSystem: false,
-            status: 'active',
-            color: 'bg-green-500'
-          },
-          {
-            id: '3',
-            name: 'Radiology Technician',
-            description: 'Technical staff with limited diagnostic access',
-            permissions: ['upload_studies', 'view_protocols', 'basic_measurements', 'schedule_studies'],
-            userCount: 18,
-            isSystem: false,
-            status: 'active',
-            color: 'bg-purple-500'
-          },
-          {
-            id: '4',
-            name: 'Medical Student',
-            description: 'Educational access with supervision requirements',
-            permissions: ['read_educational_studies', 'practice_tools', 'view_tutorials'],
-            userCount: 8,
-            isSystem: false,
-            status: 'active',
-            color: 'bg-yellow-500'
-          },
-          {
-            id: '5',
-            name: 'System Administrator',
-            description: 'Full system access and configuration management',
-            permissions: ['system_admin', 'user_management', 'role_management', 'system_config', 'audit_logs'],
-            userCount: 3,
-            isSystem: true,
-            status: 'active',
-            color: 'bg-red-500'
-          },
-          {
-            id: '6',
-            name: 'Quality Assurance',
-            description: 'Quality control and compliance monitoring',
-            permissions: ['view_analytics', 'audit_logs', 'manage_protocols', 'create_reports'],
-            userCount: 5,
-            isSystem: false,
-            status: 'active',
-            color: 'bg-indigo-500'
-          }
-        ];
-
-        const mockAssignments: RoleAssignment[] = [
-          {
-            id: '1',
-            userId: '1',
-            roleId: '1',
-            assignedBy: 'admin@hospital.com',
-            assignedAt: new Date('2024-01-01T00:00:00Z'),
-            isActive: true,
-            reason: 'Initial role assignment'
-          },
-          {
-            id: '2',
-            userId: '2',
-            roleId: '2',
-            assignedBy: 'admin@hospital.com',
-            assignedAt: new Date('2024-01-05T00:00:00Z'),
-            isActive: true,
-            reason: 'New hire assignment'
-          },
-          {
-            id: '3',
-            userId: '3',
-            roleId: '3',
-            assignedBy: 'admin@hospital.com',
-            assignedAt: new Date('2024-01-10T00:00:00Z'),
-            isActive: true,
-            reason: 'Department transfer'
-          }
-        ];
-
-        setUsers(mockUsers);
-        setRoles(mockRoles);
-        setAssignments(mockAssignments);
-        setLoading(false);
-      } catch (error) {
-        console.error('Error fetching data:', error);
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-  }, []);
-
+  // Filter users based on search and filters
   const filteredUsers = users.filter(user => {
     const matchesSearch = 
       user.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       user.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.licenseNumber.toLowerCase().includes(searchTerm.toLowerCase());
+      user.medicalLicenseNumber.toLowerCase().includes(searchTerm.toLowerCase());
     
+    const matchesStatus = filterStatus === 'all' || user.status === filterStatus;
     const matchesDepartment = filterDepartment === 'all' || user.department === filterDepartment;
-    const matchesRole = filterRole === 'all' || user.roles.includes(filterRole);
+    const matchesRole = filterRole === 'all' || user.currentRoles.some(role => role.roleId === filterRole);
     
-    return matchesSearch && matchesDepartment && matchesRole;
+    return matchesSearch && matchesStatus && matchesDepartment && matchesRole;
   });
 
-  const departments = [...new Set(users.map(u => u.department))];
+  const departments = Array.from(new Set(users.map(u => u.department)));
 
-  const getUserRoles = (userId: string) => {
-    const user = users.find(u => u.id === userId);
-    if (!user) return [];
-    return user.roles.map(roleId => roles.find(r => r.id === roleId)).filter(Boolean) as Role[];
-  };
-
-  const handleAssignRole = (userId: string, roleId: string, reason: string) => {
-    const user = users.find(u => u.id === userId);
-    if (user && !user.roles.includes(roleId)) {
-      setUsers(users.map(u => 
-        u.id === userId 
-          ? { ...u, roles: [...u.roles, roleId], updatedAt: new Date() }
-          : u
-      ));
-
-      const newAssignment: RoleAssignment = {
-        id: Date.now().toString(),
-        userId,
-        roleId,
-        assignedBy: 'current_user@hospital.com',
-        assignedAt: new Date(),
-        isActive: true,
-        reason
-      };
-      setAssignments([...assignments, newAssignment]);
+  const getStatusColor = (status: string): string => {
+    switch (status) {
+      case 'active': return 'text-medsight-secondary';
+      case 'pending': return 'text-medsight-accent';
+      case 'suspended': return 'text-medsight-critical';
+      case 'inactive': return 'text-gray-500';
+      default: return 'text-gray-500';
     }
   };
 
-  const handleUnassignRole = (userId: string, roleId: string) => {
-    const user = users.find(u => u.id === userId);
-    if (user && user.roles.includes(roleId)) {
-      setUsers(users.map(u => 
-        u.id === userId 
-          ? { ...u, roles: u.roles.filter(r => r !== roleId), updatedAt: new Date() }
-          : u
-      ));
-
-      setAssignments(assignments.map(a => 
-        a.userId === userId && a.roleId === roleId 
-          ? { ...a, isActive: false }
-          : a
-      ));
+  const getStatusBg = (status: string): string => {
+    switch (status) {
+      case 'active': return 'bg-medsight-secondary/10';
+      case 'pending': return 'bg-medsight-accent/10';
+      case 'suspended': return 'bg-medsight-critical/10';
+      case 'inactive': return 'bg-gray-100';
+      default: return 'bg-gray-100';
     }
   };
 
-  const handleBulkAssignment = () => {
-    bulkAssignmentData.userIds.forEach(userId => {
-      bulkAssignmentData.roleIds.forEach(roleId => {
-        handleAssignRole(userId, roleId, bulkAssignmentData.reason);
-      });
-    });
-    
-    setBulkAssignmentData({
-      userIds: [],
-      roleIds: [],
-      reason: '',
-      expiresAt: undefined
-    });
-    setIsBulkAssignmentOpen(false);
+  const getRoleHierarchyColor = (hierarchy: number): string => {
+    if (hierarchy >= 7) return 'text-medsight-critical';
+    if (hierarchy >= 4) return 'text-medsight-primary';
+    if (hierarchy >= 2) return 'text-medsight-accent';
+    return 'text-medsight-secondary';
   };
 
-  const toggleUserSelection = (userId: string) => {
+  const handleUserSelect = (userId: string) => {
     setSelectedUsers(prev => 
       prev.includes(userId) 
         ? prev.filter(id => id !== userId)
@@ -393,395 +385,514 @@ const UserRoleAssignment: React.FC = () => {
     );
   };
 
-  const selectAllUsers = () => {
-    if (selectedUsers.length === filteredUsers.length) {
-      setSelectedUsers([]);
-    } else {
-      setSelectedUsers(filteredUsers.map(u => u.id));
-    }
+  const handleBulkRoleAssignment = () => {
+    if (selectedUsers.length === 0 || !selectedRole) return;
+    
+    const role = roles.find(r => r.id === selectedRole);
+    if (!role) return;
+
+    const newAssignment: AssignedRole = {
+      roleId: role.id,
+      roleName: role.name,
+      roleHierarchy: role.hierarchy,
+      assignedAt: new Date(),
+      assignedBy: 'Current User', // Replace with actual user
+      isActive: true,
+      isTemporary: temporaryAssignment,
+      expiresAt: temporaryAssignment && expiryDate ? new Date(expiryDate) : undefined,
+      approvalRequired: role.requiresApproval,
+      approvalStatus: role.requiresApproval ? 'pending' : 'approved'
+    };
+
+    setUsers(prevUsers => 
+      prevUsers.map(user => 
+        selectedUsers.includes(user.id)
+          ? { ...user, currentRoles: [...user.currentRoles, newAssignment] }
+          : user
+      )
+    );
+
+    setSelectedUsers([]);
+    setSelectedRole('');
+    setAssignmentReason('');
+    setTemporaryAssignment(false);
+    setExpiryDate('');
+    setShowAssignModal(false);
   };
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-96">
-        <RefreshCw className="w-8 h-8 animate-spin text-blue-500" />
-      </div>
+  const handleRemoveRole = (userId: string, roleId: string) => {
+    setUsers(prevUsers => 
+      prevUsers.map(user => 
+        user.id === userId
+          ? { ...user, currentRoles: user.currentRoles.filter(role => role.roleId !== roleId) }
+          : user
+      )
     );
-  }
+  };
+
+  const isLicenseExpiringSoon = (expiryDate: Date): boolean => {
+    const thirtyDaysFromNow = new Date();
+    thirtyDaysFromNow.setDate(thirtyDaysFromNow.getDate() + 30);
+    return expiryDate < thirtyDaysFromNow;
+  };
+
+  const getUserFullName = (user: MedicalUser): string => {
+    return `${user.firstName} ${user.lastName}`;
+  };
+
+  const getHighestRole = (user: MedicalUser): AssignedRole | null => {
+    if (user.currentRoles.length === 0) return null;
+    return user.currentRoles.reduce((highest, current) => 
+      current.roleHierarchy > highest.roleHierarchy ? current : highest
+    );
+  };
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="space-y-6">
       {/* Header */}
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">User Role Assignment</h1>
-          <p className="text-gray-600 mt-1">Assign and manage roles for medical professionals</p>
-        </div>
-        <div className="flex space-x-2">
-          <Button 
-            variant="outline" 
-            onClick={() => setIsBulkAssignmentOpen(true)}
-            disabled={selectedUsers.length === 0}
-          >
-            <UserPlus className="w-4 h-4 mr-2" />
-            Bulk Assignment ({selectedUsers.length})
-          </Button>
-          <Button onClick={() => setIsAssignmentDialogOpen(true)}>
-            <UserPlus className="w-4 h-4 mr-2" />
-            Assign Role
-          </Button>
+      <div className="medsight-glass p-6 rounded-xl">
+        <div className="flex justify-between items-start">
+          <div>
+            <h2 className="text-xl font-semibold text-medsight-primary mb-2">
+              User Role Assignment
+            </h2>
+            <p className="text-gray-600">
+              Assign and manage medical professional roles and permissions
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setBulkAssignMode(!bulkAssignMode)}
+              className={`btn-medsight ${bulkAssignMode ? 'bg-medsight-primary text-white' : ''}`}
+            >
+              <UserGroupIcon className="w-4 h-4 mr-2" />
+              Bulk Assign
+            </button>
+            <button
+              onClick={() => setShowAssignModal(true)}
+              className="btn-medsight flex items-center gap-2"
+              disabled={selectedUsers.length === 0}
+            >
+              <PlusIcon className="w-4 h-4" />
+              Assign Role
+            </button>
+          </div>
         </div>
       </div>
 
       {/* Search and Filters */}
-      <div className="flex flex-wrap gap-4 items-center">
-        <div className="relative flex-1 min-w-64">
-          <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-          <Input
-            placeholder="Search users..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10"
-          />
-        </div>
-        
-        <Select value={filterDepartment} onValueChange={setFilterDepartment}>
-          <SelectTrigger className="w-48">
-            <SelectValue placeholder="Filter by department" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Departments</SelectItem>
+      <div className="medsight-glass p-6 rounded-xl">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+          {/* Search */}
+          <div className="relative">
+            <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Search users..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="input-medsight pl-10 w-full"
+            />
+          </div>
+
+          {/* Status Filter */}
+          <select
+            value={filterStatus}
+            onChange={(e) => setFilterStatus(e.target.value)}
+            className="input-medsight"
+          >
+            <option value="all">All Status</option>
+            <option value="active">Active</option>
+            <option value="pending">Pending</option>
+            <option value="suspended">Suspended</option>
+            <option value="inactive">Inactive</option>
+          </select>
+
+          {/* Department Filter */}
+          <select
+            value={filterDepartment}
+            onChange={(e) => setFilterDepartment(e.target.value)}
+            className="input-medsight"
+          >
+            <option value="all">All Departments</option>
             {departments.map(dept => (
-              <SelectItem key={dept} value={dept}>{dept}</SelectItem>
+              <option key={dept} value={dept}>{dept}</option>
             ))}
-          </SelectContent>
-        </Select>
+          </select>
 
-        <Select value={filterRole} onValueChange={setFilterRole}>
-          <SelectTrigger className="w-48">
-            <SelectValue placeholder="Filter by role" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Roles</SelectItem>
+          {/* Role Filter */}
+          <select
+            value={filterRole}
+            onChange={(e) => setFilterRole(e.target.value)}
+            className="input-medsight"
+          >
+            <option value="all">All Roles</option>
             {roles.map(role => (
-              <SelectItem key={role.id} value={role.id}>{role.name}</SelectItem>
+              <option key={role.id} value={role.id}>{role.name}</option>
             ))}
-          </SelectContent>
-        </Select>
+          </select>
 
-        <Button variant="outline" onClick={selectAllUsers}>
-          {selectedUsers.length === filteredUsers.length ? 'Deselect All' : 'Select All'}
-        </Button>
+          {/* Actions */}
+          <div className="flex items-center gap-2">
+            <button className="btn-medsight p-2">
+              <ArrowPathIcon className="w-4 h-4" />
+            </button>
+            <button className="btn-medsight p-2">
+              <FunnelIcon className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
       </div>
 
-      {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Total Users</p>
-                <p className="text-2xl font-bold text-gray-900">{users.length}</p>
-              </div>
-              <Users className="w-8 h-8 text-blue-500" />
+      {/* Bulk Actions */}
+      {bulkAssignMode && (
+        <div className="medsight-glass p-4 rounded-xl">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <span className="text-sm font-medium text-medsight-primary">
+                Bulk Assignment Mode
+              </span>
+              <span className="text-sm text-gray-600">
+                {selectedUsers.length} users selected
+              </span>
             </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Active Users</p>
-                <p className="text-2xl font-bold text-green-600">{users.filter(u => u.isActive).length}</p>
-              </div>
-              <UserPlus className="w-8 h-8 text-green-500" />
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setSelectedUsers([])}
+                className="text-sm text-gray-600 hover:text-gray-800"
+              >
+                Clear Selection
+              </button>
+              <button
+                onClick={() => setBulkAssignMode(false)}
+                className="text-sm text-medsight-primary hover:text-medsight-primary/80"
+              >
+                Exit Bulk Mode
+              </button>
             </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Role Assignments</p>
-                <p className="text-2xl font-bold text-purple-600">{assignments.filter(a => a.isActive).length}</p>
-              </div>
-              <Shield className="w-8 h-8 text-purple-500" />
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Selected Users</p>
-                <p className="text-2xl font-bold text-orange-600">{selectedUsers.length}</p>
-              </div>
-              <Check className="w-8 h-8 text-orange-500" />
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+          </div>
+        </div>
+      )}
 
       {/* Users Table */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Users and Role Assignments</CardTitle>
-          <CardDescription>
-            Manage role assignments for medical professionals
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b">
-                  <th className="text-left p-2">
-                    <Checkbox
-                      checked={selectedUsers.length === filteredUsers.length && filteredUsers.length > 0}
-                      onCheckedChange={selectAllUsers}
+      <div className="medsight-glass rounded-xl overflow-hidden">
+        <div className="px-6 py-4 border-b border-gray-200">
+          <h3 className="text-lg font-semibold text-medsight-primary">
+            Medical Professionals ({filteredUsers.length})
+          </h3>
+        </div>
+        
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead className="bg-gray-50">
+              <tr>
+                {bulkAssignMode && (
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <input
+                      type="checkbox"
+                      checked={selectedUsers.length === filteredUsers.length}
+                      onChange={(e) => 
+                        setSelectedUsers(e.target.checked ? filteredUsers.map(u => u.id) : [])
+                      }
+                      className="rounded border-medsight-primary/20"
                     />
                   </th>
-                  <th className="text-left p-2">User</th>
-                  <th className="text-left p-2">Department</th>
-                  <th className="text-left p-2">License</th>
-                  <th className="text-left p-2">Current Roles</th>
-                  <th className="text-left p-2">Last Login</th>
-                  <th className="text-left p-2">Status</th>
-                  <th className="text-left p-2">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredUsers.map(user => (
-                  <tr key={user.id} className="border-b hover:bg-gray-50">
-                    <td className="p-2">
-                      <Checkbox
-                        checked={selectedUsers.includes(user.id)}
-                        onCheckedChange={() => toggleUserSelection(user.id)}
-                      />
-                    </td>
-                    <td className="p-2">
-                      <div className="flex items-center space-x-3">
-                        <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                          <span className="text-blue-600 font-medium">
-                            {user.firstName[0]}{user.lastName[0]}
-                          </span>
+                )}
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Medical Professional
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Current Roles
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Department
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Status
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  License
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {filteredUsers.map(user => {
+                const highestRole = getHighestRole(user);
+                const licenseExpiring = isLicenseExpiringSoon(user.licenseExpiry);
+                
+                return (
+                  <tr key={user.id} className="hover:bg-gray-50">
+                    {bulkAssignMode && (
+                      <td className="px-4 py-4 whitespace-nowrap">
+                        <input
+                          type="checkbox"
+                          checked={selectedUsers.includes(user.id)}
+                          onChange={() => handleUserSelect(user.id)}
+                          className="rounded border-medsight-primary/20"
+                        />
+                      </td>
+                    )}
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center gap-3">
+                        <div className="flex-shrink-0 w-10 h-10 bg-medsight-primary/10 rounded-full flex items-center justify-center">
+                          <UserIcon className="w-5 h-5 text-medsight-primary" />
                         </div>
                         <div>
-                          <div className="font-medium">{user.firstName} {user.lastName}</div>
-                          <div className="text-sm text-gray-500">{user.email}</div>
+                          <div className="text-sm font-medium text-gray-900">
+                            {getUserFullName(user)}
+                          </div>
+                          <div className="text-sm text-gray-500 flex items-center gap-1">
+                            <EnvelopeIcon className="w-3 h-3" />
+                            {user.email}
+                          </div>
+                          <div className="text-sm text-gray-500 flex items-center gap-1">
+                            <IdentificationIcon className="w-3 h-3" />
+                            {user.medicalLicenseNumber}
+                          </div>
                         </div>
                       </div>
                     </td>
-                    <td className="p-2">
-                      <div className="flex items-center space-x-1">
-                        <Building2 className="w-4 h-4 text-gray-400" />
-                        <span>{user.department}</span>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="space-y-1">
+                        {user.currentRoles.length > 0 ? (
+                          user.currentRoles.map(role => (
+                            <div key={role.roleId} className="flex items-center gap-2">
+                              <span className={`px-2 py-1 rounded-full text-xs font-medium bg-medsight-primary/10 ${getRoleHierarchyColor(role.roleHierarchy)}`}>
+                                {role.roleName}
+                              </span>
+                              {role.isTemporary && (
+                                <ClockIcon className="w-3 h-3 text-medsight-accent" />
+                              )}
+                              {role.approvalStatus === 'pending' && (
+                                <ExclamationTriangleIcon className="w-3 h-3 text-medsight-accent" />
+                              )}
+                              <button
+                                onClick={() => handleRemoveRole(user.id, role.roleId)}
+                                className="text-medsight-critical hover:text-medsight-critical/80"
+                              >
+                                <XMarkIcon className="w-3 h-3" />
+                              </button>
+                            </div>
+                          ))
+                        ) : (
+                          <span className="text-sm text-gray-500">No roles assigned</span>
+                        )}
                       </div>
                     </td>
-                    <td className="p-2">
-                      <div className="flex items-center space-x-1">
-                        <Award className="w-4 h-4 text-gray-400" />
-                        <span>{user.licenseNumber}</span>
-                        <Badge variant="outline" className="ml-1">
-                          {user.licenseState}
-                        </Badge>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center gap-1">
+                        <BuildingOfficeIcon className="w-3 h-3 text-gray-400" />
+                        <span className="text-sm text-gray-900">{user.department}</span>
+                      </div>
+                      <div className="text-sm text-gray-500">
+                        {user.specializations.join(', ')}
                       </div>
                     </td>
-                    <td className="p-2">
-                      <div className="flex flex-wrap gap-1">
-                        {getUserRoles(user.id).map(role => (
-                          <Badge key={role.id} className="text-xs" style={{ backgroundColor: role.color.replace('bg-', 'rgb(') }}>
-                            {role.name}
-                          </Badge>
-                        ))}
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusBg(user.status)} ${getStatusColor(user.status)}`}>
+                        {user.status}
+                      </span>
+                      <div className="text-xs text-gray-500 mt-1">
+                        Last login: {user.lastLogin.toLocaleDateString()}
                       </div>
                     </td>
-                    <td className="p-2">
-                      <div className="flex items-center space-x-1">
-                        <Clock className="w-4 h-4 text-gray-400" />
-                        <span className="text-sm">{user.lastLogin.toLocaleDateString()}</span>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-900">
+                        {user.licenseExpiry.toLocaleDateString()}
                       </div>
+                      {licenseExpiring && (
+                        <div className="flex items-center gap-1 text-xs text-medsight-critical">
+                          <ExclamationTriangleIcon className="w-3 h-3" />
+                          Expires Soon
+                        </div>
+                      )}
                     </td>
-                    <td className="p-2">
-                      <Badge variant={user.isActive ? "default" : "secondary"}>
-                        {user.isActive ? 'Active' : 'Inactive'}
-                      </Badge>
-                    </td>
-                    <td className="p-2">
-                      <div className="flex space-x-1">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => setSelectedUser(user)}
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => setShowUserDetails(user.id)}
+                          className="text-medsight-primary hover:text-medsight-primary/80"
                         >
-                          <Eye className="w-4 h-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
+                          <EyeIcon className="w-4 h-4" />
+                        </button>
+                        <button
                           onClick={() => {
-                            setSelectedUser(user);
-                            setIsAssignmentDialogOpen(true);
+                            setSelectedUsers([user.id]);
+                            setShowAssignModal(true);
                           }}
+                          className="text-medsight-primary hover:text-medsight-primary/80"
                         >
-                          <Edit className="w-4 h-4" />
-                        </Button>
+                          <PlusIcon className="w-4 h-4" />
+                        </button>
                       </div>
                     </td>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </CardContent>
-      </Card>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </div>
 
-      {/* Assignment Dialog */}
-      <Dialog open={isAssignmentDialogOpen} onOpenChange={setIsAssignmentDialogOpen}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>Assign Role to User</DialogTitle>
-            <DialogDescription>
-              Select a user and roles to assign. You can assign multiple roles at once.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium mb-2">Select User</label>
-              <Select value={selectedUser?.id || ''} onValueChange={(value) => {
-                const user = users.find(u => u.id === value);
-                setSelectedUser(user || null);
-              }}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select a user" />
-                </SelectTrigger>
-                <SelectContent>
-                  {users.map(user => (
-                    <SelectItem key={user.id} value={user.id}>
-                      {user.firstName} {user.lastName} - {user.department}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+      {/* Role Assignment Modal */}
+      {showAssignModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <div className="medsight-glass p-6 rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-xl font-semibold text-medsight-primary">
+                Assign Role to {selectedUsers.length} User{selectedUsers.length !== 1 ? 's' : ''}
+              </h3>
+              <button
+                onClick={() => setShowAssignModal(false)}
+                className="text-medsight-primary/70 hover:text-medsight-primary"
+              >
+                <XMarkIcon className="w-6 h-6" />
+              </button>
             </div>
             
-            {selectedUser && (
+            <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium mb-2">Available Roles</label>
-                <div className="space-y-2 max-h-64 overflow-y-auto">
-                  {roles.filter(role => !selectedUser.roles.includes(role.id)).map(role => (
-                    <div key={role.id} className="flex items-center justify-between p-3 border rounded-lg">
-                      <div className="flex items-center space-x-3">
-                        <div className={`w-4 h-4 rounded-full ${role.color}`}></div>
-                        <div>
-                          <div className="font-medium">{role.name}</div>
-                          <div className="text-sm text-gray-500">{role.description}</div>
-                        </div>
-                      </div>
-                      <Button
-                        size="sm"
-                        onClick={() => handleAssignRole(selectedUser.id, role.id, 'Manual assignment')}
-                      >
-                        Assign
-                      </Button>
-                    </div>
+                <label className="block text-sm font-medium text-medsight-primary mb-2">
+                  Select Role *
+                </label>
+                <select
+                  value={selectedRole}
+                  onChange={(e) => setSelectedRole(e.target.value)}
+                  className="input-medsight w-full"
+                >
+                  <option value="">Select a role...</option>
+                  {roles.map(role => (
+                    <option key={role.id} value={role.id}>
+                      {role.name} (Level {role.hierarchy})
+                    </option>
                   ))}
-                </div>
+                </select>
               </div>
-            )}
-          </div>
-        </DialogContent>
-      </Dialog>
 
-      {/* Bulk Assignment Dialog */}
-      <Dialog open={isBulkAssignmentOpen} onOpenChange={setIsBulkAssignmentOpen}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>Bulk Role Assignment</DialogTitle>
-            <DialogDescription>
-              Assign roles to multiple users at once. {selectedUsers.length} users selected.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium mb-2">Select Roles to Assign</label>
-              <div className="space-y-2 max-h-64 overflow-y-auto">
-                {roles.map(role => (
-                  <div key={role.id} className="flex items-center space-x-2 p-2 border rounded">
-                    <Checkbox
-                      checked={bulkAssignmentData.roleIds.includes(role.id)}
-                      onCheckedChange={(checked) => {
-                        if (checked) {
-                          setBulkAssignmentData({
-                            ...bulkAssignmentData,
-                            roleIds: [...bulkAssignmentData.roleIds, role.id]
-                          });
-                        } else {
-                          setBulkAssignmentData({
-                            ...bulkAssignmentData,
-                            roleIds: bulkAssignmentData.roleIds.filter(id => id !== role.id)
-                          });
-                        }
-                      }}
-                    />
-                    <div className={`w-4 h-4 rounded-full ${role.color}`}></div>
-                    <div>
-                      <div className="font-medium">{role.name}</div>
-                      <div className="text-sm text-gray-500">{role.description}</div>
-                    </div>
-                  </div>
-                ))}
+              <div>
+                <label className="block text-sm font-medium text-medsight-primary mb-2">
+                  Assignment Reason *
+                </label>
+                <textarea
+                  value={assignmentReason}
+                  onChange={(e) => setAssignmentReason(e.target.value)}
+                  className="input-medsight w-full h-20"
+                  placeholder="Provide a reason for this role assignment..."
+                />
               </div>
+
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="temporary"
+                  checked={temporaryAssignment}
+                  onChange={(e) => setTemporaryAssignment(e.target.checked)}
+                  className="rounded border-medsight-primary/20"
+                />
+                <label htmlFor="temporary" className="text-sm text-medsight-primary">
+                  Temporary Assignment
+                </label>
+              </div>
+
+              {temporaryAssignment && (
+                <div>
+                  <label className="block text-sm font-medium text-medsight-primary mb-2">
+                    Expiry Date *
+                  </label>
+                  <input
+                    type="date"
+                    value={expiryDate}
+                    onChange={(e) => setExpiryDate(e.target.value)}
+                    className="input-medsight w-full"
+                  />
+                </div>
+              )}
+
+              {selectedRole && roles.find(r => r.id === selectedRole)?.requiresApproval && (
+                <div className="medsight-control-glass p-4 rounded-lg">
+                  <div className="flex items-center gap-2 text-medsight-accent">
+                    <ExclamationTriangleIcon className="w-4 h-4" />
+                    <span className="text-sm font-medium">Approval Required</span>
+                  </div>
+                  <p className="text-sm text-gray-600 mt-1">
+                    This role requires approval from a supervisor before activation.
+                  </p>
+                </div>
+              )}
             </div>
             
-            <div>
-              <label className="block text-sm font-medium mb-2">Reason for Assignment</label>
-              <Input
-                placeholder="Enter reason for bulk assignment..."
-                value={bulkAssignmentData.reason}
-                onChange={(e) => setBulkAssignmentData({
-                  ...bulkAssignmentData,
-                  reason: e.target.value
-                })}
-              />
-            </div>
-            
-            <div className="flex justify-end space-x-2">
-              <Button
-                variant="outline"
-                onClick={() => setIsBulkAssignmentOpen(false)}
+            <div className="flex justify-end gap-3 mt-6">
+              <button
+                onClick={() => setShowAssignModal(false)}
+                className="px-4 py-2 text-medsight-primary/70 hover:text-medsight-primary transition-colors"
               >
                 Cancel
-              </Button>
-              <Button
-                onClick={handleBulkAssignment}
-                disabled={bulkAssignmentData.roleIds.length === 0 || !bulkAssignmentData.reason}
+              </button>
+              <button
+                onClick={handleBulkRoleAssignment}
+                className="btn-medsight"
+                disabled={!selectedRole || !assignmentReason}
               >
-                <Save className="w-4 h-4 mr-2" />
-                Assign Roles
-              </Button>
+                Assign Role
+              </button>
             </div>
           </div>
-        </DialogContent>
-      </Dialog>
+        </div>
+      )}
 
-      {/* Alerts */}
-      <div className="space-y-4">
-        {selectedUsers.length > 0 && (
-          <Alert>
-            <Users className="h-4 w-4" />
-            <AlertDescription>
-              <strong>{selectedUsers.length} users selected.</strong> 
-              Use the bulk assignment feature to assign roles to multiple users at once.
-            </AlertDescription>
-          </Alert>
-        )}
+      {/* Statistics */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="medsight-glass p-4 rounded-lg">
+          <div className="flex items-center gap-3">
+            <UserGroupIcon className="w-8 h-8 text-medsight-primary" />
+            <div>
+              <div className="text-2xl font-bold text-medsight-primary">
+                {users.length}
+              </div>
+              <div className="text-sm text-gray-600">Total Users</div>
+            </div>
+          </div>
+        </div>
+
+        <div className="medsight-glass p-4 rounded-lg">
+          <div className="flex items-center gap-3">
+            <CheckCircleIcon className="w-8 h-8 text-medsight-secondary" />
+            <div>
+              <div className="text-2xl font-bold text-medsight-secondary">
+                {users.filter(u => u.status === 'active').length}
+              </div>
+              <div className="text-sm text-gray-600">Active Users</div>
+            </div>
+          </div>
+        </div>
+
+        <div className="medsight-glass p-4 rounded-lg">
+          <div className="flex items-center gap-3">
+            <ClockIcon className="w-8 h-8 text-medsight-accent" />
+            <div>
+              <div className="text-2xl font-bold text-medsight-accent">
+                {users.filter(u => u.currentRoles.some(r => r.approvalStatus === 'pending')).length}
+              </div>
+              <div className="text-sm text-gray-600">Pending Approvals</div>
+            </div>
+          </div>
+        </div>
+
+        <div className="medsight-glass p-4 rounded-lg">
+          <div className="flex items-center gap-3">
+            <ExclamationTriangleIcon className="w-8 h-8 text-medsight-critical" />
+            <div>
+              <div className="text-2xl font-bold text-medsight-critical">
+                {users.filter(u => isLicenseExpiringSoon(u.licenseExpiry)).length}
+              </div>
+              <div className="text-sm text-gray-600">License Expiring</div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
-};
-
-export default UserRoleAssignment; 
+} 

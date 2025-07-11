@@ -1224,7 +1224,7 @@ export class SpatialAnalyzer {
 }
 
 // Additional interfaces
-interface RaycastResult {
+export interface RaycastResult {
     object: SpatialObject;
     point: Point3D;
     normal: Vector3D;

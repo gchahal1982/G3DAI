@@ -15,17 +15,27 @@
 export { Button } from './Button';
 export { Input } from './Input';
 export { Textarea } from './Textarea';
-export { Select } from './Select';
+export { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './Select';
 export { Checkbox } from './Checkbox';
 export { Radio } from './Radio';
 export { Switch } from './Switch';
+export { Label } from './Label';
+export { Separator } from './Separator';
+export { ScrollArea } from './ScrollArea';
+export { Avatar, AvatarImage, AvatarFallback } from './Avatar';
 
 // Layout Components
-export { Card } from './Card';
+export { Card, CardContent, CardHeader, CardTitle, CardDescription } from './Card';
 export { Modal } from './Modal';
-export { Dialog } from './Dialog';
+export { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogDescription } from './Dialog';
 export { Drawer } from './Drawer';
 export { Accordion } from './Accordion';
+export { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './Table';
+export { Alert, AlertDescription } from './Alert';
+export { RadioGroup, RadioGroupItem } from './RadioGroup';
+export { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from './DropdownMenu';
+export { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList, CommandSeparator, CommandShortcut } from './Command';
+export { Popover, PopoverContent, PopoverTrigger } from './Popover';
 
 // Navigation Components
 export { Tabs, TabsContent, TabsList, TabsTrigger } from './Tabs';
@@ -34,7 +44,7 @@ export { Pagination } from './Pagination';
 
 // Feedback Components
 export { Progress } from './Progress';
-export { Tooltip } from './Tooltip';
+export { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './Tooltip';
 export { Badge } from './Badge';
 
 // Input Components

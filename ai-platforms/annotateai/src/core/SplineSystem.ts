@@ -1,18 +1,18 @@
 import { EventEmitter } from 'events';
 
 // Types and Interfaces
-interface Vector3 {
+export interface Vector3 {
     x: number;
     y: number;
     z: number;
 }
 
-interface Vector2 {
+export interface Vector2 {
     x: number;
     y: number;
 }
 
-interface SplinePoint {
+export interface SplinePoint {
     position: Vector3;
     tangent?: Vector3;
     normal?: Vector3;
@@ -22,7 +22,7 @@ interface SplinePoint {
     parameter: number;
 }
 
-interface CurveSegment {
+export interface CurveSegment {
     startPoint: Vector3;
     endPoint: Vector3;
     controlPoints: Vector3[];
@@ -30,7 +30,7 @@ interface CurveSegment {
     weights?: number[];
 }
 
-interface SplineConfig {
+export interface SplineConfig {
     type: 'linear' | 'catmull-rom' | 'bezier' | 'b-spline' | 'nurbs' | 'hermite';
     tension?: number;
     bias?: number;
@@ -41,7 +41,7 @@ interface SplineConfig {
     resolution?: number;
 }
 
-interface PathConfig {
+export interface PathConfig {
     speed: number;
     easing: 'linear' | 'ease-in' | 'ease-out' | 'ease-in-out' | 'custom';
     loop: boolean;
