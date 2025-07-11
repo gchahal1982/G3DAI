@@ -1,595 +1,485 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
-  ChartBarIcon,
-  ClockIcon,
-  CheckCircleIcon,
-  UserGroupIcon,
-  SparklesIcon,
-  ArrowTrendingUpIcon,
-  ArrowTrendingDownIcon,
-  ArrowRightIcon,
-  CalendarIcon,
-  EyeIcon,
+  ChartBarIcon, 
+  ClockIcon, 
+  CheckCircleIcon, 
+  ExclamationTriangleIcon,
   HeartIcon,
-  AcademicCapIcon,
-  StarIcon,
-  BoltIcon,
-  ShieldCheckIcon
+  BeakerIcon,
+  UserIcon,
+  CalendarIcon,
+  CpuChipIcon,
+  ShieldCheckIcon,
+  EyeIcon,
+  DocumentTextIcon,
+  ArrowTrendingUpIcon,
+  ArrowTrendingDownIcon
 } from '@heroicons/react/24/outline';
-import {
-  ChartBarIcon as ChartBarIconSolid,
-  ClockIcon as ClockIconSolid,
-  CheckCircleIcon as CheckCircleIconSolid,
-  UserGroupIcon as UserGroupIconSolid,
-  SparklesIcon as SparklesIconSolid,
-  ArrowTrendingUpIcon as ArrowTrendingUpIconSolid,
-  ArrowTrendingDownIcon as ArrowTrendingDownIconSolid,
-  CalendarIcon as CalendarIconSolid,
-  EyeIcon as EyeIconSolid,
-  HeartIcon as HeartIconSolid,
-  AcademicCapIcon as AcademicCapIconSolid,
-  StarIcon as StarIconSolid,
-  BoltIcon as BoltIconSolid,
-  ShieldCheckIcon as ShieldCheckIconSolid
-} from '@heroicons/react/24/solid';
 
-import type { MedicalUser } from '@/types/medical-user';
-
-interface MedicalMetrics {
-  dailyMetrics: {
-    casesReviewed: number;
-    averageTime: number;
-    accuracyRate: number;
-    collaborations: number;
-  };
-  weeklyMetrics: {
+export interface MedicalMetricsData {
+  clinicalMetrics: {
     totalCases: number;
-    averageDaily: number;
-    peakDay: string;
-    efficiency: number;
-  };
-  monthlyMetrics: {
-    totalCases: number;
-    growthRate: number;
-    qualityScore: number;
-    patientSatisfaction: number;
+    completedCases: number;
+    pendingCases: number;
+    criticalCases: number;
+    averageReviewTime: number; // minutes
+    accuracyRate: number; // percentage
+    productivityScore: number; // percentage
+    qualityScore: number; // percentage
   };
   aiMetrics: {
-    analysesCompleted: number;
-    averageConfidence: number;
-    accuracyRate: number;
-    timeReduction: number;
+    aiAccuracy: number; // percentage
+    aiConfidence: number; // percentage
+    aiProcessingTime: number; // seconds
+    aiRecommendations: number;
+    aiValidationRate: number; // percentage
+    falsePositiveRate: number; // percentage
+    falseNegativeRate: number; // percentage
+  };
+  systemMetrics: {
+    systemUptime: number; // percentage
+    averageResponseTime: number; // milliseconds
+    errorRate: number; // percentage
+    throughput: number; // cases per hour
+    storageUsage: number; // percentage
+    networkLatency: number; // milliseconds
+  };
+  timeMetrics: {
+    currentHour: number;
+    todayCompleted: number;
+    yesterdayCompleted: number;
+    weeklyCompleted: number;
+    monthlyCompleted: number;
+    yearlyCompleted: number;
+  };
+  trends: {
+    casesChange: number; // percentage change
+    accuracyChange: number; // percentage change
+    productivityChange: number; // percentage change
+    aiPerformanceChange: number; // percentage change
   };
 }
 
-interface MedicalMetricsProps {
-  metrics: MedicalMetrics;
-  timeRange: 'today' | 'week' | 'month';
-  user: MedicalUser;
+export interface MedicalMetricsProps {
+  metrics?: MedicalMetricsData;
+  timeRange?: 'today' | 'week' | 'month' | 'year';
+  user?: {
+    id: string;
+    name: string;
+    role: string;
+    specialization: string;
+  };
+  onMetricClick?: (metric: string) => void;
 }
 
-export function MedicalMetrics({ metrics, timeRange, user }: MedicalMetricsProps) {
-  const [selectedMetric, setSelectedMetric] = useState<'performance' | 'ai' | 'quality' | 'collaboration'>('performance');
+export function MedicalMetrics({ 
+  metrics,
+  timeRange = 'today',
+  user = { id: 'current-user', name: 'Dr. Smith', role: 'Radiologist', specialization: 'Chest Imaging' },
+  onMetricClick
+}: MedicalMetricsProps) {
+  const [selectedTimeRange, setSelectedTimeRange] = useState(timeRange);
+  const [realTimeData, setRealTimeData] = useState({
+    currentCases: 0,
+    activeSessions: 0,
+    systemLoad: 0,
+    networkSpeed: 0
+  });
 
-  const timeRangeData = {
-    today: metrics.dailyMetrics,
-    week: metrics.weeklyMetrics,
-    month: metrics.monthlyMetrics
-  };
+  useEffect(() => {
+    // Simulate real-time data updates
+    const interval = setInterval(() => {
+      setRealTimeData(prev => ({
+        currentCases: Math.max(0, prev.currentCases + (Math.random() - 0.5) * 2),
+        activeSessions: Math.max(1, prev.activeSessions + (Math.random() - 0.5) * 1),
+        systemLoad: Math.max(5, Math.min(95, prev.systemLoad + (Math.random() - 0.5) * 10)),
+        networkSpeed: Math.max(10, Math.min(100, prev.networkSpeed + (Math.random() - 0.5) * 5))
+      }));
+    }, 5000);
 
-  const performanceMetrics = [
-    {
-      id: 'cases-reviewed',
-      label: 'Cases Reviewed',
-      value: timeRange === 'today' ? metrics.dailyMetrics.casesReviewed : 
-             timeRange === 'week' ? metrics.weeklyMetrics.totalCases : 
-             metrics.monthlyMetrics.totalCases,
-      icon: ChartBarIconSolid,
-      color: 'bg-blue-500',
-      textColor: 'text-blue-700',
-      bgColor: 'bg-blue-50',
-      trend: timeRange === 'today' ? '+12.5%' : timeRange === 'week' ? '+8.3%' : '+15.2%',
-      trendUp: true,
-      suffix: '',
-      description: 'Total cases reviewed'
-    },
-    {
-      id: 'average-time',
-      label: 'Average Time',
-      value: timeRange === 'today' ? metrics.dailyMetrics.averageTime : 
-             timeRange === 'week' ? Math.round(metrics.weeklyMetrics.averageDaily * 4.5) : 
-             Math.round(metrics.monthlyMetrics.totalCases / 30 * 4.2),
-      icon: ClockIconSolid,
-      color: 'bg-green-500',
-      textColor: 'text-green-700',
-      bgColor: 'bg-green-50',
-      trend: timeRange === 'today' ? '-8.2%' : timeRange === 'week' ? '-5.1%' : '-12.3%',
-      trendUp: false,
-      suffix: 'min',
-      description: 'Average time per case'
-    },
-    {
-      id: 'accuracy-rate',
-      label: 'Accuracy Rate',
-      value: timeRange === 'today' ? metrics.dailyMetrics.accuracyRate : 
-             timeRange === 'week' ? metrics.weeklyMetrics.efficiency : 
-             metrics.monthlyMetrics.qualityScore,
-      icon: CheckCircleIconSolid,
-      color: 'bg-emerald-500',
-      textColor: 'text-emerald-700',
-      bgColor: 'bg-emerald-50',
-      trend: timeRange === 'today' ? '+2.1%' : timeRange === 'week' ? '+1.8%' : '+3.2%',
-      trendUp: true,
-      suffix: '%',
-      description: 'Diagnostic accuracy'
-    },
-    {
-      id: 'collaborations',
-      label: 'Collaborations',
-      value: timeRange === 'today' ? metrics.dailyMetrics.collaborations : 
-             timeRange === 'week' ? metrics.dailyMetrics.collaborations * 7 : 
-             metrics.dailyMetrics.collaborations * 30,
-      icon: UserGroupIconSolid,
-      color: 'bg-purple-500',
-      textColor: 'text-purple-700',
-      bgColor: 'bg-purple-50',
-      trend: timeRange === 'today' ? '+25.3%' : timeRange === 'week' ? '+18.7%' : '+22.1%',
-      trendUp: true,
-      suffix: '',
-      description: 'Team collaborations'
-    }
-  ];
+    return () => clearInterval(interval);
+  }, []);
 
-  const aiMetrics = [
-    {
-      id: 'ai-analyses',
-      label: 'AI Analyses',
-      value: metrics.aiMetrics.analysesCompleted,
-      icon: SparklesIconSolid,
-      color: 'bg-indigo-500',
-      textColor: 'text-indigo-700',
-      bgColor: 'bg-indigo-50',
-      trend: '+42.1%',
-      trendUp: true,
-      suffix: '',
-      description: 'AI analyses completed'
+  const defaultMetrics: MedicalMetricsData = {
+    clinicalMetrics: {
+      totalCases: 156,
+      completedCases: 134,
+      pendingCases: 22,
+      criticalCases: 3,
+      averageReviewTime: 12,
+      accuracyRate: 94.5,
+      productivityScore: 87.2,
+      qualityScore: 96.1
     },
-    {
-      id: 'ai-confidence',
-      label: 'AI Confidence',
-      value: metrics.aiMetrics.averageConfidence,
-      icon: StarIconSolid,
-      color: 'bg-yellow-500',
-      textColor: 'text-yellow-700',
-      bgColor: 'bg-yellow-50',
-      trend: '+5.2%',
-      trendUp: true,
-      suffix: '%',
-      description: 'Average AI confidence'
+    aiMetrics: {
+      aiAccuracy: 92.8,
+      aiConfidence: 89.4,
+      aiProcessingTime: 2.3,
+      aiRecommendations: 78,
+      aiValidationRate: 95.7,
+      falsePositiveRate: 3.2,
+      falseNegativeRate: 1.8
     },
-    {
-      id: 'ai-accuracy',
-      label: 'AI Accuracy',
-      value: metrics.aiMetrics.accuracyRate,
-      icon: ShieldCheckIconSolid,
-      color: 'bg-teal-500',
-      textColor: 'text-teal-700',
-      bgColor: 'bg-teal-50',
-      trend: '+1.8%',
-      trendUp: true,
-      suffix: '%',
-      description: 'AI diagnostic accuracy'
+    systemMetrics: {
+      systemUptime: 99.7,
+      averageResponseTime: 245,
+      errorRate: 0.3,
+      throughput: 45,
+      storageUsage: 67,
+      networkLatency: 12
     },
-    {
-      id: 'time-reduction',
-      label: 'Time Reduction',
-      value: metrics.aiMetrics.timeReduction,
-      icon: BoltIconSolid,
-      color: 'bg-orange-500',
-      textColor: 'text-orange-700',
-      bgColor: 'bg-orange-50',
-      trend: '+12.4%',
-      trendUp: true,
-      suffix: '%',
-      description: 'Time saved with AI'
-    }
-  ];
-
-  const qualityMetrics = [
-    {
-      id: 'quality-score',
-      label: 'Quality Score',
-      value: metrics.monthlyMetrics.qualityScore,
-      icon: AcademicCapIconSolid,
-      color: 'bg-blue-600',
-      textColor: 'text-blue-700',
-      bgColor: 'bg-blue-50',
-      trend: '+3.1%',
-      trendUp: true,
-      suffix: '%',
-      description: 'Overall quality rating'
+    timeMetrics: {
+      currentHour: 8,
+      todayCompleted: 45,
+      yesterdayCompleted: 52,
+      weeklyCompleted: 312,
+      monthlyCompleted: 1247,
+      yearlyCompleted: 15842
     },
-    {
-      id: 'patient-satisfaction',
-      label: 'Patient Satisfaction',
-      value: metrics.monthlyMetrics.patientSatisfaction,
-      icon: HeartIconSolid,
-      color: 'bg-pink-500',
-      textColor: 'text-pink-700',
-      bgColor: 'bg-pink-50',
-      trend: '+4.7%',
-      trendUp: true,
-      suffix: '%',
-      description: 'Patient feedback score'
-    },
-    {
-      id: 'growth-rate',
-      label: 'Growth Rate',
-      value: metrics.monthlyMetrics.growthRate,
-             icon: ArrowTrendingUpIconSolid,
-      color: 'bg-green-600',
-      textColor: 'text-green-700',
-      bgColor: 'bg-green-50',
-      trend: '+8.3%',
-      trendUp: true,
-      suffix: '%',
-      description: 'Monthly growth rate'
-    },
-    {
-      id: 'peak-efficiency',
-      label: 'Peak Day',
-      value: metrics.weeklyMetrics.peakDay === 'Monday' ? 1 : 
-             metrics.weeklyMetrics.peakDay === 'Tuesday' ? 2 :
-             metrics.weeklyMetrics.peakDay === 'Wednesday' ? 3 :
-             metrics.weeklyMetrics.peakDay === 'Thursday' ? 4 :
-             metrics.weeklyMetrics.peakDay === 'Friday' ? 5 : 0,
-      icon: CalendarIconSolid,
-      color: 'bg-purple-600',
-      textColor: 'text-purple-700',
-      bgColor: 'bg-purple-50',
-      trend: metrics.weeklyMetrics.peakDay,
-      trendUp: true,
-      suffix: '',
-      description: 'Most productive day'
-    }
-  ];
-
-  const getMetricsByCategory = () => {
-    switch (selectedMetric) {
-      case 'ai':
-        return aiMetrics;
-      case 'quality':
-        return qualityMetrics;
-      case 'collaboration':
-        return performanceMetrics.filter(m => m.id === 'collaborations');
-      default:
-        return performanceMetrics;
+    trends: {
+      casesChange: 8.4,
+      accuracyChange: 2.1,
+      productivityChange: -1.3,
+      aiPerformanceChange: 5.7
     }
   };
 
-  const timeRangeLabels = {
-    today: 'Today',
-    week: 'This Week',
-    month: 'This Month'
+  const metricsData = metrics || defaultMetrics;
+
+  const getTrendColor = (value: number) => {
+    if (value > 0) return 'text-medsight-normal';
+    if (value < 0) return 'text-medsight-critical';
+    return 'text-medsight-primary';
+  };
+
+  const getTrendIcon = (value: number) => {
+    if (value > 0) return ArrowTrendingUpIcon;
+    if (value < 0) return ArrowTrendingDownIcon;
+    return ArrowTrendingUpIcon;
+  };
+
+  const getPerformanceColor = (value: number, type: 'percentage' | 'time' | 'error') => {
+    if (type === 'percentage') {
+      if (value >= 95) return 'text-medsight-ai-high';
+      if (value >= 85) return 'text-medsight-normal';
+      if (value >= 70) return 'text-medsight-pending';
+      return 'text-medsight-critical';
+    }
+    if (type === 'time') {
+      if (value <= 10) return 'text-medsight-ai-high';
+      if (value <= 15) return 'text-medsight-normal';
+      if (value <= 20) return 'text-medsight-pending';
+      return 'text-medsight-critical';
+    }
+    if (type === 'error') {
+      if (value <= 1) return 'text-medsight-ai-high';
+      if (value <= 3) return 'text-medsight-normal';
+      if (value <= 5) return 'text-medsight-pending';
+      return 'text-medsight-critical';
+    }
+    return 'text-medsight-primary';
+  };
+
+  const formatNumber = (num: number, type: 'percentage' | 'time' | 'count' | 'decimal') => {
+    if (type === 'percentage') return `${num.toFixed(1)}%`;
+    if (type === 'time') return `${num.toFixed(1)}min`;
+    if (type === 'count') return num.toLocaleString();
+    if (type === 'decimal') return num.toFixed(1);
+    return num.toString();
+  };
+
+  const handleMetricClick = (metric: string) => {
+    onMetricClick?.(metric);
   };
 
   return (
-    <div className="medsight-glass rounded-xl p-6">
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h2 
-            className="text-xl font-semibold text-slate-800"
-            style={{ 
-              fontFamily: 'var(--font-primary)',
-              letterSpacing: '0.01em'
-            }}
-          >
-            Medical Metrics
-          </h2>
-          <p 
-            className="text-sm text-slate-600 mt-1"
-            style={{ 
-              fontFamily: 'var(--font-primary)',
-              letterSpacing: '0.01em'
-            }}
-          >
-            {timeRangeLabels[timeRange]} - Performance analytics for Dr. {user.lastName}
-          </p>
-        </div>
-
-        <div className="flex items-center space-x-2">
-          <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
-          <span 
-            className="text-sm text-green-600 font-medium"
-            style={{ 
-              fontFamily: 'var(--font-primary)',
-              letterSpacing: '0.01em'
-            }}
-          >
-            Real-time
-          </span>
-        </div>
-      </div>
-
-      {/* Metric Category Selector */}
-      <div className="flex space-x-2 mb-6">
-        <button
-          onClick={() => setSelectedMetric('performance')}
-          className={`px-3 py-1 rounded-lg text-sm font-medium transition-colors ${
-            selectedMetric === 'performance' 
-              ? 'bg-medsight-primary-500 text-white' 
-              : 'bg-white/50 text-slate-600 hover:bg-white/70'
-          }`}
-        >
-          Performance
-        </button>
-        <button
-          onClick={() => setSelectedMetric('ai')}
-          className={`px-3 py-1 rounded-lg text-sm font-medium transition-colors ${
-            selectedMetric === 'ai' 
-              ? 'bg-purple-500 text-white' 
-              : 'bg-white/50 text-slate-600 hover:bg-white/70'
-          }`}
-        >
-          AI Analytics
-        </button>
-        <button
-          onClick={() => setSelectedMetric('quality')}
-          className={`px-3 py-1 rounded-lg text-sm font-medium transition-colors ${
-            selectedMetric === 'quality' 
-              ? 'bg-green-500 text-white' 
-              : 'bg-white/50 text-slate-600 hover:bg-white/70'
-          }`}
-        >
-          Quality
-        </button>
-        <button
-          onClick={() => setSelectedMetric('collaboration')}
-          className={`px-3 py-1 rounded-lg text-sm font-medium transition-colors ${
-            selectedMetric === 'collaboration' 
-              ? 'bg-blue-500 text-white' 
-              : 'bg-white/50 text-slate-600 hover:bg-white/70'
-          }`}
-        >
-          Team
-        </button>
-      </div>
-
-      {/* Metrics Display */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-        {getMetricsByCategory().map((metric) => (
-          <div
-            key={metric.id}
-            className={`p-4 rounded-lg ${metric.bgColor} border border-white/20 hover:shadow-lg transition-all duration-200`}
-          >
-            <div className="flex items-center justify-between mb-3">
-              <div className={`w-10 h-10 ${metric.color} rounded-lg flex items-center justify-center`}>
-                <metric.icon className="w-5 h-5 text-white" />
-              </div>
-                             <div className="flex items-center space-x-1">
-                 {metric.trendUp ? (
-                   <ArrowTrendingUpIconSolid className="w-4 h-4 text-green-500" />
-                 ) : (
-                   <ArrowTrendingDownIconSolid className="w-4 h-4 text-red-500" />
-                 )}
-                <span 
-                  className={`text-xs font-medium ${metric.trendUp ? 'text-green-600' : 'text-red-600'}`}
-                  style={{ 
-                    fontFamily: 'var(--font-primary)',
-                    letterSpacing: '0.01em'
-                  }}
-                >
-                  {typeof metric.trend === 'string' && metric.trend.includes('%') ? metric.trend : 
-                   metric.id === 'peak-efficiency' ? metric.trend : metric.trend}
-                </span>
+    <div className="space-y-4">
+      {/* Medical Metrics Header */}
+      <div className="medsight-glass p-4 rounded-xl">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center space-x-3">
+            <div className="medsight-control-glass p-2 rounded-lg">
+              <ChartBarIcon className="w-5 h-5 text-medsight-primary" />
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-medsight-primary">
+                Medical Performance Metrics
+              </h3>
+              <div className="text-xs text-medsight-primary/70">
+                {user.name} • {user.specialization}
               </div>
             </div>
-
-            <div className="mb-2">
-              <div className={`text-2xl font-bold ${metric.textColor} mb-1`}>
-                {metric.id === 'peak-efficiency' ? metrics.weeklyMetrics.peakDay : `${metric.value}${metric.suffix}`}
-              </div>
-              <div 
-                className={`text-xs ${metric.textColor}/70 font-medium`}
-                style={{ 
-                  fontFamily: 'var(--font-primary)',
-                  letterSpacing: '0.01em'
-                }}
-              >
-                {metric.label}
-              </div>
-            </div>
-
-            <p 
-              className={`text-xs ${metric.textColor}/60`}
-              style={{ 
-                fontFamily: 'var(--font-primary)',
-                letterSpacing: '0.01em'
-              }}
-            >
-              {metric.description}
-            </p>
           </div>
-        ))}
-      </div>
-
-      {/* Performance Insights */}
-      <div className="bg-white/60 rounded-lg p-4 mb-6">
-        <h3 
-          className="text-sm font-semibold text-slate-800 mb-3"
-          style={{ 
-            fontFamily: 'var(--font-primary)',
-            letterSpacing: '0.01em'
-          }}
-        >
-          Performance Insights
-        </h3>
-        <div className="space-y-2">
-          {selectedMetric === 'performance' && (
-            <>
-              <div className="flex items-center space-x-2">
-                <CheckCircleIconSolid className="w-4 h-4 text-green-500" />
-                <span 
-                  className="text-xs text-slate-700"
-                  style={{ 
-                    fontFamily: 'var(--font-primary)',
-                    letterSpacing: '0.01em'
-                  }}
-                >
-                  Accuracy rate increased by 2.1% this {timeRange}
-                </span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <ClockIconSolid className="w-4 h-4 text-blue-500" />
-                <span 
-                  className="text-xs text-slate-700"
-                  style={{ 
-                    fontFamily: 'var(--font-primary)',
-                    letterSpacing: '0.01em'
-                  }}
-                >
-                  Average case time reduced by 8.2% with AI assistance
-                </span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <UserGroupIconSolid className="w-4 h-4 text-purple-500" />
-                <span 
-                  className="text-xs text-slate-700"
-                  style={{ 
-                    fontFamily: 'var(--font-primary)',
-                    letterSpacing: '0.01em'
-                  }}
-                >
-                  Team collaboration up 25% from last period
-                </span>
-              </div>
-            </>
-          )}
-          {selectedMetric === 'ai' && (
-            <>
-              <div className="flex items-center space-x-2">
-                <SparklesIconSolid className="w-4 h-4 text-indigo-500" />
-                <span 
-                  className="text-xs text-slate-700"
-                  style={{ 
-                    fontFamily: 'var(--font-primary)',
-                    letterSpacing: '0.01em'
-                  }}
-                >
-                  AI confidence levels consistently above 90%
-                </span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <BoltIconSolid className="w-4 h-4 text-orange-500" />
-                <span 
-                  className="text-xs text-slate-700"
-                  style={{ 
-                    fontFamily: 'var(--font-primary)',
-                    letterSpacing: '0.01em'
-                  }}
-                >
-                  AI assistance saves 34.7% time on complex cases
-                </span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <ShieldCheckIconSolid className="w-4 h-4 text-teal-500" />
-                <span 
-                  className="text-xs text-slate-700"
-                  style={{ 
-                    fontFamily: 'var(--font-primary)',
-                    letterSpacing: '0.01em'
-                  }}
-                >
-                  AI-human collaboration accuracy: 96.8%
-                </span>
-              </div>
-            </>
-          )}
-          {selectedMetric === 'quality' && (
-            <>
-              <div className="flex items-center space-x-2">
-                <AcademicCapIconSolid className="w-4 h-4 text-blue-500" />
-                <span 
-                  className="text-xs text-slate-700"
-                  style={{ 
-                    fontFamily: 'var(--font-primary)',
-                    letterSpacing: '0.01em'
-                  }}
-                >
-                  Quality score above 97% for the month
-                </span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <HeartIconSolid className="w-4 h-4 text-pink-500" />
-                <span 
-                  className="text-xs text-slate-700"
-                  style={{ 
-                    fontFamily: 'var(--font-primary)',
-                    letterSpacing: '0.01em'
-                  }}
-                >
-                  Patient satisfaction increased by 4.7%
-                </span>
-              </div>
-                             <div className="flex items-center space-x-2">
-                 <ArrowTrendingUpIconSolid className="w-4 h-4 text-green-500" />
-                 <span 
-                   className="text-xs text-slate-700"
-                   style={{ 
-                     fontFamily: 'var(--font-primary)',
-                     letterSpacing: '0.01em'
-                   }}
-                 >
-                   Consistent growth trend over the past quarter
-                 </span>
-               </div>
-            </>
-          )}
-        </div>
-      </div>
-
-      {/* Quick Stats Summary */}
-      <div className="bg-gradient-to-r from-medsight-primary-50 to-medsight-secondary-50 rounded-lg p-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <h4 
-              className="text-sm font-semibold text-slate-800 mb-1"
-              style={{ 
-                fontFamily: 'var(--font-primary)',
-                letterSpacing: '0.01em'
-              }}
-            >
-              {timeRangeLabels[timeRange]} Summary
-            </h4>
-            <p 
-              className="text-xs text-slate-600"
-              style={{ 
-                fontFamily: 'var(--font-primary)',
-                letterSpacing: '0.01em'
-              }}
-            >
-              Excellent performance across all metrics
-            </p>
-          </div>
+          
           <div className="flex items-center space-x-2">
-            <div className="flex items-center space-x-1">
-              <StarIconSolid className="w-4 h-4 text-yellow-500" />
-              <StarIconSolid className="w-4 h-4 text-yellow-500" />
-              <StarIconSolid className="w-4 h-4 text-yellow-500" />
-              <StarIconSolid className="w-4 h-4 text-yellow-500" />
-              <StarIconSolid className="w-4 h-4 text-yellow-500" />
-            </div>
-            <span 
-              className="text-xs text-slate-600 font-medium"
-              style={{ 
-                fontFamily: 'var(--font-primary)',
-                letterSpacing: '0.01em'
-              }}
+            <select
+              value={selectedTimeRange}
+              onChange={(e) => setSelectedTimeRange(e.target.value as any)}
+              className="text-xs border border-medsight-primary/20 rounded px-2 py-1 bg-medsight-glass"
             >
-              5.0
+              <option value="today">Today</option>
+              <option value="week">This Week</option>
+              <option value="month">This Month</option>
+              <option value="year">This Year</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      {/* Clinical Performance Metrics */}
+      <div className="medsight-glass p-4 rounded-xl">
+        <h4 className="text-sm font-semibold text-medsight-primary mb-3 flex items-center space-x-2">
+          <HeartIcon className="w-4 h-4" />
+          <span>Clinical Performance</span>
+        </h4>
+        
+        <div className="grid grid-cols-2 gap-3">
+          <div 
+            className="medsight-control-glass p-3 rounded-lg cursor-pointer hover:scale-105 transition-transform"
+            onClick={() => handleMetricClick('accuracy')}
+          >
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-xs text-medsight-primary">Accuracy Rate</span>
+              <div className="flex items-center space-x-1">
+                {React.createElement(getTrendIcon(metricsData.trends.accuracyChange), {
+                  className: `w-3 h-3 ${getTrendColor(metricsData.trends.accuracyChange)}`
+                })}
+                <span className={`text-xs ${getTrendColor(metricsData.trends.accuracyChange)}`}>
+                  {formatNumber(Math.abs(metricsData.trends.accuracyChange), 'percentage')}
+                </span>
+              </div>
+            </div>
+            <div className={`text-lg font-bold ${getPerformanceColor(metricsData.clinicalMetrics.accuracyRate, 'percentage')}`}>
+              {formatNumber(metricsData.clinicalMetrics.accuracyRate, 'percentage')}
+            </div>
+          </div>
+          
+          <div 
+            className="medsight-control-glass p-3 rounded-lg cursor-pointer hover:scale-105 transition-transform"
+            onClick={() => handleMetricClick('review-time')}
+          >
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-xs text-medsight-primary">Avg Review Time</span>
+              <ClockIcon className="w-3 h-3 text-medsight-primary/50" />
+            </div>
+            <div className={`text-lg font-bold ${getPerformanceColor(metricsData.clinicalMetrics.averageReviewTime, 'time')}`}>
+              {formatNumber(metricsData.clinicalMetrics.averageReviewTime, 'time')}
+            </div>
+          </div>
+          
+          <div 
+            className="medsight-control-glass p-3 rounded-lg cursor-pointer hover:scale-105 transition-transform"
+            onClick={() => handleMetricClick('productivity')}
+          >
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-xs text-medsight-primary">Productivity</span>
+              <div className="flex items-center space-x-1">
+                {React.createElement(getTrendIcon(metricsData.trends.productivityChange), {
+                  className: `w-3 h-3 ${getTrendColor(metricsData.trends.productivityChange)}`
+                })}
+                <span className={`text-xs ${getTrendColor(metricsData.trends.productivityChange)}`}>
+                  {formatNumber(Math.abs(metricsData.trends.productivityChange), 'percentage')}
+                </span>
+              </div>
+            </div>
+            <div className={`text-lg font-bold ${getPerformanceColor(metricsData.clinicalMetrics.productivityScore, 'percentage')}`}>
+              {formatNumber(metricsData.clinicalMetrics.productivityScore, 'percentage')}
+            </div>
+          </div>
+          
+          <div 
+            className="medsight-control-glass p-3 rounded-lg cursor-pointer hover:scale-105 transition-transform"
+            onClick={() => handleMetricClick('quality')}
+          >
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-xs text-medsight-primary">Quality Score</span>
+              <ShieldCheckIcon className="w-3 h-3 text-medsight-primary/50" />
+            </div>
+            <div className={`text-lg font-bold ${getPerformanceColor(metricsData.clinicalMetrics.qualityScore, 'percentage')}`}>
+              {formatNumber(metricsData.clinicalMetrics.qualityScore, 'percentage')}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* AI Performance Metrics */}
+      <div className="medsight-ai-glass p-4 rounded-xl">
+        <h4 className="text-sm font-semibold text-medsight-ai-high mb-3 flex items-center space-x-2">
+          <BeakerIcon className="w-4 h-4" />
+          <span>AI Performance</span>
+        </h4>
+        
+        <div className="grid grid-cols-2 gap-3">
+          <div 
+            className="medsight-control-glass p-3 rounded-lg cursor-pointer hover:scale-105 transition-transform"
+            onClick={() => handleMetricClick('ai-accuracy')}
+          >
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-xs text-medsight-ai-high">AI Accuracy</span>
+              <div className="flex items-center space-x-1">
+                {React.createElement(getTrendIcon(metricsData.trends.aiPerformanceChange), {
+                  className: `w-3 h-3 ${getTrendColor(metricsData.trends.aiPerformanceChange)}`
+                })}
+                <span className={`text-xs ${getTrendColor(metricsData.trends.aiPerformanceChange)}`}>
+                  {formatNumber(Math.abs(metricsData.trends.aiPerformanceChange), 'percentage')}
+                </span>
+              </div>
+            </div>
+            <div className={`text-lg font-bold ${getPerformanceColor(metricsData.aiMetrics.aiAccuracy, 'percentage')}`}>
+              {formatNumber(metricsData.aiMetrics.aiAccuracy, 'percentage')}
+            </div>
+          </div>
+          
+          <div 
+            className="medsight-control-glass p-3 rounded-lg cursor-pointer hover:scale-105 transition-transform"
+            onClick={() => handleMetricClick('ai-confidence')}
+          >
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-xs text-medsight-ai-high">AI Confidence</span>
+              <CpuChipIcon className="w-3 h-3 text-medsight-ai-high/50" />
+            </div>
+            <div className={`text-lg font-bold ${getPerformanceColor(metricsData.aiMetrics.aiConfidence, 'percentage')}`}>
+              {formatNumber(metricsData.aiMetrics.aiConfidence, 'percentage')}
+            </div>
+          </div>
+          
+          <div 
+            className="medsight-control-glass p-3 rounded-lg cursor-pointer hover:scale-105 transition-transform"
+            onClick={() => handleMetricClick('ai-processing')}
+          >
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-xs text-medsight-ai-high">Processing Time</span>
+              <ClockIcon className="w-3 h-3 text-medsight-ai-high/50" />
+            </div>
+            <div className="text-lg font-bold text-medsight-ai-high">
+              {formatNumber(metricsData.aiMetrics.aiProcessingTime, 'decimal')}s
+            </div>
+          </div>
+          
+          <div 
+            className="medsight-control-glass p-3 rounded-lg cursor-pointer hover:scale-105 transition-transform"
+            onClick={() => handleMetricClick('ai-validation')}
+          >
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-xs text-medsight-ai-high">Validation Rate</span>
+              <CheckCircleIcon className="w-3 h-3 text-medsight-ai-high/50" />
+            </div>
+            <div className={`text-lg font-bold ${getPerformanceColor(metricsData.aiMetrics.aiValidationRate, 'percentage')}`}>
+              {formatNumber(metricsData.aiMetrics.aiValidationRate, 'percentage')}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Case Statistics */}
+      <div className="medsight-glass p-4 rounded-xl">
+        <h4 className="text-sm font-semibold text-medsight-primary mb-3 flex items-center space-x-2">
+          <DocumentTextIcon className="w-4 h-4" />
+          <span>Case Statistics</span>
+        </h4>
+        
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <span className="text-xs text-medsight-primary">Total Cases</span>
+            <span className="text-sm font-bold text-medsight-primary">
+              {formatNumber(metricsData.clinicalMetrics.totalCases, 'count')}
             </span>
+          </div>
+          
+          <div className="flex items-center justify-between">
+            <span className="text-xs text-medsight-normal">Completed</span>
+            <span className="text-sm font-bold text-medsight-normal">
+              {formatNumber(metricsData.clinicalMetrics.completedCases, 'count')}
+            </span>
+          </div>
+          
+          <div className="flex items-center justify-between">
+            <span className="text-xs text-medsight-pending">Pending</span>
+            <span className="text-sm font-bold text-medsight-pending">
+              {formatNumber(metricsData.clinicalMetrics.pendingCases, 'count')}
+            </span>
+          </div>
+          
+          <div className="flex items-center justify-between">
+            <span className="text-xs text-medsight-critical">Critical</span>
+            <span className="text-sm font-bold text-medsight-critical">
+              {formatNumber(metricsData.clinicalMetrics.criticalCases, 'count')}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* System Performance */}
+      <div className="medsight-glass p-4 rounded-xl">
+        <h4 className="text-sm font-semibold text-medsight-primary mb-3 flex items-center space-x-2">
+          <CpuChipIcon className="w-4 h-4" />
+          <span>System Performance</span>
+        </h4>
+        
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <span className="text-xs text-medsight-primary">System Uptime</span>
+            <span className={`text-sm font-bold ${getPerformanceColor(metricsData.systemMetrics.systemUptime, 'percentage')}`}>
+              {formatNumber(metricsData.systemMetrics.systemUptime, 'percentage')}
+            </span>
+          </div>
+          
+          <div className="flex items-center justify-between">
+            <span className="text-xs text-medsight-primary">Response Time</span>
+            <span className="text-sm font-bold text-medsight-primary">
+              {metricsData.systemMetrics.averageResponseTime}ms
+            </span>
+          </div>
+          
+          <div className="flex items-center justify-between">
+            <span className="text-xs text-medsight-primary">Throughput</span>
+            <span className="text-sm font-bold text-medsight-primary">
+              {metricsData.systemMetrics.throughput}/hour
+            </span>
+          </div>
+          
+          <div className="flex items-center justify-between">
+            <span className="text-xs text-medsight-primary">Error Rate</span>
+            <span className={`text-sm font-bold ${getPerformanceColor(metricsData.systemMetrics.errorRate, 'error')}`}>
+              {formatNumber(metricsData.systemMetrics.errorRate, 'percentage')}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Real-time Status */}
+      <div className="medsight-glass p-4 rounded-xl">
+        <h4 className="text-sm font-semibold text-medsight-primary mb-3 flex items-center space-x-2">
+          <div className="w-2 h-2 bg-medsight-normal rounded-full animate-pulse"></div>
+          <span>Real-time Status</span>
+        </h4>
+        
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <span className="text-xs text-medsight-primary">Active Sessions</span>
+            <span className="text-sm font-bold text-medsight-primary">
+              {Math.round(realTimeData.activeSessions)}
+            </span>
+          </div>
+          
+          <div className="flex items-center justify-between">
+            <span className="text-xs text-medsight-primary">System Load</span>
+            <span className="text-sm font-bold text-medsight-primary">
+              {realTimeData.systemLoad.toFixed(1)}%
+            </span>
+          </div>
+          
+          <div className="flex items-center justify-between">
+            <span className="text-xs text-medsight-primary">Network Speed</span>
+            <span className="text-sm font-bold text-medsight-primary">
+              {realTimeData.networkSpeed.toFixed(1)} Mbps
+            </span>
+          </div>
+          
+          <div className="text-xs text-medsight-primary/70 text-center pt-2 border-t border-medsight-primary/20">
+            Updated: {new Date().toLocaleTimeString()}
           </div>
         </div>
       </div>
