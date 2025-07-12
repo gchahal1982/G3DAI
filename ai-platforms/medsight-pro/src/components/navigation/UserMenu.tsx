@@ -1,3 +1,4 @@
+'use client';
 /**
  * UserMenu.tsx
  * Medical professional profile menu with credentials and session management

@@ -19,7 +19,6 @@ export default function SessionManagementPage() {
             </div>
             <div className="flex items-center space-x-4">
               <div className="medsight-glass p-3 rounded-lg">
-                <Shield className="w-6 h-6 text-medsight-primary" />
               </div>
               <div className="text-right">
                 <div className="text-sm text-slate-500">Security Status</div>
@@ -36,9 +35,7 @@ export default function SessionManagementPage() {
           <div className="medsight-glass p-6 rounded-xl">
             <div className="flex items-center justify-between mb-4">
               <div className="p-3 rounded-lg bg-medsight-primary/10">
-                <Activity className="w-6 h-6 text-medsight-primary" />
               </div>
-              <CheckCircle className="w-5 h-5 text-medsight-normal" />
             </div>
             <div className="text-2xl font-bold text-medsight-primary mb-1">
               Real-time Monitoring
@@ -51,9 +48,7 @@ export default function SessionManagementPage() {
           <div className="medsight-glass p-6 rounded-xl">
             <div className="flex items-center justify-between mb-4">
               <div className="p-3 rounded-lg bg-medsight-secondary/10">
-                <Shield className="w-6 h-6 text-medsight-secondary" />
               </div>
-              <CheckCircle className="w-5 h-5 text-medsight-normal" />
             </div>
             <div className="text-2xl font-bold text-medsight-secondary mb-1">
               HIPAA Compliance
@@ -66,9 +61,7 @@ export default function SessionManagementPage() {
           <div className="medsight-glass p-6 rounded-xl">
             <div className="flex items-center justify-between mb-4">
               <div className="p-3 rounded-lg bg-medsight-accent/10">
-                <Clock className="w-6 h-6 text-medsight-accent" />
               </div>
-              <CheckCircle className="w-5 h-5 text-medsight-normal" />
             </div>
             <div className="text-2xl font-bold text-medsight-accent mb-1">
               Timeout Management
@@ -91,7 +84,6 @@ export default function SessionManagementPage() {
               </p>
             </div>
             <button className="btn-medsight">
-              <Settings className="w-4 h-4 mr-2" />
               Configure Settings
             </button>
           </div>
@@ -100,7 +92,6 @@ export default function SessionManagementPage() {
             {/* Session Timeout Settings */}
             <div className="medsight-control-glass p-4 rounded-lg">
               <div className="flex items-center space-x-3 mb-4">
-                <Clock className="w-5 h-5 text-medsight-primary" />
                 <h3 className="font-semibold text-medsight-primary">Session Timeout</h3>
               </div>
               <div className="space-y-3">
@@ -122,7 +113,6 @@ export default function SessionManagementPage() {
             {/* Concurrent Sessions */}
             <div className="medsight-control-glass p-4 rounded-lg">
               <div className="flex items-center space-x-3 mb-4">
-                <Users className="w-5 h-5 text-medsight-primary" />
                 <h3 className="font-semibold text-medsight-primary">Concurrent Sessions</h3>
               </div>
               <div className="space-y-3">
@@ -144,21 +134,17 @@ export default function SessionManagementPage() {
             {/* Security Settings */}
             <div className="medsight-control-glass p-4 rounded-lg">
               <div className="flex items-center space-x-3 mb-4">
-                <Shield className="w-5 h-5 text-medsight-primary" />
                 <h3 className="font-semibold text-medsight-primary">Security Settings</h3>
               </div>
               <div className="space-y-3">
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-slate-600">IP Validation</span>
-                  <CheckCircle className="w-4 h-4 text-medsight-normal" />
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-slate-600">Device Verification</span>
-                  <CheckCircle className="w-4 h-4 text-medsight-normal" />
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-slate-600">Audit Logging</span>
-                  <CheckCircle className="w-4 h-4 text-medsight-normal" />
                 </div>
               </div>
             </div>
@@ -182,18 +168,11 @@ export default function SessionManagementPage() {
                 <span className="text-sm text-slate-600">Live Monitoring</span>
               </div>
               <button className="btn-medsight">
-                <Eye className="w-4 h-4 mr-2" />
                 View Details
               </button>
             </div>
           </div>
 
-          <SessionMonitoring 
-            refreshInterval={30000}
-            showFilters={true}
-            showControls={true}
-            maxHeight="800px"
-          />
         </div>
 
         {/* Security Alerts */}
@@ -208,7 +187,6 @@ export default function SessionManagementPage() {
               </p>
             </div>
             <button className="btn-medsight">
-              <AlertTriangle className="w-4 h-4 mr-2" />
               View All Alerts
             </button>
           </div>
@@ -218,7 +196,6 @@ export default function SessionManagementPage() {
             <div className="medsight-control-glass p-4 rounded-lg border-l-4 border-medsight-critical">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
-                  <AlertTriangle className="w-5 h-5 text-medsight-critical" />
                   <div>
                     <div className="font-medium text-medsight-critical">
                       Suspicious Login Detected
@@ -237,7 +214,6 @@ export default function SessionManagementPage() {
             <div className="medsight-control-glass p-4 rounded-lg border-l-4 border-medsight-pending">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
-                  <Clock className="w-5 h-5 text-medsight-pending" />
                   <div>
                     <div className="font-medium text-medsight-pending">
                       Session Timeout Warning
@@ -256,7 +232,6 @@ export default function SessionManagementPage() {
             <div className="medsight-control-glass p-4 rounded-lg border-l-4 border-medsight-normal">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
-                  <CheckCircle className="w-5 h-5 text-medsight-normal" />
                   <div>
                     <div className="font-medium text-medsight-normal">
                       Compliance Check Passed
@@ -297,25 +272,21 @@ export default function SessionManagementPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="medsight-control-glass p-4 rounded-lg text-center">
-              <CheckCircle className="w-8 h-8 text-medsight-normal mx-auto mb-2" />
               <div className="text-sm font-medium text-medsight-normal">HIPAA Compliant</div>
               <div className="text-xs text-slate-500">All requirements met</div>
             </div>
 
             <div className="medsight-control-glass p-4 rounded-lg text-center">
-              <CheckCircle className="w-8 h-8 text-medsight-normal mx-auto mb-2" />
               <div className="text-sm font-medium text-medsight-normal">Audit Trail</div>
               <div className="text-xs text-slate-500">Complete logging</div>
             </div>
 
             <div className="medsight-control-glass p-4 rounded-lg text-center">
-              <CheckCircle className="w-8 h-8 text-medsight-normal mx-auto mb-2" />
               <div className="text-sm font-medium text-medsight-normal">Access Control</div>
               <div className="text-xs text-slate-500">Role-based verified</div>
             </div>
 
             <div className="medsight-control-glass p-4 rounded-lg text-center">
-              <AlertTriangle className="w-8 h-8 text-medsight-pending mx-auto mb-2" />
               <div className="text-sm font-medium text-medsight-pending">Data Protection</div>
               <div className="text-xs text-slate-500">Minor issues detected</div>
             </div>

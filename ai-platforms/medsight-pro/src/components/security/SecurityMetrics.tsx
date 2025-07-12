@@ -15,7 +15,7 @@ import {
 } from '@heroicons/react/24/outline';
 
 interface SecurityMetricsProps {
-  data: any;
+  data?: any;
 }
 
 interface SecurityMetric {
@@ -52,7 +52,7 @@ interface ThreatMetric {
   riskLevel: 'low' | 'medium' | 'high' | 'critical';
 }
 
-export function SecurityMetrics({ data }: SecurityMetricsProps) {
+export function SecurityMetrics({ data = {} }: SecurityMetricsProps) {
   const [metrics, setMetrics] = useState<SecurityMetric[]>([]);
   const [complianceMetrics, setComplianceMetrics] = useState<ComplianceMetric[]>([]);
   const [threatMetrics, setThreatMetrics] = useState<ThreatMetric[]>([]);

@@ -15,7 +15,7 @@ import {
 } from '@heroicons/react/24/outline';
 
 interface SecurityIncidentsProps {
-  data: any;
+  data?: any;
 }
 
 interface SecurityIncident {
@@ -47,7 +47,7 @@ interface SecurityIncident {
   }[];
 }
 
-export function SecurityIncidents({ data }: SecurityIncidentsProps) {
+export function SecurityIncidents({ data = {} }: SecurityIncidentsProps) {
   const [incidents, setIncidents] = useState<SecurityIncident[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedIncident, setSelectedIncident] = useState<SecurityIncident | null>(null);

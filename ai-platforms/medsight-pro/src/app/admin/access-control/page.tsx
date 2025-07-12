@@ -1,7 +1,9 @@
-'use client';
-
 import React from 'react';
-import { Shield, Users, Lock, Settings, AlertTriangle, CheckCircle } from 'lucide-react';
+import { 
+  Shield, Users, Lock, Key, 
+  FileText, Activity, UserPlus, Settings,
+  Eye, Edit, Trash2
+} from 'lucide-react';
 import RoleManagement from '@/components/access/RoleManagement';
 import PermissionMatrix from '@/components/access/PermissionMatrix';
 import UserRoleAssignment from '@/components/access/UserRoleAssignment';
@@ -11,178 +13,120 @@ export default function AccessControlDashboard() {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 p-6">
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
-        <div className="medsight-glass p-6 rounded-xl">
+        <div className="medsight-glass rounded-xl p-6 border border-medsight-primary/20">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-medsight-primary mb-2">
-                Access Control Dashboard
+              <h1 className="text-2xl font-bold text-medsight-primary mb-2">
+                Access Control Management
               </h1>
               <p className="text-slate-600">
-                Manage medical professional roles, permissions, and access control
+                Manage user roles, permissions, and access policies
               </p>
             </div>
             <div className="flex items-center space-x-4">
-              <div className="medsight-glass p-3 rounded-lg">
-                <Shield className="w-6 h-6 text-medsight-primary" />
+              <div className="flex items-center space-x-2">
+                <div className="w-3 h-3 bg-medsight-secondary rounded-full animate-pulse"></div>
+                <span className="text-sm text-medsight-secondary font-medium">
+                  Policies Enforced
+                </span>
               </div>
-              <div className="text-right">
-                <div className="text-sm text-slate-500">Security Level</div>
-                <div className="text-lg font-semibold text-medsight-primary">
-                  HIPAA Compliant
-                </div>
+              <div className="medsight-control-glass px-3 py-1 rounded-lg">
+                <span className="text-sm text-slate-700">
+                  Last Audit: 2 weeks ago
+                </span>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Security Overview Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          <div className="medsight-glass p-6 rounded-xl">
-            <div className="flex items-center justify-between mb-4">
-              <div className="p-3 rounded-lg bg-medsight-primary/10">
+        {/* Access Control Overview */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="medsight-glass rounded-xl p-6 border border-medsight-primary/20">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-slate-600 mb-1">Total Roles</p>
+                <p className="text-2xl font-bold text-medsight-primary">23</p>
+              </div>
+              <div className="medsight-ai-glass p-3 rounded-lg">
                 <Users className="w-6 h-6 text-medsight-primary" />
               </div>
-              <CheckCircle className="w-5 h-5 text-medsight-normal" />
             </div>
-            <div className="text-2xl font-bold text-medsight-primary mb-1">
-              247
-            </div>
-            <div className="text-sm text-slate-600">Active Users</div>
           </div>
-
-          <div className="medsight-glass p-6 rounded-xl">
-            <div className="flex items-center justify-between mb-4">
-              <div className="p-3 rounded-lg bg-medsight-secondary/10">
-                <Shield className="w-6 h-6 text-medsight-secondary" />
+          <div className="medsight-glass rounded-xl p-6 border border-medsight-primary/20">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-slate-600 mb-1">Permissions</p>
+                <p className="text-2xl font-bold text-medsight-primary">147</p>
               </div>
-              <CheckCircle className="w-5 h-5 text-medsight-normal" />
+              <div className="medsight-ai-glass p-3 rounded-lg">
+                <Key className="w-6 h-6 text-medsight-primary" />
+              </div>
             </div>
-            <div className="text-2xl font-bold text-medsight-secondary mb-1">
-              12
-            </div>
-            <div className="text-sm text-slate-600">Medical Roles</div>
           </div>
-
-          <div className="medsight-glass p-6 rounded-xl">
-            <div className="flex items-center justify-between mb-4">
-              <div className="p-3 rounded-lg bg-medsight-accent/10">
-                <Lock className="w-6 h-6 text-medsight-accent" />
+          <div className="medsight-glass rounded-xl p-6 border border-medsight-primary/20">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-slate-600 mb-1">Access Policies</p>
+                <p className="text-2xl font-bold text-medsight-primary">48</p>
               </div>
-              <CheckCircle className="w-5 h-5 text-medsight-normal" />
+              <div className="medsight-ai-glass p-3 rounded-lg">
+                <Lock className="w-6 h-6 text-medsight-primary" />
+              </div>
             </div>
-            <div className="text-2xl font-bold text-medsight-accent mb-1">
-              45
-            </div>
-            <div className="text-sm text-slate-600">Permissions</div>
           </div>
-
-          <div className="medsight-glass p-6 rounded-xl">
-            <div className="flex items-center justify-between mb-4">
-              <div className="p-3 rounded-lg bg-medsight-critical/10">
-                <AlertTriangle className="w-6 h-6 text-medsight-critical" />
+          <div className="medsight-glass rounded-xl p-6 border border-medsight-primary/20">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-slate-600 mb-1">Audit Events</p>
+                <p className="text-2xl font-bold text-medsight-primary">12.4K</p>
               </div>
-              <AlertTriangle className="w-5 h-5 text-medsight-pending" />
+              <div className="medsight-ai-glass p-3 rounded-lg">
+                <FileText className="w-6 h-6 text-medsight-primary" />
+              </div>
             </div>
-            <div className="text-2xl font-bold text-medsight-critical mb-1">
-              3
-            </div>
-            <div className="text-sm text-slate-600">Access Violations</div>
           </div>
         </div>
 
-        {/* Main Content Tabs */}
-        <div className="medsight-glass p-6 rounded-xl">
-          <div className="border-b border-slate-200 mb-6">
-            <nav className="flex space-x-8">
-              <button className="py-2 px-1 border-b-2 border-medsight-primary text-medsight-primary font-medium">
-                Role Management
-              </button>
-              <button className="py-2 px-1 border-b-2 border-transparent text-slate-500 hover:text-medsight-primary">
-                Permission Matrix
-              </button>
-              <button className="py-2 px-1 border-b-2 border-transparent text-slate-500 hover:text-medsight-primary">
-                User Assignment
-              </button>
-              <button className="py-2 px-1 border-b-2 border-transparent text-slate-500 hover:text-medsight-primary">
-                Security Audit
-              </button>
-            </nav>
-          </div>
-
-          {/* Role Management Section */}
-          <div className="space-y-6">
+        {/* Main Access Control Grid */}
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+          {/* Left Column - Role Management */}
+          <div className="xl:col-span-2 space-y-6">
             <RoleManagement />
           </div>
+
+          {/* Right Column - User Role Assignment */}
+          <div className="space-y-6">
+            <UserRoleAssignment />
+          </div>
         </div>
 
-        {/* Permission Matrix Section */}
-        <div className="medsight-glass p-6 rounded-xl">
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h2 className="text-xl font-bold text-medsight-primary">
-                Medical Permission Matrix
-              </h2>
-              <p className="text-slate-600 mt-1">
-                Configure access permissions for medical data and system functions
-              </p>
-            </div>
-            <button className="btn-medsight">
-              <Settings className="w-4 h-4 mr-2" />
-              Configure Permissions
-            </button>
-          </div>
+        {/* Bottom Row - Permission Matrix */}
+        <div className="grid grid-cols-1 gap-6">
           <PermissionMatrix />
         </div>
 
-        {/* User Role Assignment Section */}
-        <div className="medsight-glass p-6 rounded-xl">
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h2 className="text-xl font-bold text-medsight-primary">
-                User Role Assignment
-              </h2>
-              <p className="text-slate-600 mt-1">
-                Assign and manage medical professional roles
-              </p>
-            </div>
-            <button className="btn-medsight">
-              <Users className="w-4 h-4 mr-2" />
-              Assign Roles
+        {/* Quick Actions */}
+        <div className="medsight-glass rounded-xl p-6 border border-medsight-primary/20">
+          <h3 className="text-lg font-semibold text-medsight-primary mb-4">
+            Access Control Actions
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <button className="btn-medsight flex items-center justify-center space-x-2 p-4">
+              <UserPlus className="w-5 h-5" />
+              <span>Add New Role</span>
             </button>
-          </div>
-          <UserRoleAssignment />
-        </div>
-
-        {/* Security Compliance Footer */}
-        <div className="medsight-glass p-6 rounded-xl">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <div className="p-3 rounded-lg bg-medsight-normal/10">
-                <CheckCircle className="w-6 h-6 text-medsight-normal" />
-              </div>
-              <div>
-                <div className="font-semibold text-medsight-primary">
-                  HIPAA Compliance Active
-                </div>
-                <div className="text-sm text-slate-600">
-                  All access controls meet medical regulatory requirements
-                </div>
-              </div>
-            </div>
-            <div className="flex items-center space-x-6">
-              <div className="text-center">
-                <div className="text-sm text-slate-500">Last Audit</div>
-                <div className="font-semibold text-medsight-primary">
-                  2024-01-15
-                </div>
-              </div>
-              <div className="text-center">
-                <div className="text-sm text-slate-500">Next Review</div>
-                <div className="font-semibold text-medsight-pending">
-                  2024-02-15
-                </div>
-              </div>
-            </div>
+            <button className="btn-medsight flex items-center justify-center space-x-2 p-4">
+              <Key className="w-5 h-5" />
+              <span>Create Permission</span>
+            </button>
+            <button className="btn-medsight flex items-center justify-center space-x-2 p-4">
+              <Lock className="w-5 h-5" />
+              <span>Define Policy</span>
+            </button>
+            <button className="btn-medsight flex items-center justify-center space-x-2 p-4">
+              <Activity className="w-5 h-5" />
+              <span>Run Audit</span>
+            </button>
           </div>
         </div>
       </div>

@@ -1,19 +1,19 @@
 'use client';
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Progress } from '@/components/ui/progress';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Switch } from '@/components/ui/switch';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
-import { Separator } from '@/components/ui/separator';
+import { Card, CardContent, CardHeader, CardTitle } from '../../../../../shared/components/ui/Card';
+import { Button } from '../../../../../shared/components/ui/Button';
+import { Badge } from '../../../../../shared/components/ui/Badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../../../../shared/components/ui/Tabs';
+import { Progress } from '../../../../../shared/components/ui/Progress';
+import { Alert, AlertDescription } from '../../../../../shared/components/ui/Alert';
+import { ScrollArea } from '../../../../../shared/components/ui/ScrollArea';
+import { Switch } from '../../../../../shared/components/ui/Switch';
+import { Input } from '../../../../../shared/components/ui/Input';
+import { Label } from '../../../../../shared/components/ui/Label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../../../shared/components/ui/Select';
+import { Textarea } from '../../../../../shared/components/ui/Textarea';
+import { Separator } from '../../../../../shared/components/ui/Separator';
 import { 
   Code, 
   Lightbulb, 
@@ -832,7 +832,6 @@ export class GeneratedWorkflow {
               <Switch
                 checked={automationEnabled}
                 onCheckedChange={toggleAutomation}
-                id="automation"
               />
               <Label htmlFor="automation">Automation</Label>
             </div>
@@ -899,7 +898,6 @@ export class GeneratedWorkflow {
                   <div className="space-y-2">
                     <Label htmlFor="workflow-name">Workflow Name</Label>
                     <Input
-                      id="workflow-name"
                       value={workflowName}
                       onChange={(e) => setWorkflowName(e.target.value)}
                       placeholder="Enter workflow name"
@@ -1007,7 +1005,6 @@ export class GeneratedWorkflow {
                       <div className="space-y-2">
                         <Label htmlFor="step-name">Step Name</Label>
                         <Input
-                          id="step-name"
                           value={editingStep.name}
                           onChange={(e) => setEditingStep({
                             ...editingStep,
@@ -1025,7 +1022,7 @@ export class GeneratedWorkflow {
                             type: value as any
                           })}
                         >
-                          <SelectTrigger id="step-type">
+                          <SelectTrigger>
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
@@ -1041,7 +1038,6 @@ export class GeneratedWorkflow {
                       <div className="space-y-2">
                         <Label htmlFor="step-description">Description</Label>
                         <Textarea
-                          id="step-description"
                           value={editingStep.description}
                           onChange={(e) => setEditingStep({
                             ...editingStep,
@@ -1427,7 +1423,7 @@ export class GeneratedWorkflow {
                             {metric.improvement > 0 ? (
                               <TrendingUp className="h-4 w-4 text-green-500" />
                             ) : (
-                              <TrendingDown className="h-4 w-4 text-red-500" />
+                              <TrendingUp className="h-4 w-4 text-red-500" />
                             )}
                             <span className={metric.improvement > 0 ? 'text-green-600' : 'text-red-600'}>
                               {metric.improvement > 0 ? '+' : ''}{(metric.improvement * 100).toFixed(1)}%

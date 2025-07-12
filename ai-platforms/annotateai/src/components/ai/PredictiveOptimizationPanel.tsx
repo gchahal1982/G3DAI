@@ -1,17 +1,17 @@
 'use client';
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Progress } from '@/components/ui/progress';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Switch } from '@/components/ui/switch';
-import { Slider } from '@/components/ui/slider';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Card, CardContent, CardHeader, CardTitle } from '../../../../../shared/components/ui/Card';
+import { Button } from '../../../../../shared/components/ui/Button';
+import { Badge } from '../../../../../shared/components/ui/Badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../../../../shared/components/ui/Tabs';
+import { Progress } from '../../../../../shared/components/ui/Progress';
+import { Alert, AlertDescription } from '../../../../../shared/components/ui/Alert';
+import { ScrollArea } from '../../../../../shared/components/ui/ScrollArea';
+import { Switch } from '../../../../../shared/components/ui/Switch';
+import { Slider } from '../../../../../shared/components/ui/Slider';
+import { Label } from '../../../../../shared/components/ui/Label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../../../shared/components/ui/Select';
 import { 
   Activity, 
   TrendingUp, 
@@ -708,7 +708,7 @@ export function PredictiveOptimizationPanel({
               <div className="space-y-2">
                 <Label htmlFor="profile">Optimization Profile</Label>
                 <Select value={selectedProfile} onValueChange={setSelectedProfile}>
-                  <SelectTrigger id="profile">
+                  <SelectTrigger>
                     <SelectValue placeholder="Select profile" />
                   </SelectTrigger>
                   <SelectContent>
@@ -724,7 +724,7 @@ export function PredictiveOptimizationPanel({
               <div className="space-y-2">
                 <Label htmlFor="timeframe">Prediction Timeframe</Label>
                 <Select value={selectedTimeframe.toString()} onValueChange={(value) => setSelectedTimeframe(parseInt(value))}>
-                  <SelectTrigger id="timeframe">
+                  <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -739,7 +739,6 @@ export function PredictiveOptimizationPanel({
               <div className="space-y-2">
                 <Label htmlFor="risk">Risk Tolerance: {Math.round(riskTolerance * 100)}%</Label>
                 <Slider
-                  id="risk"
                   value={[riskTolerance]}
                   onValueChange={(value) => setRiskTolerance(value[0])}
                   max={1}
@@ -752,7 +751,6 @@ export function PredictiveOptimizationPanel({
               <div className="space-y-2">
                 <Label htmlFor="automation">Automation Level: {Math.round(automationLevel * 100)}%</Label>
                 <Slider
-                  id="automation"
                   value={[automationLevel]}
                   onValueChange={(value) => setAutomationLevel(value[0])}
                   max={1}

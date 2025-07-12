@@ -17,7 +17,6 @@ import {
   Activity,
   Monitor,
   Heart,
-  Lung,
   Skull,
   Stethoscope,
   Shield,

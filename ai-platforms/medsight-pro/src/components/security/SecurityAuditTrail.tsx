@@ -15,7 +15,7 @@ import {
 } from '@heroicons/react/24/outline';
 
 interface SecurityAuditTrailProps {
-  data: any;
+  data?: any;
 }
 
 interface AuditEvent {
@@ -49,7 +49,7 @@ interface AuditSummary {
   topRiskScore: number;
 }
 
-export function SecurityAuditTrail({ data }: SecurityAuditTrailProps) {
+export function SecurityAuditTrail({ data = {} }: SecurityAuditTrailProps) {
   const [auditEvents, setAuditEvents] = useState<AuditEvent[]>([]);
   const [summary, setSummary] = useState<AuditSummary | null>(null);
   const [loading, setLoading] = useState(true);

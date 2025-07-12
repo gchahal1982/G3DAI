@@ -17,8 +17,8 @@ import {
   LockClosedIcon
 } from '@heroicons/react/24/outline';
 import { SecurityMonitoring } from '@/components/security/SecurityMonitoring';
-import { ThreatDetection } from '@/components/security/ThreatDetection';
-import { StreamMonitoring } from '@/components/security/StreamMonitoring';
+import ThreatDetection from '@/components/security/ThreatDetection';
+import StreamMonitoring from '@/components/security/StreamMonitoring';
 import { SecurityIncidents } from '@/components/security/SecurityIncidents';
 import { SecurityAuditTrail } from '@/components/security/SecurityAuditTrail';
 import { SecurityMetrics } from '@/components/security/SecurityMetrics';
@@ -281,7 +281,7 @@ export default function SecurityDashboardPage() {
       <div className="flex items-center justify-center min-h-screen">
         <div className="medsight-glass p-8 rounded-xl max-w-md w-full mx-4 border-medsight-critical/20">
           <div className="text-center">
-            <ExclamationTriangleIcon className="w-12 h-12 text-medsight-critical mx-auto mb-4" />
+            <ExclamationTriangleIcon className="w-12 h-12 text-medsight-critical mx-auto mb-4"/>
             <div className="text-lg font-medium text-medsight-critical mb-2">
               Security Dashboard Error
             </div>
@@ -307,7 +307,7 @@ export default function SecurityDashboardPage() {
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
             <div className="medsight-control-glass p-3 rounded-full">
-              <ShieldCheckIcon className="w-8 h-8 text-medsight-primary" />
+              <ShieldCheckIcon className="w-8 h-8 text-medsight-primary"/>
             </div>
             <div>
               <h1 className="text-2xl font-bold text-medsight-primary">
@@ -358,7 +358,7 @@ export default function SecurityDashboardPage() {
       {securityData?.securityStatus.activeThreats > 0 && (
         <div className="medsight-glass p-4 rounded-xl border-medsight-critical/20">
           <div className="flex items-center space-x-2 mb-3">
-            <ExclamationTriangleIcon className="w-5 h-5 text-medsight-critical" />
+            <ExclamationTriangleIcon className="w-5 h-5 text-medsight-critical"/>
             <h3 className="text-sm font-semibold text-medsight-critical">Active Security Threats</h3>
           </div>
           <div className="text-sm text-medsight-critical">
@@ -371,7 +371,7 @@ export default function SecurityDashboardPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="medsight-control-glass p-4 rounded-lg">
           <div className="flex items-center space-x-3">
-            <ShieldCheckIcon className="w-6 h-6 text-medsight-primary" />
+            <ShieldCheckIcon className="w-6 h-6 text-medsight-primary"/>
             <div>
               <div className="text-2xl font-bold text-medsight-primary">
                 {securityData?.securityStatus.systemsMonitored}
@@ -386,7 +386,7 @@ export default function SecurityDashboardPage() {
         
         <div className="medsight-control-glass p-4 rounded-lg">
           <div className="flex items-center space-x-3">
-            <LockClosedIcon className="w-6 h-6 text-medsight-secondary" />
+            <LockClosedIcon className="w-6 h-6 text-medsight-secondary"/>
             <div>
               <div className="text-2xl font-bold text-medsight-secondary">
                 {securityData?.securityStatus.blockedAttempts}
@@ -401,7 +401,7 @@ export default function SecurityDashboardPage() {
         
         <div className="medsight-control-glass p-4 rounded-lg">
           <div className="flex items-center space-x-3">
-            <SignalIcon className="w-6 h-6 text-medsight-ai-high" />
+            <SignalIcon className="w-6 h-6 text-medsight-ai-high"/>
             <div>
               <div className="text-2xl font-bold text-medsight-ai-high">
                 {securityData?.streamProcessing.throughput.toLocaleString()}
@@ -416,7 +416,7 @@ export default function SecurityDashboardPage() {
         
         <div className="medsight-control-glass p-4 rounded-lg">
           <div className="flex items-center space-x-3">
-            <DocumentMagnifyingGlassIcon className="w-6 h-6 text-medsight-pending" />
+            <DocumentMagnifyingGlassIcon className="w-6 h-6 text-medsight-pending"/>
             <div>
               <div className="text-2xl font-bold text-medsight-pending">
                 {securityData?.securityMetrics.complianceScore.toFixed(1)}%
@@ -571,7 +571,7 @@ export default function SecurityDashboardPage() {
                   : 'text-medsight-primary/70 hover:text-medsight-primary hover:bg-medsight-primary/5'
               }`}
             >
-              <tab.icon className="w-4 h-4" />
+              <tab.icon className="w-4 h-4"/>
               <span className="text-sm font-medium">{tab.label}</span>
             </button>
           ))}
@@ -580,11 +580,11 @@ export default function SecurityDashboardPage() {
 
       {/* Content Area */}
       {activeView === 'overview' && renderOverview()}
-      {activeView === 'threats' && <ThreatDetection data={securityData} />}
-      {activeView === 'streams' && <StreamMonitoring data={securityData} />}
-      {activeView === 'incidents' && <SecurityIncidents data={securityData} />}
-      {activeView === 'audit' && <SecurityAuditTrail data={securityData} />}
-      {activeView === 'metrics' && <SecurityMetrics data={securityData} />}
+      {activeView === 'threats' && <ThreatDetection />}
+      {activeView === 'streams' && <StreamMonitoring />}
+      {activeView === 'incidents' && <SecurityIncidents />}
+      {activeView === 'audit' && <SecurityAuditTrail />}
+      {activeView === 'metrics' && <SecurityMetrics />}
     </div>
   );
 } 
