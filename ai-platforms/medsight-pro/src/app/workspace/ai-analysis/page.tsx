@@ -1,385 +1,693 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { 
-  BeakerIcon,
+import * as React from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
+import {
   CpuChipIcon,
+  BeakerIcon,
   ChartBarIcon,
-  DocumentTextIcon,
+  LightBulbIcon,
   EyeIcon,
-  PlayIcon,
-  PauseIcon,
+  SparklesIcon,
   ClockIcon,
   CheckCircleIcon,
   ExclamationTriangleIcon,
+  InformationCircleIcon,
   ArrowPathIcon,
-  BoltIcon,
-  SparklesIcon,
-  MagnifyingGlassIcon,
+  PlayIcon,
+  PauseIcon,
+  StopIcon,
   AdjustmentsHorizontalIcon,
-  DocumentArrowDownIcon,
+  DocumentChartBarIcon,
+  MagnifyingGlassIcon,
   ShareIcon,
-  PrinterIcon
+  BookmarkIcon,
+  PrinterIcon,
+  CloudArrowUpIcon,
+  CloudArrowDownIcon,
+  Cog6ToothIcon,
+  UserGroupIcon,
+  ChatBubbleLeftEllipsisIcon,
+  BoltIcon,
+  ShieldCheckIcon,
+  StarIcon,
+  TrophyIcon,
+  AcademicCapIcon,
+  HeartIcon,
+  ScaleIcon,
+  ClipboardDocumentListIcon,
+  ArchiveBoxIcon,
+  FolderOpenIcon,
+  TagIcon,
+  CalendarIcon,
+  ClockIcon as TimeIcon,
+  UserIcon,
+  GlobeAltIcon,
+  FingerPrintIcon,
+  LockClosedIcon,
 } from '@heroicons/react/24/outline';
+import {
+  CpuChipIcon as CpuChipIconSolid,
+  CheckCircleIcon as CheckCircleIconSolid,
+  StarIcon as StarIconSolid,
+} from '@heroicons/react/24/solid';
 
-export default function AIAnalysisWorkspacePage() {
-  const router = useRouter();
-  const [selectedModel, setSelectedModel] = useState('general-radiology');
-  const [analysisStatus, setAnalysisStatus] = useState('idle');
-  const [progress, setProgress] = useState(0);
-  const [realTimeMetrics, setRealTimeMetrics] = useState({
-    totalAnalyses: 2847,
-    accuracy: 97.3,
-    avgProcessingTime: 2.4,
-    modelsActive: 6
-  });
+// Mock data for AI analysis
+const mockAIAnalyses = [
+  {
+    id: 'ai-001',
+    patientId: 'P-2024-001',
+    studyType: 'Chest CT',
+    aiModel: 'ResNet-50 Lung Detection',
+    status: 'completed',
+    confidence: 95.6,
+    findings: [
+      { type: 'normal', description: 'Normal lung parenchyma', confidence: 97.2 },
+      { type: 'abnormal', description: 'Small nodule detected - right upper lobe', confidence: 89.4 },
+      { type: 'pending', description: 'Requires radiologist review', confidence: 85.1 }
+    ],
+    processingTime: '2.3s',
+    timestamp: '2024-01-15 14:30:00',
+    priority: 'high'
+  },
+  {
+    id: 'ai-002', 
+    patientId: 'P-2024-002',
+    studyType: 'Brain MRI',
+    aiModel: 'U-Net Brain Segmentation',
+    status: 'processing',
+    confidence: 0,
+    findings: [],
+    processingTime: '0.8s',
+    timestamp: '2024-01-15 14:28:00',
+    priority: 'medium'
+  }
+];
 
-  useEffect(() => {
-    // Simulate real-time updates
-    const interval = setInterval(() => {
-      setRealTimeMetrics(prev => ({
-        ...prev,
-        totalAnalyses: prev.totalAnalyses + Math.floor(Math.random() * 3),
-        accuracy: Math.min(100, Math.max(95, prev.accuracy + (Math.random() - 0.5) * 0.1)),
-        avgProcessingTime: Math.max(1.5, Math.min(4, prev.avgProcessingTime + (Math.random() - 0.5) * 0.2))
-      }));
-    }, 5000);
+const mockPredictiveData = [
+  {
+    prediction: 'Treatment Response',
+    value: 87.3,
+    trend: 'improving',
+    timeframe: '30 days',
+    confidence: 'high'
+  },
+  {
+    prediction: 'Disease Progression',
+    value: 12.5,
+    trend: 'stable', 
+    timeframe: '90 days',
+    confidence: 'medium'
+  },
+  {
+    prediction: 'Readmission Risk',
+    value: 8.2,
+    trend: 'decreasing',
+    timeframe: '30 days',
+    confidence: 'high'
+  }
+];
 
-    return () => clearInterval(interval);
+const mockKnowledgeItems = [
+  {
+    topic: 'Lung Nodule Guidelines',
+    relevance: 98.5,
+    source: 'Fleischner Society',
+    summary: 'Management guidelines for incidental pulmonary nodules'
+  },
+  {
+    topic: 'AI Diagnostic Accuracy',
+    relevance: 94.2,
+    source: 'Radiology AI Research',
+    summary: 'Meta-analysis of AI performance in chest imaging'
+  }
+];
+
+interface AIAnalysisWorkspaceProps {
+  className?: string;
+}
+
+export default function AIAnalysisWorkspace({ className = '' }: AIAnalysisWorkspaceProps) {
+  const [selectedAnalysis, setSelectedAnalysis] = useState<string | null>(null);
+  const [aiProcessingStatus, setAIProcessingStatus] = useState<'idle' | 'processing' | 'completed' | 'error'>('idle');
+  const [activeTab, setActiveTab] = useState<'inference' | 'vision' | 'assistant' | 'analytics'>('inference');
+  const [assistantQuery, setAssistantQuery] = useState('');
+  const [confidenceThreshold, setConfidenceThreshold] = useState(80);
+  const [isRealTimeMode, setIsRealTimeMode] = useState(false);
+  const [selectedModels, setSelectedModels] = useState<string[]>(['ResNet-50', 'U-Net', 'YOLO-v8']);
+
+  const analysisResults = mockAIAnalyses;
+  const predictiveAnalytics = mockPredictiveData;
+  const knowledgeGraph = mockKnowledgeItems;
+
+  const handleStartAnalysis = useCallback(() => {
+    setAIProcessingStatus('processing');
+    setTimeout(() => {
+      setAIProcessingStatus('completed');
+    }, 3000);
   }, []);
 
-  const aiModels = [
-    {
-      id: 'general-radiology',
-      name: 'General Radiology AI',
-      description: 'Multi-modal analysis for common radiological findings',
-      accuracy: 97.3,
-      modalities: ['CT', 'MRI', 'X-Ray'],
-      status: 'active',
-      version: 'v2.1.0'
-    },
-    {
-      id: 'chest-ct',
-      name: 'Chest CT Specialist',
-      description: 'Specialized model for chest CT analysis',
-      accuracy: 98.7,
-      modalities: ['CT'],
-      status: 'active',
-      version: 'v1.8.2'
-    },
-    {
-      id: 'brain-mri',
-      name: 'Brain MRI Analyzer',
-      description: 'Advanced brain pathology detection',
-      accuracy: 96.1,
-      modalities: ['MRI'],
-      status: 'active',
-      version: 'v3.0.1'
-    },
-    {
-      id: 'mammography',
-      name: 'Mammography Screening',
-      description: 'Breast cancer detection and analysis',
-      accuracy: 95.8,
-      modalities: ['Mammography'],
-      status: 'active',
-      version: 'v2.3.0'
-    }
-  ];
+  const handleStopAnalysis = useCallback(() => {
+    setAIProcessingStatus('idle');
+  }, []);
 
-  const pendingAnalyses = [
-    {
-      id: 'AN001',
-      patientId: 'P001234',
-      studyId: 'ST001',
-      modality: 'CT',
-      bodyPart: 'Chest',
-      priority: 'urgent',
-      submittedAt: '10:30 AM',
-      estimatedCompletion: '2 min'
-    },
-    {
-      id: 'AN002',
-      patientId: 'P001235',
-      studyId: 'ST002',
-      modality: 'MRI',
-      bodyPart: 'Brain',
-      priority: 'routine',
-      submittedAt: '10:25 AM',
-      estimatedCompletion: '4 min'
-    }
-  ];
-
-  const completedAnalyses = [
-    {
-      id: 'AN100',
-      patientId: 'P001200',
-      studyId: 'ST100',
-      modality: 'X-Ray',
-      bodyPart: 'Chest',
-      confidence: 98.7,
-      findings: ['Normal chest', 'No acute findings'],
-      completedAt: '10:15 AM',
-      processingTime: '1.8s'
-    },
-    {
-      id: 'AN101',
-      patientId: 'P001201',
-      studyId: 'ST101',
-      modality: 'CT',
-      bodyPart: 'Abdomen',
-      confidence: 89.2,
-      findings: ['Possible hepatic lesion', 'Recommend further evaluation'],
-      completedAt: '10:12 AM',
-      processingTime: '3.2s'
-    }
-  ];
-
-  const runAnalysis = () => {
-    setAnalysisStatus('running');
-    setProgress(0);
-    
-    const interval = setInterval(() => {
-      setProgress(prev => {
-        if (prev >= 100) {
-          clearInterval(interval);
-          setAnalysisStatus('completed');
-          return 100;
-        }
-        return prev + 10;
-      });
-    }, 200);
+  const getConfidenceColor = (confidence: number) => {
+    if (confidence >= 90) return 'text-medsight-ai-high';
+    if (confidence >= 70) return 'text-medsight-ai-medium'; 
+    return 'text-medsight-ai-low';
   };
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'active': return 'bg-green-500/20 text-green-700 border-green-200/50';
-      case 'busy': return 'bg-yellow-500/20 text-yellow-700 border-yellow-200/50';
-      case 'offline': return 'bg-red-500/20 text-red-700 border-red-200/50';
-      default: return 'bg-gray-500/20 text-gray-700 border-gray-200/50';
+      case 'completed': return 'text-medsight-normal';
+      case 'processing': return 'text-medsight-pending';
+      case 'error': return 'text-medsight-abnormal';
+      default: return 'text-gray-500';
+    }
+  };
+
+  const getPriorityColor = (priority: string) => {
+    switch (priority) {
+      case 'high': return 'text-medsight-critical';
+      case 'medium': return 'text-medsight-pending';
+      case 'low': return 'text-medsight-normal';
+      default: return 'text-gray-500';
     }
   };
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="bg-white/60 backdrop-blur-xl rounded-2xl shadow-lg border border-white/20 p-6">
+    <div className={`min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 ${className}`}>
+      {/* Medical Header */}
+      <div className="medsight-glass p-6 mb-6">
         <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900 flex items-center">
-              <BeakerIcon className="w-8 h-8 text-purple-600 mr-3" />
-              AI Analysis Workspace
-            </h1>
-            <p className="text-gray-700 mt-1">Medical AI Diagnostic Tools and Analysis Platform</p>
-          </div>
-          <div className="flex items-center space-x-3">
-            <div className="text-right">
-              <div className="text-sm text-gray-600">System Load</div>
-              <div className="text-lg font-bold text-gray-900">23%</div>
+          <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-3">
+              <CpuChipIconSolid className="w-8 h-8 text-medsight-primary" />
+              <div>
+                <h1 className="text-2xl font-bold text-medsight-primary">AI Analysis Workspace</h1>
+                <p className="text-sm text-gray-600">Advanced Medical AI Analysis and Decision Support</p>
+              </div>
             </div>
-            <div className="w-2 h-8 bg-gradient-to-t from-blue-500 to-purple-500 rounded-full"></div>
           </div>
+          
+          <div className="flex items-center space-x-4">
+            {/* AI Status Indicator */}
+            <div className="flex items-center space-x-2 medsight-ai-glass px-3 py-2 rounded-lg">
+              <CpuChipIconSolid className={`w-5 h-5 ${aiProcessingStatus === 'processing' ? 'text-medsight-pending animate-pulse' : 'text-medsight-ai-high'}`} />
+              <span className="text-sm font-medium">
+                {aiProcessingStatus === 'processing' ? 'AI Processing...' : 'AI Ready'}
+              </span>
+            </div>
+
+            {/* Emergency Protocol */}
+            <button className="btn-medsight bg-medsight-critical/10 text-medsight-critical border-medsight-critical/30">
+              <ExclamationTriangleIcon className="w-4 h-4 mr-2" />
+              Emergency Analysis
+            </button>
+
+            {/* Real-time Toggle */}
+            <button 
+              onClick={() => setIsRealTimeMode(!isRealTimeMode)}
+              className={`btn-medsight ${isRealTimeMode ? 'bg-medsight-ai-high/20 text-medsight-ai-high' : ''}`}
+            >
+              <BoltIcon className="w-4 h-4 mr-2" />
+              Real-time: {isRealTimeMode ? 'ON' : 'OFF'}
+            </button>
+          </div>
+        </div>
+
+        {/* AI Workspace Tabs */}
+        <div className="flex space-x-1 mt-6">
+          {[
+            { id: 'inference', label: 'AI Inference', icon: CpuChipIcon },
+            { id: 'vision', label: 'Computer Vision', icon: EyeIcon },
+            { id: 'assistant', label: 'Medical Assistant', icon: ChatBubbleLeftEllipsisIcon },
+            { id: 'analytics', label: 'Predictive Analytics', icon: ChartBarIcon }
+          ].map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id as any)}
+              className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
+                activeTab === tab.id
+                  ? 'medsight-ai-glass text-medsight-ai-high border-medsight-ai-high/30'
+                  : 'medsight-glass text-gray-600 hover:text-medsight-primary'
+              }`}
+            >
+              <tab.icon className="w-4 h-4" />
+              <span>{tab.label}</span>
+            </button>
+          ))}
         </div>
       </div>
 
-      {/* Real-time Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <div className="bg-white/60 backdrop-blur-xl rounded-2xl shadow-lg border border-white/20 p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="text-sm font-semibold text-gray-600">Total Analyses</div>
-              <div className="text-2xl font-bold text-gray-900">{realTimeMetrics.totalAnalyses.toLocaleString()}</div>
-              <div className="text-sm text-blue-700 font-medium">Today</div>
-            </div>
-            <div className="p-3 bg-blue-500/20 rounded-xl">
-              <ChartBarIcon className="w-6 h-6 text-blue-700" />
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white/60 backdrop-blur-xl rounded-2xl shadow-lg border border-white/20 p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="text-sm font-semibold text-gray-600">AI Accuracy</div>
-              <div className="text-2xl font-bold text-gray-900">{realTimeMetrics.accuracy.toFixed(1)}%</div>
-              <div className="text-sm text-green-700 font-medium">Average</div>
-            </div>
-            <div className="p-3 bg-green-500/20 rounded-xl">
-              <CheckCircleIcon className="w-6 h-6 text-green-700" />
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white/60 backdrop-blur-xl rounded-2xl shadow-lg border border-white/20 p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="text-sm font-semibold text-gray-600">Avg Processing</div>
-              <div className="text-2xl font-bold text-gray-900">{realTimeMetrics.avgProcessingTime.toFixed(1)}s</div>
-              <div className="text-sm text-purple-700 font-medium">Per study</div>
-            </div>
-            <div className="p-3 bg-purple-500/20 rounded-xl">
-              <ClockIcon className="w-6 h-6 text-purple-700" />
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white/60 backdrop-blur-xl rounded-2xl shadow-lg border border-white/20 p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="text-sm font-semibold text-gray-600">Active Models</div>
-              <div className="text-2xl font-bold text-gray-900">{realTimeMetrics.modelsActive}</div>
-              <div className="text-sm text-orange-700 font-medium">Online</div>
-            </div>
-            <div className="p-3 bg-orange-500/20 rounded-xl">
-              <CpuChipIcon className="w-6 h-6 text-orange-700" />
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Main Content Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        
-        {/* AI Models */}
-        <div className="lg:col-span-2 space-y-6">
-          <div className="bg-white/60 backdrop-blur-xl rounded-2xl shadow-lg border border-white/20 p-6">
-            <h2 className="text-lg font-bold text-gray-900 mb-6">Available AI Models</h2>
-            <div className="space-y-4">
-              {aiModels.map((model) => (
-                <div
-                  key={model.id}
-                  className={`p-4 rounded-xl border backdrop-blur-sm transition-all duration-200 cursor-pointer ${
-                    selectedModel === model.id 
-                      ? 'bg-blue-500/20 border-blue-200/50' 
-                      : 'bg-white/50 border-white/30 hover:bg-white/70'
-                  }`}
-                  onClick={() => setSelectedModel(model.id)}
-                >
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center space-x-3 mb-2">
-                        <h3 className="font-semibold text-gray-900">{model.name}</h3>
-                        <span className={`px-2 py-1 rounded-lg text-xs font-medium border ${getStatusColor(model.status)}`}>
-                          {model.status}
-                        </span>
-                      </div>
-                      <p className="text-sm text-gray-600 mb-3">{model.description}</p>
-                      <div className="flex items-center space-x-4 text-xs text-gray-500">
-                        <span>Accuracy: {model.accuracy}%</span>
-                        <span>Version: {model.version}</span>
-                        <span>Modalities: {model.modalities.join(', ')}</span>
-                      </div>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <button className="p-2 bg-green-500/20 text-green-700 rounded-lg hover:bg-green-500/30 transition-colors">
-                        <PlayIcon className="w-4 h-4" />
-                      </button>
-                      <button className="p-2 bg-blue-500/20 text-blue-700 rounded-lg hover:bg-blue-500/30 transition-colors">
-                        <CpuChipIcon className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </div>
+      <div className="grid grid-cols-12 gap-6">
+        {/* Main AI Analysis Panel */}
+        <div className="col-span-8">
+          {activeTab === 'inference' && (
+            <div className="medsight-ai-glass p-6 rounded-xl">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-semibold text-medsight-primary flex items-center">
+                  <CpuChipIcon className="w-6 h-6 mr-2" />
+                  AI Inference Engine
+                </h2>
+                <div className="flex items-center space-x-2">
+                  <button
+                    onClick={handleStartAnalysis}
+                    disabled={aiProcessingStatus === 'processing'}
+                    className="btn-medsight bg-medsight-ai-high/20 text-medsight-ai-high"
+                  >
+                    <PlayIcon className="w-4 h-4 mr-2" />
+                    Start Analysis
+                  </button>
+                  <button
+                    onClick={handleStopAnalysis}
+                    className="btn-medsight bg-medsight-abnormal/20 text-medsight-abnormal"
+                  >
+                    <StopIcon className="w-4 h-4 mr-2" />
+                    Stop
+                  </button>
                 </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Analysis Controls */}
-          <div className="bg-white/60 backdrop-blur-xl rounded-2xl shadow-lg border border-white/20 p-6">
-            <h3 className="text-lg font-bold text-gray-900 mb-4">Run Analysis</h3>
-            <div className="space-y-4">
-              <div className="flex items-center space-x-4">
-                <select className="flex-1 px-4 py-2 rounded-xl bg-white/50 border border-white/30 text-gray-900">
-                  <option>Select Study to Analyze</option>
-                  <option>CT Chest - John Smith (P001234)</option>
-                  <option>MRI Brain - Sarah Johnson (P001235)</option>
-                  <option>X-Ray Chest - Robert Wilson (P001236)</option>
-                </select>
-                <button
-                  onClick={runAnalysis}
-                  disabled={analysisStatus === 'running'}
-                  className="px-6 py-2 bg-purple-500/20 text-purple-700 rounded-xl border border-purple-200/50 hover:bg-purple-500/30 transition-colors disabled:opacity-50 flex items-center space-x-2"
-                >
-                  {analysisStatus === 'running' ? (
-                    <>
-                      <ArrowPathIcon className="w-5 h-5 animate-spin" />
-                      <span>Analyzing...</span>
-                    </>
-                  ) : (
-                    <>
-                      <SparklesIcon className="w-5 h-5" />
-                      <span>Run Analysis</span>
-                    </>
-                  )}
-                </button>
               </div>
 
-              {analysisStatus === 'running' && (
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Progress</span>
-                    <span className="text-gray-900 font-medium">{progress}%</span>
+              {/* AI Model Selection */}
+              <div className="medsight-control-glass p-4 rounded-lg mb-6">
+                <h3 className="font-medium text-gray-800 mb-3">Active AI Models</h3>
+                <div className="grid grid-cols-3 gap-3">
+                  {['ResNet-50', 'U-Net', 'YOLO-v8', 'BERT-Clinical', 'Transformer-Med', 'GPT-Medical'].map((model) => (
+                    <label key={model} className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        checked={selectedModels.includes(model)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setSelectedModels([...selectedModels, model]);
+                          } else {
+                            setSelectedModels(selectedModels.filter(m => m !== model));
+                          }
+                        }}
+                        className="rounded border-gray-300 text-medsight-ai-high focus:ring-medsight-ai-high"
+                      />
+                      <span className="text-sm text-gray-700">{model}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              {/* Confidence Threshold */}
+              <div className="medsight-control-glass p-4 rounded-lg mb-6">
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="font-medium text-gray-800">Confidence Threshold</h3>
+                  <span className={`font-semibold ${getConfidenceColor(confidenceThreshold)}`}>
+                    {confidenceThreshold}%
+                  </span>
+                </div>
+                <input
+                  type="range"
+                  min="50"
+                  max="100"
+                  value={confidenceThreshold}
+                  onChange={(e) => setConfidenceThreshold(Number(e.target.value))}
+                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                />
+                <div className="flex justify-between text-xs text-gray-500 mt-1">
+                  <span>Low (50%)</span>
+                  <span>Medium (75%)</span>
+                  <span>High (100%)</span>
+                </div>
+              </div>
+
+              {/* AI Analysis Results */}
+              <div className="space-y-4">
+                <h3 className="font-semibold text-gray-800 flex items-center">
+                  <BeakerIcon className="w-5 h-5 mr-2" />
+                  Recent AI Analyses
+                </h3>
+                {analysisResults.map((analysis) => (
+                  <div
+                    key={analysis.id}
+                    className={`medsight-glass p-4 rounded-lg cursor-pointer transition-all duration-200 ${
+                      selectedAnalysis === analysis.id ? 'ring-2 ring-medsight-ai-high' : ''
+                    }`}
+                    onClick={() => setSelectedAnalysis(analysis.id)}
+                  >
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center space-x-3">
+                        <span className="font-medium text-gray-800">{analysis.studyType}</span>
+                        <span className="text-sm text-gray-600">Patient: {analysis.patientId}</span>
+                      </div>
+                      <div className="flex items-center space-x-3">
+                        <span className={`text-sm font-medium ${getStatusColor(analysis.status)}`}>
+                          {analysis.status}
+                        </span>
+                        <span className={`text-sm font-medium ${getPriorityColor(analysis.priority)}`}>
+                          {analysis.priority} priority
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between mb-3">
+                      <span className="text-sm text-gray-600">Model: {analysis.aiModel}</span>
+                      <div className="flex items-center space-x-2">
+                        {analysis.confidence > 0 && (
+                          <span className={`text-sm font-semibold ${getConfidenceColor(analysis.confidence)}`}>
+                            {analysis.confidence}% confidence
+                          </span>
+                        )}
+                        <span className="text-sm text-gray-500">{analysis.processingTime}</span>
+                      </div>
+                    </div>
+
+                    {analysis.findings.length > 0 && (
+                      <div className="space-y-2">
+                        {analysis.findings.map((finding, idx) => (
+                          <div key={idx} className="flex items-center justify-between text-sm">
+                            <span className={`${finding.type === 'normal' ? 'text-medsight-normal' : finding.type === 'abnormal' ? 'text-medsight-abnormal' : 'text-medsight-pending'}`}>
+                              {finding.description}
+                            </span>
+                            <span className={`font-medium ${getConfidenceColor(finding.confidence)}`}>
+                              {finding.confidence}%
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
-                  <div className="w-full bg-white/50 rounded-full h-2">
-                    <div 
-                      className="bg-gradient-to-r from-purple-500 to-blue-500 h-2 rounded-full transition-all duration-300"
-                      style={{ width: `${progress}%` }}
-                    ></div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'vision' && (
+            <div className="medsight-ai-glass p-6 rounded-xl">
+              <h2 className="text-xl font-semibold text-medsight-primary flex items-center mb-6">
+                <EyeIcon className="w-6 h-6 mr-2" />
+                Computer Vision Analysis
+              </h2>
+              
+              {/* Vision Analysis Panel */}
+              <div className="medsight-viewer-glass p-6 rounded-lg mb-6">
+                <div className="text-center text-white">
+                  <EyeIcon className="w-16 h-16 mx-auto mb-4 opacity-50" />
+                  <h3 className="text-lg font-medium mb-2">Medical Image Analysis</h3>
+                  <p className="text-sm opacity-75 mb-4">Upload or select medical images for AI-powered analysis</p>
+                  <button className="btn-medsight bg-white/20 text-white border-white/30">
+                    <CloudArrowUpIcon className="w-4 h-4 mr-2" />
+                    Upload Images
+                  </button>
+                </div>
+              </div>
+
+              {/* Detection Results */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="medsight-control-glass p-4 rounded-lg">
+                  <h3 className="font-medium text-gray-800 mb-3">Object Detection</h3>
+                  <div className="space-y-2">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm">Lung Nodules</span>
+                      <span className="text-sm font-medium text-medsight-abnormal">2 detected</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm">Anatomical Structures</span>
+                      <span className="text-sm font-medium text-medsight-normal">Complete</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm">Pathological Changes</span>
+                      <span className="text-sm font-medium text-medsight-pending">Analyzing...</span>
+                    </div>
                   </div>
                 </div>
-              )}
+
+                <div className="medsight-control-glass p-4 rounded-lg">
+                  <h3 className="font-medium text-gray-800 mb-3">Segmentation</h3>
+                  <div className="space-y-2">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm">Organ Segmentation</span>
+                      <span className="text-sm font-medium text-medsight-ai-high">96.8%</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm">Tissue Classification</span>
+                      <span className="text-sm font-medium text-medsight-ai-medium">87.2%</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm">Boundary Detection</span>
+                      <span className="text-sm font-medium text-medsight-ai-high">94.1%</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'assistant' && (
+            <div className="medsight-ai-glass p-6 rounded-xl">
+              <h2 className="text-xl font-semibold text-medsight-primary flex items-center mb-6">
+                <ChatBubbleLeftEllipsisIcon className="w-6 h-6 mr-2" />
+                Medical AI Assistant
+              </h2>
+
+              {/* Chat Interface */}
+              <div className="medsight-viewer-glass p-6 rounded-lg mb-4 min-h-[300px]">
+                                 <div className="space-y-4">
+                   <div className="flex items-start space-x-3">
+                     <CpuChipIconSolid className="w-8 h-8 text-medsight-ai-high mt-1" />
+                     <div className="medsight-ai-glass p-3 rounded-lg max-w-[80%]">
+                       <p className="text-sm text-gray-800">
+                         Hello! I'm your Medical AI Assistant. I can help with clinical decision support, 
+                         differential diagnosis, treatment recommendations, and medical literature review. 
+                         How can I assist you today?
+                       </p>
+                     </div>
+                   </div>
+
+                  <div className="flex items-start space-x-3 justify-end">
+                    <div className="medsight-control-glass p-3 rounded-lg max-w-[80%]">
+                      <p className="text-sm text-gray-800">
+                        Can you help me interpret the lung nodule findings from the recent CT scan?
+                      </p>
+                    </div>
+                    <UserIcon className="w-8 h-8 text-gray-400 mt-1" />
+                  </div>
+
+                                     <div className="flex items-start space-x-3">
+                     <CpuChipIconSolid className="w-8 h-8 text-medsight-ai-high mt-1" />
+                     <div className="medsight-ai-glass p-3 rounded-lg max-w-[80%]">
+                       <p className="text-sm text-gray-800 mb-2">
+                         Based on the AI analysis, I found a small nodule in the right upper lobe. 
+                         Here's my assessment:
+                       </p>
+                      <div className="space-y-1 text-xs">
+                        <div className="flex justify-between">
+                          <span>Size:</span>
+                          <span className="font-medium">8.5mm diameter</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Density:</span>
+                          <span className="font-medium">Solid</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Malignancy Risk:</span>
+                          <span className="font-medium text-medsight-ai-medium">Moderate (65%)</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Recommendation:</span>
+                          <span className="font-medium">Follow-up CT in 3-6 months</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Query Input */}
+              <div className="flex items-center space-x-3">
+                <input
+                  type="text"
+                  value={assistantQuery}
+                  onChange={(e) => setAssistantQuery(e.target.value)}
+                  placeholder="Ask about clinical findings, treatment options, or medical literature..."
+                  className="input-medsight flex-1"
+                />
+                <button className="btn-medsight bg-medsight-ai-high/20 text-medsight-ai-high">
+                  <ChatBubbleLeftEllipsisIcon className="w-4 h-4 mr-2" />
+                  Send
+                </button>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'analytics' && (
+            <div className="medsight-ai-glass p-6 rounded-xl">
+              <h2 className="text-xl font-semibold text-medsight-primary flex items-center mb-6">
+                <ChartBarIcon className="w-6 h-6 mr-2" />
+                Predictive Analytics
+              </h2>
+
+              {/* Predictive Models */}
+              <div className="grid grid-cols-2 gap-6">
+                {predictiveAnalytics.map((prediction, idx) => (
+                  <div key={idx} className="medsight-control-glass p-4 rounded-lg">
+                    <div className="flex items-center justify-between mb-3">
+                      <h3 className="font-medium text-gray-800">{prediction.prediction}</h3>
+                      <span className={`text-xs px-2 py-1 rounded-full ${
+                        prediction.confidence === 'high' ? 'bg-medsight-ai-high/20 text-medsight-ai-high' :
+                        prediction.confidence === 'medium' ? 'bg-medsight-ai-medium/20 text-medsight-ai-medium' :
+                        'bg-medsight-ai-low/20 text-medsight-ai-low'
+                      }`}>
+                        {prediction.confidence} confidence
+                      </span>
+                    </div>
+                    
+                    <div className="text-2xl font-bold text-gray-800 mb-2">
+                      {prediction.value}%
+                    </div>
+                    
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-gray-600">{prediction.timeframe}</span>
+                      <span className={`font-medium ${
+                        prediction.trend === 'improving' ? 'text-medsight-normal' :
+                        prediction.trend === 'stable' ? 'text-medsight-pending' :
+                        'text-medsight-abnormal'
+                      }`}>
+                        {prediction.trend}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Analytics Chart Placeholder */}
+              <div className="medsight-viewer-glass p-8 rounded-lg mt-6">
+                <div className="text-center text-white">
+                  <ChartBarIcon className="w-16 h-16 mx-auto mb-4 opacity-50" />
+                  <h3 className="text-lg font-medium mb-2">Predictive Analytics Dashboard</h3>
+                  <p className="text-sm opacity-75">Advanced medical outcome prediction and trend analysis</p>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Right Sidebar */}
+        <div className="col-span-4 space-y-6">
+          {/* AI Performance Metrics */}
+          <div className="medsight-glass p-6 rounded-xl">
+            <h3 className="font-semibold text-gray-800 mb-4 flex items-center">
+              <TrophyIcon className="w-5 h-5 mr-2" />
+              AI Performance
+            </h3>
+            <div className="space-y-3">
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-gray-600">Overall Accuracy</span>
+                <span className="font-semibold text-medsight-ai-high">96.8%</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-gray-600">Processing Speed</span>
+                <span className="font-semibold text-medsight-ai-medium">2.3s avg</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-gray-600">Models Active</span>
+                <span className="font-semibold text-gray-800">{selectedModels.length}/6</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-gray-600">Queue Length</span>
+                <span className="font-semibold text-gray-800">3 studies</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Knowledge Graph */}
+          <div className="medsight-glass p-6 rounded-xl">
+            <h3 className="font-semibold text-gray-800 mb-4 flex items-center">
+              <AcademicCapIcon className="w-5 h-5 mr-2" />
+              Medical Knowledge
+            </h3>
+            <div className="space-y-3">
+              {knowledgeGraph.map((item, idx) => (
+                <div key={idx} className="medsight-control-glass p-3 rounded-lg">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-medium text-gray-800">{item.topic}</span>
+                    <span className="text-xs text-medsight-ai-high">{item.relevance}%</span>
+                  </div>
+                  <p className="text-xs text-gray-600 mb-1">{item.summary}</p>
+                  <span className="text-xs text-gray-500">{item.source}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Quick Actions */}
+          <div className="medsight-glass p-6 rounded-xl">
+            <h3 className="font-semibold text-gray-800 mb-4 flex items-center">
+              <BoltIcon className="w-5 h-5 mr-2" />
+              Quick Actions
+            </h3>
+            <div className="space-y-2">
+              <button className="btn-medsight w-full justify-start">
+                <CloudArrowUpIcon className="w-4 h-4 mr-2" />
+                Batch Analysis
+              </button>
+              <button className="btn-medsight w-full justify-start">
+                <DocumentChartBarIcon className="w-4 h-4 mr-2" />
+                Generate Report
+              </button>
+              <button className="btn-medsight w-full justify-start">
+                <ShareIcon className="w-4 h-4 mr-2" />
+                Share Results
+              </button>
+              <button className="btn-medsight w-full justify-start">
+                <AdjustmentsHorizontalIcon className="w-4 h-4 mr-2" />
+                Model Settings
+              </button>
+            </div>
+          </div>
+
+          {/* Compliance & Security */}
+          <div className="medsight-glass p-6 rounded-xl">
+            <h3 className="font-semibold text-gray-800 mb-4 flex items-center">
+              <ShieldCheckIcon className="w-5 h-5 mr-2" />
+              Compliance
+            </h3>
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-gray-600">HIPAA Compliance</span>
+                <CheckCircleIconSolid className="w-4 h-4 text-medsight-normal" />
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-gray-600">FDA Validation</span>
+                <CheckCircleIconSolid className="w-4 h-4 text-medsight-normal" />
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-gray-600">Audit Trail</span>
+                <CheckCircleIconSolid className="w-4 h-4 text-medsight-normal" />
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-gray-600">Data Encryption</span>
+                <LockClosedIcon className="w-4 h-4 text-medsight-ai-high" />
+              </div>
             </div>
           </div>
         </div>
+      </div>
 
-        {/* Analysis Queue & Results */}
-        <div className="space-y-6">
-          <div className="bg-white/60 backdrop-blur-xl rounded-2xl shadow-lg border border-white/20 p-6">
-            <h3 className="text-lg font-bold text-gray-900 mb-4">Analysis Queue</h3>
-            <div className="space-y-3">
-              {pendingAnalyses.map((analysis) => (
-                <div key={analysis.id} className="p-3 bg-white/50 rounded-xl border border-white/30">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm font-medium text-gray-900">{analysis.patientId}</span>
-                    <span className={`text-xs px-2 py-1 rounded-lg ${
-                      analysis.priority === 'urgent' ? 'bg-red-500/20 text-red-700' : 'bg-blue-500/20 text-blue-700'
-                    }`}>
-                      {analysis.priority}
-                    </span>
-                  </div>
-                  <div className="text-xs text-gray-600 space-y-1">
-                    <div>{analysis.modality} - {analysis.bodyPart}</div>
-                    <div>Submitted: {analysis.submittedAt}</div>
-                    <div>ETA: {analysis.estimatedCompletion}</div>
-                  </div>
-                </div>
-              ))}
-            </div>
+      {/* Medical Footer */}
+      <div className="medsight-glass p-4 mt-6">
+        <div className="flex items-center justify-between text-sm text-gray-600">
+          <div className="flex items-center space-x-4">
+            <span className="flex items-center">
+              <HeartIcon className="w-4 h-4 mr-1 text-medsight-normal" />
+              AI Analysis System Active
+            </span>
+            <span className="flex items-center">
+              <FingerPrintIcon className="w-4 h-4 mr-1 text-medsight-ai-high" />
+              Session: {new Date().toLocaleTimeString()}
+            </span>
           </div>
-
-          <div className="bg-white/60 backdrop-blur-xl rounded-2xl shadow-lg border border-white/20 p-6">
-            <h3 className="text-lg font-bold text-gray-900 mb-4">Recent Results</h3>
-            <div className="space-y-3">
-              {completedAnalyses.map((result) => (
-                <div key={result.id} className="p-3 bg-white/50 rounded-xl border border-white/30">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm font-medium text-gray-900">{result.patientId}</span>
-                    <span className="text-xs text-green-700 font-medium">{result.confidence}%</span>
-                  </div>
-                  <div className="text-xs text-gray-600 space-y-1">
-                    <div>{result.modality} - {result.bodyPart}</div>
-                    <div>Completed: {result.completedAt}</div>
-                    <div>Processing: {result.processingTime}</div>
-                  </div>
-                  <div className="mt-2 text-xs">
-                    {result.findings.map((finding, index) => (
-                      <div key={index} className="text-gray-700">• {finding}</div>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
+          <div className="flex items-center space-x-4">
+            <span>MedSight Pro AI Analysis v2.4.1</span>
+            <span className="flex items-center">
+              <GlobeAltIcon className="w-4 h-4 mr-1" />
+              Connected to Medical AI Cloud
+            </span>
           </div>
         </div>
       </div>

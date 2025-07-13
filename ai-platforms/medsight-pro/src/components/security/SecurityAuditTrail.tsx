@@ -615,3 +615,4 @@ export function SecurityAuditTrail({ data = {} }: SecurityAuditTrailProps) {
     </div>
   );
 } 
+ 

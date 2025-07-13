@@ -803,7 +803,7 @@ export default function MeasurementTools({
                                 <span>Type: {measurement.type}</span>
                                 <span>By: {measurement.createdBy}</span>
                                 <span>{measurement.createdAt.toLocaleDateString()}</span>
-                                {measurement.calibrated && (
+                                {'calibrated' in measurement && measurement.calibrated && (
                                   <span className="text-green-600 flex items-center">
                                     <CheckIconSolid className="w-3 h-3 mr-1" />
                                     Calibrated

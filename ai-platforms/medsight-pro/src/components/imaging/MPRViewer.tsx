@@ -2,1805 +2,1006 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { 
-  Squares2X2Icon,
-  Square3Stack3DIcon,
+  PlayIcon, 
+  PauseIcon, 
+  ForwardIcon, 
+  BackwardIcon,
   ArrowsPointingOutIcon,
-  MagnifyingGlassIcon,
-  MagnifyingGlassMinusIcon,
-  MagnifyingGlassPlusIcon,
-  AdjustmentsHorizontalIcon,
+  ArrowsPointingInIcon,
+  ArrowUpIcon,
+  ArrowDownIcon,
+  ArrowLeftIcon,
+  ArrowRightIcon,
+  CubeIcon,
   EyeIcon,
   EyeSlashIcon,
-  ArrowPathIcon,
   Cog6ToothIcon,
-  PlusIcon,
-  MinusIcon,
-  XMarkIcon,
-  InformationCircleIcon,
-  ExclamationTriangleIcon,
-  CheckCircleIcon,
+  SparklesIcon,
+  BeakerIcon,
   ClockIcon,
-  ChartBarIcon,
+  CheckCircleIcon,
+  ExclamationTriangleIcon,
+  InformationCircleIcon,
+  UserGroupIcon,
   DocumentTextIcon,
+  ArrowPathIcon,
+  PresentationChartBarIcon,
+  CpuChipIcon,
+  AdjustmentsHorizontalIcon,
+  MagnifyingGlassIcon,
+  PhotoIcon,
+  Square3Stack3DIcon,
+  RectangleGroupIcon,
+  CircleStackIcon,
+  SunIcon,
+  MoonIcon,
+  LightBulbIcon,
+  ChartBarIcon,
+  PencilIcon,
   ShareIcon,
   ArrowDownTrayIcon,
-  PhotoIcon,
-  CubeIcon,
-  BeakerIcon,
-  HeartIcon,
-  CpuChipIcon,
-  AcademicCapIcon,
-  ShieldCheckIcon,
-  ComputerDesktopIcon,
-  PlayIcon,
-  PauseIcon,
-  ForwardIcon,
-  BackwardIcon,
-  SpeakerWaveIcon,
-  SpeakerXMarkIcon,
-  LockClosedIcon,
-  LockOpenIcon,
-  LinkIcon,
-  MapPinIcon,
-  CrosshairIcon,
-  ViewfinderCircleIcon
+  PrinterIcon,
+  ScissorsIcon,
+  ViewfinderCircleIcon,
+  CursorArrowRaysIcon,
+  PlusIcon,
+  MinusIcon,
+  XMarkIcon
 } from '@heroicons/react/24/outline';
-import { 
-  Squares2X2Icon as Squares2X2IconSolid,
-  EyeIcon as EyeIconSolid,
-  PlayIcon as PlayIconSolid,
-  PauseIcon as PauseIconSolid,
-  LockClosedIcon as LockClosedIconSolid
-} from '@heroicons/react/24/solid';
-import React from 'react';
-
-interface MPRSlice {
-  id: string;
-  seriesId: string;
-  orientation: 'axial' | 'coronal' | 'sagittal';
-  sliceIndex: number;
-  slicePosition: number; // mm
-  imageData: ArrayBuffer | null;
-  metadata: {
-    rows: number;
-    columns: number;
-    pixelSpacing: [number, number];
-    sliceThickness: number;
-    imagePosition: [number, number, number];
-    imageOrientation: [number, number, number, number, number, number];
-    windowCenter: number;
-    windowWidth: number;
-    rescaleIntercept: number;
-    rescaleSlope: number;
-  };
-  processed: boolean;
-  loadTime: number;
-}
-
-interface MPRSeries {
-  id: string;
-  studyId: string;
-  originalSeriesId: string;
-  modality: string;
-  seriesDescription: string;
-  axialSlices: MPRSlice[];
-  coronalSlices: MPRSlice[];
-  sagittalSlices: MPRSlice[];
-  volumeDimensions: [number, number, number]; // width, height, depth
-  voxelSpacing: [number, number, number]; // mm
-  loaded: boolean;
-  loading: boolean;
-  error?: string;
-}
-
-interface MPRViewSettings {
-  layout: 'quad' | 'axial' | 'coronal' | 'sagittal' | 'custom';
-  synchronized: boolean;
-  crosshairs: boolean;
-  referenceLines: boolean;
-  orientationLabels: boolean;
-  scaleBar: boolean;
-  windowLevel: number;
-  windowWidth: number;
-  zoom: number;
-  pan: { x: number; y: number };
-  interpolation: 'nearest' | 'linear' | 'cubic';
-  overlays: boolean;
-  measurements: boolean;
-  annotations: boolean;
-  colorInvert: boolean;
-  autoCenter: boolean;
-  linkZoom: boolean;
-  linkPan: boolean;
-  linkWindowing: boolean;
-}
-
-interface MPRCrosshair {
-  position: [number, number, number]; // x, y, z in world coordinates
-  visible: boolean;
-  color: string;
-  thickness: number;
-}
-
-interface ViewportInfo {
-  orientation: 'axial' | 'coronal' | 'sagittal';
-  sliceIndex: number;
-  slicePosition: number;
-  zoom: number;
-  pan: { x: number; y: number };
-  windowLevel: number;
-  windowWidth: number;
-  cursorPosition?: { x: number; y: number };
-  pixelValue?: number;
-  anatomicalPosition?: [number, number, number];
-}
 
 interface MPRViewerProps {
-  seriesData: MPRSeries | null;
-  onSliceChange?: (orientation: string, sliceIndex: number) => void;
-  onCrosshairMove?: (position: [number, number, number]) => void;
-  onMeasurement?: (measurement: any) => void;
-  onAnnotation?: (annotation: any) => void;
+  studyId?: string;
   className?: string;
-  readOnly?: boolean;
-  showControls?: boolean;
-  enableSynchronization?: boolean;
-  enableMeasurements?: boolean;
-  enableAnnotations?: boolean;
-  initialLayout?: 'quad' | 'axial' | 'coronal' | 'sagittal';
+  onPlaneChange?: (plane: string, slice: number) => void;
+  onMeasurement?: (measurement: any) => void;
+  onSynchronization?: (enabled: boolean) => void;
+  showCrosshairs?: boolean;
+  showMeasurements?: boolean;
+  showAnnotations?: boolean;
+  emergencyMode?: boolean;
+  collaborationMode?: boolean;
+}
+
+interface MPRState {
+  planes: {
+    axial: { slice: number; windowLevel: number; windowWidth: number; zoom: number; pan: { x: number; y: number } };
+    coronal: { slice: number; windowLevel: number; windowWidth: number; zoom: number; pan: { x: number; y: number } };
+    sagittal: { slice: number; windowLevel: number; windowWidth: number; zoom: number; pan: { x: number; y: number } };
+  };
+  crosshairs: {
+    enabled: boolean;
+    position: { x: number; y: number; z: number };
+    color: string;
+    thickness: number;
+    style: 'solid' | 'dashed' | 'dotted';
+  };
+  synchronization: {
+    enabled: boolean;
+    windowLevel: boolean;
+    zoom: boolean;
+    pan: boolean;
+    playback: boolean;
+  };
+  playback: {
+    isPlaying: boolean;
+    speed: number;
+    direction: 'forward' | 'backward';
+    loop: boolean;
+    activePane: 'axial' | 'coronal' | 'sagittal' | 'all';
+  };
+  layout: '2x2' | '1x3' | '3x1' | 'custom';
+  orientation: {
+    axial: 'R-L_A-P' | 'L-R_A-P' | 'R-L_P-A' | 'L-R_P-A';
+    coronal: 'R-L_S-I' | 'L-R_S-I' | 'R-L_I-S' | 'L-R_I-S';
+    sagittal: 'A-P_S-I' | 'P-A_S-I' | 'A-P_I-S' | 'P-A_I-S';
+  };
+  measurements: Array<{
+    id: string;
+    plane: 'axial' | 'coronal' | 'sagittal';
+    type: 'length' | 'area' | 'angle' | 'cross-reference';
+    coordinates: { x: number; y: number }[];
+    value: number;
+    unit: string;
+    slice: number;
+  }>;
+  annotations: Array<{
+    id: string;
+    plane: 'axial' | 'coronal' | 'sagittal';
+    type: 'text' | 'arrow' | 'circle';
+    position: { x: number; y: number };
+    text?: string;
+    slice: number;
+  }>;
+  presets: {
+    current: string;
+    available: string[];
+  };
+  imageData: {
+    axial: { sliceCount: number; dimensions: { width: number; height: number } };
+    coronal: { sliceCount: number; dimensions: { width: number; height: number } };
+    sagittal: { sliceCount: number; dimensions: { width: number; height: number } };
+    spacing: { x: number; y: number; z: number };
+    origin: { x: number; y: number; z: number };
+  };
+}
+
+interface WindowPreset {
+  name: string;
+  level: number;
+  width: number;
+  description: string;
 }
 
 export default function MPRViewer({
-  seriesData,
-  onSliceChange,
-  onCrosshairMove,
-  onMeasurement,
-  onAnnotation,
+  studyId,
   className = '',
-  readOnly = false,
-  showControls = true,
-  enableSynchronization = true,
-  enableMeasurements = true,
-  enableAnnotations = true,
-  initialLayout = 'quad'
+  onPlaneChange,
+  onMeasurement,
+  onSynchronization,
+  showCrosshairs = true,
+  showMeasurements = true,
+  showAnnotations = true,
+  emergencyMode = false,
+  collaborationMode = false
 }: MPRViewerProps) {
   const axialCanvasRef = useRef<HTMLCanvasElement>(null);
   const coronalCanvasRef = useRef<HTMLCanvasElement>(null);
   const sagittalCanvasRef = useRef<HTMLCanvasElement>(null);
-  const threeDCanvasRef = useRef<HTMLCanvasElement>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
+  const playbackIntervalRef = useRef<NodeJS.Timeout>();
 
-  const [viewSettings, setViewSettings] = useState<MPRViewSettings>({
-    layout: initialLayout,
-    synchronized: enableSynchronization,
-    crosshairs: true,
-    referenceLines: true,
-    orientationLabels: true,
-    scaleBar: true,
-    windowLevel: 40,
-    windowWidth: 400,
-    zoom: 1.0,
-    pan: { x: 0, y: 0 },
-    interpolation: 'linear',
-    overlays: true,
-    measurements: enableMeasurements,
-    annotations: enableAnnotations,
-    colorInvert: false,
-    autoCenter: true,
-    linkZoom: true,
-    linkPan: true,
-    linkWindowing: true
-  });
-
-  const [viewportInfos, setViewportInfos] = useState<Record<string, ViewportInfo>>({
-    axial: {
-      orientation: 'axial',
-      sliceIndex: 0,
-      slicePosition: 0,
-      zoom: 1.0,
-      pan: { x: 0, y: 0 },
-      windowLevel: 40,
-      windowWidth: 400
+  const [mprState, setMPRState] = useState<MPRState>({
+    planes: {
+      axial: { slice: 128, windowLevel: 40, windowWidth: 400, zoom: 1.0, pan: { x: 0, y: 0 } },
+      coronal: { slice: 128, windowLevel: 40, windowWidth: 400, zoom: 1.0, pan: { x: 0, y: 0 } },
+      sagittal: { slice: 128, windowLevel: 40, windowWidth: 400, zoom: 1.0, pan: { x: 0, y: 0 } }
     },
-    coronal: {
-      orientation: 'coronal',
-      sliceIndex: 0,
-      slicePosition: 0,
-      zoom: 1.0,
-      pan: { x: 0, y: 0 },
-      windowLevel: 40,
-      windowWidth: 400
+    crosshairs: {
+      enabled: showCrosshairs,
+      position: { x: 128, y: 128, z: 128 },
+      color: '#10b981',
+      thickness: 2,
+      style: 'solid'
     },
-    sagittal: {
-      orientation: 'sagittal',
-      sliceIndex: 0,
-      slicePosition: 0,
-      zoom: 1.0,
-      pan: { x: 0, y: 0 },
-      windowLevel: 40,
-      windowWidth: 400
+    synchronization: {
+      enabled: true,
+      windowLevel: true,
+      zoom: false,
+      pan: false,
+      playback: false
+    },
+    playback: {
+      isPlaying: false,
+      speed: 5,
+      direction: 'forward',
+      loop: true,
+      activePane: 'all'
+    },
+    layout: '2x2',
+    orientation: {
+      axial: 'R-L_A-P',
+      coronal: 'R-L_S-I',
+      sagittal: 'A-P_S-I'
+    },
+    measurements: [],
+    annotations: [],
+    presets: {
+      current: 'soft_tissue',
+      available: ['soft_tissue', 'bone', 'lung', 'brain', 'abdomen']
+    },
+    imageData: {
+      axial: { sliceCount: 256, dimensions: { width: 512, height: 512 } },
+      coronal: { sliceCount: 256, dimensions: { width: 512, height: 512 } },
+      sagittal: { sliceCount: 256, dimensions: { width: 512, height: 512 } },
+      spacing: { x: 0.7, y: 0.7, z: 5.0 },
+      origin: { x: 0, y: 0, z: 0 }
     }
   });
 
-  const [crosshair, setCrosshair] = useState<MPRCrosshair>({
-    position: [0, 0, 0],
-    visible: true,
-    color: '#00ff00',
-    thickness: 1
-  });
+  const [activePlane, setActivePlane] = useState<'axial' | 'coronal' | 'sagittal'>('axial');
+  const [selectedTool, setSelectedTool] = useState<string>('crosshair');
+  const [showControls, setShowControls] = useState(true);
+  const [showAdvanced, setShowAdvanced] = useState(false);
+  const [isDrawing, setIsDrawing] = useState(false);
+  const [currentDrawing, setCurrentDrawing] = useState<{ x: number; y: number }[]>([]);
 
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [showSettings, setShowSettings] = useState(false);
-  const [showInfo, setShowInfo] = useState(false);
-  const [activeTool, setActiveTool] = useState<string>('crosshair');
-  const [activeViewport, setActiveViewport] = useState<string>('axial');
-  const [isMouseDown, setIsMouseDown] = useState(false);
-  const [lastMousePosition, setLastMousePosition] = useState({ x: 0, y: 0 });
-
-  const layouts = [
-    { 
-      id: 'quad', 
-      name: 'Quad View', 
-      icon: Squares2X2IconSolid, 
-      description: 'Four-panel view with all orientations' 
-    },
-    { 
-      id: 'axial', 
-      name: 'Axial Only', 
-      icon: PhotoIcon, 
-      description: 'Axial view only' 
-    },
-    { 
-      id: 'coronal', 
-      name: 'Coronal Only', 
-      icon: PhotoIcon, 
-      description: 'Coronal view only' 
-    },
-    { 
-      id: 'sagittal', 
-      name: 'Sagittal Only', 
-      icon: PhotoIcon, 
-      description: 'Sagittal view only' 
-    }
+  const windowPresets: WindowPreset[] = [
+    { name: 'Soft Tissue', level: 40, width: 400, description: 'General soft tissue contrast' },
+    { name: 'Bone', level: 300, width: 1500, description: 'Bone detail visualization' },
+    { name: 'Lung', level: -500, width: 1500, description: 'Lung parenchyma and airways' },
+    { name: 'Brain', level: 40, width: 80, description: 'Brain tissue contrast' },
+    { name: 'Abdomen', level: 50, width: 350, description: 'Abdominal organ contrast' },
+    { name: 'Mediastinum', level: 50, width: 350, description: 'Mediastinal structures' }
   ];
 
-  const tools = [
-    {
-      id: 'crosshair',
-      name: 'Crosshair',
-      icon: ViewfinderCircleIcon,
-      description: 'Move crosshair cursor',
-      cursor: 'crosshair'
-    },
-    {
-      id: 'pan',
-      name: 'Pan',
-      icon: ArrowsPointingOutIcon,
-      description: 'Pan the image',
-      cursor: 'grab'
-    },
-    {
-      id: 'zoom',
-      name: 'Zoom',
-      icon: MagnifyingGlassIcon,
-      description: 'Zoom in/out',
-      cursor: 'zoom-in'
-    },
-    {
-      id: 'windowing',
-      name: 'Window/Level',
-      icon: AdjustmentsHorizontalIcon,
-      description: 'Adjust window/level',
-      cursor: 'ew-resize'
-    },
-    {
-      id: 'length',
-      name: 'Length',
-      icon: ChartBarIcon,
-      description: 'Measure length',
-      cursor: 'crosshair'
-    },
-    {
-      id: 'angle',
-      name: 'Angle',
-      icon: ChartBarIcon,
-      description: 'Measure angle',
-      cursor: 'crosshair'
-    }
-  ];
+  const handlePlaneNavigation = useCallback((plane: 'axial' | 'coronal' | 'sagittal', direction: 'next' | 'prev') => {
+    setMPRState(prev => {
+      const currentSlice = prev.planes[plane].slice;
+      const maxSlice = prev.imageData[plane].sliceCount - 1;
+      const newSlice = direction === 'next' 
+        ? Math.min(currentSlice + 1, maxSlice)
+        : Math.max(currentSlice - 1, 0);
 
-  const orientationPresets = [
-    {
-      id: 'head_feet',
-      name: 'Head-Feet',
-      icon: AcademicCapIcon,
-      description: 'Standard head-to-feet orientation'
-    },
-    {
-      id: 'anterior_posterior',
-      name: 'Anterior-Posterior',
-      icon: HeartIcon,
-      description: 'Front-to-back orientation'
-    },
-    {
-      id: 'left_right',
-      name: 'Left-Right',
-      icon: CpuChipIcon,
-      description: 'Left-to-right orientation'
-    },
-    {
-      id: 'radiological',
-      name: 'Radiological',
-      icon: ShieldCheckIcon,
-      description: 'Radiological convention'
-    },
-    {
-      id: 'neurological',
-      name: 'Neurological',
-      icon: CpuChipIcon,
-      description: 'Neurological convention'
-    }
-  ];
-
-  useEffect(() => {
-    if (seriesData) {
-      initializeMPRViewer();
-    }
-  }, [seriesData]);
-
-  useEffect(() => {
-    renderAllViews();
-  }, [viewSettings, viewportInfos, crosshair]);
-
-  const initializeMPRViewer = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-
-      if (!seriesData) {
-        throw new Error('No MPR series data provided');
-      }
-
-      // Initialize viewport positions to center slices
-      const axialCenter = Math.floor(seriesData.axialSlices.length / 2);
-      const coronalCenter = Math.floor(seriesData.coronalSlices.length / 2);
-      const sagittalCenter = Math.floor(seriesData.sagittalSlices.length / 2);
-
-      setViewportInfos({
-        axial: {
-          orientation: 'axial',
-          sliceIndex: axialCenter,
-          slicePosition: seriesData.axialSlices[axialCenter]?.slicePosition || 0,
-          zoom: 1.0,
-          pan: { x: 0, y: 0 },
-          windowLevel: seriesData.axialSlices[0]?.metadata.windowCenter || 40,
-          windowWidth: seriesData.axialSlices[0]?.metadata.windowWidth || 400
-        },
-        coronal: {
-          orientation: 'coronal',
-          sliceIndex: coronalCenter,
-          slicePosition: seriesData.coronalSlices[coronalCenter]?.slicePosition || 0,
-          zoom: 1.0,
-          pan: { x: 0, y: 0 },
-          windowLevel: seriesData.coronalSlices[0]?.metadata.windowCenter || 40,
-          windowWidth: seriesData.coronalSlices[0]?.metadata.windowWidth || 400
-        },
-        sagittal: {
-          orientation: 'sagittal',
-          sliceIndex: sagittalCenter,
-          slicePosition: seriesData.sagittalSlices[sagittalCenter]?.slicePosition || 0,
-          zoom: 1.0,
-          pan: { x: 0, y: 0 },
-          windowLevel: seriesData.sagittalSlices[0]?.metadata.windowCenter || 40,
-          windowWidth: seriesData.sagittalSlices[0]?.metadata.windowWidth || 400
-        }
-      });
-
-      // Set initial crosshair position to volume center
-      const [width, height, depth] = seriesData.volumeDimensions;
-      setCrosshair(prev => ({
+      const newState = {
         ...prev,
-        position: [width / 2, height / 2, depth / 2]
-      }));
-
-      // Set initial window/level
-      const initialWL = seriesData.axialSlices[0]?.metadata.windowCenter || 40;
-      const initialWW = seriesData.axialSlices[0]?.metadata.windowWidth || 400;
-      setViewSettings(prev => ({
-        ...prev,
-        windowLevel: initialWL,
-        windowWidth: initialWW
-      }));
-
-      setLoading(false);
-    } catch (error) {
-      console.error('Error initializing MPR viewer:', error);
-      setError(error instanceof Error ? error.message : 'Failed to initialize MPR viewer');
-      setLoading(false);
-    }
-  };
-
-  const renderAllViews = useCallback(() => {
-    if (!seriesData) return;
-
-    renderView('axial', axialCanvasRef.current);
-    renderView('coronal', coronalCanvasRef.current);
-    renderView('sagittal', sagittalCanvasRef.current);
-    
-    if (viewSettings.layout === 'quad') {
-      render3DView(threeDCanvasRef.current);
-    }
-  }, [seriesData, viewSettings, viewportInfos, crosshair]);
-
-  const renderView = (orientation: 'axial' | 'coronal' | 'sagittal', canvas: HTMLCanvasElement | null) => {
-    if (!canvas || !seriesData) return;
-
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    // Resize canvas to container
-    const parent = canvas.parentElement;
-    if (parent) {
-      canvas.width = parent.clientWidth;
-      canvas.height = parent.clientHeight;
-    }
-
-    // Clear canvas
-    ctx.fillStyle = '#000000';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    const viewport = viewportInfos[orientation];
-    if (!viewport) return;
-
-    // Get current slice data
-    let slices: MPRSlice[];
-    switch (orientation) {
-      case 'axial':
-        slices = seriesData.axialSlices;
-        break;
-      case 'coronal':
-        slices = seriesData.coronalSlices;
-        break;
-      case 'sagittal':
-        slices = seriesData.sagittalSlices;
-        break;
-      default:
-        return;
-    }
-
-    if (slices.length === 0 || viewport.sliceIndex >= slices.length) return;
-
-    const currentSlice = slices[viewport.sliceIndex];
-    
-    // Mock image rendering with gradient pattern
-    const imageWidth = currentSlice.metadata.columns;
-    const imageHeight = currentSlice.metadata.rows;
-    
-    // Calculate display dimensions with zoom and pan
-    const scaledWidth = imageWidth * viewport.zoom;
-    const scaledHeight = imageHeight * viewport.zoom;
-    const x = (canvas.width - scaledWidth) / 2 + viewport.pan.x;
-    const y = (canvas.height - scaledHeight) / 2 + viewport.pan.y;
-
-    // Apply window/level to create mock image
-    const normalizedLevel = (viewport.windowLevel + 1024) / 4096;
-    const normalizedWidth = viewport.windowWidth / 4096;
-    
-    // Create anatomical pattern based on orientation
-    let gradient;
-    const centerX = x + scaledWidth / 2;
-    const centerY = y + scaledHeight / 2;
-    
-    switch (orientation) {
-      case 'axial':
-        // Circular pattern for axial slices
-        gradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, Math.min(scaledWidth, scaledHeight) / 3);
-        break;
-      case 'coronal':
-        // Vertical gradient for coronal slices
-        gradient = ctx.createLinearGradient(x, y, x, y + scaledHeight);
-        break;
-      case 'sagittal':
-        // Horizontal gradient for sagittal slices
-        gradient = ctx.createLinearGradient(x, y, x + scaledWidth, y);
-        break;
-    }
-
-    if (viewSettings.colorInvert) {
-      gradient.addColorStop(0, `rgb(${255 - Math.floor(normalizedLevel * 255)}, ${255 - Math.floor(normalizedLevel * 255)}, ${255 - Math.floor(normalizedLevel * 255)})`);
-      gradient.addColorStop(1, `rgb(${255 - Math.floor((normalizedLevel + normalizedWidth) * 255)}, ${255 - Math.floor((normalizedLevel + normalizedWidth) * 255)}, ${255 - Math.floor((normalizedLevel + normalizedWidth) * 255)})`);
-    } else {
-      gradient.addColorStop(0, `rgb(${Math.floor(normalizedLevel * 255)}, ${Math.floor(normalizedLevel * 255)}, ${Math.floor(normalizedLevel * 255)})`);
-      gradient.addColorStop(1, `rgb(${Math.floor((normalizedLevel + normalizedWidth) * 255)}, ${Math.floor((normalizedLevel + normalizedWidth) * 255)}, ${Math.floor((normalizedLevel + normalizedWidth) * 255)})`);
-    }
-
-    ctx.fillStyle = gradient;
-    ctx.fillRect(x, y, scaledWidth, scaledHeight);
-
-    // Add mock anatomical structures
-    ctx.strokeStyle = viewSettings.colorInvert ? '#333333' : '#cccccc';
-    ctx.lineWidth = 1;
-    ctx.setLineDash([3, 3]);
-    
-    // Draw orientation-specific structures
-    switch (orientation) {
-      case 'axial':
-        // Draw some ellipses for organs
-        for (let i = 0; i < 2; i++) {
-          ctx.beginPath();
-          const orgX = centerX + (Math.random() - 0.5) * scaledWidth * 0.5;
-          const orgY = centerY + (Math.random() - 0.5) * scaledHeight * 0.5;
-          ctx.ellipse(orgX, orgY, scaledWidth * 0.1, scaledHeight * 0.15, Math.random() * Math.PI, 0, 2 * Math.PI);
-          ctx.stroke();
+        planes: {
+          ...prev.planes,
+          [plane]: { ...prev.planes[plane], slice: newSlice }
         }
-        break;
-      case 'coronal':
-        // Draw spine and ribs
-        ctx.beginPath();
-        ctx.moveTo(centerX, y);
-        ctx.lineTo(centerX, y + scaledHeight);
-        ctx.stroke();
-        
-        for (let i = 0; i < 8; i++) {
-          const ribY = y + (i + 2) * scaledHeight / 12;
-          ctx.beginPath();
-          ctx.arc(centerX, ribY, scaledWidth * 0.2, 0, Math.PI);
-          ctx.stroke();
-        }
-        break;
-      case 'sagittal':
-        // Draw vertebrae
-        for (let i = 0; i < 12; i++) {
-          const vertY = y + (i + 1) * scaledHeight / 14;
-          ctx.beginPath();
-          ctx.rect(centerX - scaledWidth * 0.05, vertY - scaledHeight * 0.02, scaledWidth * 0.1, scaledHeight * 0.04);
-          ctx.stroke();
-        }
-        break;
-    }
-
-    ctx.setLineDash([]);
-
-    // Render crosshairs
-    if (viewSettings.crosshairs && crosshair.visible) {
-      renderCrosshairs(ctx, canvas, orientation);
-    }
-
-    // Render reference lines
-    if (viewSettings.referenceLines) {
-      renderReferenceLines(ctx, canvas, orientation);
-    }
-
-    // Render overlays
-    if (viewSettings.overlays) {
-      renderOverlays(ctx, canvas, orientation, currentSlice);
-    }
-
-    // Render orientation labels
-    if (viewSettings.orientationLabels) {
-      renderOrientationLabels(ctx, canvas, orientation);
-    }
-
-    // Render scale bar
-    if (viewSettings.scaleBar) {
-      renderScaleBar(ctx, canvas, currentSlice);
-    }
-  };
-
-  const render3DView = (canvas: HTMLCanvasElement | null) => {
-    if (!canvas || !seriesData) return;
-
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    // Resize canvas to container
-    const parent = canvas.parentElement;
-    if (parent) {
-      canvas.width = parent.clientWidth;
-      canvas.height = parent.clientHeight;
-    }
-
-    // Clear canvas
-    ctx.fillStyle = '#111111';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    // Draw 3D volume outline
-    const centerX = canvas.width / 2;
-    const centerY = canvas.height / 2;
-    const size = Math.min(canvas.width, canvas.height) * 0.3;
-
-    // Draw 3D cube wireframe
-    ctx.strokeStyle = '#ffffff';
-    ctx.lineWidth = 2;
-    
-    // Front face
-    ctx.strokeRect(centerX - size/2, centerY - size/2, size, size);
-    
-    // Back face (offset for 3D effect)
-    const offset = size * 0.2;
-    ctx.strokeRect(centerX - size/2 + offset, centerY - size/2 - offset, size, size);
-    
-    // Connecting lines
-    ctx.beginPath();
-    ctx.moveTo(centerX - size/2, centerY - size/2);
-    ctx.lineTo(centerX - size/2 + offset, centerY - size/2 - offset);
-    ctx.moveTo(centerX + size/2, centerY - size/2);
-    ctx.lineTo(centerX + size/2 + offset, centerY - size/2 - offset);
-    ctx.moveTo(centerX - size/2, centerY + size/2);
-    ctx.lineTo(centerX - size/2 + offset, centerY + size/2 - offset);
-    ctx.moveTo(centerX + size/2, centerY + size/2);
-    ctx.lineTo(centerX + size/2 + offset, centerY + size/2 - offset);
-    ctx.stroke();
-
-    // Draw crosshair planes
-    if (crosshair.visible) {
-      ctx.strokeStyle = crosshair.color;
-      ctx.lineWidth = 2;
-      ctx.setLineDash([5, 5]);
-      
-      // Axial plane (horizontal)
-      const axialY = centerY + (crosshair.position[2] / seriesData.volumeDimensions[2] - 0.5) * size;
-      ctx.beginPath();
-      ctx.moveTo(centerX - size/2, axialY);
-      ctx.lineTo(centerX + size/2, axialY);
-      ctx.stroke();
-      
-      // Coronal plane (vertical)
-      const coronalX = centerX + (crosshair.position[1] / seriesData.volumeDimensions[1] - 0.5) * size;
-      ctx.beginPath();
-      ctx.moveTo(coronalX, centerY - size/2);
-      ctx.lineTo(coronalX, centerY + size/2);
-      ctx.stroke();
-      
-      // Sagittal plane (diagonal for perspective)
-      const sagittalX = centerX + (crosshair.position[0] / seriesData.volumeDimensions[0] - 0.5) * size;
-      ctx.beginPath();
-      ctx.moveTo(sagittalX, centerY - size/2);
-      ctx.lineTo(sagittalX + offset, centerY - size/2 - offset);
-      ctx.moveTo(sagittalX, centerY + size/2);
-      ctx.lineTo(sagittalX + offset, centerY + size/2 - offset);
-      ctx.stroke();
-      
-      ctx.setLineDash([]);
-    }
-
-    // Draw labels
-    ctx.fillStyle = '#ffffff';
-    ctx.font = '12px Arial';
-    ctx.textAlign = 'center';
-    ctx.fillText('3D Volume', centerX, canvas.height - 10);
-  };
-
-  const renderCrosshairs = (ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement, orientation: string) => {
-    if (!seriesData) return;
-
-    ctx.strokeStyle = crosshair.color;
-    ctx.lineWidth = crosshair.thickness;
-    ctx.setLineDash([]);
-
-    const viewport = viewportInfos[orientation];
-    if (!viewport) return;
-
-    // Calculate crosshair position on this view
-    let crossX = canvas.width / 2;
-    let crossY = canvas.height / 2;
-
-    // Project 3D crosshair position to 2D view
-    switch (orientation) {
-      case 'axial':
-        crossX = (crosshair.position[0] / seriesData.volumeDimensions[0]) * canvas.width;
-        crossY = (crosshair.position[1] / seriesData.volumeDimensions[1]) * canvas.height;
-        break;
-      case 'coronal':
-        crossX = (crosshair.position[0] / seriesData.volumeDimensions[0]) * canvas.width;
-        crossY = (crosshair.position[2] / seriesData.volumeDimensions[2]) * canvas.height;
-        break;
-      case 'sagittal':
-        crossX = (crosshair.position[1] / seriesData.volumeDimensions[1]) * canvas.width;
-        crossY = (crosshair.position[2] / seriesData.volumeDimensions[2]) * canvas.height;
-        break;
-    }
-
-    // Draw crosshair lines
-    ctx.beginPath();
-    ctx.moveTo(0, crossY);
-    ctx.lineTo(canvas.width, crossY);
-    ctx.moveTo(crossX, 0);
-    ctx.lineTo(crossX, canvas.height);
-    ctx.stroke();
-  };
-
-  const renderReferenceLines = (ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement, orientation: string) => {
-    ctx.strokeStyle = '#ffff00';
-    ctx.lineWidth = 1;
-    ctx.setLineDash([10, 5]);
-
-    // Draw reference lines for other plane positions
-    const otherViewports = Object.entries(viewportInfos).filter(([key]) => key !== orientation);
-    
-    otherViewports.forEach(([key, viewport], index) => {
-      const color = index === 0 ? '#ff0000' : '#0000ff';
-      ctx.strokeStyle = color;
-      
-      let linePos = 0;
-      
-      // Calculate where the other plane intersects this view
-      switch (orientation) {
-        case 'axial':
-          if (key === 'coronal') {
-            linePos = (viewport.slicePosition / 100) * canvas.height; // Mock calculation
-          } else if (key === 'sagittal') {
-            linePos = (viewport.slicePosition / 100) * canvas.width;
-          }
-          break;
-        // Add other cases as needed
-      }
-      
-      // Draw the reference line
-      if (key === 'coronal' && orientation === 'axial') {
-        ctx.beginPath();
-        ctx.moveTo(0, linePos);
-        ctx.lineTo(canvas.width, linePos);
-        ctx.stroke();
-      } else if (key === 'sagittal' && orientation === 'axial') {
-        ctx.beginPath();
-        ctx.moveTo(linePos, 0);
-        ctx.lineTo(linePos, canvas.height);
-        ctx.stroke();
-      }
-    });
-
-    ctx.setLineDash([]);
-  };
-
-  const renderOverlays = (ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement, orientation: string, slice: MPRSlice) => {
-    ctx.fillStyle = '#ffffff';
-    ctx.font = '12px Arial';
-    ctx.textAlign = 'left';
-
-    // Top left - Orientation and slice info
-    const topLeftInfo = [
-      `${orientation.toUpperCase()}`,
-      `Slice: ${slice.sliceIndex + 1}/${getSliceCount(orientation)}`,
-      `Position: ${slice.slicePosition.toFixed(1)}mm`
-    ];
-
-    topLeftInfo.forEach((text, index) => {
-      ctx.fillText(text, 10, 20 + index * 15);
-    });
-
-    // Top right - Technical info
-    ctx.textAlign = 'right';
-    const viewport = viewportInfos[orientation];
-    if (viewport) {
-      const topRightInfo = [
-        `WL: ${viewport.windowLevel} WW: ${viewport.windowWidth}`,
-        `Zoom: ${(viewport.zoom * 100).toFixed(0)}%`,
-        `${slice.metadata.rows}×${slice.metadata.columns}`
-      ];
-
-      topRightInfo.forEach((text, index) => {
-        ctx.fillText(text, canvas.width - 10, 20 + index * 15);
-      });
-    }
-
-    // Bottom left - Pixel spacing
-    ctx.textAlign = 'left';
-    const bottomLeftInfo = [
-      `Pixel: ${slice.metadata.pixelSpacing.map(p => p.toFixed(2)).join('×')}mm`,
-      `Thickness: ${slice.metadata.sliceThickness.toFixed(1)}mm`
-    ];
-
-    bottomLeftInfo.forEach((text, index) => {
-      ctx.fillText(text, 10, canvas.height - 30 + index * 15);
-    });
-
-    // Bottom right - Cursor info
-    if (viewport?.cursorPosition && viewport?.pixelValue !== undefined) {
-      ctx.textAlign = 'right';
-      const bottomRightInfo = [
-        `X: ${viewport.cursorPosition.x.toFixed(0)} Y: ${viewport.cursorPosition.y.toFixed(0)}`,
-        `Value: ${viewport.pixelValue.toFixed(0)}`
-      ];
-
-      bottomRightInfo.forEach((text, index) => {
-        ctx.fillText(text, canvas.width - 10, canvas.height - 30 + index * 15);
-      });
-    }
-  };
-
-  const renderOrientationLabels = (ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement, orientation: string) => {
-    ctx.fillStyle = '#ffff00';
-    ctx.font = 'bold 14px Arial';
-    ctx.textAlign = 'center';
-
-    const labels = getOrientationLabels(orientation);
-    
-    // Top
-    ctx.fillText(labels.top, canvas.width / 2, 20);
-    // Bottom
-    ctx.fillText(labels.bottom, canvas.width / 2, canvas.height - 10);
-    // Left
-    ctx.save();
-    ctx.translate(15, canvas.height / 2);
-    ctx.rotate(-Math.PI / 2);
-    ctx.fillText(labels.left, 0, 0);
-    ctx.restore();
-    // Right
-    ctx.save();
-    ctx.translate(canvas.width - 15, canvas.height / 2);
-    ctx.rotate(Math.PI / 2);
-    ctx.fillText(labels.right, 0, 0);
-    ctx.restore();
-  };
-
-  const renderScaleBar = (ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement, slice: MPRSlice) => {
-    const pixelSpacing = slice.metadata.pixelSpacing[0]; // Assume square pixels
-    const scaleLength = 50; // pixels
-    const realLength = scaleLength * pixelSpacing; // mm
-
-    ctx.strokeStyle = '#ffffff';
-    ctx.fillStyle = '#ffffff';
-    ctx.lineWidth = 2;
-    ctx.font = '12px Arial';
-
-    const x = canvas.width - 80;
-    const y = canvas.height - 30;
-
-    // Draw scale bar
-    ctx.beginPath();
-    ctx.moveTo(x, y);
-    ctx.lineTo(x + scaleLength, y);
-    ctx.moveTo(x, y - 5);
-    ctx.lineTo(x, y + 5);
-    ctx.moveTo(x + scaleLength, y - 5);
-    ctx.lineTo(x + scaleLength, y + 5);
-    ctx.stroke();
-
-    // Draw label
-    ctx.textAlign = 'center';
-    ctx.fillText(`${realLength.toFixed(1)}mm`, x + scaleLength / 2, y - 10);
-  };
-
-  const getSliceCount = (orientation: string): number => {
-    if (!seriesData) return 0;
-    
-    switch (orientation) {
-      case 'axial':
-        return seriesData.axialSlices.length;
-      case 'coronal':
-        return seriesData.coronalSlices.length;
-      case 'sagittal':
-        return seriesData.sagittalSlices.length;
-      default:
-        return 0;
-    }
-  };
-
-  const getOrientationLabels = (orientation: string) => {
-    // Standard anatomical orientation labels
-    switch (orientation) {
-      case 'axial':
-        return {
-          top: 'A', // Anterior
-          bottom: 'P', // Posterior
-          left: 'R', // Right (radiological convention)
-          right: 'L' // Left
-        };
-      case 'coronal':
-        return {
-          top: 'S', // Superior
-          bottom: 'I', // Inferior
-          left: 'R', // Right
-          right: 'L' // Left
-        };
-      case 'sagittal':
-        return {
-          top: 'S', // Superior
-          bottom: 'I', // Inferior
-          left: 'A', // Anterior
-          right: 'P' // Posterior
-        };
-      default:
-        return { top: '', bottom: '', left: '', right: '' };
-    }
-  };
-
-  const handleCanvasMouseDown = (event: React.MouseEvent<HTMLCanvasElement>, orientation: string) => {
-    setIsMouseDown(true);
-    setActiveViewport(orientation);
-    
-    const rect = event.currentTarget.getBoundingClientRect();
-    const x = event.clientX - rect.left;
-    const y = event.clientY - rect.top;
-    setLastMousePosition({ x, y });
-
-    // Update cursor position and pixel value
-    updateCursorInfo(x, y, orientation);
-
-    if (activeTool === 'crosshair') {
-      updateCrosshairPosition(x, y, orientation);
-    }
-  };
-
-  const handleCanvasMouseMove = (event: React.MouseEvent<HTMLCanvasElement>, orientation: string) => {
-    const rect = event.currentTarget.getBoundingClientRect();
-    const x = event.clientX - rect.left;
-    const y = event.clientY - rect.top;
-
-    // Always update cursor info
-    updateCursorInfo(x, y, orientation);
-
-    if (isMouseDown && activeViewport === orientation) {
-      const deltaX = x - lastMousePosition.x;
-      const deltaY = y - lastMousePosition.y;
-
-      switch (activeTool) {
-        case 'crosshair':
-          updateCrosshairPosition(x, y, orientation);
-          break;
-        case 'pan':
-          updateViewportPan(orientation, deltaX, deltaY);
-          break;
-        case 'zoom':
-          updateViewportZoom(orientation, deltaY);
-          break;
-        case 'windowing':
-          updateViewportWindowing(orientation, deltaX, deltaY);
-          break;
-      }
-
-      setLastMousePosition({ x, y });
-    }
-  };
-
-  const handleCanvasMouseUp = () => {
-    setIsMouseDown(false);
-  };
-
-  const handleCanvasWheel = (event: React.WheelEvent<HTMLCanvasElement>, orientation: string) => {
-    event.preventDefault();
-    
-    if (event.ctrlKey) {
-      // Zoom with Ctrl+Wheel
-      const zoomDelta = event.deltaY > 0 ? -0.1 : 0.1;
-      updateViewportZoom(orientation, zoomDelta * 100);
-    } else {
-      // Navigate slices with Wheel
-      const direction = event.deltaY > 0 ? 1 : -1;
-      navigateSlice(orientation, direction);
-    }
-  };
-
-  const updateCursorInfo = (x: number, y: number, orientation: string) => {
-    // Mock pixel value calculation
-    const pixelValue = Math.floor(Math.random() * 4096 - 1024);
-    
-    setViewportInfos(prev => ({
-      ...prev,
-      [orientation]: {
-        ...prev[orientation],
-        cursorPosition: { x, y },
-        pixelValue
-      }
-    }));
-  };
-
-  const updateCrosshairPosition = (x: number, y: number, orientation: string) => {
-    if (!seriesData) return;
-
-    const canvas = getCanvasForOrientation(orientation);
-    if (!canvas) return;
-
-    // Convert canvas coordinates to volume coordinates
-    const volumeX = (x / canvas.width) * seriesData.volumeDimensions[0];
-    const volumeY = (y / canvas.height) * seriesData.volumeDimensions[1];
-    const volumeZ = viewportInfos[orientation].sliceIndex;
-
-    let newPosition: [number, number, number];
-    
-    switch (orientation) {
-      case 'axial':
-        newPosition = [volumeX, volumeY, volumeZ];
-        break;
-      case 'coronal':
-        newPosition = [volumeX, volumeZ, volumeY];
-        break;
-      case 'sagittal':
-        newPosition = [volumeZ, volumeX, volumeY];
-        break;
-      default:
-        return;
-    }
-
-    setCrosshair(prev => ({ ...prev, position: newPosition }));
-    onCrosshairMove?.(newPosition);
-
-    // Update corresponding slice positions if synchronized
-    if (viewSettings.synchronized) {
-      synchronizeCrosshair(newPosition, orientation);
-    }
-  };
-
-  const synchronizeCrosshair = (position: [number, number, number], sourceOrientation: string) => {
-    if (!seriesData) return;
-
-    const [x, y, z] = position;
-    
-    // Calculate corresponding slice indices for other orientations
-    const updates: Partial<Record<string, Partial<ViewportInfo>>> = {};
-    
-    Object.keys(viewportInfos).forEach(orientation => {
-      if (orientation === sourceOrientation) return;
-      
-      let newSliceIndex = 0;
-      
-      switch (orientation) {
-        case 'axial':
-          newSliceIndex = Math.floor(z);
-          break;
-        case 'coronal':
-          newSliceIndex = Math.floor(y);
-          break;
-        case 'sagittal':
-          newSliceIndex = Math.floor(x);
-          break;
-      }
-      
-      const maxSlices = getSliceCount(orientation);
-      newSliceIndex = Math.max(0, Math.min(maxSlices - 1, newSliceIndex));
-      
-      updates[orientation] = {
-        sliceIndex: newSliceIndex,
-        slicePosition: getSlicePosition(orientation, newSliceIndex)
       };
-    });
 
-    setViewportInfos(prev => {
-      const newState = { ...prev };
-      Object.entries(updates).forEach(([orientation, update]) => {
-        newState[orientation] = { ...newState[orientation], ...update };
-      });
+      // Update crosshair position if synchronized
+      if (prev.synchronization.enabled) {
+        const crosshairPos = { ...prev.crosshairs.position };
+        if (plane === 'axial') crosshairPos.z = newSlice;
+        else if (plane === 'coronal') crosshairPos.y = newSlice;
+        else if (plane === 'sagittal') crosshairPos.x = newSlice;
+
+        newState.crosshairs = { ...prev.crosshairs, position: crosshairPos };
+      }
+
+      onPlaneChange?.(plane, newSlice);
       return newState;
     });
-  };
+  }, [onPlaneChange]);
 
-  const getCanvasForOrientation = (orientation: string): HTMLCanvasElement | null => {
-    switch (orientation) {
-      case 'axial':
-        return axialCanvasRef.current;
-      case 'coronal':
-        return coronalCanvasRef.current;
-      case 'sagittal':
-        return sagittalCanvasRef.current;
-      default:
-        return null;
-    }
-  };
+  const handleWindowLevelChange = useCallback((plane: 'axial' | 'coronal' | 'sagittal', level: number, width: number) => {
+    setMPRState(prev => {
+      const newState = { ...prev };
 
-  const getSlicePosition = (orientation: string, sliceIndex: number): number => {
-    if (!seriesData) return 0;
-    
-    let slices: MPRSlice[];
-    switch (orientation) {
-      case 'axial':
-        slices = seriesData.axialSlices;
-        break;
-      case 'coronal':
-        slices = seriesData.coronalSlices;
-        break;
-      case 'sagittal':
-        slices = seriesData.sagittalSlices;
-        break;
-      default:
-        return 0;
-    }
-    
-    return slices[sliceIndex]?.slicePosition || 0;
-  };
-
-  const updateViewportPan = (orientation: string, deltaX: number, deltaY: number) => {
-    if (viewSettings.linkPan && viewSettings.synchronized) {
-      // Update all viewports
-      setViewportInfos(prev => {
-        const newState = { ...prev };
-        Object.keys(newState).forEach(key => {
-          newState[key] = {
-            ...newState[key],
-            pan: {
-              x: newState[key].pan.x + deltaX,
-              y: newState[key].pan.y + deltaY
-            }
-          };
+      if (prev.synchronization.enabled && prev.synchronization.windowLevel) {
+        // Apply to all planes
+        Object.keys(newState.planes).forEach(p => {
+          newState.planes[p as keyof typeof newState.planes].windowLevel = level;
+          newState.planes[p as keyof typeof newState.planes].windowWidth = width;
         });
-        return newState;
-      });
-    } else {
-      // Update only active viewport
-      setViewportInfos(prev => ({
-        ...prev,
-        [orientation]: {
-          ...prev[orientation],
-          pan: {
-            x: prev[orientation].pan.x + deltaX,
-            y: prev[orientation].pan.y + deltaY
-          }
-        }
-      }));
-    }
-  };
+      } else {
+        // Apply to single plane
+        newState.planes[plane].windowLevel = level;
+        newState.planes[plane].windowWidth = width;
+      }
 
-  const updateViewportZoom = (orientation: string, deltaY: number) => {
-    const zoomFactor = 1 + deltaY * 0.001;
-    
-    if (viewSettings.linkZoom && viewSettings.synchronized) {
-      // Update all viewports
-      setViewportInfos(prev => {
-        const newState = { ...prev };
-        Object.keys(newState).forEach(key => {
-          newState[key] = {
-            ...newState[key],
-            zoom: Math.max(0.1, Math.min(10, newState[key].zoom * zoomFactor))
-          };
+      return newState;
+    });
+  }, []);
+
+  const handleZoom = useCallback((plane: 'axial' | 'coronal' | 'sagittal', factor: number) => {
+    setMPRState(prev => {
+      const newState = { ...prev };
+      const currentZoom = prev.planes[plane].zoom;
+      const newZoom = Math.max(0.1, Math.min(10.0, currentZoom * factor));
+
+      if (prev.synchronization.enabled && prev.synchronization.zoom) {
+        // Apply to all planes
+        Object.keys(newState.planes).forEach(p => {
+          newState.planes[p as keyof typeof newState.planes].zoom = newZoom;
         });
-        return newState;
-      });
-    } else {
-      // Update only active viewport
-      setViewportInfos(prev => ({
-        ...prev,
-        [orientation]: {
-          ...prev[orientation],
-          zoom: Math.max(0.1, Math.min(10, prev[orientation].zoom * zoomFactor))
-        }
-      }));
-    }
-  };
+      } else {
+        // Apply to single plane
+        newState.planes[plane].zoom = newZoom;
+      }
 
-  const updateViewportWindowing = (orientation: string, deltaX: number, deltaY: number) => {
-    const levelDelta = deltaX * 2;
-    const widthDelta = deltaY * 2;
-    
-    if (viewSettings.linkWindowing && viewSettings.synchronized) {
-      // Update all viewports
-      setViewportInfos(prev => {
-        const newState = { ...prev };
-        Object.keys(newState).forEach(key => {
-          newState[key] = {
-            ...newState[key],
-            windowLevel: Math.max(-1024, Math.min(3071, newState[key].windowLevel + levelDelta)),
-            windowWidth: Math.max(1, Math.min(4096, newState[key].windowWidth + widthDelta))
-          };
+      return newState;
+    });
+  }, []);
+
+  const handlePan = useCallback((plane: 'axial' | 'coronal' | 'sagittal', deltaX: number, deltaY: number) => {
+    setMPRState(prev => {
+      const newState = { ...prev };
+      const currentPan = prev.planes[plane].pan;
+      const newPan = { x: currentPan.x + deltaX, y: currentPan.y + deltaY };
+
+      if (prev.synchronization.enabled && prev.synchronization.pan) {
+        // Apply to all planes
+        Object.keys(newState.planes).forEach(p => {
+          newState.planes[p as keyof typeof newState.planes].pan = newPan;
         });
-        return newState;
-      });
-    } else {
-      // Update only active viewport
-      setViewportInfos(prev => ({
-        ...prev,
-        [orientation]: {
-          ...prev[orientation],
-          windowLevel: Math.max(-1024, Math.min(3071, prev[orientation].windowLevel + levelDelta)),
-          windowWidth: Math.max(1, Math.min(4096, prev[orientation].windowWidth + widthDelta))
-        }
-      }));
-    }
-  };
+      } else {
+        // Apply to single plane
+        newState.planes[plane].pan = newPan;
+      }
 
-  const navigateSlice = (orientation: string, direction: number) => {
-    const maxSlices = getSliceCount(orientation);
-    if (maxSlices === 0) return;
+      return newState;
+    });
+  }, []);
 
-    setViewportInfos(prev => {
-      const currentIndex = prev[orientation].sliceIndex;
-      const newIndex = Math.max(0, Math.min(maxSlices - 1, currentIndex + direction));
+  const handleCrosshairClick = useCallback((plane: 'axial' | 'coronal' | 'sagittal', x: number, y: number) => {
+    if (!mprState.crosshairs.enabled) return;
+
+    setMPRState(prev => {
+      const newPosition = { ...prev.crosshairs.position };
       
-      if (newIndex !== currentIndex) {
-        onSliceChange?.(orientation, newIndex);
-        
-        return {
-          ...prev,
-          [orientation]: {
-            ...prev[orientation],
-            sliceIndex: newIndex,
-            slicePosition: getSlicePosition(orientation, newIndex)
-          }
-        };
+      if (plane === 'axial') {
+        newPosition.x = x;
+        newPosition.y = y;
+      } else if (plane === 'coronal') {
+        newPosition.x = x;
+        newPosition.z = y;
+      } else if (plane === 'sagittal') {
+        newPosition.y = x;
+        newPosition.z = y;
+      }
+
+      // Update corresponding slices in other planes
+      const newState = {
+        ...prev,
+        crosshairs: { ...prev.crosshairs, position: newPosition },
+        planes: {
+          ...prev.planes,
+          axial: { ...prev.planes.axial, slice: Math.round(newPosition.z) },
+          coronal: { ...prev.planes.coronal, slice: Math.round(newPosition.y) },
+          sagittal: { ...prev.planes.sagittal, slice: Math.round(newPosition.x) }
+        }
+      };
+
+      return newState;
+    });
+  }, [mprState.crosshairs.enabled]);
+
+  const handlePlayback = useCallback((play: boolean) => {
+    setMPRState(prev => ({ ...prev, playback: { ...prev.playback, isPlaying: play } }));
+
+    if (play) {
+      playbackIntervalRef.current = setInterval(() => {
+        setMPRState(prev => {
+          const activePane = prev.playback.activePane;
+          const planes = activePane === 'all' ? ['axial', 'coronal', 'sagittal'] : [activePane];
+          
+          const newState = { ...prev };
+          planes.forEach(plane => {
+            const p = plane as 'axial' | 'coronal' | 'sagittal';
+            const currentSlice = prev.planes[p].slice;
+            const maxSlice = prev.imageData[p].sliceCount - 1;
+            
+            let newSlice;
+            if (prev.playback.direction === 'forward') {
+              newSlice = currentSlice >= maxSlice ? (prev.playback.loop ? 0 : maxSlice) : currentSlice + 1;
+            } else {
+              newSlice = currentSlice <= 0 ? (prev.playback.loop ? maxSlice : 0) : currentSlice - 1;
+            }
+            
+            newState.planes[p].slice = newSlice;
+          });
+
+          return newState;
+        });
+      }, 1000 / mprState.playback.speed);
+    } else {
+      if (playbackIntervalRef.current) {
+        clearInterval(playbackIntervalRef.current);
+      }
+    }
+  }, [mprState.playback.speed]);
+
+  const handlePresetChange = useCallback((presetName: string) => {
+    const preset = windowPresets.find(p => p.name === presetName);
+    if (preset) {
+      setMPRState(prev => ({
+        ...prev,
+        presets: { ...prev.presets, current: presetName },
+        planes: {
+          axial: { ...prev.planes.axial, windowLevel: preset.level, windowWidth: preset.width },
+          coronal: { ...prev.planes.coronal, windowLevel: preset.level, windowWidth: preset.width },
+          sagittal: { ...prev.planes.sagittal, windowLevel: preset.level, windowWidth: preset.width }
+        }
+      }));
+    }
+  }, []);
+
+  const handleReset = useCallback(() => {
+    setMPRState(prev => ({
+      ...prev,
+      planes: {
+        axial: { slice: 128, windowLevel: 40, windowWidth: 400, zoom: 1.0, pan: { x: 0, y: 0 } },
+        coronal: { slice: 128, windowLevel: 40, windowWidth: 400, zoom: 1.0, pan: { x: 0, y: 0 } },
+        sagittal: { slice: 128, windowLevel: 40, windowWidth: 400, zoom: 1.0, pan: { x: 0, y: 0 } }
+      },
+      crosshairs: { ...prev.crosshairs, position: { x: 128, y: 128, z: 128 } }
+    }));
+  }, []);
+
+  const renderPlane = useCallback((canvas: HTMLCanvasElement, plane: 'axial' | 'coronal' | 'sagittal') => {
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const { slice, windowLevel, windowWidth, zoom, pan } = mprState.planes[plane];
+    
+    // Clear canvas
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    // Draw background
+    ctx.fillStyle = '#000';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    // Apply transformations
+    ctx.save();
+    ctx.translate(canvas.width / 2 + pan.x, canvas.height / 2 + pan.y);
+    ctx.scale(zoom, zoom);
+    
+    // Mock medical image for the plane
+    const imageSize = 200;
+    ctx.fillStyle = '#333';
+    ctx.fillRect(-imageSize / 2, -imageSize / 2, imageSize, imageSize);
+    
+    // Add plane-specific mock anatomy
+    if (plane === 'axial') {
+      // Axial view - circular cross-section
+      ctx.fillStyle = '#555';
+      ctx.beginPath();
+      ctx.arc(0, 0, imageSize * 0.4, 0, 2 * Math.PI);
+      ctx.fill();
+      
+      // Mock organs
+      ctx.fillStyle = '#777';
+      ctx.beginPath();
+      ctx.arc(-30, -20, 25, 0, 2 * Math.PI);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(30, -20, 25, 0, 2 * Math.PI);
+      ctx.fill();
+    } else if (plane === 'coronal') {
+      // Coronal view - frontal cross-section
+      ctx.fillStyle = '#555';
+      ctx.fillRect(-imageSize * 0.4, -imageSize * 0.4, imageSize * 0.8, imageSize * 0.6);
+      
+      // Mock spine
+      ctx.fillStyle = '#888';
+      ctx.fillRect(-10, -imageSize * 0.4, 20, imageSize * 0.6);
+    } else if (plane === 'sagittal') {
+      // Sagittal view - side cross-section
+      ctx.fillStyle = '#555';
+      ctx.fillRect(-imageSize * 0.3, -imageSize * 0.4, imageSize * 0.6, imageSize * 0.8);
+      
+      // Mock brain/skull
+      ctx.fillStyle = '#666';
+      ctx.beginPath();
+      ctx.arc(0, -imageSize * 0.2, imageSize * 0.25, 0, 2 * Math.PI);
+      ctx.fill();
+    }
+    
+    ctx.restore();
+    
+    // Draw crosshairs
+    if (mprState.crosshairs.enabled) {
+      const { position, color, thickness } = mprState.crosshairs;
+      ctx.strokeStyle = color;
+      ctx.lineWidth = thickness;
+      
+      let crossX = canvas.width / 2;
+      let crossY = canvas.height / 2;
+      
+      if (plane === 'axial') {
+        crossX = (position.x / 256) * canvas.width;
+        crossY = (position.y / 256) * canvas.height;
+      } else if (plane === 'coronal') {
+        crossX = (position.x / 256) * canvas.width;
+        crossY = (position.z / 256) * canvas.height;
+      } else if (plane === 'sagittal') {
+        crossX = (position.y / 256) * canvas.width;
+        crossY = (position.z / 256) * canvas.height;
       }
       
-      return prev;
-    });
-  };
-
-  const updateViewSettings = (updates: Partial<MPRViewSettings>) => {
-    setViewSettings(prev => ({ ...prev, ...updates }));
-  };
-
-  const resetView = (orientation?: string) => {
-    if (orientation) {
-      setViewportInfos(prev => ({
-        ...prev,
-        [orientation]: {
-          ...prev[orientation],
-          zoom: 1.0,
-          pan: { x: 0, y: 0 }
-        }
-      }));
-    } else {
-      // Reset all views
-      setViewportInfos(prev => {
-        const newState = { ...prev };
-        Object.keys(newState).forEach(key => {
-          newState[key] = {
-            ...newState[key],
-            zoom: 1.0,
-            pan: { x: 0, y: 0 }
-          };
-        });
-        return newState;
-      });
+      // Horizontal line
+      ctx.beginPath();
+      ctx.moveTo(0, crossY);
+      ctx.lineTo(canvas.width, crossY);
+      ctx.stroke();
+      
+      // Vertical line
+      ctx.beginPath();
+      ctx.moveTo(crossX, 0);
+      ctx.lineTo(crossX, canvas.height);
+      ctx.stroke();
     }
-  };
-
-  const exportView = (orientation?: string) => {
-    const canvas = orientation ? getCanvasForOrientation(orientation) : null;
     
-    if (canvas) {
-      const link = document.createElement('a');
-      link.download = `mpr_${orientation}_${seriesData?.id || 'export'}.png`;
-      link.href = canvas.toDataURL();
-      link.click();
+    // Draw measurements
+    mprState.measurements.forEach(measurement => {
+      if (measurement.plane === plane && measurement.slice === slice) {
+        ctx.strokeStyle = '#0ea5e9';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(measurement.coordinates[0].x, measurement.coordinates[0].y);
+        for (let i = 1; i < measurement.coordinates.length; i++) {
+          ctx.lineTo(measurement.coordinates[i].x, measurement.coordinates[i].y);
+        }
+        ctx.stroke();
+        
+        // Draw measurement text
+        ctx.fillStyle = '#0ea5e9';
+        ctx.font = '12px sans-serif';
+        ctx.fillText(`${measurement.value.toFixed(1)} ${measurement.unit}`, 
+                    measurement.coordinates[0].x + 5, measurement.coordinates[0].y - 5);
+      }
+    });
+    
+    // Draw annotations
+    mprState.annotations.forEach(annotation => {
+      if (annotation.plane === plane && annotation.slice === slice) {
+        ctx.fillStyle = '#f59e0b';
+        ctx.font = '14px sans-serif';
+        ctx.fillText(annotation.text || '', annotation.position.x, annotation.position.y);
+      }
+    });
+    
+    // Draw plane info overlay
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+    ctx.fillRect(5, 5, 150, 80);
+    ctx.fillStyle = '#fff';
+    ctx.font = '12px sans-serif';
+    ctx.fillText(`${plane.toUpperCase()} View`, 10, 25);
+    ctx.fillText(`Slice: ${slice}/${mprState.imageData[plane].sliceCount}`, 10, 45);
+    ctx.fillText(`W/L: ${windowWidth}/${windowLevel}`, 10, 65);
+    ctx.fillText(`Zoom: ${(zoom * 100).toFixed(0)}%`, 10, 85);
+    
+  }, [mprState]);
+
+  // Render all planes when state changes
+  useEffect(() => {
+    if (axialCanvasRef.current) renderPlane(axialCanvasRef.current, 'axial');
+    if (coronalCanvasRef.current) renderPlane(coronalCanvasRef.current, 'coronal');
+    if (sagittalCanvasRef.current) renderPlane(sagittalCanvasRef.current, 'sagittal');
+  }, [mprState, renderPlane]);
+
+  // Cleanup playback interval
+  useEffect(() => {
+    return () => {
+      if (playbackIntervalRef.current) {
+        clearInterval(playbackIntervalRef.current);
+      }
+    };
+  }, []);
+
+  const handleCanvasClick = useCallback((plane: 'axial' | 'coronal' | 'sagittal', event: React.MouseEvent<HTMLCanvasElement>) => {
+    const canvas = event.currentTarget;
+    const rect = canvas.getBoundingClientRect();
+    const x = event.clientX - rect.left;
+    const y = event.clientY - rect.top;
+
+    if (selectedTool === 'crosshair') {
+      handleCrosshairClick(plane, x, y);
+    } else if (selectedTool === 'measurement') {
+      // Handle measurement tool
+      if (!isDrawing) {
+        setCurrentDrawing([{ x, y }]);
+        setIsDrawing(true);
+      } else {
+        const newMeasurement = {
+          id: `meas_${Date.now()}`,
+          plane,
+          type: 'length' as const,
+          coordinates: [...currentDrawing, { x, y }],
+          value: Math.sqrt(Math.pow(x - currentDrawing[0].x, 2) + Math.pow(y - currentDrawing[0].y, 2)) * mprState.imageData.spacing.x,
+          unit: 'mm',
+          slice: mprState.planes[plane].slice
+        };
+        
+        setMPRState(prev => ({
+          ...prev,
+          measurements: [...prev.measurements, newMeasurement]
+        }));
+        
+        onMeasurement?.(newMeasurement);
+        setIsDrawing(false);
+        setCurrentDrawing([]);
+      }
     }
-  };
-
-  if (loading) {
-    return (
-      <div className={`medsight-viewer-glass rounded-xl flex items-center justify-center ${className}`}>
-        <div className="text-center text-white">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-medsight-primary mx-auto mb-4"></div>
-          <p>Initializing MPR viewer...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className={`medsight-viewer-glass rounded-xl flex items-center justify-center ${className}`}>
-        <div className="text-center text-white">
-          <ExclamationTriangleIcon className="w-12 h-12 text-medsight-abnormal mx-auto mb-4" />
-          <p className="text-medsight-abnormal mb-4">{error}</p>
-          <button onClick={initializeMPRViewer} className="btn-medsight">
-            Retry
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  if (!seriesData) {
-    return (
-      <div className={`medsight-viewer-glass rounded-xl flex items-center justify-center ${className}`}>
-        <div className="text-center text-white">
-          <Square3Stack3DIcon className="w-24 h-24 mx-auto mb-4 text-slate-500" />
-          <h3 className="text-xl font-semibold mb-2 text-slate-400">No MPR Data</h3>
-          <p className="text-slate-500">Load a 3D volume dataset to begin MPR viewing</p>
-        </div>
-      </div>
-    );
-  }
+  }, [selectedTool, isDrawing, currentDrawing, mprState.planes, mprState.imageData.spacing, handleCrosshairClick, onMeasurement]);
 
   return (
-    <div className={`relative medsight-viewer-glass rounded-xl overflow-hidden ${className}`}>
-      {/* Controls Bar */}
+    <div className={`relative h-full bg-black ${className}`}>
+      {/* MPR Controls */}
       {showControls && (
-        <div className="absolute top-4 left-4 right-4 z-10 flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            {/* Tools */}
-            <div className="flex items-center space-x-1 bg-black/50 rounded-lg p-1">
-              {tools.slice(0, 4).map((tool) => (
-                <button
-                  key={tool.id}
-                  onClick={() => setActiveTool(tool.id)}
-                  className={`p-2 rounded transition-all ${
-                    activeTool === tool.id 
-                      ? 'bg-medsight-primary text-white' 
-                      : 'text-white hover:bg-white/20'
-                  }`}
-                  title={tool.description}
-                >
-                  <tool.icon className="w-4 h-4" />
-                </button>
-              ))}
+        <div className="absolute top-4 left-4 medsight-control-glass p-4 rounded-lg max-w-sm z-10">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-sm font-semibold text-gray-900">MPR Controls</h3>
+            <button
+              onClick={() => setShowControls(false)}
+              className="text-gray-400 hover:text-gray-600"
+            >
+              <ArrowLeftIcon className="w-4 h-4" />
+            </button>
+          </div>
+          
+          <div className="space-y-4">
+            {/* Active Plane */}
+            <div>
+              <label className="block text-xs font-medium text-gray-700 mb-1">Active Plane</label>
+              <div className="flex gap-1">
+                {(['axial', 'coronal', 'sagittal'] as const).map(plane => (
+                  <button
+                    key={plane}
+                    onClick={() => setActivePlane(plane)}
+                    className={`btn-medsight text-xs px-2 py-1 flex-1 ${
+                      activePlane === plane ? 'bg-medsight-primary/20' : ''
+                    }`}
+                  >
+                    {plane.charAt(0).toUpperCase() + plane.slice(1)}
+                  </button>
+                ))}
+              </div>
             </div>
 
-            {/* Layout */}
-            <div className="flex items-center space-x-1 bg-black/50 rounded-lg p-1">
-              {layouts.map((layout) => (
+            {/* Navigation */}
+            <div>
+              <label className="block text-xs font-medium text-gray-700 mb-1">Navigation</label>
+              <div className="flex items-center gap-2">
                 <button
-                  key={layout.id}
-                  onClick={() => updateViewSettings({ layout: layout.id as any })}
-                  className={`p-2 rounded transition-all ${
-                    viewSettings.layout === layout.id 
-                      ? 'bg-medsight-primary text-white' 
-                      : 'text-white hover:bg-white/20'
-                  }`}
-                  title={layout.description}
+                  onClick={() => handlePlaneNavigation(activePlane, 'prev')}
+                  className="btn-medsight"
                 >
-                  <layout.icon className="w-4 h-4" />
+                  <BackwardIcon className="w-4 h-4" />
                 </button>
-              ))}
+                <span className="text-xs text-gray-600 flex-1 text-center">
+                  {mprState.planes[activePlane].slice + 1} / {mprState.imageData[activePlane].sliceCount}
+                </span>
+                <button
+                  onClick={() => handlePlaneNavigation(activePlane, 'next')}
+                  className="btn-medsight"
+                >
+                  <ForwardIcon className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+
+            {/* Tools */}
+            <div>
+              <label className="block text-xs font-medium text-gray-700 mb-1">Tools</label>
+              <div className="flex gap-1">
+                <button
+                  onClick={() => setSelectedTool('crosshair')}
+                  className={`btn-medsight text-xs px-2 py-1 flex-1 ${
+                    selectedTool === 'crosshair' ? 'bg-medsight-primary/20' : ''
+                  }`}
+                >
+                  <CursorArrowRaysIcon className="w-3 h-3 mr-1" />
+                  Crosshair
+                </button>
+                <button
+                  onClick={() => setSelectedTool('measurement')}
+                  className={`btn-medsight text-xs px-2 py-1 flex-1 ${
+                    selectedTool === 'measurement' ? 'bg-medsight-primary/20' : ''
+                  }`}
+                >
+                  <BeakerIcon className="w-3 h-3 mr-1" />
+                  Measure
+                </button>
+              </div>
+            </div>
+
+            {/* Zoom Controls */}
+            <div>
+              <label className="block text-xs font-medium text-gray-700 mb-1">Zoom</label>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => handleZoom(activePlane, 0.8)}
+                  className="btn-medsight"
+                >
+                  <ArrowsPointingInIcon className="w-4 h-4" />
+                </button>
+                <span className="text-xs text-gray-600 flex-1 text-center">
+                  {(mprState.planes[activePlane].zoom * 100).toFixed(0)}%
+                </span>
+                <button
+                  onClick={() => handleZoom(activePlane, 1.25)}
+                  className="btn-medsight"
+                >
+                  <ArrowsPointingOutIcon className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+
+            {/* Window Presets */}
+            <div>
+              <label className="block text-xs font-medium text-gray-700 mb-1">Window Preset</label>
+              <select
+                value={mprState.presets.current}
+                onChange={(e) => handlePresetChange(e.target.value)}
+                className="w-full input-medsight text-xs"
+              >
+                {windowPresets.map(preset => (
+                  <option key={preset.name} value={preset.name}>
+                    {preset.name}
+                  </option>
+                ))}
+              </select>
             </div>
 
             {/* Synchronization */}
-            <div className="flex items-center space-x-1 bg-black/50 rounded-lg p-1">
-              <button 
-                onClick={() => updateViewSettings({ synchronized: !viewSettings.synchronized })}
-                className={`p-2 rounded transition-all ${
-                  viewSettings.synchronized 
-                    ? 'bg-medsight-primary text-white' 
-                    : 'text-white hover:bg-white/20'
-                }`}
-                title="Synchronize Views"
-              >
-                <LinkIcon className="w-4 h-4" />
+            <div>
+              <label className="block text-xs font-medium text-gray-700 mb-1">Synchronization</label>
+              <div className="space-y-1">
+                <label className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={mprState.synchronization.enabled}
+                    onChange={(e) => {
+                      const enabled = e.target.checked;
+                      setMPRState(prev => ({
+                        ...prev,
+                        synchronization: { ...prev.synchronization, enabled }
+                      }));
+                      onSynchronization?.(enabled);
+                    }}
+                    className="rounded border-gray-300 text-medsight-primary"
+                  />
+                  <span className="text-xs text-gray-700">Enable Sync</span>
+                </label>
+                {mprState.synchronization.enabled && (
+                  <div className="pl-4 space-y-1">
+                    <label className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        checked={mprState.synchronization.windowLevel}
+                        onChange={(e) => setMPRState(prev => ({
+                          ...prev,
+                          synchronization: { ...prev.synchronization, windowLevel: e.target.checked }
+                        }))}
+                        className="rounded border-gray-300 text-medsight-primary"
+                      />
+                      <span className="text-xs text-gray-700">Window/Level</span>
+                    </label>
+                    <label className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        checked={mprState.synchronization.zoom}
+                        onChange={(e) => setMPRState(prev => ({
+                          ...prev,
+                          synchronization: { ...prev.synchronization, zoom: e.target.checked }
+                        }))}
+                        className="rounded border-gray-300 text-medsight-primary"
+                      />
+                      <span className="text-xs text-gray-700">Zoom</span>
+                    </label>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Control Buttons */}
+            <div className="flex gap-2">
+              <button onClick={handleReset} className="btn-medsight flex-1 text-xs">
+                <ArrowPathIcon className="w-3 h-3 mr-1" />
+                Reset
               </button>
-              <button 
-                onClick={() => updateViewSettings({ crosshairs: !viewSettings.crosshairs })}
-                className={`p-2 rounded transition-all ${
-                  viewSettings.crosshairs 
-                    ? 'bg-medsight-primary text-white' 
-                    : 'text-white hover:bg-white/20'
-                }`}
-                title="Show Crosshairs"
+              <button
+                onClick={() => setShowAdvanced(!showAdvanced)}
+                className="btn-medsight flex-1 text-xs"
               >
-                <ViewfinderCircleIcon className="w-4 h-4" />
+                <Cog6ToothIcon className="w-3 h-3 mr-1" />
+                Advanced
               </button>
             </div>
-          </div>
-
-          <div className="flex items-center space-x-2">
-            {/* Info */}
-            <button 
-              onClick={() => setShowInfo(!showInfo)}
-              className={`p-2 bg-black/50 rounded-lg transition-colors ${
-                showInfo ? 'bg-white/20' : 'hover:bg-black/70'
-              }`}
-              title="MPR Information"
-            >
-              <InformationCircleIcon className="w-4 h-4 text-white" />
-            </button>
-
-            {/* Settings */}
-            <button 
-              onClick={() => setShowSettings(!showSettings)}
-              className="p-2 bg-black/50 rounded-lg hover:bg-black/70 transition-colors"
-              title="Settings"
-            >
-              <Cog6ToothIcon className="w-4 h-4 text-white" />
-            </button>
-
-            {/* Reset */}
-            <button 
-              onClick={() => resetView()}
-              className="p-2 bg-black/50 rounded-lg hover:bg-black/70 transition-colors"
-              title="Reset All Views"
-            >
-              <ArrowPathIcon className="w-4 h-4 text-white" />
-            </button>
           </div>
         </div>
       )}
 
-      {/* MPR Views */}
-      <div ref={containerRef} className="w-full h-full pt-16">
-        {viewSettings.layout === 'quad' ? (
-          <div className="grid grid-cols-2 grid-rows-2 w-full h-full gap-1">
-            {/* Axial View */}
-            <div className="relative bg-black border border-slate-600">
-              <canvas
-                ref={axialCanvasRef}
-                className="w-full h-full"
-                style={{ cursor: tools.find(t => t.id === activeTool)?.cursor || 'default' }}
-                onMouseDown={(e) => handleCanvasMouseDown(e, 'axial')}
-                onMouseMove={(e) => handleCanvasMouseMove(e, 'axial')}
-                onMouseUp={handleCanvasMouseUp}
-                onMouseLeave={handleCanvasMouseUp}
-                onWheel={(e) => handleCanvasWheel(e, 'axial')}
-              />
-              <div className="absolute top-2 left-2 text-white text-sm font-semibold bg-black/50 px-2 py-1 rounded">
-                AXIAL
-              </div>
-            </div>
-
-            {/* Coronal View */}
-            <div className="relative bg-black border border-slate-600">
-              <canvas
-                ref={coronalCanvasRef}
-                className="w-full h-full"
-                style={{ cursor: tools.find(t => t.id === activeTool)?.cursor || 'default' }}
-                onMouseDown={(e) => handleCanvasMouseDown(e, 'coronal')}
-                onMouseMove={(e) => handleCanvasMouseMove(e, 'coronal')}
-                onMouseUp={handleCanvasMouseUp}
-                onMouseLeave={handleCanvasMouseUp}
-                onWheel={(e) => handleCanvasWheel(e, 'coronal')}
-              />
-              <div className="absolute top-2 left-2 text-white text-sm font-semibold bg-black/50 px-2 py-1 rounded">
-                CORONAL
-              </div>
-            </div>
-
-            {/* Sagittal View */}
-            <div className="relative bg-black border border-slate-600">
-              <canvas
-                ref={sagittalCanvasRef}
-                className="w-full h-full"
-                style={{ cursor: tools.find(t => t.id === activeTool)?.cursor || 'default' }}
-                onMouseDown={(e) => handleCanvasMouseDown(e, 'sagittal')}
-                onMouseMove={(e) => handleCanvasMouseMove(e, 'sagittal')}
-                onMouseUp={handleCanvasMouseUp}
-                onMouseLeave={handleCanvasMouseUp}
-                onWheel={(e) => handleCanvasWheel(e, 'sagittal')}
-              />
-              <div className="absolute top-2 left-2 text-white text-sm font-semibold bg-black/50 px-2 py-1 rounded">
-                SAGITTAL
-              </div>
-            </div>
-
-            {/* 3D View */}
-            <div className="relative bg-black border border-slate-600">
-              <canvas
-                ref={threeDCanvasRef}
-                className="w-full h-full"
-              />
-              <div className="absolute top-2 left-2 text-white text-sm font-semibold bg-black/50 px-2 py-1 rounded">
-                3D
-              </div>
-            </div>
+      {/* Playback Controls */}
+      <div className="absolute bottom-4 left-4 medsight-control-glass p-3 rounded-lg">
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => handlePlayback(!mprState.playback.isPlaying)}
+            className="btn-medsight"
+          >
+            {mprState.playback.isPlaying ? (
+              <PauseIcon className="w-4 h-4" />
+            ) : (
+              <PlayIcon className="w-4 h-4" />
+            )}
+          </button>
+          
+          <div className="flex items-center gap-2">
+            <label className="text-xs text-gray-600">Speed:</label>
+            <input
+              type="range"
+              min="1"
+              max="20"
+              value={mprState.playback.speed}
+              onChange={(e) => setMPRState(prev => ({
+                ...prev,
+                playback: { ...prev.playback, speed: parseInt(e.target.value) }
+              }))}
+              className="w-20"
+            />
+            <span className="text-xs text-gray-600 w-8">
+              {mprState.playback.speed}fps
+            </span>
           </div>
-        ) : (
-          // Single view mode
-          <div className="w-full h-full">
-            {viewSettings.layout === 'axial' && (
-              <div className="relative bg-black w-full h-full">
-                <canvas
-                  ref={axialCanvasRef}
-                  className="w-full h-full"
-                  style={{ cursor: tools.find(t => t.id === activeTool)?.cursor || 'default' }}
-                  onMouseDown={(e) => handleCanvasMouseDown(e, 'axial')}
-                  onMouseMove={(e) => handleCanvasMouseMove(e, 'axial')}
-                  onMouseUp={handleCanvasMouseUp}
-                  onMouseLeave={handleCanvasMouseUp}
-                  onWheel={(e) => handleCanvasWheel(e, 'axial')}
-                />
-                <div className="absolute top-2 left-2 text-white text-lg font-semibold bg-black/50 px-3 py-2 rounded">
-                  AXIAL
-                </div>
-              </div>
+          
+          <select
+            value={mprState.playback.activePane}
+            onChange={(e) => setMPRState(prev => ({
+              ...prev,
+              playback: { ...prev.playback, activePane: e.target.value as any }
+            }))}
+            className="input-medsight text-xs"
+          >
+            <option value="all">All Planes</option>
+            <option value="axial">Axial Only</option>
+            <option value="coronal">Coronal Only</option>
+            <option value="sagittal">Sagittal Only</option>
+          </select>
+          
+          <button
+            onClick={() => setMPRState(prev => ({
+              ...prev,
+              playback: { 
+                ...prev.playback, 
+                direction: prev.playback.direction === 'forward' ? 'backward' : 'forward' 
+              }
+            }))}
+            className="btn-medsight"
+            title={`Direction: ${mprState.playback.direction}`}
+          >
+            {mprState.playback.direction === 'forward' ? (
+              <ArrowRightIcon className="w-4 h-4" />
+            ) : (
+              <ArrowLeftIcon className="w-4 h-4" />
             )}
-            {viewSettings.layout === 'coronal' && (
-              <div className="relative bg-black w-full h-full">
-                <canvas
-                  ref={coronalCanvasRef}
-                  className="w-full h-full"
-                  style={{ cursor: tools.find(t => t.id === activeTool)?.cursor || 'default' }}
-                  onMouseDown={(e) => handleCanvasMouseDown(e, 'coronal')}
-                  onMouseMove={(e) => handleCanvasMouseMove(e, 'coronal')}
-                  onMouseUp={handleCanvasMouseUp}
-                  onMouseLeave={handleCanvasMouseUp}
-                  onWheel={(e) => handleCanvasWheel(e, 'coronal')}
-                />
-                <div className="absolute top-2 left-2 text-white text-lg font-semibold bg-black/50 px-3 py-2 rounded">
-                  CORONAL
-                </div>
-              </div>
-            )}
-            {viewSettings.layout === 'sagittal' && (
-              <div className="relative bg-black w-full h-full">
-                <canvas
-                  ref={sagittalCanvasRef}
-                  className="w-full h-full"
-                  style={{ cursor: tools.find(t => t.id === activeTool)?.cursor || 'default' }}
-                  onMouseDown={(e) => handleCanvasMouseDown(e, 'sagittal')}
-                  onMouseMove={(e) => handleCanvasMouseMove(e, 'sagittal')}
-                  onMouseUp={handleCanvasMouseUp}
-                  onMouseLeave={handleCanvasMouseUp}
-                  onWheel={(e) => handleCanvasWheel(e, 'sagittal')}
-                />
-                <div className="absolute top-2 left-2 text-white text-lg font-semibold bg-black/50 px-3 py-2 rounded">
-                  SAGITTAL
-                </div>
-              </div>
-            )}
-          </div>
-        )}
-      </div>
-
-      {/* Slice Navigators */}
-      <div className="absolute bottom-4 left-4 right-4 z-10">
-        <div className="grid grid-cols-3 gap-4">
-          {['axial', 'coronal', 'sagittal'].map((orientation) => {
-            const viewport = viewportInfos[orientation];
-            const maxSlices = getSliceCount(orientation);
-            
-            return (
-              <div key={orientation} className="bg-black/50 rounded-lg p-2">
-                <div className="flex items-center space-x-2 text-white text-xs">
-                  <span className="font-semibold min-w-[60px]">{orientation.toUpperCase()}</span>
-                  <span>{viewport.sliceIndex + 1}/{maxSlices}</span>
-                  <div className="flex-1">
-                    <input
-                      type="range"
-                      min="0"
-                      max={maxSlices - 1}
-                      value={viewport.sliceIndex}
-                      onChange={(e) => {
-                        const newIndex = parseInt(e.target.value);
-                        setViewportInfos(prev => ({
-                          ...prev,
-                          [orientation]: {
-                            ...prev[orientation],
-                            sliceIndex: newIndex,
-                            slicePosition: getSlicePosition(orientation, newIndex)
-                          }
-                        }));
-                        onSliceChange?.(orientation, newIndex);
-                      }}
-                      className="w-full h-1 bg-slate-700 rounded-lg appearance-none cursor-pointer slider"
-                    />
-                  </div>
-                  <span className="text-xs">{viewport.slicePosition.toFixed(1)}mm</span>
-                </div>
-              </div>
-            );
-          })}
+          </button>
         </div>
       </div>
 
-      {/* MPR Information Panel */}
-      {showInfo && seriesData && (
-        <div className="absolute top-20 right-4 w-80 bg-black/80 rounded-lg p-4 text-white text-sm z-20">
-          <h4 className="font-semibold mb-3">MPR Information</h4>
-          <div className="space-y-2">
-            <div className="flex justify-between">
-              <span>Volume Dimensions:</span>
-              <span>{seriesData.volumeDimensions.join(' × ')}</span>
-            </div>
-            <div className="flex justify-between">
-              <span>Voxel Spacing:</span>
-              <span>{seriesData.voxelSpacing.map(s => s.toFixed(2)).join(' × ')} mm</span>
-            </div>
-            <div className="flex justify-between">
-              <span>Modality:</span>
-              <span>{seriesData.modality}</span>
-            </div>
-            <div className="flex justify-between">
-              <span>Axial Slices:</span>
-              <span>{seriesData.axialSlices.length}</span>
-            </div>
-            <div className="flex justify-between">
-              <span>Coronal Slices:</span>
-              <span>{seriesData.coronalSlices.length}</span>
-            </div>
-            <div className="flex justify-between">
-              <span>Sagittal Slices:</span>
-              <span>{seriesData.sagittalSlices.length}</span>
-            </div>
+      {/* Main MPR View */}
+      <div className="h-full grid grid-cols-2 grid-rows-2 gap-1">
+        {/* Axial View */}
+        <div className="relative border border-gray-600">
+          <canvas
+            ref={axialCanvasRef}
+            width={400}
+            height={400}
+            className="w-full h-full cursor-crosshair"
+            onClick={(e) => handleCanvasClick('axial', e)}
+          />
+          <div className="absolute top-2 left-2 text-white text-sm font-medium bg-black/50 px-2 py-1 rounded">
+            Axial
+          </div>
+          <div className="absolute top-2 right-2 text-white text-xs bg-black/50 px-2 py-1 rounded">
+            {mprState.planes.axial.slice + 1} / {mprState.imageData.axial.sliceCount}
+          </div>
+        </div>
+
+        {/* Coronal View */}
+        <div className="relative border border-gray-600">
+          <canvas
+            ref={coronalCanvasRef}
+            width={400}
+            height={400}
+            className="w-full h-full cursor-crosshair"
+            onClick={(e) => handleCanvasClick('coronal', e)}
+          />
+          <div className="absolute top-2 left-2 text-white text-sm font-medium bg-black/50 px-2 py-1 rounded">
+            Coronal
+          </div>
+          <div className="absolute top-2 right-2 text-white text-xs bg-black/50 px-2 py-1 rounded">
+            {mprState.planes.coronal.slice + 1} / {mprState.imageData.coronal.sliceCount}
+          </div>
+        </div>
+
+        {/* Sagittal View */}
+        <div className="relative border border-gray-600">
+          <canvas
+            ref={sagittalCanvasRef}
+            width={400}
+            height={400}
+            className="w-full h-full cursor-crosshair"
+            onClick={(e) => handleCanvasClick('sagittal', e)}
+          />
+          <div className="absolute top-2 left-2 text-white text-sm font-medium bg-black/50 px-2 py-1 rounded">
+            Sagittal
+          </div>
+          <div className="absolute top-2 right-2 text-white text-xs bg-black/50 px-2 py-1 rounded">
+            {mprState.planes.sagittal.slice + 1} / {mprState.imageData.sagittal.sliceCount}
+          </div>
+        </div>
+
+        {/* Information Panel */}
+        <div className="medsight-control-glass p-4">
+          <h3 className="text-sm font-semibold text-gray-900 mb-3">MPR Information</h3>
+          
+          <div className="space-y-2 text-xs text-gray-600">
             <div className="flex justify-between">
               <span>Crosshair Position:</span>
-              <span>{crosshair.position.map(p => p.toFixed(1)).join(', ')}</span>
+              <span className="font-mono">
+                ({mprState.crosshairs.position.x}, {mprState.crosshairs.position.y}, {mprState.crosshairs.position.z})
+              </span>
             </div>
             <div className="flex justify-between">
-              <span>Active Viewport:</span>
-              <span className="capitalize">{activeViewport}</span>
+              <span>Pixel Spacing:</span>
+              <span className="font-mono">
+                {mprState.imageData.spacing.x} × {mprState.imageData.spacing.y} × {mprState.imageData.spacing.z} mm
+              </span>
+            </div>
+            <div className="flex justify-between">
+              <span>Active Tool:</span>
+              <span className="capitalize">{selectedTool}</span>
+            </div>
+            <div className="flex justify-between">
+              <span>Synchronization:</span>
+              <span className={mprState.synchronization.enabled ? 'text-medsight-normal' : 'text-gray-500'}>
+                {mprState.synchronization.enabled ? 'Enabled' : 'Disabled'}
+              </span>
+            </div>
+            <div className="flex justify-between">
+              <span>Measurements:</span>
+              <span>{mprState.measurements.length}</span>
             </div>
           </div>
 
-          <div className="mt-4 space-y-2">
-            <button onClick={() => exportView()} className="btn-medsight w-full text-sm">
-              <ArrowDownTrayIcon className="w-4 h-4 mr-2" />
-              Export All Views
-            </button>
-            <button className="btn-medsight w-full text-sm">
-              <ShareIcon className="w-4 h-4 mr-2" />
-              Share MPR
-            </button>
+          {/* Crosshair Controls */}
+          <div className="mt-4 pt-3 border-t border-gray-200">
+            <h4 className="text-xs font-medium text-gray-700 mb-2">Crosshair Settings</h4>
+            <div className="space-y-2">
+              <label className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  checked={mprState.crosshairs.enabled}
+                  onChange={(e) => setMPRState(prev => ({
+                    ...prev,
+                    crosshairs: { ...prev.crosshairs, enabled: e.target.checked }
+                  }))}
+                  className="rounded border-gray-300 text-medsight-primary"
+                />
+                <span className="text-xs text-gray-700">Show Crosshairs</span>
+              </label>
+              
+              <div className="flex items-center gap-2">
+                <label className="text-xs text-gray-700">Color:</label>
+                <input
+                  type="color"
+                  value={mprState.crosshairs.color}
+                  onChange={(e) => setMPRState(prev => ({
+                    ...prev,
+                    crosshairs: { ...prev.crosshairs, color: e.target.value }
+                  }))}
+                  className="w-8 h-6 rounded border border-gray-300"
+                />
+              </div>
+              
+              <div className="flex items-center gap-2">
+                <label className="text-xs text-gray-700">Thickness:</label>
+                <input
+                  type="range"
+                  min="1"
+                  max="5"
+                  value={mprState.crosshairs.thickness}
+                  onChange={(e) => setMPRState(prev => ({
+                    ...prev,
+                    crosshairs: { ...prev.crosshairs, thickness: parseInt(e.target.value) }
+                  }))}
+                  className="flex-1"
+                />
+                <span className="text-xs text-gray-600 w-4">{mprState.crosshairs.thickness}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Emergency Mode Indicator */}
+      {emergencyMode && (
+        <div className="absolute top-4 left-1/2 transform -translate-x-1/2 bg-medsight-critical/20 border border-medsight-critical text-medsight-critical px-3 py-1 rounded-lg text-sm font-medium z-20">
+          <ExclamationTriangleIcon className="w-4 h-4 inline mr-1" />
+          Emergency Mode Active
+        </div>
+      )}
+
+      {/* Collaboration Indicator */}
+      {collaborationMode && (
+        <div className="absolute bottom-4 right-4 medsight-control-glass p-2 rounded-lg">
+          <div className="flex items-center gap-2 text-sm">
+            <UserGroupIcon className="w-4 h-4 text-medsight-primary" />
+            <span className="text-gray-600">Collaborative MPR</span>
           </div>
         </div>
       )}
 
-      {/* Settings Modal */}
-      {showSettings && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <div className="medsight-glass p-6 rounded-xl max-w-4xl w-full max-h-[80vh] overflow-y-auto">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-medsight-primary">MPR Viewer Settings</h3>
-              <button 
-                onClick={() => setShowSettings(false)}
-                className="btn-medsight p-2"
-              >
-                <XMarkIcon className="w-4 h-4" />
-              </button>
-            </div>
-            
-            <div className="grid grid-cols-2 gap-6">
-              {/* Display Settings */}
-              <div className="space-y-4">
-                <h4 className="font-medium text-slate-900">Display</h4>
-                
-                <div className="space-y-3">
-                  <label className="flex items-center space-x-3">
-                    <input
-                      type="checkbox"
-                      checked={viewSettings.synchronized}
-                      onChange={(e) => updateViewSettings({ synchronized: e.target.checked })}
-                      className="rounded border-slate-300 text-medsight-primary"
-                    />
-                    <span className="text-sm text-slate-700">Synchronize Views</span>
-                  </label>
-                  <label className="flex items-center space-x-3">
-                    <input
-                      type="checkbox"
-                      checked={viewSettings.crosshairs}
-                      onChange={(e) => updateViewSettings({ crosshairs: e.target.checked })}
-                      className="rounded border-slate-300 text-medsight-primary"
-                    />
-                    <span className="text-sm text-slate-700">Show Crosshairs</span>
-                  </label>
-                  <label className="flex items-center space-x-3">
-                    <input
-                      type="checkbox"
-                      checked={viewSettings.referenceLines}
-                      onChange={(e) => updateViewSettings({ referenceLines: e.target.checked })}
-                      className="rounded border-slate-300 text-medsight-primary"
-                    />
-                    <span className="text-sm text-slate-700">Show Reference Lines</span>
-                  </label>
-                  <label className="flex items-center space-x-3">
-                    <input
-                      type="checkbox"
-                      checked={viewSettings.orientationLabels}
-                      onChange={(e) => updateViewSettings({ orientationLabels: e.target.checked })}
-                      className="rounded border-slate-300 text-medsight-primary"
-                    />
-                    <span className="text-sm text-slate-700">Show Orientation Labels</span>
-                  </label>
-                  <label className="flex items-center space-x-3">
-                    <input
-                      type="checkbox"
-                      checked={viewSettings.scaleBar}
-                      onChange={(e) => updateViewSettings({ scaleBar: e.target.checked })}
-                      className="rounded border-slate-300 text-medsight-primary"
-                    />
-                    <span className="text-sm text-slate-700">Show Scale Bar</span>
-                  </label>
-                  <label className="flex items-center space-x-3">
-                    <input
-                      type="checkbox"
-                      checked={viewSettings.overlays}
-                      onChange={(e) => updateViewSettings({ overlays: e.target.checked })}
-                      className="rounded border-slate-300 text-medsight-primary"
-                    />
-                    <span className="text-sm text-slate-700">Show Overlays</span>
-                  </label>
-                  <label className="flex items-center space-x-3">
-                    <input
-                      type="checkbox"
-                      checked={viewSettings.colorInvert}
-                      onChange={(e) => updateViewSettings({ colorInvert: e.target.checked })}
-                      className="rounded border-slate-300 text-medsight-primary"
-                    />
-                    <span className="text-sm text-slate-700">Invert Colors</span>
-                  </label>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">Interpolation</label>
-                  <select 
-                    value={viewSettings.interpolation}
-                    onChange={(e) => updateViewSettings({ interpolation: e.target.value as any })}
-                    className="input-medsight"
-                  >
-                    <option value="nearest">Nearest Neighbor</option>
-                    <option value="linear">Linear</option>
-                    <option value="cubic">Cubic</option>
-                  </select>
-                </div>
-              </div>
-
-              {/* Synchronization Settings */}
-              <div className="space-y-4">
-                <h4 className="font-medium text-slate-900">Synchronization</h4>
-                
-                <div className="space-y-3">
-                  <label className="flex items-center space-x-3">
-                    <input
-                      type="checkbox"
-                      checked={viewSettings.linkZoom}
-                      onChange={(e) => updateViewSettings({ linkZoom: e.target.checked })}
-                      className="rounded border-slate-300 text-medsight-primary"
-                    />
-                    <span className="text-sm text-slate-700">Link Zoom</span>
-                  </label>
-                  <label className="flex items-center space-x-3">
-                    <input
-                      type="checkbox"
-                      checked={viewSettings.linkPan}
-                      onChange={(e) => updateViewSettings({ linkPan: e.target.checked })}
-                      className="rounded border-slate-300 text-medsight-primary"
-                    />
-                    <span className="text-sm text-slate-700">Link Pan</span>
-                  </label>
-                  <label className="flex items-center space-x-3">
-                    <input
-                      type="checkbox"
-                      checked={viewSettings.linkWindowing}
-                      onChange={(e) => updateViewSettings({ linkWindowing: e.target.checked })}
-                      className="rounded border-slate-300 text-medsight-primary"
-                    />
-                    <span className="text-sm text-slate-700">Link Windowing</span>
-                  </label>
-                  <label className="flex items-center space-x-3">
-                    <input
-                      type="checkbox"
-                      checked={viewSettings.autoCenter}
-                      onChange={(e) => updateViewSettings({ autoCenter: e.target.checked })}
-                      className="rounded border-slate-300 text-medsight-primary"
-                    />
-                    <span className="text-sm text-slate-700">Auto Center</span>
-                  </label>
-                </div>
-
-                <div>
-                  <h5 className="font-medium text-slate-700 mb-2">Crosshair Settings</h5>
-                  <div className="space-y-2">
-                    <div>
-                      <label className="block text-sm text-slate-600 mb-1">Color</label>
-                      <input
-                        type="color"
-                        value={crosshair.color}
-                        onChange={(e) => setCrosshair(prev => ({ ...prev, color: e.target.value }))}
-                        className="w-full h-8 rounded border border-slate-300"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm text-slate-600 mb-1">
-                        Thickness: {crosshair.thickness}px
-                      </label>
-                      <input
-                        type="range"
-                        min="1"
-                        max="5"
-                        value={crosshair.thickness}
-                        onChange={(e) => setCrosshair(prev => ({ ...prev, thickness: parseInt(e.target.value) }))}
-                        className="w-full"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                <div>
-                  <h5 className="font-medium text-slate-700 mb-2">Orientation Presets</h5>
-                  <div className="grid grid-cols-1 gap-2">
-                    {orientationPresets.map((preset) => (
-                      <button
-                        key={preset.id}
-                        className="flex items-center space-x-3 p-2 rounded hover:bg-slate-100 transition-colors text-left"
-                      >
-                        <preset.icon className="w-4 h-4 text-medsight-primary" />
-                        <div>
-                          <span className="text-sm font-medium">{preset.name}</span>
-                          <p className="text-xs text-slate-600">{preset.description}</p>
-                        </div>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+      {/* Collapsed Controls Toggle */}
+      {!showControls && (
+        <button
+          onClick={() => setShowControls(true)}
+          className="absolute top-4 left-4 medsight-control-glass p-2 rounded-lg z-10"
+        >
+          <RectangleGroupIcon className="w-4 h-4" />
+        </button>
       )}
     </div>
   );

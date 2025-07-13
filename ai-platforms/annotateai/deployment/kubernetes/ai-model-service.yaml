@@ -1,0 +1,432 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ai-model-service
+  namespace: annotateai
+  labels:
+    app: ai-model-service
+    component: ai-inference
+    version: "1.0.0"
+spec:
+  replicas: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: ai-model-service
+  template:
+    metadata:
+      labels:
+        app: ai-model-service
+        component: ai-inference
+        version: "1.0.0"
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8000"
+        prometheus.io/path: "/metrics"
+    spec:
+      serviceAccountName: ai-model-service-sa
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 1000
+      nodeSelector:
+        kubernetes.io/arch: amd64
+        node.kubernetes.io/instance-type: "g4dn.xlarge"  # GPU nodes
+      tolerations:
+        - key: "nvidia.com/gpu"
+          operator: "Exists"
+          effect: "NoSchedule"
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app: ai-model-service
+                topologyKey: kubernetes.io/hostname
+      containers:
+        - name: ai-model-service
+          image: annotateai/ai-model-service:1.0.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 8000
+              protocol: TCP
+            - name: grpc
+              containerPort: 9000
+              protocol: TCP
+          env:
+            - name: PORT
+              value: "8000"
+            - name: GRPC_PORT
+              value: "9000"
+            - name: ENVIRONMENT
+              value: "production"
+            - name: LOG_LEVEL
+              value: "INFO"
+            - name: WORKERS
+              value: "4"
+            - name: CUDA_VISIBLE_DEVICES
+              value: "0"
+          envFrom:
+            - configMapRef:
+                name: annotateai-config
+            - secretRef:
+                name: ai-api-keys
+            - secretRef:
+                name: monitoring-secrets
+          resources:
+            requests:
+              cpu: "2"
+              memory: "8Gi"
+              nvidia.com/gpu: 1
+            limits:
+              cpu: "8"
+              memory: "32Gi"
+              nvidia.com/gpu: 1
+          volumeMounts:
+            - name: models-storage
+              mountPath: /data/models
+              readOnly: false
+            - name: shared-temp
+              mountPath: /tmp/shared
+              readOnly: false
+            - name: model-cache
+              mountPath: /cache
+              readOnly: false
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 120
+            periodSeconds: 30
+            timeoutSeconds: 10
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          startupProbe:
+            httpGet:
+              path: /startup
+              port: http
+            initialDelaySeconds: 60
+            periodSeconds: 30
+            timeoutSeconds: 10
+            failureThreshold: 10
+      volumes:
+        - name: models-storage
+          persistentVolumeClaim:
+            claimName: ai-models-pvc
+        - name: shared-temp
+          persistentVolumeClaim:
+            claimName: shared-temp-pvc
+        - name: model-cache
+          emptyDir:
+            sizeLimit: 50Gi
+      imagePullSecrets:
+        - name: container-registry-secrets
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 60
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ai-model-service
+  namespace: annotateai
+  labels:
+    app: ai-model-service
+    component: ai-inference
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 8000
+      targetPort: http
+      protocol: TCP
+    - name: grpc
+      port: 9000
+      targetPort: grpc
+      protocol: TCP
+  selector:
+    app: ai-model-service
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: ai-model-service-sa
+  namespace: annotateai
+  labels:
+    app: ai-model-service
+    component: service-account
+automountServiceAccountToken: true
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: ai-model-service-role
+  labels:
+    app: ai-model-service
+    component: rbac
+rules:
+  - apiGroups: [""]
+    resources: ["nodes", "pods", "services", "endpoints"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["metrics.k8s.io"]
+    resources: ["nodes", "pods"]
+    verbs: ["get", "list"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: ai-model-service-binding
+  labels:
+    app: ai-model-service
+    component: rbac
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: ai-model-service-role
+subjects:
+  - kind: ServiceAccount
+    name: ai-model-service-sa
+    namespace: annotateai
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: ai-model-service-hpa
+  namespace: annotateai
+  labels:
+    app: ai-model-service
+    component: autoscaling
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: ai-model-service
+  minReplicas: 2
+  maxReplicas: 20
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 80
+    - type: Pods
+      pods:
+        metric:
+          name: nvidia_gpu_utilization
+        target:
+          type: AverageValue
+          averageValue: "70"
+  behavior:
+    scaleUp:
+      stabilizationWindowSeconds: 300
+      policies:
+        - type: Percent
+          value: 50
+          periodSeconds: 60
+        - type: Pods
+          value: 2
+          periodSeconds: 60
+      selectPolicy: Max
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+        - type: Percent
+          value: 25
+          periodSeconds: 60
+        - type: Pods
+          value: 1
+          periodSeconds: 60
+      selectPolicy: Min
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: ai-model-service-pdb
+  namespace: annotateai
+  labels:
+    app: ai-model-service
+    component: availability
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: ai-model-service
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: ai-model-service-netpol
+  namespace: annotateai
+  labels:
+    app: ai-model-service
+    component: security
+spec:
+  podSelector:
+    matchLabels:
+      app: ai-model-service
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: annotateai
+        - podSelector:
+            matchLabels:
+              app: api-gateway
+        - podSelector:
+            matchLabels:
+              app: nginx-ingress
+      ports:
+        - protocol: TCP
+          port: 8000
+        - protocol: TCP
+          port: 9000
+  egress:
+    - to: []
+      ports:
+        - protocol: TCP
+          port: 53
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 443
+        - protocol: TCP
+          port: 80
+        - protocol: TCP
+          port: 5432  # PostgreSQL
+        - protocol: TCP
+          port: 6379  # Redis
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ai-model-service-config
+  namespace: annotateai
+  labels:
+    app: ai-model-service
+    component: config
+data:
+  model_config.yaml: |
+    models:
+      yolo:
+        name: "YOLOv8"
+        version: "8.0.0"
+        framework: "ultralytics"
+        device: "cuda:0"
+        batch_size: 32
+        confidence_threshold: 0.5
+        nms_threshold: 0.4
+        input_size: [640, 640]
+        classes: 80
+        preprocess:
+          normalize: true
+          mean: [0.485, 0.456, 0.406]
+          std: [0.229, 0.224, 0.225]
+      
+      sam:
+        name: "Segment Anything Model"
+        version: "1.0.0"
+        framework: "facebook"
+        device: "cuda:0"
+        batch_size: 1
+        input_size: [1024, 1024]
+        mask_threshold: 0.0
+        overlap_threshold: 0.88
+        stability_score_threshold: 0.95
+      
+      depth_estimation:
+        name: "MiDaS"
+        version: "3.1.0"
+        framework: "intel"
+        device: "cuda:0"
+        batch_size: 8
+        input_size: [384, 384]
+        alpha: 10.0
+      
+      pose_estimation:
+        name: "OpenPose"
+        version: "1.7.0"
+        framework: "cmu"
+        device: "cuda:0"
+        batch_size: 16
+        input_size: [368, 368]
+        num_keypoints: 18
+    
+    inference:
+      max_concurrent_requests: 100
+      request_timeout: 30
+      model_warmup: true
+      result_caching: true
+      cache_ttl: 3600
+    
+    performance:
+      gpu_memory_fraction: 0.8
+      mixed_precision: true
+      tensorrt_optimization: true
+      onnx_optimization: true
+      quantization: "int8"
+    
+    monitoring:
+      enable_metrics: true
+      metrics_port: 8000
+      health_check_interval: 30
+      model_drift_detection: true
+      performance_tracking: true
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: ai-model-service-monitor
+  namespace: annotateai
+  labels:
+    app: ai-model-service
+    component: monitoring
+spec:
+  selector:
+    matchLabels:
+      app: ai-model-service
+  endpoints:
+    - port: http
+      path: /metrics
+      interval: 30s
+      scrapeTimeout: 10s
+      honorLabels: true
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: ai-model-cache-pvc
+  namespace: annotateai
+  labels:
+    app: ai-model-service
+    component: cache
+spec:
+  storageClassName: annotateai-nvme
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Gi 

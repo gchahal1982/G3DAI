@@ -1,67 +1,95 @@
-# AnnotateAI Production Dockerfile
-# Multi-stage build for optimized production deployment
+# Multi-stage Dockerfile for AnnotateAI Platform
+# Optimized for development deployment
 
-# Stage 1: Base dependencies
-FROM node:18-alpine AS base
-WORKDIR /app
-RUN apk add --no-cache \
-    python3 \
-    make \
-    g++ \
-    libc6-compat \
-    && rm -rf /var/cache/apk/*
+# Stage 1: Base image with system dependencies
+FROM python:3.10-slim AS base
 
-# Stage 2: Dependencies installation
-FROM base AS deps
-COPY package*.json ./
-RUN npm ci --only=production --no-audit --no-fund
+# Set environment variables
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    DEBIAN_FRONTEND=noninteractive \
+    TZ=UTC
 
-# Stage 3: Build stage
-FROM base AS build
-COPY package*.json ./
-RUN npm ci --no-audit --no-fund
-COPY . .
-RUN npm run build
-RUN npm prune --production
-
-# Stage 4: Production image
-FROM node:18-alpine AS production
-WORKDIR /app
-
-# Create non-root user for security
-RUN addgroup -g 1001 -S nodejs \
-    && adduser -S nextjs -u 1001
-
-# Install production dependencies
-RUN apk add --no-cache \
-    python3 \
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    # Build tools
+    build-essential \
+    cmake \
+    ninja-build \
+    # System libraries for computer vision and 3D processing
+    libgl1-mesa-glx \
+    libglib2.0-0 \
+    libsm6 \
+    libxext6 \
+    libxrender-dev \
+    libgomp1 \
+    # Audio processing
+    libsndfile1 \
+    ffmpeg \
+    portaudio19-dev \
+    alsa-utils \
+    # Network and security
     curl \
-    && rm -rf /var/cache/apk/*
+    wget \
+    git \
+    openssh-client \
+    ca-certificates \
+    # Database clients
+    postgresql-client \
+    redis-tools \
+    # Utilities
+    unzip \
+    vim \
+    htop \
+    && rm -rf /var/lib/apt/lists/*
 
-# Copy built application
-COPY --from=build --chown=nextjs:nodejs /app/.next/standalone ./
-COPY --from=build --chown=nextjs:nodejs /app/.next/static ./.next/static
-COPY --from=build --chown=nextjs:nodejs /app/public ./public
+# Create app user
+RUN useradd --create-home --shell /bin/bash app
+WORKDIR /app
+RUN chown app:app /app
 
-# Copy infrastructure engines
-COPY --from=build --chown=nextjs:nodejs /app/../../infrastructure/engines ./infrastructure/engines
+# Stage 2: Development environment
+FROM base AS development
 
-# Environment variables
-ENV NODE_ENV=production \
-    PORT=3000 \
-    HOSTNAME="0.0.0.0" \
-    NEXT_TELEMETRY_DISABLED=1
+# Copy requirements and install dependencies
+COPY requirements.txt /app/
+RUN pip install --no-cache-dir -r requirements.txt
 
-# Security enhancements
-RUN chown -R nextjs:nodejs /app
-USER nextjs
+# Copy application code
+COPY --chown=app:app . /app/
+
+# Switch to app user
+USER app
+
+# Expose ports for development
+EXPOSE 8000
+
+# Development command
+CMD ["uvicorn", "src.app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+
+# Stage 3: Production environment
+FROM base AS production
+
+# Copy requirements and install dependencies
+COPY requirements.txt /app/
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy application code
+COPY --chown=app:app . /app/
+
+# Create necessary directories
+RUN mkdir -p /app/data /app/models /app/logs /app/uploads && \
+    chown -R app:app /app
+
+# Switch to app user
+USER app
 
 # Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:3000/api/health || exit 1
+HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:8000/health || exit 1
 
 # Expose port
-EXPOSE 3000
+EXPOSE 8000
 
-# Start application
-CMD ["node", "server.js"] 
+# Production command
+CMD ["uvicorn", "src.app.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "4"] 

@@ -14,37 +14,32 @@
     "isolatedModules": true,
     "jsx": "react-jsx",
     "incremental": true,
-    "plugins": [
-      {
-        "name": "next"
-      }
-    ],
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"],
-      "@/core": ["./src/core"],
-      "@/integration": ["./src/integration"],
-      "@/production": ["./src/production"],
-      "@/xr": ["./src/xr"],
-      "@shared/*": ["../../shared/*"],
-      "@shared/ui": ["../../shared/components/ui"],
-      "@shared/ui/*": ["../../shared/components/ui/*"],
-      "@shared/components/*": ["../../shared/components/*"],
-      "@shared/api/*": ["../../shared/api-gateway/*"],
-      "@infrastructure/*": ["../../infrastructure/*"],
-      "@deployment/*": ["../../deployment/*"],
-      "@core/*": ["../../core/*"]
+      "@shared/*": ["shared/*"],
+      "@shared/ui": ["shared/components/ui"],
+      "@shared/ui/*": ["shared/components/ui/*"],
+      "@shared/components/*": ["shared/components/*"],
+      "@shared/api/*": ["shared/api-gateway/*"],
+      "@infrastructure/*": ["infrastructure/*"],
+      "@deployment/*": ["deployment/*"],
+      "@core/*": ["core/*"]
     }
   },
   "include": [
-    "next-env.d.ts",
-    "**/*.ts",
-    "**/*.tsx",
-    ".next/types/**/*.ts",
-    "src/**/*.ts",
-    "src/**/*.tsx"
+    "shared/**/*.ts",
+    "shared/**/*.tsx",
+    "infrastructure/**/*.ts",
+    "infrastructure/**/*.tsx",
+    "core/**/*.ts",
+    "core/**/*.tsx"
   ],
   "exclude": [
-    "node_modules"
+    "node_modules",
+    "**/*.d.ts",
+    "**/dist/**",
+    "**/build/**",
+    "**/.next/**",
+    "ai-platforms/**/*"
   ]
-} 
+}

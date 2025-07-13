@@ -1,0 +1,390 @@
+version: '3.8'
+
+services:
+  # Main AnnotateAI Application
+  annotateai:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://annotateai:password@postgres:5432/annotateai
+      - REDIS_URL=redis://redis:6379
+      - MINIO_ENDPOINT=minio:9000
+      - MINIO_ACCESS_KEY=annotateai
+      - MINIO_SECRET_KEY=annotateai123
+      - MLFLOW_TRACKING_URI=http://mlflow:5000
+      - ENVIRONMENT=development
+    volumes:
+      - ./data:/app/data
+      - ./models:/app/models
+      - ./logs:/app/logs
+    depends_on:
+      - postgres
+      - redis
+      - minio
+    networks:
+      - annotateai-network
+    restart: unless-stopped
+
+  # AI Model Service
+  ai-model-service:
+    build:
+      context: .
+      dockerfile: infrastructure/ai-model-service/Dockerfile
+    ports:
+      - "8001:8000"
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - MODEL_CACHE_DIR=/app/models
+    volumes:
+      - ./models:/app/models
+      - ./data:/app/data
+    depends_on:
+      - redis
+    networks:
+      - annotateai-network
+    restart: unless-stopped
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+
+  # 3D Processing Service
+  3d-processing-service:
+    build:
+      context: .
+      dockerfile: infrastructure/3d-processing-service/Dockerfile
+    ports:
+      - "8002:8000"
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - OUTPUT_DIR=/app/3d_outputs
+      - COLMAP_PATH=/usr/local/bin/colmap
+    volumes:
+      - ./data:/app/data
+      - ./3d_outputs:/app/3d_outputs
+    depends_on:
+      - redis
+    networks:
+      - annotateai-network
+    restart: unless-stopped
+
+  # Video Processing Service
+  video-processing-service:
+    build:
+      context: .
+      dockerfile: infrastructure/video-processing-service/Dockerfile
+    ports:
+      - "8003:8000"
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - OUTPUT_DIR=/app/video_outputs
+    volumes:
+      - ./data:/app/data
+      - ./video_outputs:/app/video_outputs
+    depends_on:
+      - redis
+    networks:
+      - annotateai-network
+    restart: unless-stopped
+
+  # Training Service
+  training-service:
+    build:
+      context: .
+      dockerfile: infrastructure/training-service/Dockerfile
+    ports:
+      - "8004:8000"
+    environment:
+      - DATABASE_URL=postgresql://annotateai:password@postgres:5432/annotateai
+      - REDIS_URL=redis://redis:6379
+      - MLFLOW_TRACKING_URI=http://mlflow:5000
+    volumes:
+      - ./data:/app/data
+      - ./models:/app/models
+      - ./experiments:/app/experiments
+    depends_on:
+      - postgres
+      - redis
+      - mlflow
+    networks:
+      - annotateai-network
+    restart: unless-stopped
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+
+  # XR Service
+  xr-service:
+    build:
+      context: .
+      dockerfile: infrastructure/xr-service/Dockerfile
+    ports:
+      - "8005:8000"
+    environment:
+      - DATABASE_URL=postgresql://annotateai:password@postgres:5432/annotateai
+      - REDIS_URL=redis://redis:6379
+      - WEBRTC_TURN_SERVER=turn:turn.example.com:3478
+    volumes:
+      - ./data:/app/data
+      - ./xr_sessions:/app/xr_sessions
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - annotateai-network
+    restart: unless-stopped
+
+  # Performance Optimization Service
+  performance-optimization:
+    build:
+      context: .
+      dockerfile: infrastructure/performance-optimization/Dockerfile
+    ports:
+      - "8006:8000"
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - DATABASE_URL=postgresql://annotateai:password@postgres:5432/annotateai
+      - INFLUXDB_URL=http://influxdb:8086
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    depends_on:
+      - redis
+      - postgres
+      - influxdb
+      - elasticsearch
+    networks:
+      - annotateai-network
+    restart: unless-stopped
+
+  # Enterprise Services
+  enterprise-services:
+    build:
+      context: .
+      dockerfile: infrastructure/enterprise-services/Dockerfile
+    ports:
+      - "8007:8000"
+    environment:
+      - DATABASE_URL=postgresql://annotateai:password@postgres:5432/annotateai
+      - REDIS_URL=redis://redis:6379
+      - JWT_SECRET_KEY=your-secret-key-here
+      - ENCRYPTION_KEY=your-encryption-key-here
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - annotateai-network
+    restart: unless-stopped
+
+  # Synthetic Data Service
+  synthetic-data-service:
+    build:
+      context: .
+      dockerfile: infrastructure/synthetic-data-service/Dockerfile
+    ports:
+      - "8008:8000"
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - MODEL_CACHE_DIR=/app/models
+      - OUTPUT_DIR=/app/synthetic_outputs
+    volumes:
+      - ./models:/app/models
+      - ./synthetic_outputs:/app/synthetic_outputs
+    depends_on:
+      - redis
+    networks:
+      - annotateai-network
+    restart: unless-stopped
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+
+  # Data Pipeline Service
+  data-pipeline:
+    build:
+      context: .
+      dockerfile: infrastructure/data-pipeline/Dockerfile
+    ports:
+      - "8009:8000"
+    environment:
+      - DATABASE_URL=postgresql://annotateai:password@postgres:5432/annotateai
+      - REDIS_URL=redis://redis:6379
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    volumes:
+      - ./data:/app/data
+      - ./pipeline_outputs:/app/pipeline_outputs
+    depends_on:
+      - postgres
+      - redis
+      - elasticsearch
+    networks:
+      - annotateai-network
+    restart: unless-stopped
+
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15
+    environment:
+      - POSTGRES_DB=annotateai
+      - POSTGRES_USER=annotateai
+      - POSTGRES_PASSWORD=password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+    ports:
+      - "5432:5432"
+    networks:
+      - annotateai-network
+    restart: unless-stopped
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - annotateai-network
+    restart: unless-stopped
+
+  # MinIO Object Storage
+  minio:
+    image: minio/minio:latest
+    command: server /data --console-address ":9001"
+    environment:
+      - MINIO_ROOT_USER=annotateai
+      - MINIO_ROOT_PASSWORD=annotateai123
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio_data:/data
+    networks:
+      - annotateai-network
+    restart: unless-stopped
+
+  # MLflow Tracking Server
+  mlflow:
+    image: python:3.9-slim
+    command: bash -c "pip install mlflow==2.8.1 && mlflow server --host 0.0.0.0 --port 5000 --default-artifact-root /mlflow/artifacts --backend-store-uri postgresql://annotateai:password@postgres:5432/annotateai"
+    ports:
+      - "5001:5000"
+    volumes:
+      - ./data/mlflow:/mlflow
+    depends_on:
+      - postgres
+    networks:
+      - annotateai-network
+    restart: unless-stopped
+    environment:
+      - MLFLOW_S3_ENDPOINT_URL=http://minio:9000
+      - MLFLOW_S3_IGNORE_TLS=true
+      - AWS_ACCESS_KEY_ID=annotateai
+      - AWS_SECRET_ACCESS_KEY=annotateai123
+
+  # Elasticsearch
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.0
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
+    ports:
+      - "9200:9200"
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    networks:
+      - annotateai-network
+    restart: unless-stopped
+
+  # InfluxDB
+  influxdb:
+    image: influxdb:2.7
+    environment:
+      - DOCKER_INFLUXDB_INIT_MODE=setup
+      - DOCKER_INFLUXDB_INIT_USERNAME=admin
+      - DOCKER_INFLUXDB_INIT_PASSWORD=annotateai123
+      - DOCKER_INFLUXDB_INIT_ORG=annotateai
+      - DOCKER_INFLUXDB_INIT_BUCKET=metrics
+    ports:
+      - "8086:8086"
+    volumes:
+      - influxdb_data:/var/lib/influxdb2
+    networks:
+      - annotateai-network
+    restart: unless-stopped
+
+  # Grafana
+  grafana:
+    image: grafana/grafana:10.2.0
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=annotateai123
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+    depends_on:
+      - influxdb
+    networks:
+      - annotateai-network
+    restart: unless-stopped
+
+  # Prometheus
+  prometheus:
+    image: prom/prometheus:latest
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--web.enable-lifecycle'
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./deployment/monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    networks:
+      - annotateai-network
+    restart: unless-stopped
+
+  # Nginx Reverse Proxy
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./deployment/nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./deployment/nginx/ssl:/etc/nginx/ssl
+    depends_on:
+      - annotateai
+    networks:
+      - annotateai-network
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  redis_data:
+  minio_data:
+  elasticsearch_data:
+  influxdb_data:
+  grafana_data:
+  prometheus_data:
+
+networks:
+  annotateai-network:
+    driver: bridge 

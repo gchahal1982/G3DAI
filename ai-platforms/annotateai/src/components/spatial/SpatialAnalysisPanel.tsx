@@ -27,8 +27,6 @@ import {
     Search,
     Filter,
     Target,
-    Grid,
-    Layers,
     Activity,
     BarChart3,
     TrendingUp,
@@ -40,49 +38,19 @@ import {
     Minimize2,
     Eye,
     EyeOff,
-    Crosshair,
-    Circle,
-    Square,
-    Triangle,
-    Hexagon,
-    Octagon,
-    Navigation,
-    Compass,
-    Map,
-    Route,
-    Waypoints,
-    Locate,
-    Radar,
     Zap,
     Gauge,
     Ruler,
     Clock,
-    Timer,
-    Database,
     HardDrive,
     Cpu,
-    MemoryStick,
     Network,
     Wifi,
-    Signal,
     Plus,
     Minus,
     Move,
     RotateCw,
-    ZoomIn,
-    ZoomOut,
-    PenTool,
-    MousePointer,
-    Hand,
-    Grab,
-    Move3D,
     Box,
-    Cylinder,
-    Cone,
-    Torus,
-    Pyramid,
-    Disc,
-    Plane,
     Pin,
     Calculator,
     BarChart,
@@ -90,142 +58,26 @@ import {
     ScatterChart,
     LineChart,
     AreaChart,
-    ArrowUp,
-    ArrowDown,
-    ArrowLeft,
-    ArrowRight,
-    ArrowUpDown,
-    ArrowLeftRight,
-    ChevronUp,
-    ChevronDown,
-    ChevronLeft,
-    ChevronRight,
-    ChevronsUp,
-    ChevronsDown,
-    ChevronsLeft,
-    ChevronsRight,
-    MoreHorizontal,
-    MoreVertical,
-    Menu,
-    List,
-    Grid3X3,
-    Layout,
-    Layers3,
-    Binary,
-    Hash,
-    Fingerprint,
-    Scan,
-    Focus,
-    Aperture,
-    Telescope,
-    Microscope,
-    Binoculars,
-    Flashlight,
-    Lightbulb,
-    Sun,
-    Moon,
-    Star,
-    Sparkles,
-    Flame,
-    Droplets,
-    Wind,
-    Waves,
-    Mountain,
-    TreePine,
-    Globe,
-    Earth,
-    Satellite,
-    Orbit,
-    Atom,
-    Dna,
-    Magnet,
-    Zap as Lightning,
-    Bolt,
-    BatteryCharging,
-    Power,
-    Plug,
-    Cable,
-    Antenna,
-    Radio,
-    Bluetooth,
-    Smartphone,
-    Tablet,
-    Laptop,
-    Monitor,
-    Tv,
-    Camera,
-    Video,
-    Mic,
-    Speaker,
-    Headphones,
-    VolumeX,
-    Volume1,
-    Volume2
+    Database,
+    MemoryStick,
+    X
 } from 'lucide-react';
 
 // UI Components
-import {
-    Button,
-    Card,
-    CardContent,
-    CardHeader,
-    CardTitle,
-    Badge,
-    Slider,
-    Switch,
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-    Tooltip,
-    TooltipContent,
-    TooltipProvider,
-    TooltipTrigger,
-    Progress,
-    Tabs,
-    TabsContent,
-    TabsList,
-    TabsTrigger,
-    Alert,
-    AlertDescription,
-    Input,
-    Label,
-    Separator,
-    ScrollArea,
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
-    DropdownMenuSeparator,
-    Dialog,
-    DialogContent,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger,
-    DialogFooter,
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-    RadioGroup,
-    RadioGroupItem,
-    Checkbox,
-    Textarea,
-    Command,
-    CommandEmpty,
-    CommandGroup,
-    CommandInput,
-    CommandItem,
-    CommandList,
-    CommandSeparator,
-    CommandShortcut,
-    Popover,
-    PopoverContent,
-    PopoverTrigger
-} from '../../../../../shared/components/ui';
+import { Button } from '../../../../../shared/components/ui/Button';
+import { Card, CardContent, CardHeader, CardTitle } from '../../../../../shared/components/ui/Card';
+import { Badge } from '../../../../../shared/components/ui/Badge';
+import { Slider } from '../../../../../shared/components/ui/Slider';
+import { Switch } from '../../../../../shared/components/ui/Switch';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../../../shared/components/ui/Select';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../../../../../shared/components/ui/Tooltip';
+import { Progress } from '../../../../../shared/components/ui/Progress';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../../../../shared/components/ui/Tabs';
+import { Alert, AlertDescription } from '../../../../../shared/components/ui/Alert';
+import { Input } from '../../../../../shared/components/ui/Input';
+import { Label } from '../../../../../shared/components/ui/Label';
+import { Separator } from '../../../../../shared/components/ui/Separator';
+import { ScrollArea } from '../../../../../shared/components/ui/ScrollArea';
 
 // Backend Service Integration
 import { 
@@ -299,6 +151,7 @@ interface SpatialAnalysisPanelProps {
     onAnalysisComplete?: (analysis: GeometricAnalysis) => void;
     onCollisionDetected?: (collision: CollisionResult) => void;
     onRaycastComplete?: (results: RaycastResult[]) => void;
+    onClose?: () => void;
     isVisible?: boolean;
     className?: string;
 }
@@ -308,6 +161,7 @@ export function SpatialAnalysisPanel({
     onAnalysisComplete,
     onCollisionDetected,
     onRaycastComplete,
+    onClose,
     isVisible = true,
     className = ""
 }: SpatialAnalysisPanelProps) {
@@ -1128,6 +982,21 @@ export function SpatialAnalysisPanel({
                                         </TooltipTrigger>
                                         <TooltipContent>{isExpanded ? 'Collapse' : 'Expand'}</TooltipContent>
                                     </Tooltip>
+                                    {onClose && (
+                                        <Tooltip>
+                                            <TooltipTrigger asChild>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    onClick={onClose}
+                                                    className="h-8 w-8 p-0 text-white/60 hover:text-white"
+                                                >
+                                                    <X className="w-4 h-4" />
+                                                </Button>
+                                            </TooltipTrigger>
+                                            <TooltipContent>Close</TooltipContent>
+                                        </Tooltip>
+                                    )}
                                 </div>
                             </div>
                         </CardHeader>

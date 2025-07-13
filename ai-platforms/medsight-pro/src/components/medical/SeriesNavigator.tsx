@@ -117,6 +117,7 @@ export function SeriesNavigator({
   const [playSpeed, setPlaySpeed] = useState(1);
   const [searchTerm, setSearchTerm] = useState('');
   const [showFilters, setShowFilters] = useState(false);
+  const [localFilterBy, setLocalFilterBy] = useState(filterBy);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -174,17 +175,17 @@ export function SeriesNavigator({
       }
       
       // Modality filter
-      if (filterBy.modality && s.modality !== filterBy.modality) {
+      if (localFilterBy.modality && s.modality !== localFilterBy.modality) {
         return false;
       }
       
       // Body part filter
-      if (filterBy.bodyPart && s.bodyPart !== filterBy.bodyPart) {
+      if (localFilterBy.bodyPart && s.bodyPart !== localFilterBy.bodyPart) {
         return false;
       }
       
       // AI results filter
-      if (filterBy.hasAI !== undefined && (s.aiAnalysis?.hasResults || false) !== filterBy.hasAI) {
+      if (localFilterBy.hasAI !== undefined && (s.aiAnalysis?.hasResults || false) !== localFilterBy.hasAI) {
         return false;
       }
       
@@ -533,8 +534,8 @@ export function SeriesNavigator({
           {showFilters && (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
               <select
-                value={filterBy.modality || ''}
-                onChange={(e) => setFilterBy({ ...filterBy, modality: e.target.value || undefined })}
+                value={localFilterBy.modality || ''}
+                onChange={(e) => setLocalFilterBy({ ...localFilterBy, modality: e.target.value || undefined })}
                 className="input-medsight text-xs"
               >
                 <option value="">All Modalities</option>
@@ -544,8 +545,8 @@ export function SeriesNavigator({
               </select>
               
               <select
-                value={filterBy.bodyPart || ''}
-                onChange={(e) => setFilterBy({ ...filterBy, bodyPart: e.target.value || undefined })}
+                value={localFilterBy.bodyPart || ''}
+                onChange={(e) => setLocalFilterBy({ ...localFilterBy, bodyPart: e.target.value || undefined })}
                 className="input-medsight text-xs"
               >
                 <option value="">All Body Parts</option>
@@ -555,9 +556,9 @@ export function SeriesNavigator({
               </select>
               
               <select
-                value={filterBy.hasAI === undefined ? '' : filterBy.hasAI ? 'true' : 'false'}
-                onChange={(e) => setFilterBy({ 
-                  ...filterBy, 
+                value={localFilterBy.hasAI === undefined ? '' : localFilterBy.hasAI ? 'true' : 'false'}
+                onChange={(e) => setLocalFilterBy({ 
+                  ...localFilterBy, 
                   hasAI: e.target.value === '' ? undefined : e.target.value === 'true'
                 })}
                 className="input-medsight text-xs"

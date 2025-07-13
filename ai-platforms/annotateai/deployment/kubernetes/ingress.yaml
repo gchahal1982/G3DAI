@@ -1,0 +1,476 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: annotateai-ingress
+  namespace: annotateai
+  labels:
+    app: annotateai
+    component: ingress
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/proxy-body-size: "1024m"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "600"
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "600"
+    nginx.ingress.kubernetes.io/rate-limit: "100"
+    nginx.ingress.kubernetes.io/rate-limit-window: "1m"
+    nginx.ingress.kubernetes.io/enable-cors: "true"
+    nginx.ingress.kubernetes.io/cors-allow-origin: "*"
+    nginx.ingress.kubernetes.io/cors-allow-methods: "GET, POST, PUT, DELETE, OPTIONS"
+    nginx.ingress.kubernetes.io/cors-allow-headers: "DNT,X-CustomHeader,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Authorization"
+    nginx.ingress.kubernetes.io/use-gzip: "true"
+    nginx.ingress.kubernetes.io/gzip-types: "text/plain,text/css,application/json,application/javascript,text/xml,application/xml,application/xml+rss,text/javascript"
+spec:
+  tls:
+    - hosts:
+        - annotateai.com
+        - www.annotateai.com
+        - api.annotateai.com
+        - app.annotateai.com
+        - admin.annotateai.com
+        - monitoring.annotateai.com
+      secretName: annotateai-tls
+  rules:
+    # Main application domain
+    - host: annotateai.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: frontend-service
+                port:
+                  number: 3000
+          - path: /api/
+            pathType: Prefix
+            backend:
+              service:
+                name: api-gateway-service
+                port:
+                  number: 8000
+          - path: /health
+            pathType: Exact
+            backend:
+              service:
+                name: api-gateway-service
+                port:
+                  number: 8000
+    
+    # WWW redirect
+    - host: www.annotateai.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: frontend-service
+                port:
+                  number: 3000
+    
+    # API subdomain
+    - host: api.annotateai.com
+      http:
+        paths:
+          # AI Model Service
+          - path: /ai/
+            pathType: Prefix
+            backend:
+              service:
+                name: ai-model-service
+                port:
+                  number: 8000
+          
+          # Enterprise Services (Auth, SSO, etc.)
+          - path: /auth/
+            pathType: Prefix
+            backend:
+              service:
+                name: enterprise-services
+                port:
+                  number: 8000
+          
+          # Performance Optimization Service
+          - path: /performance/
+            pathType: Prefix
+            backend:
+              service:
+                name: performance-optimization-service
+                port:
+                  number: 8000
+          
+          # Data Pipeline Service
+          - path: /pipeline/
+            pathType: Prefix
+            backend:
+              service:
+                name: data-pipeline-service
+                port:
+                  number: 8000
+          
+          # Video Processing Service
+          - path: /video/
+            pathType: Prefix
+            backend:
+              service:
+                name: video-processing-service
+                port:
+                  number: 8000
+          
+          # 3D Processing Service
+          - path: /3d/
+            pathType: Prefix
+            backend:
+              service:
+                name: 3d-processing-service
+                port:
+                  number: 8000
+          
+          # XR Service
+          - path: /xr/
+            pathType: Prefix
+            backend:
+              service:
+                name: xr-service
+                port:
+                  number: 8000
+          
+          # Synthetic Data Service
+          - path: /synthetic/
+            pathType: Prefix
+            backend:
+              service:
+                name: synthetic-data-service
+                port:
+                  number: 8000
+          
+          # Training Service
+          - path: /training/
+            pathType: Prefix
+            backend:
+              service:
+                name: training-service
+                port:
+                  number: 8000
+    
+    # Application subdomain
+    - host: app.annotateai.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: frontend-service
+                port:
+                  number: 3000
+          - path: /api/
+            pathType: Prefix
+            backend:
+              service:
+                name: api-gateway-service
+                port:
+                  number: 8000
+    
+    # Admin subdomain
+    - host: admin.annotateai.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: admin-dashboard-service
+                port:
+                  number: 3000
+          - path: /api/
+            pathType: Prefix
+            backend:
+              service:
+                name: enterprise-services
+                port:
+                  number: 8000
+    
+    # Monitoring subdomain
+    - host: monitoring.annotateai.com
+      http:
+        paths:
+          # Grafana Dashboard
+          - path: /grafana/
+            pathType: Prefix
+            backend:
+              service:
+                name: grafana-service
+                port:
+                  number: 3000
+          
+          # Prometheus Metrics
+          - path: /prometheus/
+            pathType: Prefix
+            backend:
+              service:
+                name: prometheus-service
+                port:
+                  number: 9090
+          
+          # Elasticsearch Logs
+          - path: /elasticsearch/
+            pathType: Prefix
+            backend:
+              service:
+                name: elasticsearch-service
+                port:
+                  number: 9200
+          
+          # MinIO Console
+          - path: /minio/
+            pathType: Prefix
+            backend:
+              service:
+                name: minio-service
+                port:
+                  number: 9001
+---
+# Internal Ingress for cluster-internal services
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: annotateai-internal-ingress
+  namespace: annotateai
+  labels:
+    app: annotateai
+    component: internal-ingress
+  annotations:
+    kubernetes.io/ingress.class: "nginx-internal"
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    nginx.ingress.kubernetes.io/proxy-body-size: "10g"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "60"
+    nginx.ingress.kubernetes.io/whitelist-source-range: "10.0.0.0/8,172.16.0.0/12,192.168.0.0/16"
+spec:
+  rules:
+    # Internal services domain
+    - host: internal.annotateai.local
+      http:
+        paths:
+          # Database Admin (if exposed)
+          - path: /pgadmin/
+            pathType: Prefix
+            backend:
+              service:
+                name: pgadmin-service
+                port:
+                  number: 80
+          
+          # Redis Commander
+          - path: /redis/
+            pathType: Prefix
+            backend:
+              service:
+                name: redis-commander-service
+                port:
+                  number: 8081
+          
+          # Airflow Web UI
+          - path: /airflow/
+            pathType: Prefix
+            backend:
+              service:
+                name: airflow-webserver-service
+                port:
+                  number: 8080
+          
+          # TensorBoard
+          - path: /tensorboard/
+            pathType: Prefix
+            backend:
+              service:
+                name: tensorboard-service
+                port:
+                  number: 6006
+          
+          # Jupyter Notebooks (for data science)
+          - path: /jupyter/
+            pathType: Prefix
+            backend:
+              service:
+                name: jupyter-service
+                port:
+                  number: 8888
+---
+# Certificate Issuer for Let's Encrypt
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-prod
+  labels:
+    app: cert-manager
+    component: cluster-issuer
+spec:
+  acme:
+    server: https://acme-v02.api.letsencrypt.org/directory
+    email: admin@annotateai.com
+    privateKeySecretRef:
+      name: letsencrypt-prod
+    solvers:
+      - http01:
+          ingress:
+            class: nginx
+---
+# Staging Certificate Issuer
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-staging
+  labels:
+    app: cert-manager
+    component: cluster-issuer
+spec:
+  acme:
+    server: https://acme-staging-v02.api.letsencrypt.org/directory
+    email: admin@annotateai.com
+    privateKeySecretRef:
+      name: letsencrypt-staging
+    solvers:
+      - http01:
+          ingress:
+            class: nginx
+---
+# NGINX Ingress Controller Configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nginx-configuration
+  namespace: ingress-nginx
+  labels:
+    app.kubernetes.io/name: ingress-nginx
+    app.kubernetes.io/part-of: ingress-nginx
+data:
+  # Global NGINX configuration
+  map-hash-bucket-size: "128"
+  ssl-protocols: "TLSv1.2 TLSv1.3"
+  ssl-ciphers: "ECDHE-RSA-AES256-GCM-SHA512:DHE-RSA-AES256-GCM-SHA512:ECDHE-RSA-AES256-GCM-SHA384:DHE-RSA-AES256-GCM-SHA384"
+  ssl-prefer-server-ciphers: "on"
+  
+  # Performance tuning
+  worker-processes: "auto"
+  worker-connections: "10240"
+  worker-rlimit-nofile: "65535"
+  
+  # Buffer sizes
+  client-body-buffer-size: "128k"
+  client-header-buffer-size: "32k"
+  large-client-header-buffers: "4 32k"
+  client-body-timeout: "60s"
+  client-header-timeout: "60s"
+  
+  # Keepalive
+  keepalive-timeout: "75s"
+  keepalive-requests: "1000"
+  
+  # Compression
+  gzip-types: "text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript application/x-font-ttf image/svg+xml"
+  gzip-level: "6"
+  
+  # Rate limiting
+  limit-req-status-code: "429"
+  limit-conn-status-code: "429"
+  
+  # Proxy settings
+  proxy-buffer-size: "16k"
+  proxy-buffers: "8 16k"
+  proxy-busy-buffers-size: "32k"
+  
+  # Security headers
+  add-headers: "annotateai/security-headers"
+  
+  # Metrics
+  enable-vts-status: "true"
+  
+  # Real IP
+  use-forwarded-headers: "true"
+  compute-full-forwarded-for: "true"
+  forwarded-for-header: "X-Forwarded-For"
+  real-ip-header: "X-Forwarded-For"
+  
+  # Upload limits
+  proxy-body-size: "1024m"
+  
+  # Timeouts
+  proxy-connect-timeout: "60s"
+  proxy-send-timeout: "600s"
+  proxy-read-timeout: "600s"
+  
+  # WebSocket support
+  proxy-set-headers: "annotateai/websocket-headers"
+---
+# Security headers ConfigMap
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: security-headers
+  namespace: ingress-nginx
+  labels:
+    app.kubernetes.io/name: ingress-nginx
+    app.kubernetes.io/part-of: ingress-nginx
+data:
+  X-Frame-Options: "DENY"
+  X-Content-Type-Options: "nosniff"
+  X-XSS-Protection: "1; mode=block"
+  Strict-Transport-Security: "max-age=31536000; includeSubDomains; preload"
+  Referrer-Policy: "strict-origin-when-cross-origin"
+  Content-Security-Policy: "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' wss: https:; frame-ancestors 'none';"
+  Permissions-Policy: "geolocation=(), microphone=(), camera=()"
+---
+# WebSocket headers ConfigMap
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: websocket-headers
+  namespace: ingress-nginx
+  labels:
+    app.kubernetes.io/name: ingress-nginx
+    app.kubernetes.io/part-of: ingress-nginx
+data:
+  Upgrade: "$http_upgrade"
+  Connection: "upgrade"
+  Host: "$host"
+  X-Real-IP: "$remote_addr"
+  X-Forwarded-For: "$proxy_add_x_forwarded_for"
+  X-Forwarded-Proto: "$scheme"
+---
+# Service for load balancer
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-ingress-controller
+  namespace: ingress-nginx
+  labels:
+    app.kubernetes.io/name: ingress-nginx
+    app.kubernetes.io/part-of: ingress-nginx
+  annotations:
+    service.beta.kubernetes.io/aws-load-balancer-type: "nlb"
+    service.beta.kubernetes.io/aws-load-balancer-backend-protocol: "tcp"
+    service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled: "true"
+    service.beta.kubernetes.io/aws-load-balancer-ssl-cert: "arn:aws:acm:us-west-2:123456789012:certificate/12345678-1234-1234-1234-123456789012"
+    service.beta.kubernetes.io/aws-load-balancer-ssl-ports: "https"
+spec:
+  type: LoadBalancer
+  externalTrafficPolicy: Local
+  ports:
+    - name: http
+      port: 80
+      targetPort: 80
+      protocol: TCP
+    - name: https
+      port: 443
+      targetPort: 443
+      protocol: TCP
+  selector:
+    app.kubernetes.io/name: ingress-nginx
+    app.kubernetes.io/part-of: ingress-nginx 

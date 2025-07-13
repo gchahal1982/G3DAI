@@ -1,0 +1,370 @@
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: annotateai-ssd
+  labels:
+    app: annotateai
+    component: storage
+provisioner: kubernetes.io/aws-ebs
+parameters:
+  type: gp3
+  iops: "3000"
+  throughput: "125"
+  encrypted: "true"
+reclaimPolicy: Retain
+allowVolumeExpansion: true
+volumeBindingMode: WaitForFirstConsumer
+---
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: annotateai-hdd
+  labels:
+    app: annotateai
+    component: storage
+provisioner: kubernetes.io/aws-ebs
+parameters:
+  type: st1
+  encrypted: "true"
+reclaimPolicy: Retain
+allowVolumeExpansion: true
+volumeBindingMode: WaitForFirstConsumer
+---
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: annotateai-nvme
+  labels:
+    app: annotateai
+    component: storage
+provisioner: kubernetes.io/aws-ebs
+parameters:
+  type: io2
+  iops: "10000"
+  encrypted: "true"
+reclaimPolicy: Retain
+allowVolumeExpansion: true
+volumeBindingMode: WaitForFirstConsumer
+---
+# PostgreSQL Database Storage
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: postgres-data-pvc
+  namespace: annotateai
+  labels:
+    app: postgres
+    component: database
+spec:
+  storageClassName: annotateai-ssd
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 500Gi
+---
+# Redis Storage
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: redis-data-pvc
+  namespace: annotateai
+  labels:
+    app: redis
+    component: cache
+spec:
+  storageClassName: annotateai-ssd
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Gi
+---
+# AI Models Storage (High-performance SSD)
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: ai-models-pvc
+  namespace: annotateai
+  labels:
+    app: ai-models
+    component: storage
+spec:
+  storageClassName: annotateai-nvme
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 2Ti
+---
+# Training Data Storage (Large capacity)
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: training-data-pvc
+  namespace: annotateai
+  labels:
+    app: training
+    component: data
+spec:
+  storageClassName: annotateai-hdd
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 10Ti
+---
+# Processed Data Storage
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: processed-data-pvc
+  namespace: annotateai
+  labels:
+    app: data-pipeline
+    component: processed
+spec:
+  storageClassName: annotateai-ssd
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 5Ti
+---
+# Video Data Storage
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: video-data-pvc
+  namespace: annotateai
+  labels:
+    app: video-processing
+    component: data
+spec:
+  storageClassName: annotateai-hdd
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 20Ti
+---
+# 3D Point Cloud Storage
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pointcloud-data-pvc
+  namespace: annotateai
+  labels:
+    app: 3d-processing
+    component: data
+spec:
+  storageClassName: annotateai-ssd
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 5Ti
+---
+# XR Spatial Anchors Storage
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: xr-anchors-pvc
+  namespace: annotateai
+  labels:
+    app: xr-service
+    component: anchors
+spec:
+  storageClassName: annotateai-ssd
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 100Gi
+---
+# Elasticsearch Data Storage
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: elasticsearch-data-pvc
+  namespace: annotateai
+  labels:
+    app: elasticsearch
+    component: search
+spec:
+  storageClassName: annotateai-ssd
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Ti
+---
+# Prometheus Metrics Storage
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: prometheus-data-pvc
+  namespace: annotateai
+  labels:
+    app: prometheus
+    component: monitoring
+spec:
+  storageClassName: annotateai-ssd
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 200Gi
+---
+# Grafana Dashboard Storage
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: grafana-data-pvc
+  namespace: annotateai
+  labels:
+    app: grafana
+    component: dashboards
+spec:
+  storageClassName: annotateai-ssd
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 50Gi
+---
+# MinIO Object Storage
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: minio-data-pvc
+  namespace: annotateai
+  labels:
+    app: minio
+    component: object-storage
+spec:
+  storageClassName: annotateai-hdd
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 50Ti
+---
+# Backup Storage
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: backup-data-pvc
+  namespace: annotateai
+  labels:
+    app: backup
+    component: storage
+spec:
+  storageClassName: annotateai-hdd
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 100Ti
+---
+# Airflow DAGs and Logs Storage
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: airflow-data-pvc
+  namespace: annotateai
+  labels:
+    app: airflow
+    component: pipeline
+spec:
+  storageClassName: annotateai-ssd
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 200Gi
+---
+# Shared Temporary Storage
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: shared-temp-pvc
+  namespace: annotateai
+  labels:
+    app: shared
+    component: temp
+spec:
+  storageClassName: annotateai-nvme
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 1Ti
+---
+# TensorBoard Logs Storage
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: tensorboard-logs-pvc
+  namespace: annotateai
+  labels:
+    app: tensorboard
+    component: logs
+spec:
+  storageClassName: annotateai-ssd
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 500Gi
+---
+# Model Checkpoints Storage
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: model-checkpoints-pvc
+  namespace: annotateai
+  labels:
+    app: training
+    component: checkpoints
+spec:
+  storageClassName: annotateai-ssd
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 2Ti
+---
+# DataHub Metadata Storage
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: datahub-data-pvc
+  namespace: annotateai
+  labels:
+    app: datahub
+    component: metadata
+spec:
+  storageClassName: annotateai-ssd
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 200Gi
+---
+# Apache Atlas Metadata Storage
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: atlas-data-pvc
+  namespace: annotateai
+  labels:
+    app: atlas
+    component: metadata
+spec:
+  storageClassName: annotateai-ssd
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 200Gi 

@@ -2,13 +2,15 @@
 
 import React, { useState, useEffect } from 'react';
 import { 
-  RulerIcon,
-  Square2StackIcon,
-  CircleStackIcon,
+  ChartBarIcon,
+  Square3Stack3DIcon,
   CalculatorIcon,
-  ClockIcon,
+  CubeIcon,
+  CircleStackIcon,
+  ArrowPathIcon,
   TrashIcon,
-  DocumentDuplicateIcon,
+  DocumentTextIcon,
+  ShareIcon,
   ArrowDownTrayIcon,
   EyeIcon,
   EyeSlashIcon,
@@ -16,11 +18,30 @@ import {
   CheckIcon,
   XMarkIcon,
   InformationCircleIcon,
-  ChartBarIcon,
-  Cog6ToothIcon,
+  ExclamationTriangleIcon,
+  ClockIcon,
+  UserIcon,
+  HeartIcon,
+  CpuChipIcon,
+  AcademicCapIcon,
   BeakerIcon,
-  MapIcon,
-  CubeIcon
+  FireIcon,
+  ShieldCheckIcon,
+  MapPinIcon,
+  TagIcon,
+  StarIcon,
+  ChevronDownIcon,
+  ChevronUpIcon,
+  MagnifyingGlassIcon,
+  Cog6ToothIcon,
+  PlusIcon,
+  MinusIcon,
+  Squares2X2Icon,
+  ViewfinderCircleIcon,
+  ScaleIcon,
+  VariableIcon,
+  PresentationChartLineIcon,
+  TableCellsIcon
 } from '@heroicons/react/24/outline';
 
 export interface Point {
@@ -262,13 +283,13 @@ export function MeasurementTools({
 
   const getTypeIcon = (type: Measurement['type']) => {
     switch (type) {
-      case 'linear': return RulerIcon;
-      case 'area': return Square2StackIcon;
+      case 'linear': return ScaleIcon;
+      case 'area': return Square3Stack3DIcon;
       case 'ellipse': return CircleStackIcon;
-      case 'angle': return MapIcon;
+      case 'angle': return MapPinIcon;
       case 'volume': return CubeIcon;
       case 'freehand': return PencilIcon;
-      default: return RulerIcon;
+      default: return ScaleIcon;
     }
   };
 
@@ -350,7 +371,7 @@ export function MeasurementTools({
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center space-x-3">
             <div className="medsight-control-glass p-2 rounded-lg">
-              <RulerIcon className="w-5 h-5 text-medsight-primary" />
+              <ScaleIcon className="w-5 h-5 text-medsight-primary" />
             </div>
             <div>
               <h3 className="text-lg font-semibold text-medsight-primary">
@@ -368,7 +389,7 @@ export function MeasurementTools({
               className="p-2 text-medsight-primary hover:bg-medsight-primary/10 rounded-lg"
               title="Templates"
             >
-              <DocumentDuplicateIcon className="w-4 h-4" />
+              <DocumentTextIcon className="w-4 h-4" />
             </button>
             
             <button
@@ -416,7 +437,7 @@ export function MeasurementTools({
             } disabled:opacity-50`}
           >
             <div className="flex flex-col items-center space-y-1">
-              <RulerIcon className="w-4 h-4" />
+              <ScaleIcon className="w-4 h-4" />
               <span className="text-xs">Linear</span>
             </div>
           </button>
@@ -431,7 +452,7 @@ export function MeasurementTools({
             } disabled:opacity-50`}
           >
             <div className="flex flex-col items-center space-y-1">
-              <Square2StackIcon className="w-4 h-4" />
+              <Square3Stack3DIcon className="w-4 h-4" />
               <span className="text-xs">Area</span>
             </div>
           </button>
@@ -461,7 +482,7 @@ export function MeasurementTools({
             } disabled:opacity-50`}
           >
             <div className="flex flex-col items-center space-y-1">
-              <MapIcon className="w-4 h-4" />
+              <MapPinIcon className="w-4 h-4" />
               <span className="text-xs">Angle</span>
             </div>
           </button>
@@ -717,7 +738,7 @@ export function MeasurementTools({
           
           {filteredMeasurements.length === 0 && (
             <div className="text-center py-8">
-              <RulerIcon className="w-8 h-8 text-medsight-primary/50 mx-auto mb-2" />
+              <ScaleIcon className="w-8 h-8 text-medsight-primary/50 mx-auto mb-2" />
               <p className="text-sm text-medsight-primary/70">
                 No measurements found
               </p>

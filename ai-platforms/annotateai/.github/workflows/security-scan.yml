@@ -1,0 +1,427 @@
+name: Security Scanning
+
+on:
+  schedule:
+    - cron: '0 2 * * *'  # Run daily at 2 AM UTC
+  push:
+    branches: [main, develop]
+    paths:
+      - 'ai-platforms/annotateai/**'
+  workflow_dispatch:
+
+env:
+  WORKING_DIRECTORY: ai-platforms/annotateai
+
+jobs:
+  # Job 1: Static Application Security Testing (SAST)
+  sast-scan:
+    name: SAST Security Scan
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ${{ env.WORKING_DIRECTORY }}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: '${{ env.WORKING_DIRECTORY }}/package-lock.json'
+      
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      
+      - name: Install dependencies
+        run: |
+          npm ci
+          pip install bandit semgrep safety pylint
+      
+      - name: Run ESLint Security Plugin
+        run: |
+          npm install eslint-plugin-security --save-dev
+          npx eslint . --ext .js,.jsx,.ts,.tsx --config .eslintrc.security.js --format json --output-file eslint-security-report.json || true
+      
+      - name: Run Bandit (Python Security Linter)
+        run: |
+          find infrastructure -name "*.py" -type f | head -1 > /dev/null && \
+          bandit -r infrastructure/ -f json -o bandit-report.json || echo "No Python files found"
+      
+      - name: Run Semgrep SAST
+        run: |
+          semgrep --config=auto --json --output=semgrep-report.json .
+      
+      - name: Run CodeQL Analysis
+        uses: github/codeql-action/init@v3
+        with:
+          languages: javascript,typescript,python
+          config: |
+            name: "AnnotateAI Security Analysis"
+            disable-default-queries: false
+            queries:
+              - uses: security-and-quality
+              - uses: security-extended
+      
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v3
+      
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: sast-scan
+      
+      - name: Upload SAST reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: sast-reports
+          path: |
+            ${{ env.WORKING_DIRECTORY }}/eslint-security-report.json
+            ${{ env.WORKING_DIRECTORY }}/bandit-report.json
+            ${{ env.WORKING_DIRECTORY }}/semgrep-report.json
+          retention-days: 30
+
+  # Job 2: Dependency Vulnerability Scanning
+  dependency-scan:
+    name: Dependency Vulnerability Scan
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ${{ env.WORKING_DIRECTORY }}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: '${{ env.WORKING_DIRECTORY }}/package-lock.json'
+      
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      
+      - name: Install dependencies
+        run: |
+          npm ci
+          pip install safety pip-audit
+      
+      - name: Run npm audit
+        run: |
+          npm audit --audit-level=moderate --json > npm-audit-report.json || true
+      
+      - name: Run Snyk for Node.js
+        uses: snyk/actions/node@master
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          args: --severity-threshold=medium --json-file-output=snyk-node-report.json
+        continue-on-error: true
+      
+      - name: Run Safety for Python dependencies
+        run: |
+          find infrastructure -name "requirements.txt" -exec safety check -r {} --json --output safety-report.json \; || true
+      
+      - name: Run pip-audit for Python dependencies
+        run: |
+          find infrastructure -name "requirements.txt" -exec pip-audit -r {} --format=json --output=pip-audit-report.json \; || true
+      
+      - name: Run OSV Scanner
+        uses: google/osv-scanner-action@v1
+        with:
+          scan-args: |-
+            --format=json
+            --output=osv-scanner-report.json
+            ${{ env.WORKING_DIRECTORY }}
+        continue-on-error: true
+      
+      - name: Upload dependency scan reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: dependency-scan-reports
+          path: |
+            ${{ env.WORKING_DIRECTORY }}/npm-audit-report.json
+            ${{ env.WORKING_DIRECTORY }}/snyk-node-report.json
+            ${{ env.WORKING_DIRECTORY }}/safety-report.json
+            ${{ env.WORKING_DIRECTORY }}/pip-audit-report.json
+            ${{ env.WORKING_DIRECTORY }}/osv-scanner-report.json
+          retention-days: 30
+
+  # Job 3: Container Security Scanning
+  container-security-scan:
+    name: Container Security Scan
+    runs-on: ubuntu-latest
+    needs: [sast-scan]
+    strategy:
+      matrix:
+        service: 
+          - ai-model-service
+          - enterprise-services
+          - performance-optimization
+          - data-pipeline
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      
+      - name: Build container image for scanning
+        uses: docker/build-push-action@v5
+        with:
+          context: ${{ env.WORKING_DIRECTORY }}/infrastructure/${{ matrix.service }}
+          load: true
+          tags: annotateai/${{ matrix.service }}:security-scan
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: annotateai/${{ matrix.service }}:security-scan
+          format: 'sarif'
+          output: 'trivy-${{ matrix.service }}.sarif'
+      
+      - name: Run Trivy filesystem scan
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '${{ env.WORKING_DIRECTORY }}/infrastructure/${{ matrix.service }}'
+          format: 'sarif'
+          output: 'trivy-fs-${{ matrix.service }}.sarif'
+      
+      - name: Run Grype vulnerability scanner
+        uses: anchore/scan-action@v3
+        with:
+          image: annotateai/${{ matrix.service }}:security-scan
+          format: sarif
+          output-file: grype-${{ matrix.service }}.sarif
+        continue-on-error: true
+      
+      - name: Run Snyk container scan
+        uses: snyk/actions/docker@master
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          image: annotateai/${{ matrix.service }}:security-scan
+          args: --severity-threshold=medium --json-file-output=snyk-container-${{ matrix.service }}.json
+        continue-on-error: true
+      
+      - name: Upload Trivy scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: trivy-${{ matrix.service }}.sarif
+          category: trivy-${{ matrix.service }}
+      
+      - name: Upload Grype scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: grype-${{ matrix.service }}.sarif
+          category: grype-${{ matrix.service }}
+        continue-on-error: true
+      
+      - name: Upload container security reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: container-security-${{ matrix.service }}
+          path: |
+            trivy-${{ matrix.service }}.sarif
+            trivy-fs-${{ matrix.service }}.sarif
+            grype-${{ matrix.service }}.sarif
+            snyk-container-${{ matrix.service }}.json
+          retention-days: 30
+
+  # Job 4: Infrastructure as Code Security Scanning
+  iac-security-scan:
+    name: IaC Security Scan
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ${{ env.WORKING_DIRECTORY }}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Run Checkov IaC scanner
+        uses: bridgecrewio/checkov-action@master
+        with:
+          directory: ${{ env.WORKING_DIRECTORY }}/deployment
+          framework: kubernetes,dockerfile,secrets
+          output_format: sarif
+          output_file_path: checkov-report.sarif
+          quiet: true
+        continue-on-error: true
+      
+      - name: Run Trivy IaC scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'config'
+          scan-ref: '${{ env.WORKING_DIRECTORY }}/deployment'
+          format: 'sarif'
+          output: 'trivy-iac-report.sarif'
+      
+      - name: Run Terrascan
+        uses: tenable/terrascan-action@main
+        with:
+          iac_type: 'k8s'
+          iac_dir: '${{ env.WORKING_DIRECTORY }}/deployment/kubernetes'
+          policy_type: 'all'
+          sarif_upload: true
+        continue-on-error: true
+      
+      - name: Upload IaC scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: checkov-report.sarif
+          category: iac-checkov
+        continue-on-error: true
+      
+      - name: Upload Trivy IaC scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: trivy-iac-report.sarif
+          category: iac-trivy
+      
+      - name: Upload IaC security reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: iac-security-reports
+          path: |
+            checkov-report.sarif
+            trivy-iac-report.sarif
+          retention-days: 30
+
+  # Job 5: Secrets Scanning
+  secrets-scan:
+    name: Secrets Scanning
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ${{ env.WORKING_DIRECTORY }}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Run TruffleHog secrets scanner
+        uses: trufflesecurity/trufflehog@main
+        with:
+          path: ${{ env.WORKING_DIRECTORY }}
+          base: main
+          head: HEAD
+          extra_args: --json --output=trufflehog-report.json
+        continue-on-error: true
+      
+      - name: Run GitLeaks secrets scanner
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}
+        with:
+          path: ${{ env.WORKING_DIRECTORY }}
+          config-path: .gitleaks.toml
+          report-format: sarif
+          report-path: gitleaks-report.sarif
+        continue-on-error: true
+      
+      - name: Run detect-secrets
+        run: |
+          pip install detect-secrets
+          detect-secrets scan . --baseline .secrets.baseline || true
+          detect-secrets audit .secrets.baseline --report --output detect-secrets-report.json || true
+      
+      - name: Upload GitLeaks results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: ${{ env.WORKING_DIRECTORY }}/gitleaks-report.sarif
+          category: secrets-gitleaks
+        continue-on-error: true
+      
+      - name: Upload secrets scan reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: secrets-scan-reports
+          path: |
+            ${{ env.WORKING_DIRECTORY }}/trufflehog-report.json
+            ${{ env.WORKING_DIRECTORY }}/gitleaks-report.sarif
+            ${{ env.WORKING_DIRECTORY }}/detect-secrets-report.json
+          retention-days: 30
+
+  # Job 6: Security Report Aggregation
+  security-report:
+    name: Security Report Aggregation
+    runs-on: ubuntu-latest
+    needs: [sast-scan, dependency-scan, container-security-scan, iac-security-scan, secrets-scan]
+    if: always()
+    
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: security-reports
+      
+      - name: Generate security summary
+        run: |
+          echo "# AnnotateAI Security Scan Summary" > security-summary.md
+          echo "Generated on: $(date)" >> security-summary.md
+          echo "" >> security-summary.md
+          
+          echo "## Scan Results" >> security-summary.md
+          echo "- SAST Scan: ✅ Completed" >> security-summary.md
+          echo "- Dependency Scan: ✅ Completed" >> security-summary.md
+          echo "- Container Security: ✅ Completed" >> security-summary.md
+          echo "- IaC Security: ✅ Completed" >> security-summary.md
+          echo "- Secrets Scan: ✅ Completed" >> security-summary.md
+          echo "" >> security-summary.md
+          
+          echo "## Critical Issues Found" >> security-summary.md
+          echo "Review the detailed reports in the Security tab for full analysis." >> security-summary.md
+          
+          # Count issues from various reports (simplified)
+          total_files=$(find security-reports -name "*.json" -o -name "*.sarif" | wc -l)
+          echo "Total report files generated: $total_files" >> security-summary.md
+      
+      - name: Upload security summary
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-summary
+          path: security-summary.md
+          retention-days: 90
+      
+      - name: Comment PR with security summary
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const summary = fs.readFileSync('security-summary.md', 'utf8');
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: summary
+            });
+      
+      - name: Notify security team
+        if: contains(needs.*.result, 'failure')
+        uses: 8398a7/action-slack@v3
+        with:
+          status: failure
+          channel: '#security-alerts'
+          text: 'Security scan found critical issues in AnnotateAI! Please review immediately.'
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }} 

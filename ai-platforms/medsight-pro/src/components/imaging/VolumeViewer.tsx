@@ -2,1212 +2,888 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { 
-  CubeIcon,
-  CubeTransparentIcon,
+  PlayIcon, 
+  PauseIcon, 
+  ForwardIcon, 
+  BackwardIcon,
   AdjustmentsHorizontalIcon,
-  EyeIcon,
-  EyeSlashIcon,
-  PlayIcon,
-  PauseIcon,
-  ArrowPathIcon,
   MagnifyingGlassIcon,
-  MagnifyingGlassMinusIcon,
-  MagnifyingGlassPlusIcon,
+  CubeIcon,
+  EyeIcon,
+  Cog6ToothIcon,
+  SparklesIcon,
+  BoltIcon,
   ArrowsPointingOutIcon,
   ArrowsPointingInIcon,
-  Cog6ToothIcon,
+  ArrowUpIcon,
+  ArrowDownIcon,
+  ArrowLeftIcon,
+  ArrowRightIcon,
   PhotoIcon,
-  FilmIcon,
-  SpeakerWaveIcon,
-  SpeakerXMarkIcon,
-  Square3Stack3DIcon,
-  PaintBrushIcon,
+  SunIcon,
+  MoonIcon,
   LightBulbIcon,
-  SwatchIcon,
-  AcademicCapIcon,
+  ChartBarIcon,
+  Square3Stack3DIcon,
+  CircleStackIcon,
   BeakerIcon,
-  HeartIcon,
-  CpuChipIcon,
-  ShieldCheckIcon,
+  ClockIcon,
+  CheckCircleIcon,
   ExclamationTriangleIcon,
   InformationCircleIcon,
-  CheckCircleIcon,
-  ClockIcon,
-  ArrowDownTrayIcon,
-  ShareIcon,
+  UserGroupIcon,
   DocumentTextIcon,
-  ChartBarIcon,
-  Squares2X2Icon,
-  XMarkIcon,
-  PlusIcon,
-  MinusIcon
+  ArrowPathIcon,
+  PresentationChartBarIcon,
+  CpuChipIcon,
+  FireIcon,
+  EyeSlashIcon,
+  SpeakerWaveIcon,
+  SpeakerXMarkIcon
 } from '@heroicons/react/24/outline';
-import { 
-  CubeIcon as CubeIconSolid,
-  PlayIcon as PlayIconSolid,
-  PauseIcon as PauseIconSolid,
-  EyeIcon as EyeIconSolid
-} from '@heroicons/react/24/solid';
-import React from 'react';
 
-interface VolumeData {
-  id: string;
-  studyId: string;
-  seriesId: string;
-  dimensions: [number, number, number]; // width, height, depth
-  spacing: [number, number, number]; // pixel spacing in mm
-  origin: [number, number, number]; // origin position
-  orientation: number[]; // 9-element orientation matrix
-  dataType: 'uint8' | 'uint16' | 'int16' | 'float32';
-  data: ArrayBuffer | null;
-  metadata: {
-    modality: string;
-    bodyPart: string;
-    patientPosition: string;
-    sliceThickness: number;
-    kvp?: number;
-    mas?: number;
-    exposureTime?: number;
-    contrastAgent?: boolean;
-    acquisitionDate: string;
-    acquisitionTime: string;
-  };
-  processed: boolean;
-  fileSize: number;
-  loadTime: number;
+interface VolumeViewerProps {
+  studyId?: string;
+  className?: string;
+  onVolumeChange?: (volume: any) => void;
+  onRenderingChange?: (settings: any) => void;
+  showStatistics?: boolean;
+  showAnimationControls?: boolean;
+  emergencyMode?: boolean;
+  collaborationMode?: boolean;
 }
 
-interface VolumeRenderingSettings {
-  renderingMode: 'mip' | 'minip' | 'average' | 'vr' | 'iso';
-  qualityLevel: 'low' | 'medium' | 'high' | 'ultra';
+interface VolumeState {
+  renderingMode: 'volume' | 'mip' | 'minip' | 'surface' | 'isosurface' | 'hybrid';
+  quality: 'low' | 'medium' | 'high' | 'ultra';
+  samples: number;
   stepSize: number;
   opacity: number;
-  threshold: number;
-  isoValue: number;
-  windowLevel: number;
-  windowWidth: number;
+  isosurfaceThreshold: number;
+  surfaceThreshold: number;
+  gradientThreshold: number;
+  shadows: boolean;
   ambient: number;
   diffuse: number;
   specular: number;
   shininess: number;
-  gradientOpacity: number;
-  shading: boolean;
-  interpolation: 'nearest' | 'linear' | 'cubic';
-  colorMap: string;
-  clipping: {
+  lightPosition: { x: number; y: number; z: number };
+  lightColor: { r: number; g: number; b: number };
+  lightIntensity: number;
+  backgroundColor: { r: number; g: number; b: number };
+  clipPlanes: {
     enabled: boolean;
-    planes: Array<{
-      normal: [number, number, number];
-      distance: number;
-      enabled: boolean;
-    }>;
+    x: { min: number; max: number; enabled: boolean };
+    y: { min: number; max: number; enabled: boolean };
+    z: { min: number; max: number; enabled: boolean };
   };
-  cropping: {
+  transferFunction: {
+    points: Array<{ value: number; opacity: number; color: { r: number; g: number; b: number } }>;
+    colormap: 'grayscale' | 'jet' | 'hot' | 'cool' | 'rainbow' | 'medical';
+  };
+  animation: {
     enabled: boolean;
-    bounds: [number, number, number, number, number, number]; // xmin, xmax, ymin, ymax, zmin, zmax
+    speed: number;
+    axis: 'x' | 'y' | 'z';
+    direction: 'forward' | 'backward' | 'bounce';
+    currentAngle: number;
+  };
+  camera: {
+    position: { x: number; y: number; z: number };
+    target: { x: number; y: number; z: number };
+    up: { x: number; y: number; z: number };
+    fov: number;
+    near: number;
+    far: number;
+  };
+  volumeData: {
+    dimensions: { width: number; height: number; depth: number };
+    spacing: { x: number; y: number; z: number };
+    origin: { x: number; y: number; z: number };
+    dataType: 'uint8' | 'uint16' | 'float32';
+    minValue: number;
+    maxValue: number;
+    histogram: number[];
   };
 }
 
-interface Camera {
-  position: [number, number, number];
-  target: [number, number, number];
-  up: [number, number, number];
-  fov: number;
-  near: number;
-  far: number;
-  zoom: number;
+interface RenderingStats {
+  fps: number;
+  renderTime: number;
+  gpuMemory: number;
+  triangles: number;
+  vertices: number;
+  raysCast: number;
+  samplesPerRay: number;
+  totalSamples: number;
+  quality: string;
+  renderingMode: string;
 }
 
-interface VolumeViewerProps {
-  volumeData: VolumeData | null;
-  onVolumeChange?: (volumeId: string) => void;
-  onMeasurement?: (measurement: any) => void;
-  onAnnotation?: (annotation: any) => void;
-  className?: string;
-  readOnly?: boolean;
-  showControls?: boolean;
-  autoRotate?: boolean;
-  enableClipping?: boolean;
-  enableCropping?: boolean;
+interface VolumePreset {
+  name: string;
+  description: string;
+  renderingMode: VolumeState['renderingMode'];
+  opacity: number;
+  transferFunction: VolumeState['transferFunction'];
+  lighting: {
+    ambient: number;
+    diffuse: number;
+    specular: number;
+  };
+  clipPlanes?: Partial<VolumeState['clipPlanes']>;
 }
 
 export default function VolumeViewer({
-  volumeData,
-  onVolumeChange,
-  onMeasurement,
-  onAnnotation,
+  studyId,
   className = '',
-  readOnly = false,
-  showControls = true,
-  autoRotate = false,
-  enableClipping = true,
-  enableCropping = true
+  onVolumeChange,
+  onRenderingChange,
+  showStatistics = true,
+  showAnimationControls = true,
+  emergencyMode = false,
+  collaborationMode = false
 }: VolumeViewerProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
   const animationRef = useRef<number>();
   
-  const [renderingSettings, setRenderingSettings] = useState<VolumeRenderingSettings>({
-    renderingMode: 'vr',
-    qualityLevel: 'medium',
-    stepSize: 0.5,
-    opacity: 1.0,
-    threshold: 0.1,
-    isoValue: 128,
-    windowLevel: 40,
-    windowWidth: 400,
+  const [volumeState, setVolumeState] = useState<VolumeState>({
+    renderingMode: 'volume',
+    quality: 'medium',
+    samples: 256,
+    stepSize: 1.0,
+    opacity: 0.8,
+    isosurfaceThreshold: 0.5,
+    surfaceThreshold: 0.3,
+    gradientThreshold: 0.1,
+    shadows: true,
     ambient: 0.2,
     diffuse: 0.8,
-    specular: 0.3,
-    shininess: 10,
-    gradientOpacity: 0.5,
-    shading: true,
-    interpolation: 'linear',
-    colorMap: 'grayscale',
-    clipping: {
+    specular: 0.4,
+    shininess: 16,
+    lightPosition: { x: 1, y: 1, z: 1 },
+    lightColor: { r: 1, g: 1, b: 1 },
+    lightIntensity: 1.0,
+    backgroundColor: { r: 0, g: 0, b: 0 },
+    clipPlanes: {
       enabled: false,
-      planes: [
-        { normal: [1, 0, 0], distance: 0, enabled: false },
-        { normal: [0, 1, 0], distance: 0, enabled: false },
-        { normal: [0, 0, 1], distance: 0, enabled: false }
-      ]
+      x: { min: 0, max: 1, enabled: false },
+      y: { min: 0, max: 1, enabled: false },
+      z: { min: 0, max: 1, enabled: false }
     },
-    cropping: {
+    transferFunction: {
+      points: [
+        { value: 0.0, opacity: 0.0, color: { r: 0, g: 0, b: 0 } },
+        { value: 0.3, opacity: 0.2, color: { r: 0.5, g: 0.2, b: 0.2 } },
+        { value: 0.6, opacity: 0.8, color: { r: 1, g: 0.8, b: 0.8 } },
+        { value: 1.0, opacity: 1.0, color: { r: 1, g: 1, b: 1 } }
+      ],
+      colormap: 'medical'
+    },
+    animation: {
       enabled: false,
-      bounds: [0, 1, 0, 1, 0, 1]
+      speed: 1.0,
+      axis: 'y',
+      direction: 'forward',
+      currentAngle: 0
+    },
+    camera: {
+      position: { x: 0, y: 0, z: 5 },
+      target: { x: 0, y: 0, z: 0 },
+      up: { x: 0, y: 1, z: 0 },
+      fov: 45,
+      near: 0.1,
+      far: 100
+    },
+    volumeData: {
+      dimensions: { width: 256, height: 256, depth: 256 },
+      spacing: { x: 1.0, y: 1.0, z: 1.0 },
+      origin: { x: 0, y: 0, z: 0 },
+      dataType: 'uint16',
+      minValue: 0,
+      maxValue: 4095,
+      histogram: new Array(256).fill(0).map(() => Math.random() * 100)
     }
   });
 
-  const [camera, setCamera] = useState<Camera>({
-    position: [0, 0, 300],
-    target: [0, 0, 0],
-    up: [0, 1, 0],
-    fov: 45,
-    near: 0.1,
-    far: 1000,
-    zoom: 1.0
+  const [renderingStats, setRenderingStats] = useState<RenderingStats>({
+    fps: 60,
+    renderTime: 16.7,
+    gpuMemory: 512,
+    triangles: 0,
+    vertices: 0,
+    raysCast: 524288,
+    samplesPerRay: 256,
+    totalSamples: 134217728,
+    quality: 'Medium',
+    renderingMode: 'Volume Rendering'
   });
 
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [isRotating, setIsRotating] = useState(autoRotate);
-  const [showSettings, setShowSettings] = useState(false);
-  const [showInfo, setShowInfo] = useState(false);
-  const [showPresets, setShowPresets] = useState(false);
-  const [renderTime, setRenderTime] = useState(0);
-  const [fps, setFps] = useState(0);
-  const [isMouseDown, setIsMouseDown] = useState(false);
-  const [lastMousePosition, setLastMousePosition] = useState({ x: 0, y: 0 });
-  const [activeTool, setActiveTool] = useState<string>('rotate');
+  const [showControls, setShowControls] = useState(true);
+  const [showLighting, setShowLighting] = useState(false);
+  const [showTransferFunction, setShowTransferFunction] = useState(false);
+  const [showClipping, setShowClipping] = useState(false);
+  const [isRendering, setIsRendering] = useState(false);
+  const [selectedPreset, setSelectedPreset] = useState<string>('default');
 
-  const renderingModes = [
-    { id: 'vr', name: 'Volume Rendering', icon: CubeIcon, description: 'Full volume rendering' },
-    { id: 'mip', name: 'Maximum Intensity', icon: Square3Stack3DIcon, description: 'Maximum intensity projection' },
-    { id: 'minip', name: 'Minimum Intensity', icon: Square3Stack3DIcon, description: 'Minimum intensity projection' },
-    { id: 'average', name: 'Average Intensity', icon: Square3Stack3DIcon, description: 'Average intensity projection' },
-    { id: 'iso', name: 'Isosurface', icon: CubeTransparentIcon, description: 'Isosurface rendering' }
-  ];
-
-  const colorMaps = [
-    { id: 'grayscale', name: 'Grayscale', colors: ['#000000', '#ffffff'] },
-    { id: 'hot', name: 'Hot', colors: ['#000000', '#ff0000', '#ffff00', '#ffffff'] },
-    { id: 'cool', name: 'Cool', colors: ['#00ffff', '#ff00ff'] },
-    { id: 'rainbow', name: 'Rainbow', colors: ['#ff0000', '#ff8000', '#ffff00', '#80ff00', '#00ff00', '#00ff80', '#00ffff', '#0080ff', '#0000ff', '#8000ff', '#ff00ff'] },
-    { id: 'bone', name: 'Bone', colors: ['#000000', '#545474', '#a8a8ba', '#ffffff'] },
-    { id: 'copper', name: 'Copper', colors: ['#000000', '#ff7f00', '#ffbf80', '#ffffff'] }
-  ];
-
-  const presets = [
+  const volumePresets: VolumePreset[] = [
     {
-      id: 'ct_bone',
-      name: 'CT Bone',
-      icon: AcademicCapIcon,
-      settings: {
-        renderingMode: 'vr' as const,
-        windowLevel: 400,
-        windowWidth: 1000,
-        opacity: 0.8,
-        threshold: 0.3,
-        colorMap: 'bone'
-      }
+      name: 'Default',
+      description: 'Balanced volume rendering',
+      renderingMode: 'volume',
+      opacity: 0.8,
+      transferFunction: {
+        points: [
+          { value: 0.0, opacity: 0.0, color: { r: 0, g: 0, b: 0 } },
+          { value: 0.3, opacity: 0.2, color: { r: 0.5, g: 0.2, b: 0.2 } },
+          { value: 0.6, opacity: 0.8, color: { r: 1, g: 0.8, b: 0.8 } },
+          { value: 1.0, opacity: 1.0, color: { r: 1, g: 1, b: 1 } }
+        ],
+        colormap: 'medical'
+      },
+      lighting: { ambient: 0.2, diffuse: 0.8, specular: 0.4 }
     },
     {
-      id: 'ct_soft_tissue',
-      name: 'CT Soft Tissue',
-      icon: HeartIcon,
-      settings: {
-        renderingMode: 'vr' as const,
-        windowLevel: 40,
-        windowWidth: 400,
-        opacity: 0.6,
-        threshold: 0.1,
-        colorMap: 'grayscale'
-      }
+      name: 'Bone',
+      description: 'Optimized for bone visualization',
+      renderingMode: 'volume',
+      opacity: 0.9,
+      transferFunction: {
+        points: [
+          { value: 0.0, opacity: 0.0, color: { r: 0, g: 0, b: 0 } },
+          { value: 0.5, opacity: 0.1, color: { r: 0.8, g: 0.6, b: 0.4 } },
+          { value: 0.8, opacity: 0.9, color: { r: 1, g: 0.9, b: 0.8 } },
+          { value: 1.0, opacity: 1.0, color: { r: 1, g: 1, b: 1 } }
+        ],
+        colormap: 'medical'
+      },
+      lighting: { ambient: 0.1, diffuse: 0.9, specular: 0.6 }
     },
     {
-      id: 'ct_lung',
-      name: 'CT Lung',
-      icon: BeakerIcon,
-      settings: {
-        renderingMode: 'vr' as const,
-        windowLevel: -600,
-        windowWidth: 1600,
-        opacity: 0.4,
-        threshold: 0.05,
-        colorMap: 'cool'
-      }
+      name: 'Soft Tissue',
+      description: 'Optimized for soft tissue contrast',
+      renderingMode: 'volume',
+      opacity: 0.7,
+      transferFunction: {
+        points: [
+          { value: 0.0, opacity: 0.0, color: { r: 0, g: 0, b: 0 } },
+          { value: 0.2, opacity: 0.3, color: { r: 0.8, g: 0.4, b: 0.4 } },
+          { value: 0.4, opacity: 0.6, color: { r: 1, g: 0.6, b: 0.6 } },
+          { value: 1.0, opacity: 0.8, color: { r: 1, g: 0.8, b: 0.8 } }
+        ],
+        colormap: 'medical'
+      },
+      lighting: { ambient: 0.3, diffuse: 0.7, specular: 0.2 }
     },
     {
-      id: 'mri_brain',
-      name: 'MRI Brain',
-      icon: CpuChipIcon,
-      settings: {
-        renderingMode: 'vr' as const,
-        windowLevel: 128,
-        windowWidth: 256,
-        opacity: 0.7,
-        threshold: 0.2,
-        colorMap: 'hot'
-      }
+      name: 'Vascular',
+      description: 'Optimized for blood vessels',
+      renderingMode: 'mip',
+      opacity: 1.0,
+      transferFunction: {
+        points: [
+          { value: 0.0, opacity: 0.0, color: { r: 0, g: 0, b: 0 } },
+          { value: 0.3, opacity: 0.2, color: { r: 0.8, g: 0.2, b: 0.2 } },
+          { value: 0.7, opacity: 0.8, color: { r: 1, g: 0.4, b: 0.4 } },
+          { value: 1.0, opacity: 1.0, color: { r: 1, g: 0.8, b: 0.8 } }
+        ],
+        colormap: 'hot'
+      },
+      lighting: { ambient: 0.1, diffuse: 0.8, specular: 0.5 }
     },
     {
-      id: 'angio',
-      name: 'Angiography',
-      icon: HeartIcon,
-      settings: {
-        renderingMode: 'mip' as const,
-        windowLevel: 200,
-        windowWidth: 600,
-        opacity: 1.0,
-        threshold: 0.4,
-        colorMap: 'hot'
-      }
+      name: 'Transparent',
+      description: 'High transparency for internal structures',
+      renderingMode: 'volume',
+      opacity: 0.3,
+      transferFunction: {
+        points: [
+          { value: 0.0, opacity: 0.0, color: { r: 0, g: 0, b: 0 } },
+          { value: 0.5, opacity: 0.1, color: { r: 0.5, g: 0.5, b: 1 } },
+          { value: 0.8, opacity: 0.3, color: { r: 0.8, g: 0.8, b: 1 } },
+          { value: 1.0, opacity: 0.5, color: { r: 1, g: 1, b: 1 } }
+        ],
+        colormap: 'cool'
+      },
+      lighting: { ambient: 0.4, diffuse: 0.6, specular: 0.1 }
     }
   ];
 
-  const tools = [
-    {
-      id: 'rotate',
-      name: 'Rotate',
-      icon: ArrowPathIcon,
-      description: 'Rotate the volume',
-      cursor: 'grab'
-    },
-    {
-      id: 'zoom',
-      name: 'Zoom',
-      icon: MagnifyingGlassIcon,
-      description: 'Zoom in/out',
-      cursor: 'zoom-in'
-    },
-    {
-      id: 'pan',
-      name: 'Pan',
-      icon: ArrowsPointingOutIcon,
-      description: 'Pan the volume',
-      cursor: 'move'
-    },
-    {
-      id: 'clip',
-      name: 'Clipping',
-      icon: Squares2X2Icon,
-      description: 'Clipping planes',
-      cursor: 'crosshair'
-    }
-  ];
+  const handleRenderingModeChange = useCallback((mode: VolumeState['renderingMode']) => {
+    setVolumeState(prev => ({ ...prev, renderingMode: mode }));
+    onRenderingChange?.({ renderingMode: mode });
+  }, [onRenderingChange]);
 
-  useEffect(() => {
-    if (volumeData) {
-      initializeVolumeRenderer();
-    }
-  }, [volumeData]);
-
-  useEffect(() => {
-    renderVolume();
-  }, [renderingSettings, camera]);
-
-  useEffect(() => {
-    if (isRotating) {
-      startAutoRotation();
-    } else {
-      stopAutoRotation();
-    }
-    return () => stopAutoRotation();
-  }, [isRotating]);
-
-  const initializeVolumeRenderer = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-
-      if (!volumeData) {
-        throw new Error('No volume data provided');
-      }
-
-      // Initialize WebGL context and volume renderer
-      const canvas = canvasRef.current;
-      if (!canvas) {
-        throw new Error('Canvas not available');
-      }
-
-      const gl = canvas.getContext('webgl2');
-      if (!gl) {
-        throw new Error('WebGL 2.0 not supported');
-      }
-
-      // Set initial window/level from volume metadata
-      if (volumeData.metadata.modality === 'CT') {
-        setRenderingSettings(prev => ({
-          ...prev,
-          windowLevel: 40,
-          windowWidth: 400
-        }));
-      } else if (volumeData.metadata.modality === 'MRI') {
-        setRenderingSettings(prev => ({
-          ...prev,
-          windowLevel: 128,
-          windowWidth: 256
-        }));
-      }
-
-      // Initialize camera based on volume dimensions
-      const [width, height, depth] = volumeData.dimensions;
-      const maxDim = Math.max(width, height, depth);
-      setCamera(prev => ({
-        ...prev,
-        position: [0, 0, maxDim * 2],
-        far: maxDim * 4
-      }));
-
-      setLoading(false);
-    } catch (error) {
-      console.error('Error initializing volume renderer:', error);
-      setError(error instanceof Error ? error.message : 'Failed to initialize volume renderer');
-      setLoading(false);
-    }
-  };
-
-  const renderVolume = useCallback(() => {
-    if (!volumeData || !canvasRef.current) return;
-
-    const startTime = performance.now();
-    
-    const canvas = canvasRef.current;
-    const container = containerRef.current;
-    if (container) {
-      canvas.width = container.clientWidth;
-      canvas.height = container.clientHeight;
-    }
-
-    const gl = canvas.getContext('webgl2');
-    if (!gl) return;
-
-    // Clear canvas
-    gl.clearColor(0, 0, 0, 1);
-    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-    gl.enable(gl.DEPTH_TEST);
-
-    // Mock volume rendering
-    const ctx = canvas.getContext('2d');
-    if (ctx) {
-      // Create gradient pattern based on rendering mode
-      let gradient;
-      const centerX = canvas.width / 2;
-      const centerY = canvas.height / 2;
-      const radius = Math.min(canvas.width, canvas.height) / 3;
-
-      switch (renderingSettings.renderingMode) {
-        case 'mip':
-          gradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, radius);
-          gradient.addColorStop(0, 'rgba(255, 255, 255, 1)');
-          gradient.addColorStop(0.5, 'rgba(128, 128, 128, 0.8)');
-          gradient.addColorStop(1, 'rgba(0, 0, 0, 0.2)');
-          break;
-        case 'minip':
-          gradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, radius);
-          gradient.addColorStop(0, 'rgba(0, 0, 0, 1)');
-          gradient.addColorStop(0.5, 'rgba(64, 64, 64, 0.8)');
-          gradient.addColorStop(1, 'rgba(128, 128, 128, 0.2)');
-          break;
-        case 'iso':
-          gradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, radius);
-          gradient.addColorStop(0, 'rgba(255, 255, 255, 0)');
-          gradient.addColorStop(0.7, 'rgba(255, 255, 255, 0.9)');
-          gradient.addColorStop(0.8, 'rgba(255, 255, 255, 0)');
-          gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
-          break;
-        default: // vr
-          gradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, radius);
-          gradient.addColorStop(0, `rgba(255, 255, 255, ${renderingSettings.opacity})`);
-          gradient.addColorStop(0.3, `rgba(200, 200, 200, ${renderingSettings.opacity * 0.8})`);
-          gradient.addColorStop(0.6, `rgba(128, 128, 128, ${renderingSettings.opacity * 0.6})`);
-          gradient.addColorStop(1, `rgba(0, 0, 0, ${renderingSettings.opacity * 0.2})`);
-      }
-
-      // Apply color map
-      if (renderingSettings.colorMap !== 'grayscale') {
-        const colorMap = colorMaps.find(cm => cm.id === renderingSettings.colorMap);
-        if (colorMap) {
-          gradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, radius);
-          colorMap.colors.forEach((color, index) => {
-            const stop = index / (colorMap.colors.length - 1);
-            gradient.addColorStop(stop, color);
-          });
-        }
-      }
-
-      ctx.fillStyle = gradient;
-      
-      // Apply camera zoom
-      const scaledRadius = radius * camera.zoom;
-      
-      // Draw volume
-      ctx.beginPath();
-      ctx.arc(centerX, centerY, scaledRadius, 0, 2 * Math.PI);
-      ctx.fill();
-
-      // Add some mock 3D structure
-      if (renderingSettings.shading) {
-        ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
-        ctx.shadowBlur = 10;
-        ctx.shadowOffsetX = 5;
-        ctx.shadowOffsetY = 5;
-      }
-
-      // Draw mock anatomical structures
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
-      ctx.lineWidth = 2;
-      ctx.setLineDash([5, 5]);
-      
-      // Draw some ellipses to simulate organs
-      for (let i = 0; i < 3; i++) {
-        ctx.beginPath();
-        const x = centerX + (Math.random() - 0.5) * scaledRadius;
-        const y = centerY + (Math.random() - 0.5) * scaledRadius;
-        const rx = scaledRadius * 0.2 * Math.random();
-        const ry = scaledRadius * 0.3 * Math.random();
-        ctx.ellipse(x, y, rx, ry, Math.random() * Math.PI, 0, 2 * Math.PI);
-        ctx.stroke();
-      }
-
-      ctx.setLineDash([]);
-      ctx.shadowColor = 'transparent';
-
-      // Draw clipping planes if enabled
-      if (renderingSettings.clipping.enabled) {
-        renderingSettings.clipping.planes.forEach((plane, index) => {
-          if (plane.enabled) {
-            ctx.strokeStyle = `hsl(${index * 120}, 70%, 50%)`;
-            ctx.lineWidth = 3;
-            ctx.setLineDash([10, 5]);
-            
-            // Draw plane representation
-            const planeY = centerY + plane.distance * scaledRadius;
-            ctx.beginPath();
-            ctx.moveTo(centerX - scaledRadius, planeY);
-            ctx.lineTo(centerX + scaledRadius, planeY);
-            ctx.stroke();
-            
-            ctx.setLineDash([]);
-          }
-        });
-      }
-
-      // Draw cropping box if enabled
-      if (renderingSettings.cropping.enabled) {
-        const [xmin, xmax, ymin, ymax] = renderingSettings.cropping.bounds;
-        const cropX = centerX - scaledRadius + (xmin * scaledRadius * 2);
-        const cropY = centerY - scaledRadius + (ymin * scaledRadius * 2);
-        const cropWidth = (xmax - xmin) * scaledRadius * 2;
-        const cropHeight = (ymax - ymin) * scaledRadius * 2;
-        
-        ctx.strokeStyle = '#ff0000';
-        ctx.lineWidth = 2;
-        ctx.setLineDash([5, 5]);
-        ctx.strokeRect(cropX, cropY, cropWidth, cropHeight);
-        ctx.setLineDash([]);
-      }
-    }
-
-    const endTime = performance.now();
-    setRenderTime(endTime - startTime);
-    
-    // Calculate FPS
-    const currentFps = 1000 / (endTime - startTime);
-    setFps(Math.round(currentFps));
-  }, [volumeData, renderingSettings, camera]);
-
-  const startAutoRotation = () => {
-    const rotate = () => {
-      setCamera(prev => {
-        const angle = 0.01; // Rotation speed
-        const cos = Math.cos(angle);
-        const sin = Math.sin(angle);
-        const newX = prev.position[0] * cos - prev.position[2] * sin;
-        const newZ = prev.position[0] * sin + prev.position[2] * cos;
-        return {
-          ...prev,
-          position: [newX, prev.position[1], newZ]
-        };
-      });
-      
-      if (isRotating) {
-        animationRef.current = requestAnimationFrame(rotate);
-      }
-    };
-    
-    animationRef.current = requestAnimationFrame(rotate);
-  };
-
-  const stopAutoRotation = () => {
-    if (animationRef.current) {
-      cancelAnimationFrame(animationRef.current);
-    }
-  };
-
-  const handleMouseDown = (event: React.MouseEvent<HTMLCanvasElement>) => {
-    setIsMouseDown(true);
-    const rect = canvasRef.current?.getBoundingClientRect();
-    if (rect) {
-      const x = event.clientX - rect.left;
-      const y = event.clientY - rect.top;
-      setLastMousePosition({ x, y });
-    }
-  };
-
-  const handleMouseMove = (event: React.MouseEvent<HTMLCanvasElement>) => {
-    if (!isMouseDown) return;
-
-    const rect = canvasRef.current?.getBoundingClientRect();
-    if (rect) {
-      const x = event.clientX - rect.left;
-      const y = event.clientY - rect.top;
-      const deltaX = x - lastMousePosition.x;
-      const deltaY = y - lastMousePosition.y;
-
-      switch (activeTool) {
-        case 'rotate':
-          // Rotate camera around volume
-          setCamera(prev => {
-            const sensitivity = 0.01;
-            const yaw = deltaX * sensitivity;
-            const pitch = deltaY * sensitivity;
-            
-            // Simple rotation around Y and X axes
-            const cosYaw = Math.cos(yaw);
-            const sinYaw = Math.sin(yaw);
-            const cosPitch = Math.cos(pitch);
-            const sinPitch = Math.sin(pitch);
-            
-            let newX = prev.position[0] * cosYaw - prev.position[2] * sinYaw;
-            let newZ = prev.position[0] * sinYaw + prev.position[2] * cosYaw;
-            let newY = prev.position[1] * cosPitch - newZ * sinPitch;
-            newZ = prev.position[1] * sinPitch + newZ * cosPitch;
-            
-            return {
-              ...prev,
-              position: [newX, newY, newZ]
-            };
-          });
-          break;
-        case 'zoom':
-          setCamera(prev => ({
-            ...prev,
-            zoom: Math.max(0.1, Math.min(5, prev.zoom + deltaY * 0.01))
-          }));
-          break;
-        case 'pan':
-          setCamera(prev => ({
-            ...prev,
-            target: [
-              prev.target[0] - deltaX * 0.5,
-              prev.target[1] + deltaY * 0.5,
-              prev.target[2]
-            ]
-          }));
-          break;
-      }
-
-      setLastMousePosition({ x, y });
-    }
-  };
-
-  const handleMouseUp = () => {
-    setIsMouseDown(false);
-  };
-
-  const handleWheel = (event: React.WheelEvent<HTMLCanvasElement>) => {
-    event.preventDefault();
-    
-    if (event.ctrlKey) {
-      // Zoom with Ctrl+Wheel
-      const zoomFactor = event.deltaY > 0 ? 0.9 : 1.1;
-      setCamera(prev => ({
-        ...prev,
-        zoom: Math.max(0.1, Math.min(5, prev.zoom * zoomFactor))
-      }));
-    } else {
-      // Adjust opacity with Wheel
-      const opacityDelta = event.deltaY > 0 ? -0.05 : 0.05;
-      setRenderingSettings(prev => ({
-        ...prev,
-        opacity: Math.max(0, Math.min(1, prev.opacity + opacityDelta))
-      }));
-    }
-  };
-
-  const updateRenderingSettings = (updates: Partial<VolumeRenderingSettings>) => {
-    setRenderingSettings(prev => ({ ...prev, ...updates }));
-  };
-
-  const applyPreset = (preset: typeof presets[0]) => {
-    setRenderingSettings(prev => ({
-      ...prev,
-      ...preset.settings
+  const handleQualityChange = useCallback((quality: VolumeState['quality']) => {
+    const sampleCounts = { low: 128, medium: 256, high: 512, ultra: 1024 };
+    setVolumeState(prev => ({ 
+      ...prev, 
+      quality, 
+      samples: sampleCounts[quality] 
     }));
-    setShowPresets(false);
-  };
+    onRenderingChange?.({ quality });
+  }, [onRenderingChange]);
 
-  const resetCamera = () => {
-    if (volumeData) {
-      const [width, height, depth] = volumeData.dimensions;
-      const maxDim = Math.max(width, height, depth);
-      setCamera({
-        position: [0, 0, maxDim * 2],
-        target: [0, 0, 0],
-        up: [0, 1, 0],
+  const handleOpacityChange = useCallback((opacity: number) => {
+    setVolumeState(prev => ({ ...prev, opacity }));
+    onRenderingChange?.({ opacity });
+  }, [onRenderingChange]);
+
+  const handleLightingChange = useCallback((property: string, value: number) => {
+    setVolumeState(prev => ({ ...prev, [property]: value }));
+    onRenderingChange?.({ [property]: value });
+  }, [onRenderingChange]);
+
+  const handleAnimationToggle = useCallback(() => {
+    setVolumeState(prev => ({ 
+      ...prev, 
+      animation: { ...prev.animation, enabled: !prev.animation.enabled }
+    }));
+  }, []);
+
+  const handleAnimationSpeedChange = useCallback((speed: number) => {
+    setVolumeState(prev => ({ 
+      ...prev, 
+      animation: { ...prev.animation, speed }
+    }));
+  }, []);
+
+  const handlePresetChange = useCallback((presetName: string) => {
+    const preset = volumePresets.find(p => p.name === presetName);
+    if (preset) {
+      setVolumeState(prev => ({
+        ...prev,
+        renderingMode: preset.renderingMode,
+        opacity: preset.opacity,
+        transferFunction: preset.transferFunction,
+        ambient: preset.lighting.ambient,
+        diffuse: preset.lighting.diffuse,
+        specular: preset.lighting.specular
+      }));
+      setSelectedPreset(presetName);
+      onRenderingChange?.(preset);
+    }
+  }, [onRenderingChange]);
+
+  const handleClipPlaneChange = useCallback((axis: 'x' | 'y' | 'z', property: 'min' | 'max', value: number) => {
+    setVolumeState(prev => ({
+      ...prev,
+      clipPlanes: {
+        ...prev.clipPlanes,
+        [axis]: { ...prev.clipPlanes[axis], [property]: value }
+      }
+    }));
+  }, []);
+
+  const handleReset = useCallback(() => {
+    setVolumeState(prev => ({
+      ...prev,
+      camera: {
+        position: { x: 0, y: 0, z: 5 },
+        target: { x: 0, y: 0, z: 0 },
+        up: { x: 0, y: 1, z: 0 },
         fov: 45,
         near: 0.1,
-        far: maxDim * 4,
-        zoom: 1.0
-      });
+        far: 100
+      },
+      animation: { ...prev.animation, currentAngle: 0 }
+    }));
+  }, []);
+
+  // Animation loop
+  useEffect(() => {
+    if (volumeState.animation.enabled) {
+      const animate = () => {
+        setVolumeState(prev => ({
+          ...prev,
+          animation: {
+            ...prev.animation,
+            currentAngle: (prev.animation.currentAngle + prev.animation.speed) % 360
+          }
+        }));
+        animationRef.current = requestAnimationFrame(animate);
+      };
+      animationRef.current = requestAnimationFrame(animate);
+    } else {
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current);
+      }
     }
-  };
 
-  const exportVolume = () => {
-    if (canvasRef.current) {
-      const link = document.createElement('a');
-      link.download = `volume_${volumeData?.id || 'export'}.png`;
-      link.href = canvasRef.current.toDataURL();
-      link.click();
+    return () => {
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current);
+      }
+    };
+  }, [volumeState.animation.enabled, volumeState.animation.speed]);
+
+  // Mock rendering stats update
+  useEffect(() => {
+    const updateStats = () => {
+      setRenderingStats(prev => ({
+        ...prev,
+        fps: Math.floor(Math.random() * 20 + 50),
+        renderTime: Math.random() * 5 + 12,
+        raysCast: volumeState.samples * 2048,
+        samplesPerRay: volumeState.samples,
+        totalSamples: volumeState.samples * 2048 * volumeState.samples,
+        quality: volumeState.quality.charAt(0).toUpperCase() + volumeState.quality.slice(1),
+        renderingMode: volumeState.renderingMode.toUpperCase()
+      }));
+    };
+
+    const interval = setInterval(updateStats, 1000);
+    return () => clearInterval(interval);
+  }, [volumeState.samples, volumeState.quality, volumeState.renderingMode]);
+
+  // Canvas rendering
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    setIsRendering(true);
+
+    // Clear canvas
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Draw background
+    const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+    gradient.addColorStop(0, `rgb(${volumeState.backgroundColor.r * 255}, ${volumeState.backgroundColor.g * 255}, ${volumeState.backgroundColor.b * 255})`);
+    gradient.addColorStop(1, `rgb(${volumeState.backgroundColor.r * 128}, ${volumeState.backgroundColor.g * 128}, ${volumeState.backgroundColor.b * 128})`);
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Draw mock 3D volume
+    const centerX = canvas.width / 2;
+    const centerY = canvas.height / 2;
+    const size = 200;
+    const angle = (volumeState.animation.currentAngle * Math.PI) / 180;
+
+    // Draw volume based on rendering mode
+    if (volumeState.renderingMode === 'volume') {
+      // Volume rendering simulation
+      for (let i = 0; i < 20; i++) {
+        const alpha = volumeState.opacity * (1 - i / 20);
+        const layerSize = size - i * 5;
+        
+        ctx.globalAlpha = alpha * 0.1;
+        ctx.fillStyle = `hsl(${240 + i * 5}, 70%, ${50 + i * 2}%)`;
+        
+        ctx.save();
+        ctx.translate(centerX, centerY);
+        ctx.rotate(angle);
+        ctx.fillRect(-layerSize / 2, -layerSize / 2, layerSize, layerSize);
+        ctx.restore();
+      }
+    } else if (volumeState.renderingMode === 'mip') {
+      // Maximum Intensity Projection
+      ctx.globalAlpha = 1.0;
+      ctx.fillStyle = '#ff6b6b';
+      
+      ctx.save();
+      ctx.translate(centerX, centerY);
+      ctx.rotate(angle);
+      
+      // Draw vessels/structures
+      for (let i = 0; i < 5; i++) {
+        const radius = 20 + i * 10;
+        ctx.beginPath();
+        ctx.arc(0, 0, radius, 0, 2 * Math.PI);
+        ctx.strokeStyle = `rgba(255, 107, 107, ${1 - i * 0.2})`;
+        ctx.lineWidth = 3;
+        ctx.stroke();
+      }
+      
+      ctx.restore();
+    } else if (volumeState.renderingMode === 'surface') {
+      // Surface rendering
+      ctx.globalAlpha = 1.0;
+      ctx.fillStyle = '#4ecdc4';
+      
+      ctx.save();
+      ctx.translate(centerX, centerY);
+      ctx.rotate(angle);
+      
+      // Draw surface mesh
+      const gradient = ctx.createLinearGradient(-size/2, -size/2, size/2, size/2);
+      gradient.addColorStop(0, '#4ecdc4');
+      gradient.addColorStop(1, '#44a08d');
+      
+      ctx.fillStyle = gradient;
+      ctx.fillRect(-size/2, -size/2, size, size);
+      
+      // Add mesh lines
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+      ctx.lineWidth = 1;
+      for (let i = -size/2; i <= size/2; i += 20) {
+        ctx.beginPath();
+        ctx.moveTo(i, -size/2);
+        ctx.lineTo(i, size/2);
+        ctx.stroke();
+        
+        ctx.beginPath();
+        ctx.moveTo(-size/2, i);
+        ctx.lineTo(size/2, i);
+        ctx.stroke();
+      }
+      
+      ctx.restore();
     }
-  };
 
-  if (loading) {
-    return (
-      <div className={`medsight-viewer-glass rounded-xl flex items-center justify-center ${className}`}>
-        <div className="text-center text-white">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-medsight-primary mx-auto mb-4"></div>
-          <p>Initializing volume renderer...</p>
-        </div>
-      </div>
-    );
-  }
+    ctx.globalAlpha = 1.0;
 
-  if (error) {
-    return (
-      <div className={`medsight-viewer-glass rounded-xl flex items-center justify-center ${className}`}>
-        <div className="text-center text-white">
-          <ExclamationTriangleIcon className="w-12 h-12 text-medsight-abnormal mx-auto mb-4" />
-          <p className="text-medsight-abnormal mb-4">{error}</p>
-          <button onClick={initializeVolumeRenderer} className="btn-medsight">
-            Retry
-          </button>
-        </div>
-      </div>
-    );
-  }
+    // Draw coordinate axes
+    ctx.strokeStyle = '#fff';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(50, canvas.height - 50);
+    ctx.lineTo(100, canvas.height - 50); // X axis
+    ctx.moveTo(50, canvas.height - 50);
+    ctx.lineTo(50, canvas.height - 100); // Y axis
+    ctx.stroke();
 
-  if (!volumeData) {
-    return (
-      <div className={`medsight-viewer-glass rounded-xl flex items-center justify-center ${className}`}>
-        <div className="text-center text-white">
-          <CubeIcon className="w-24 h-24 mx-auto mb-4 text-slate-500" />
-          <h3 className="text-xl font-semibold mb-2 text-slate-400">No Volume Data</h3>
-          <p className="text-slate-500">Load a 3D volume dataset to begin rendering</p>
-        </div>
-      </div>
-    );
-  }
+    ctx.fillStyle = '#fff';
+    ctx.font = '12px sans-serif';
+    ctx.fillText('X', 105, canvas.height - 45);
+    ctx.fillText('Y', 45, canvas.height - 105);
+
+    setTimeout(() => setIsRendering(false), 100);
+  }, [volumeState, volumeState.animation.currentAngle]);
 
   return (
-    <div className={`relative medsight-viewer-glass rounded-xl overflow-hidden ${className}`}>
-      {/* Controls Bar */}
-      {showControls && (
-        <div className="absolute top-4 left-4 right-4 z-10 flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            {/* Tools */}
-            <div className="flex items-center space-x-1 bg-black/50 rounded-lg p-1">
-              {tools.map((tool) => (
-                <button
-                  key={tool.id}
-                  onClick={() => setActiveTool(tool.id)}
-                  className={`p-2 rounded transition-all ${
-                    activeTool === tool.id 
-                      ? 'bg-medsight-primary text-white' 
-                      : 'text-white hover:bg-white/20'
-                  }`}
-                  title={tool.description}
-                >
-                  <tool.icon className="w-4 h-4" />
-                </button>
-              ))}
-            </div>
+    <div className={`relative h-full bg-black ${className}`}>
+      {/* Main Canvas */}
+      <canvas
+        ref={canvasRef}
+        width={800}
+        height={600}
+        className="w-full h-full"
+      />
 
+      {/* Volume Controls */}
+      {showControls && (
+        <div className="absolute top-4 left-4 medsight-control-glass p-4 rounded-lg max-w-xs">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-sm font-semibold text-gray-900">Volume Rendering</h3>
+            <button
+              onClick={() => setShowControls(false)}
+              className="text-gray-400 hover:text-gray-600"
+            >
+              <ArrowLeftIcon className="w-4 h-4" />
+            </button>
+          </div>
+          
+          <div className="space-y-4">
             {/* Rendering Mode */}
-            <div className="flex items-center space-x-1 bg-black/50 rounded-lg p-1">
-              {renderingModes.slice(0, 3).map((mode) => (
-                <button
-                  key={mode.id}
-                  onClick={() => updateRenderingSettings({ renderingMode: mode.id as any })}
-                  className={`p-2 rounded transition-all ${
-                    renderingSettings.renderingMode === mode.id 
-                      ? 'bg-medsight-primary text-white' 
-                      : 'text-white hover:bg-white/20'
-                  }`}
-                  title={mode.description}
-                >
-                  <mode.icon className="w-4 h-4" />
-                </button>
-              ))}
+            <div>
+              <label className="block text-xs font-medium text-gray-700 mb-1">Rendering Mode</label>
+              <select
+                value={volumeState.renderingMode}
+                onChange={(e) => handleRenderingModeChange(e.target.value as VolumeState['renderingMode'])}
+                className="w-full input-medsight text-xs"
+              >
+                <option value="volume">Volume Rendering</option>
+                <option value="mip">Maximum Intensity Projection</option>
+                <option value="minip">Minimum Intensity Projection</option>
+                <option value="surface">Surface Rendering</option>
+                <option value="isosurface">Isosurface</option>
+                <option value="hybrid">Hybrid</option>
+              </select>
             </div>
 
             {/* Quality */}
-            <div className="flex items-center space-x-1 bg-black/50 rounded-lg p-1">
-              <span className="text-white text-xs px-2">Quality:</span>
+            <div>
+              <label className="block text-xs font-medium text-gray-700 mb-1">Quality</label>
               <select
-                value={renderingSettings.qualityLevel}
-                onChange={(e) => updateRenderingSettings({ qualityLevel: e.target.value as any })}
-                className="bg-transparent text-white text-xs border-none outline-none"
+                value={volumeState.quality}
+                onChange={(e) => handleQualityChange(e.target.value as VolumeState['quality'])}
+                className="w-full input-medsight text-xs"
               >
-                <option value="low" className="text-black">Low</option>
-                <option value="medium" className="text-black">Medium</option>
-                <option value="high" className="text-black">High</option>
-                <option value="ultra" className="text-black">Ultra</option>
+                <option value="low">Low (128 samples)</option>
+                <option value="medium">Medium (256 samples)</option>
+                <option value="high">High (512 samples)</option>
+                <option value="ultra">Ultra (1024 samples)</option>
               </select>
             </div>
-          </div>
 
-          <div className="flex items-center space-x-2">
-            {/* Auto Rotate */}
-            <button 
-              onClick={() => setIsRotating(!isRotating)}
-              className={`p-2 bg-black/50 rounded-lg transition-colors ${
-                isRotating ? 'bg-medsight-primary' : 'hover:bg-black/70'
-              }`}
-              title="Auto Rotate"
-            >
-              <ArrowPathIcon className="w-4 h-4 text-white" />
-            </button>
-
-            {/* Presets */}
-            <button 
-              onClick={() => setShowPresets(!showPresets)}
-              className="p-2 bg-black/50 rounded-lg hover:bg-black/70 transition-colors"
-              title="Presets"
-            >
-              <SwatchIcon className="w-4 h-4 text-white" />
-            </button>
-
-            {/* Info */}
-            <button 
-              onClick={() => setShowInfo(!showInfo)}
-              className={`p-2 bg-black/50 rounded-lg transition-colors ${
-                showInfo ? 'bg-white/20' : 'hover:bg-black/70'
-              }`}
-              title="Volume Information"
-            >
-              <InformationCircleIcon className="w-4 h-4 text-white" />
-            </button>
-
-            {/* Settings */}
-            <button 
-              onClick={() => setShowSettings(!showSettings)}
-              className="p-2 bg-black/50 rounded-lg hover:bg-black/70 transition-colors"
-              title="Settings"
-            >
-              <Cog6ToothIcon className="w-4 h-4 text-white" />
-            </button>
-
-            {/* Reset */}
-            <button 
-              onClick={resetCamera}
-              className="p-2 bg-black/50 rounded-lg hover:bg-black/70 transition-colors"
-              title="Reset Camera"
-            >
-              <ArrowPathIcon className="w-4 h-4 text-white" />
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Volume Canvas */}
-      <div ref={containerRef} className="w-full h-full">
-        <canvas
-          ref={canvasRef}
-          className="w-full h-full"
-          style={{ cursor: tools.find(t => t.id === activeTool)?.cursor || 'default' }}
-          onMouseDown={handleMouseDown}
-          onMouseMove={handleMouseMove}
-          onMouseUp={handleMouseUp}
-          onMouseLeave={handleMouseUp}
-          onWheel={handleWheel}
-        />
-      </div>
-
-      {/* Performance Stats */}
-      <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-10">
-        <div className="bg-black/50 rounded-lg px-3 py-1 text-white text-xs">
-          <span>FPS: {fps}</span>
-          <span className="mx-2">|</span>
-          <span>Render: {renderTime.toFixed(1)}ms</span>
-          <span className="mx-2">|</span>
-          <span>{renderingSettings.renderingMode.toUpperCase()}</span>
-        </div>
-      </div>
-
-      {/* Volume Controls */}
-      <div className="absolute bottom-4 left-4 right-4 z-10">
-        <div className="bg-black/50 rounded-lg p-3">
-          <div className="grid grid-cols-4 gap-4">
             {/* Opacity */}
             <div>
-              <label className="block text-white text-xs mb-1">Opacity</label>
+              <label className="block text-xs font-medium text-gray-700 mb-1">
+                Opacity: {(volumeState.opacity * 100).toFixed(0)}%
+              </label>
               <input
                 type="range"
                 min="0"
                 max="1"
                 step="0.01"
-                value={renderingSettings.opacity}
-                onChange={(e) => updateRenderingSettings({ opacity: parseFloat(e.target.value) })}
+                value={volumeState.opacity}
+                onChange={(e) => handleOpacityChange(parseFloat(e.target.value))}
                 className="w-full"
               />
-              <span className="text-white text-xs">{(renderingSettings.opacity * 100).toFixed(0)}%</span>
             </div>
 
-            {/* Threshold */}
+            {/* Presets */}
             <div>
-              <label className="block text-white text-xs mb-1">Threshold</label>
-              <input
-                type="range"
-                min="0"
-                max="1"
-                step="0.01"
-                value={renderingSettings.threshold}
-                onChange={(e) => updateRenderingSettings({ threshold: parseFloat(e.target.value) })}
-                className="w-full"
-              />
-              <span className="text-white text-xs">{(renderingSettings.threshold * 100).toFixed(0)}%</span>
+              <label className="block text-xs font-medium text-gray-700 mb-1">Presets</label>
+              <select
+                value={selectedPreset}
+                onChange={(e) => handlePresetChange(e.target.value)}
+                className="w-full input-medsight text-xs"
+              >
+                {volumePresets.map(preset => (
+                  <option key={preset.name} value={preset.name}>
+                    {preset.name}
+                  </option>
+                ))}
+              </select>
             </div>
 
-            {/* Window Level */}
-            <div>
-              <label className="block text-white text-xs mb-1">Window Level</label>
-              <input
-                type="range"
-                min="-1024"
-                max="3071"
-                value={renderingSettings.windowLevel}
-                onChange={(e) => updateRenderingSettings({ windowLevel: parseInt(e.target.value) })}
-                className="w-full"
-              />
-              <span className="text-white text-xs">{renderingSettings.windowLevel}</span>
-            </div>
-
-            {/* Window Width */}
-            <div>
-              <label className="block text-white text-xs mb-1">Window Width</label>
-              <input
-                type="range"
-                min="1"
-                max="4096"
-                value={renderingSettings.windowWidth}
-                onChange={(e) => updateRenderingSettings({ windowWidth: parseInt(e.target.value) })}
-                className="w-full"
-              />
-              <span className="text-white text-xs">{renderingSettings.windowWidth}</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Presets Panel */}
-      {showPresets && (
-        <div className="absolute top-20 right-4 w-64 bg-black/80 rounded-lg p-4 text-white z-20">
-          <h4 className="font-semibold mb-3">Volume Presets</h4>
-          <div className="space-y-2">
-            {presets.map((preset) => (
+            {/* Control Buttons */}
+            <div className="flex gap-2">
               <button
-                key={preset.id}
-                onClick={() => applyPreset(preset)}
-                className="w-full flex items-center space-x-3 p-2 rounded hover:bg-white/10 transition-colors"
+                onClick={() => setShowLighting(!showLighting)}
+                className="btn-medsight flex-1 text-xs"
               >
-                <preset.icon className="w-5 h-5 text-medsight-primary" />
-                <span className="text-sm">{preset.name}</span>
+                <LightBulbIcon className="w-3 h-3 mr-1" />
+                Lighting
               </button>
-            ))}
+              <button
+                onClick={() => setShowTransferFunction(!showTransferFunction)}
+                className="btn-medsight flex-1 text-xs"
+              >
+                <ChartBarIcon className="w-3 h-3 mr-1" />
+                Transfer
+              </button>
+              <button
+                onClick={() => setShowClipping(!showClipping)}
+                className="btn-medsight flex-1 text-xs"
+              >
+                <CubeIcon className="w-3 h-3 mr-1" />
+                Clipping
+              </button>
+            </div>
           </div>
         </div>
       )}
 
-      {/* Volume Information Panel */}
-      {showInfo && (
-        <div className="absolute top-20 right-4 w-80 bg-black/80 rounded-lg p-4 text-white text-sm z-20">
-          <h4 className="font-semibold mb-3">Volume Information</h4>
-          <div className="space-y-2">
-            <div className="flex justify-between">
-              <span>Dimensions:</span>
-              <span>{volumeData.dimensions.join(' × ')}</span>
-            </div>
-            <div className="flex justify-between">
-              <span>Spacing:</span>
-              <span>{volumeData.spacing.map(s => s.toFixed(2)).join(' × ')} mm</span>
-            </div>
-            <div className="flex justify-between">
-              <span>Data Type:</span>
-              <span>{volumeData.dataType}</span>
-            </div>
-            <div className="flex justify-between">
-              <span>Modality:</span>
-              <span>{volumeData.metadata.modality}</span>
-            </div>
-            <div className="flex justify-between">
-              <span>Body Part:</span>
-              <span>{volumeData.metadata.bodyPart}</span>
-            </div>
-            <div className="flex justify-between">
-              <span>File Size:</span>
-              <span>{(volumeData.fileSize / 1024 / 1024).toFixed(1)} MB</span>
-            </div>
-            <div className="flex justify-between">
-              <span>Load Time:</span>
-              <span>{volumeData.loadTime.toFixed(0)} ms</span>
-            </div>
-            <div className="flex justify-between">
-              <span>Camera Zoom:</span>
-              <span>{(camera.zoom * 100).toFixed(0)}%</span>
-            </div>
-          </div>
-
-          <div className="mt-4 space-y-2">
-            <button onClick={exportVolume} className="btn-medsight w-full text-sm">
-              <ArrowDownTrayIcon className="w-4 h-4 mr-2" />
-              Export Image
-            </button>
-            <button className="btn-medsight w-full text-sm">
-              <ShareIcon className="w-4 h-4 mr-2" />
-              Share Volume
+      {/* Lighting Controls */}
+      {showLighting && (
+        <div className="absolute top-4 left-80 medsight-control-glass p-4 rounded-lg max-w-xs">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-sm font-semibold text-gray-900">Lighting</h3>
+            <button
+              onClick={() => setShowLighting(false)}
+              className="text-gray-400 hover:text-gray-600"
+            >
+              <ArrowLeftIcon className="w-4 h-4" />
             </button>
           </div>
-        </div>
-      )}
-
-      {/* Settings Modal */}
-      {showSettings && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <div className="medsight-glass p-6 rounded-xl max-w-4xl w-full max-h-[80vh] overflow-y-auto">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-medsight-primary">Volume Rendering Settings</h3>
-              <button 
-                onClick={() => setShowSettings(false)}
-                className="btn-medsight p-2"
-              >
-                <XMarkIcon className="w-4 h-4" />
-              </button>
+          
+          <div className="space-y-3">
+            <div>
+              <label className="block text-xs font-medium text-gray-700 mb-1">
+                Ambient: {(volumeState.ambient * 100).toFixed(0)}%
+              </label>
+              <input
+                type="range"
+                min="0"
+                max="1"
+                step="0.01"
+                value={volumeState.ambient}
+                onChange={(e) => handleLightingChange('ambient', parseFloat(e.target.value))}
+                className="w-full"
+              />
             </div>
             
-            <div className="grid grid-cols-2 gap-6">
-              {/* Rendering Settings */}
-              <div className="space-y-4">
-                <h4 className="font-medium text-slate-900">Rendering</h4>
-                
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">Rendering Mode</label>
-                  <div className="grid grid-cols-2 gap-2">
-                    {renderingModes.map((mode) => (
-                      <button
-                        key={mode.id}
-                        onClick={() => updateRenderingSettings({ renderingMode: mode.id as any })}
-                        className={`p-3 rounded-lg border text-left ${
-                          renderingSettings.renderingMode === mode.id
-                            ? 'border-medsight-primary bg-medsight-primary/10'
-                            : 'border-slate-200 hover:border-medsight-primary/50'
-                        }`}
-                      >
-                        <div className="flex items-center space-x-2 mb-1">
-                          <mode.icon className="w-4 h-4" />
-                          <span className="text-sm font-medium">{mode.name}</span>
-                        </div>
-                        <p className="text-xs text-slate-600">{mode.description}</p>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">Color Map</label>
-                  <select 
-                    value={renderingSettings.colorMap}
-                    onChange={(e) => updateRenderingSettings({ colorMap: e.target.value })}
-                    className="input-medsight"
-                  >
-                    {colorMaps.map((colorMap) => (
-                      <option key={colorMap.id} value={colorMap.id}>
-                        {colorMap.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">Quality Level</label>
-                  <select 
-                    value={renderingSettings.qualityLevel}
-                    onChange={(e) => updateRenderingSettings({ qualityLevel: e.target.value as any })}
-                    className="input-medsight"
-                  >
-                    <option value="low">Low (Fast)</option>
-                    <option value="medium">Medium</option>
-                    <option value="high">High</option>
-                    <option value="ultra">Ultra (Slow)</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">Interpolation</label>
-                  <select 
-                    value={renderingSettings.interpolation}
-                    onChange={(e) => updateRenderingSettings({ interpolation: e.target.value as any })}
-                    className="input-medsight"
-                  >
-                    <option value="nearest">Nearest Neighbor</option>
-                    <option value="linear">Linear</option>
-                    <option value="cubic">Cubic</option>
-                  </select>
-                </div>
-              </div>
-
-              {/* Advanced Settings */}
-              <div className="space-y-4">
-                <h4 className="font-medium text-slate-900">Advanced</h4>
-                
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">
-                    Step Size: {renderingSettings.stepSize}
-                  </label>
-                  <input
-                    type="range"
-                    min="0.1"
-                    max="2"
-                    step="0.1"
-                    value={renderingSettings.stepSize}
-                    onChange={(e) => updateRenderingSettings({ stepSize: parseFloat(e.target.value) })}
-                    className="w-full"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">
-                    Iso Value: {renderingSettings.isoValue}
-                  </label>
-                  <input
-                    type="range"
-                    min="0"
-                    max="255"
-                    value={renderingSettings.isoValue}
-                    onChange={(e) => updateRenderingSettings({ isoValue: parseInt(e.target.value) })}
-                    className="w-full"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">
-                    Ambient: {renderingSettings.ambient.toFixed(2)}
-                  </label>
-                  <input
-                    type="range"
-                    min="0"
-                    max="1"
-                    step="0.01"
-                    value={renderingSettings.ambient}
-                    onChange={(e) => updateRenderingSettings({ ambient: parseFloat(e.target.value) })}
-                    className="w-full"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">
-                    Diffuse: {renderingSettings.diffuse.toFixed(2)}
-                  </label>
-                  <input
-                    type="range"
-                    min="0"
-                    max="1"
-                    step="0.01"
-                    value={renderingSettings.diffuse}
-                    onChange={(e) => updateRenderingSettings({ diffuse: parseFloat(e.target.value) })}
-                    className="w-full"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">
-                    Specular: {renderingSettings.specular.toFixed(2)}
-                  </label>
-                  <input
-                    type="range"
-                    min="0"
-                    max="1"
-                    step="0.01"
-                    value={renderingSettings.specular}
-                    onChange={(e) => updateRenderingSettings({ specular: parseFloat(e.target.value) })}
-                    className="w-full"
-                  />
-                </div>
-
-                <div className="space-y-3">
-                  <label className="flex items-center space-x-3">
-                    <input
-                      type="checkbox"
-                      checked={renderingSettings.shading}
-                      onChange={(e) => updateRenderingSettings({ shading: e.target.checked })}
-                      className="rounded border-slate-300 text-medsight-primary"
-                    />
-                    <span className="text-sm text-slate-700">Enable Shading</span>
-                  </label>
-                  
-                  {enableClipping && (
-                    <label className="flex items-center space-x-3">
-                      <input
-                        type="checkbox"
-                        checked={renderingSettings.clipping.enabled}
-                        onChange={(e) => updateRenderingSettings({ 
-                          clipping: { ...renderingSettings.clipping, enabled: e.target.checked }
-                        })}
-                        className="rounded border-slate-300 text-medsight-primary"
-                      />
-                      <span className="text-sm text-slate-700">Enable Clipping Planes</span>
-                    </label>
-                  )}
-                  
-                  {enableCropping && (
-                    <label className="flex items-center space-x-3">
-                      <input
-                        type="checkbox"
-                        checked={renderingSettings.cropping.enabled}
-                        onChange={(e) => updateRenderingSettings({ 
-                          cropping: { ...renderingSettings.cropping, enabled: e.target.checked }
-                        })}
-                        className="rounded border-slate-300 text-medsight-primary"
-                      />
-                      <span className="text-sm text-slate-700">Enable Volume Cropping</span>
-                    </label>
-                  )}
-                </div>
-              </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-700 mb-1">
+                Diffuse: {(volumeState.diffuse * 100).toFixed(0)}%
+              </label>
+              <input
+                type="range"
+                min="0"
+                max="1"
+                step="0.01"
+                value={volumeState.diffuse}
+                onChange={(e) => handleLightingChange('diffuse', parseFloat(e.target.value))}
+                className="w-full"
+              />
+            </div>
+            
+            <div>
+              <label className="block text-xs font-medium text-gray-700 mb-1">
+                Specular: {(volumeState.specular * 100).toFixed(0)}%
+              </label>
+              <input
+                type="range"
+                min="0"
+                max="1"
+                step="0.01"
+                value={volumeState.specular}
+                onChange={(e) => handleLightingChange('specular', parseFloat(e.target.value))}
+                className="w-full"
+              />
+            </div>
+            
+            <div>
+              <label className="block text-xs font-medium text-gray-700 mb-1">
+                Light Intensity: {(volumeState.lightIntensity * 100).toFixed(0)}%
+              </label>
+              <input
+                type="range"
+                min="0"
+                max="2"
+                step="0.01"
+                value={volumeState.lightIntensity}
+                onChange={(e) => handleLightingChange('lightIntensity', parseFloat(e.target.value))}
+                className="w-full"
+              />
+            </div>
+            
+            <div className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                checked={volumeState.shadows}
+                onChange={(e) => setVolumeState(prev => ({ ...prev, shadows: e.target.checked }))}
+                className="rounded border-gray-300 text-medsight-primary"
+              />
+              <label className="text-xs text-gray-700">Enable Shadows</label>
             </div>
           </div>
         </div>
+      )}
+
+      {/* Animation Controls */}
+      {showAnimationControls && (
+        <div className="absolute bottom-4 left-4 medsight-control-glass p-3 rounded-lg">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={handleAnimationToggle}
+              className="btn-medsight"
+            >
+              {volumeState.animation.enabled ? (
+                <PauseIcon className="w-4 h-4" />
+              ) : (
+                <PlayIcon className="w-4 h-4" />
+              )}
+            </button>
+            
+            <div className="flex items-center gap-2">
+              <label className="text-xs text-gray-600">Speed:</label>
+              <input
+                type="range"
+                min="0.1"
+                max="5"
+                step="0.1"
+                value={volumeState.animation.speed}
+                onChange={(e) => handleAnimationSpeedChange(parseFloat(e.target.value))}
+                className="w-20"
+              />
+              <span className="text-xs text-gray-600 w-8">
+                {volumeState.animation.speed.toFixed(1)}x
+              </span>
+            </div>
+            
+            <select
+              value={volumeState.animation.axis}
+              onChange={(e) => setVolumeState(prev => ({ 
+                ...prev, 
+                animation: { ...prev.animation, axis: e.target.value as 'x' | 'y' | 'z' }
+              }))}
+              className="input-medsight text-xs"
+            >
+              <option value="x">X-axis</option>
+              <option value="y">Y-axis</option>
+              <option value="z">Z-axis</option>
+            </select>
+            
+            <button onClick={handleReset} className="btn-medsight">
+              <ArrowPathIcon className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Rendering Statistics */}
+      {showStatistics && (
+        <div className="absolute top-4 right-4 medsight-control-glass p-3 rounded-lg max-w-xs">
+          <div className="flex items-center gap-2 mb-2">
+            <CpuChipIcon className="w-4 h-4 text-medsight-primary" />
+            <span className="text-sm font-medium text-gray-900">Rendering Stats</span>
+          </div>
+          
+          <div className="space-y-1 text-xs text-gray-600">
+            <div className="flex justify-between">
+              <span>FPS:</span>
+              <span className="font-mono">{renderingStats.fps}</span>
+            </div>
+            <div className="flex justify-between">
+              <span>Render Time:</span>
+              <span className="font-mono">{renderingStats.renderTime.toFixed(1)}ms</span>
+            </div>
+            <div className="flex justify-between">
+              <span>GPU Memory:</span>
+              <span className="font-mono">{renderingStats.gpuMemory}MB</span>
+            </div>
+            <div className="flex justify-between">
+              <span>Rays Cast:</span>
+              <span className="font-mono">{renderingStats.raysCast.toLocaleString()}</span>
+            </div>
+            <div className="flex justify-between">
+              <span>Samples/Ray:</span>
+              <span className="font-mono">{renderingStats.samplesPerRay}</span>
+            </div>
+            <div className="flex justify-between">
+              <span>Quality:</span>
+              <span className="font-mono">{renderingStats.quality}</span>
+            </div>
+            <div className="flex justify-between">
+              <span>Mode:</span>
+              <span className="font-mono">{renderingStats.renderingMode}</span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Rendering Indicator */}
+      {isRendering && (
+        <div className="absolute bottom-4 right-4 medsight-control-glass p-2 rounded-lg">
+          <div className="flex items-center gap-2">
+            <SparklesIcon className="w-4 h-4 text-medsight-primary animate-spin" />
+            <span className="text-xs text-gray-600">Rendering...</span>
+          </div>
+        </div>
+      )}
+
+      {/* Emergency Mode Indicator */}
+      {emergencyMode && (
+        <div className="absolute top-4 left-1/2 transform -translate-x-1/2 bg-medsight-critical/20 border border-medsight-critical text-medsight-critical px-3 py-1 rounded-lg text-sm font-medium">
+          <ExclamationTriangleIcon className="w-4 h-4 inline mr-1" />
+          Emergency Mode Active
+        </div>
+      )}
+
+      {/* Collaboration Indicator */}
+      {collaborationMode && (
+        <div className="absolute bottom-4 center-4 medsight-control-glass p-2 rounded-lg">
+          <div className="flex items-center gap-2 text-sm">
+            <UserGroupIcon className="w-4 h-4 text-medsight-primary" />
+            <span className="text-gray-600">Collaborative Session</span>
+          </div>
+        </div>
+      )}
+
+      {/* Collapsed Controls Toggle */}
+      {!showControls && (
+        <button
+          onClick={() => setShowControls(true)}
+          className="absolute top-4 left-4 medsight-control-glass p-2 rounded-lg"
+        >
+          <CubeIcon className="w-4 h-4" />
+        </button>
       )}
     </div>
   );

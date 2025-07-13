@@ -653,3 +653,9 @@ export function MedicalNotifications() {
     </div>
   );
 } 
+export interface MedicalNotificationsProps {
+  notifications?: MedicalNotification[];
+  onNotificationClick?: (notification: MedicalNotification) => void;
+  onMarkAsRead?: (notificationId: string) => void;
+  onDismiss?: (notificationId: string) => void;
+} 

@@ -1,0 +1,41 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: annotateai
+  labels:
+    name: annotateai
+    environment: production
+    platform: annotateai
+    version: "1.0.0"
+  annotations:
+    description: "AnnotateAI AI-powered annotation platform"
+    contact: "platform-team@annotateai.com"
+    managed-by: "kubernetes"
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: annotateai-staging
+  labels:
+    name: annotateai-staging
+    environment: staging
+    platform: annotateai
+    version: "1.0.0"
+  annotations:
+    description: "AnnotateAI staging environment"
+    contact: "platform-team@annotateai.com"
+    managed-by: "kubernetes"
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: annotateai-dev
+  labels:
+    name: annotateai-dev
+    environment: development
+    platform: annotateai
+    version: "1.0.0"
+  annotations:
+    description: "AnnotateAI development environment"
+    contact: "platform-team@annotateai.com"
+    managed-by: "kubernetes" 

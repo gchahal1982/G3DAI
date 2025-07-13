@@ -1,6 +1,6 @@
 'use client';
 
-import { useAuth } from '@/lib/auth/AuthContext';
+import { useAuth } from '@/hooks/useAuth';
 import { useState, useEffect } from 'react';
 import Navigation from '@/components/layout/Navigation';
 import Header from '@/components/layout/Header';

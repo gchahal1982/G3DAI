@@ -1,0 +1,379 @@
+groups:
+  # System-level alerts
+  - name: system.rules
+    rules:
+      - alert: HighCPUUsage
+        expr: 100 - (avg by(instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 80
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High CPU usage detected"
+          description: "CPU usage is above 80% for more than 5 minutes on instance {{ $labels.instance }}"
+
+      - alert: HighMemoryUsage
+        expr: (node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / node_memory_MemTotal_bytes * 100 > 85
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High memory usage detected"
+          description: "Memory usage is above 85% for more than 5 minutes on instance {{ $labels.instance }}"
+
+      - alert: DiskSpaceLow
+        expr: (node_filesystem_free_bytes{fstype!="tmpfs"} / node_filesystem_size_bytes{fstype!="tmpfs"}) * 100 < 10
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Low disk space"
+          description: "Disk space is below 10% on {{ $labels.device }} at {{ $labels.instance }}"
+
+      - alert: HighDiskIO
+        expr: irate(node_disk_io_time_seconds_total[5m]) > 0.8
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High disk I/O usage"
+          description: "Disk I/O usage is above 80% for more than 5 minutes on instance {{ $labels.instance }}"
+
+  # Application-level alerts
+  - name: application.rules
+    rules:
+      - alert: ServiceDown
+        expr: up == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Service is down"
+          description: "{{ $labels.job }} service is down on instance {{ $labels.instance }}"
+
+      - alert: HighErrorRate
+        expr: |
+          (
+            rate(http_requests_total{status=~"5.."}[5m]) /
+            rate(http_requests_total[5m])
+          ) * 100 > 5
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High error rate detected"
+          description: "Error rate is above 5% for service {{ $labels.job }} on instance {{ $labels.instance }}"
+
+      - alert: HighResponseTime
+        expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m])) > 2
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High response time"
+          description: "95th percentile response time is above 2 seconds for service {{ $labels.job }}"
+
+      - alert: RequestRateSpike
+        expr: rate(http_requests_total[5m]) > 100
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Request rate spike detected"
+          description: "Request rate is above 100 requests per second for service {{ $labels.job }}"
+
+  # AI/ML specific alerts
+  - name: ai-ml.rules
+    rules:
+      - alert: GPUMemoryHigh
+        expr: nvidia_ml_py_memory_usage_percent > 90
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "GPU memory usage high"
+          description: "GPU memory usage is above 90% on GPU {{ $labels.gpu }} at {{ $labels.instance }}"
+
+      - alert: GPUUtilizationHigh
+        expr: nvidia_ml_py_utilization_gpu_percent > 95
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "GPU utilization high"
+          description: "GPU utilization is above 95% on GPU {{ $labels.gpu }} at {{ $labels.instance }}"
+
+      - alert: ModelInferenceLatencyHigh
+        expr: histogram_quantile(0.95, rate(model_inference_duration_seconds_bucket[5m])) > 5
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Model inference latency high"
+          description: "95th percentile model inference latency is above 5 seconds for model {{ $labels.model }}"
+
+      - alert: ModelAccuracyDrop
+        expr: model_accuracy_score < 0.8
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Model accuracy drop detected"
+          description: "Model accuracy has dropped below 80% for model {{ $labels.model }}"
+
+      - alert: TrainingJobFailed
+        expr: training_job_status{status="failed"} == 1
+        for: 0m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Training job failed"
+          description: "Training job {{ $labels.job_id }} has failed"
+
+      - alert: DataDriftDetected
+        expr: data_drift_score > 0.5
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Data drift detected"
+          description: "Data drift score is above 0.5 for dataset {{ $labels.dataset }}"
+
+  # Database alerts
+  - name: database.rules
+    rules:
+      - alert: PostgreSQLDown
+        expr: pg_up == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "PostgreSQL is down"
+          description: "PostgreSQL database is down on instance {{ $labels.instance }}"
+
+      - alert: PostgreSQLTooManyConnections
+        expr: pg_stat_activity_count > 80
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "PostgreSQL too many connections"
+          description: "PostgreSQL has more than 80 connections on instance {{ $labels.instance }}"
+
+      - alert: PostgreSQLSlowQueries
+        expr: pg_stat_statements_mean_time_ms > 1000
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "PostgreSQL slow queries detected"
+          description: "PostgreSQL has slow queries (>1000ms) on instance {{ $labels.instance }}"
+
+      - alert: RedisDown
+        expr: redis_up == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Redis is down"
+          description: "Redis instance is down on {{ $labels.instance }}"
+
+      - alert: RedisHighMemoryUsage
+        expr: redis_memory_used_bytes / redis_memory_max_bytes * 100 > 90
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Redis high memory usage"
+          description: "Redis memory usage is above 90% on instance {{ $labels.instance }}"
+
+  # Storage alerts
+  - name: storage.rules
+    rules:
+      - alert: MinIODown
+        expr: minio_cluster_nodes_offline_total > 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "MinIO node is down"
+          description: "MinIO has {{ $value }} nodes offline"
+
+      - alert: MinIOHighDiskUsage
+        expr: minio_cluster_disk_usage_percent > 85
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "MinIO high disk usage"
+          description: "MinIO disk usage is above 85%"
+
+      - alert: MinIOHighAPIRequestFailures
+        expr: rate(minio_s3_requests_errors_total[5m]) > 0.1
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "MinIO API request failures"
+          description: "MinIO API request failure rate is above 10%"
+
+  # Container alerts
+  - name: container.rules
+    rules:
+      - alert: ContainerCPUUsageHigh
+        expr: (rate(container_cpu_usage_seconds_total{name!=""}[5m]) * 100) > 80
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Container CPU usage high"
+          description: "Container {{ $labels.name }} CPU usage is above 80%"
+
+      - alert: ContainerMemoryUsageHigh
+        expr: (container_memory_usage_bytes{name!=""} / container_spec_memory_limit_bytes{name!=""}) * 100 > 85
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Container memory usage high"
+          description: "Container {{ $labels.name }} memory usage is above 85%"
+
+      - alert: ContainerRestarting
+        expr: rate(container_restarts_total[5m]) > 0
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Container restarting"
+          description: "Container {{ $labels.name }} is restarting frequently"
+
+  # Network alerts
+  - name: network.rules
+    rules:
+      - alert: HighNetworkTraffic
+        expr: rate(node_network_receive_bytes_total[5m]) > 100000000  # 100MB/s
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High network traffic"
+          description: "Network traffic is above 100MB/s on interface {{ $labels.device }} at {{ $labels.instance }}"
+
+      - alert: NetworkPacketLoss
+        expr: rate(node_network_receive_drop_total[5m]) > 100
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Network packet loss detected"
+          description: "Network packet loss detected on interface {{ $labels.device }} at {{ $labels.instance }}"
+
+  # Collaboration service alerts
+  - name: collaboration.rules
+    rules:
+      - alert: CollaborationServiceHighLatency
+        expr: histogram_quantile(0.95, rate(collaboration_websocket_latency_seconds_bucket[5m])) > 1
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Collaboration service high latency"
+          description: "Collaboration service WebSocket latency is above 1 second"
+
+      - alert: CollaborationServiceConnectionsHigh
+        expr: collaboration_active_connections > 1000
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High number of collaboration connections"
+          description: "Collaboration service has more than 1000 active connections"
+
+      - alert: CollaborationServiceConflictsHigh
+        expr: rate(collaboration_conflicts_total[5m]) > 10
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High collaboration conflicts"
+          description: "Collaboration service has more than 10 conflicts per second"
+
+  # Annotation quality alerts
+  - name: annotation-quality.rules
+    rules:
+      - alert: AnnotationQualityDrop
+        expr: annotation_quality_score < 0.85
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Annotation quality drop"
+          description: "Annotation quality score has dropped below 85% for project {{ $labels.project }}"
+
+      - alert: AnnotationInterAgreementLow
+        expr: annotation_inter_agreement_score < 0.7
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Low inter-annotator agreement"
+          description: "Inter-annotator agreement score is below 70% for project {{ $labels.project }}"
+
+  # Security alerts
+  - name: security.rules
+    rules:
+      - alert: UnauthorizedAccess
+        expr: rate(http_requests_total{status="401"}[5m]) > 5
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Unauthorized access attempts"
+          description: "High number of unauthorized access attempts on service {{ $labels.job }}"
+
+      - alert: SuspiciousActivity
+        expr: rate(http_requests_total{status="403"}[5m]) > 10
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Suspicious activity detected"
+          description: "High number of forbidden requests on service {{ $labels.job }}"
+
+      - alert: BruteForceAttack
+        expr: rate(authentication_failures_total[5m]) > 50
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Potential brute force attack"
+          description: "High number of authentication failures detected"
+
+  # Business metrics alerts
+  - name: business.rules
+    rules:
+      - alert: LowAnnotationThroughput
+        expr: rate(annotations_created_total[1h]) < 100
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Low annotation throughput"
+          description: "Annotation creation rate is below 100 per hour"
+
+      - alert: HighAnnotationRejectionRate
+        expr: rate(annotations_rejected_total[5m]) / rate(annotations_created_total[5m]) > 0.2
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High annotation rejection rate"
+          description: "Annotation rejection rate is above 20%"
+
+      - alert: UserSessionTimeHigh
+        expr: histogram_quantile(0.95, rate(user_session_duration_seconds_bucket[5m])) > 7200  # 2 hours
+        for: 5m
+        labels:
+          severity: info
+        annotations:
+          summary: "High user session time"
+          description: "95th percentile user session time is above 2 hours" 

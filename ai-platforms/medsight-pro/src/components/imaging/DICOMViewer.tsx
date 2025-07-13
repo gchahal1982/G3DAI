@@ -2,1186 +2,680 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { 
-  MagnifyingGlassIcon,
-  MagnifyingGlassMinusIcon,
-  MagnifyingGlassPlusIcon,
-  ArrowsPointingOutIcon,
-  ArrowPathIcon,
-  AdjustmentsHorizontalIcon,
-  PhotoIcon,
-  EyeIcon,
-  EyeSlashIcon,
-  PlayIcon,
-  PauseIcon,
-  ForwardIcon,
+  PlayIcon, 
+  PauseIcon, 
+  ForwardIcon, 
   BackwardIcon,
-  SpeakerWaveIcon,
-  SpeakerXMarkIcon,
-  Squares2X2Icon,
-  RectangleStackIcon,
-  DocumentTextIcon,
-  ShareIcon,
-  ArrowDownTrayIcon,
-  CogIcon,
-  InformationCircleIcon,
+  AdjustmentsHorizontalIcon,
+  MagnifyingGlassIcon,
+  PencilIcon,
+  BeakerIcon,
+  CubeIcon,
   ExclamationTriangleIcon,
   CheckCircleIcon,
-  ShieldCheckIcon,
-  ChartBarIcon,
   ClockIcon,
+  EyeIcon,
+  Cog6ToothIcon,
+  UserGroupIcon,
+  SparklesIcon,
+  BoltIcon,
+  ArrowsPointingOutIcon,
+  ArrowsPointingInIcon,
+  ArrowUpIcon,
+  ArrowDownIcon,
+  ArrowLeftIcon,
+  ArrowRightIcon,
+  PhotoIcon,
+  InformationCircleIcon,
+  CheckBadgeIcon,
+  SunIcon,
+  MoonIcon,
+  AcademicCapIcon,
+  LightBulbIcon,
+  DocumentTextIcon,
+  ChartBarIcon,
+  RectangleGroupIcon,
+  Square3Stack3DIcon,
+  CircleStackIcon,
+  CalendarIcon,
   UserIcon,
-  MapPinIcon,
-  ComputerDesktopIcon,
-  FireIcon,
-  LockClosedIcon,
-  PlusIcon,
-  MinusIcon,
-  XMarkIcon,
-  Bars3Icon
+  TagIcon
 } from '@heroicons/react/24/outline';
-import { 
-  PhotoIcon as PhotoIconSolid,
-  EyeIcon as EyeIconSolid,
-  PlayIcon as PlayIconSolid,
-  PauseIcon as PauseIconSolid
-} from '@heroicons/react/24/solid';
-import React from 'react';
 
-interface DICOMImage {
-  id: string;
-  seriesId: string;
-  studyId: string;
-  instanceNumber: number;
-  sopInstanceUID: string;
-  imageData: ArrayBuffer | null;
-  metadata: {
-    rows: number;
-    columns: number;
-    bitsAllocated: number;
-    bitsStored: number;
-    pixelRepresentation: number;
-    photometricInterpretation: string;
-    samplesPerPixel: number;
-    planarConfiguration?: number;
-    pixelSpacing?: [number, number];
-    sliceThickness?: number;
-    sliceLocation?: number;
-    imagePosition?: [number, number, number];
-    imageOrientation?: [number, number, number, number, number, number];
-    windowCenter?: number;
-    windowWidth?: number;
-    rescaleIntercept?: number;
-    rescaleSlope?: number;
-  };
-  processed: boolean;
-  cached: boolean;
-  loadTime: number;
-  fileSize: number;
-}
-
-interface DICOMSeries {
-  id: string;
-  studyId: string;
-  seriesNumber: number;
-  seriesDescription: string;
-  modality: string;
-  bodyPart: string;
-  imageCount: number;
-  images: DICOMImage[];
-  loaded: boolean;
-  loading: boolean;
-  error?: string;
+interface DICOMViewerProps {
+  studyId?: string;
+  className?: string;
+  onMeasurement?: (measurement: any) => void;
+  onAnnotation?: (annotation: any) => void;
+  onAIAnalysis?: (analysis: any) => void;
+  showAIOverlay?: boolean;
+  showMeasurements?: boolean;
+  showAnnotations?: boolean;
+  emergencyMode?: boolean;
+  collaborationMode?: boolean;
 }
 
 interface ViewerState {
+  currentSeries: number;
+  currentImage: number;
   windowLevel: number;
   windowWidth: number;
   zoom: number;
   pan: { x: number; y: number };
   rotation: number;
+  isPlaying: boolean;
+  playbackSpeed: number;
+  brightness: number;
+  contrast: number;
   invert: boolean;
-  interpolation: 'nearest' | 'linear' | 'cubic';
-  overlays: boolean;
-  annotations: boolean;
-  measurements: boolean;
-  cineMode: boolean;
-  cineSpeed: number; // FPS
-  currentFrame: number;
-  playing: boolean;
-  muted: boolean;
-  layout: 'single' | 'dual' | 'quad' | 'stack';
+  interpolation: 'nearest' | 'bilinear' | 'bicubic';
+  orientation: 'axial' | 'coronal' | 'sagittal';
   crosshairs: boolean;
   rulers: boolean;
   grid: boolean;
-  magnifier: boolean;
-  histogram: boolean;
+  annotations: boolean;
+  measurements: boolean;
+  aiOverlay: boolean;
+  hangingProtocol: 'default' | 'chest' | 'abdomen' | 'brain' | 'bone' | 'mri';
 }
 
-interface ViewerTool {
+interface Annotation {
   id: string;
-  name: string;
-  icon: any;
-  description: string;
-  active: boolean;
-  category: 'navigation' | 'windowing' | 'measurement' | 'annotation' | 'analysis';
-  cursor?: string;
-  shortcut?: string;
+  type: 'arrow' | 'text' | 'rectangle' | 'circle' | 'freehand';
+  coordinates: { x: number; y: number }[];
+  text?: string;
+  color: string;
+  thickness: number;
+  timestamp: string;
+  user: string;
+  series: number;
+  image: number;
 }
 
-interface DICOMViewerProps {
-  studyId: string;
-  seriesId?: string;
-  imageId?: string;
-  onImageChange?: (imageId: string) => void;
-  onSeriesChange?: (seriesId: string) => void;
-  onMeasurement?: (measurement: any) => void;
-  onAnnotation?: (annotation: any) => void;
-  className?: string;
-  readOnly?: boolean;
-  showControls?: boolean;
-  showOverlays?: boolean;
-  autoPlay?: boolean;
-  preloadImages?: boolean;
+interface Measurement {
+  id: string;
+  type: 'length' | 'area' | 'angle' | 'circle' | 'ellipse' | 'ratio';
+  coordinates: { x: number; y: number }[];
+  value: number;
+  unit: string;
+  confidence: number;
+  timestamp: string;
+  user: string;
+  series: number;
+  image: number;
+}
+
+interface AIAnalysis {
+  id: string;
+  type: 'detection' | 'segmentation' | 'classification' | 'measurement';
+  region: { x: number; y: number; width: number; height: number };
+  confidence: number;
+  label: string;
+  finding: string;
+  severity: 'normal' | 'abnormal' | 'critical' | 'urgent';
+  timestamp: string;
+  model: string;
+  version: string;
 }
 
 export default function DICOMViewer({
   studyId,
-  seriesId,
-  imageId,
-  onImageChange,
-  onSeriesChange,
+  className = '',
   onMeasurement,
   onAnnotation,
-  className = '',
-  readOnly = false,
-  showControls = true,
-  showOverlays = true,
-  autoPlay = false,
-  preloadImages = true
+  onAIAnalysis,
+  showAIOverlay = true,
+  showMeasurements = true,
+  showAnnotations = true,
+  emergencyMode = false,
+  collaborationMode = false
 }: DICOMViewerProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [series, setSeries] = useState<DICOMSeries[]>([]);
-  const [currentSeries, setCurrentSeries] = useState<DICOMSeries | null>(null);
-  const [currentImage, setCurrentImage] = useState<DICOMImage | null>(null);
   const [viewerState, setViewerState] = useState<ViewerState>({
+    currentSeries: 0,
+    currentImage: 0,
     windowLevel: 40,
     windowWidth: 400,
     zoom: 1.0,
     pan: { x: 0, y: 0 },
     rotation: 0,
+    isPlaying: false,
+    playbackSpeed: 5,
+    brightness: 50,
+    contrast: 50,
     invert: false,
-    interpolation: 'linear',
-    overlays: showOverlays,
-    annotations: true,
-    measurements: true,
-    cineMode: false,
-    cineSpeed: 10,
-    currentFrame: 0,
-    playing: false,
-    muted: false,
-    layout: 'single',
+    interpolation: 'bilinear',
+    orientation: 'axial',
     crosshairs: false,
     rulers: false,
     grid: false,
-    magnifier: false,
-    histogram: false
+    annotations: showAnnotations,
+    measurements: showMeasurements,
+    aiOverlay: showAIOverlay,
+    hangingProtocol: 'default'
   });
-  const [activeTool, setActiveTool] = useState<string>('pan');
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [showSettings, setShowSettings] = useState(false);
-  const [showInfo, setShowInfo] = useState(false);
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-  const [pixelValue, setPixelValue] = useState<number | null>(null);
-  const [isMouseDown, setIsMouseDown] = useState(false);
-  const [lastMousePosition, setLastMousePosition] = useState({ x: 0, y: 0 });
 
-  const tools: ViewerTool[] = [
-    {
-      id: 'pan',
-      name: 'Pan',
-      icon: ArrowsPointingOutIcon,
-      description: 'Pan the image',
-      active: activeTool === 'pan',
-      category: 'navigation',
-      cursor: 'grab',
-      shortcut: 'P'
-    },
-    {
-      id: 'zoom',
-      name: 'Zoom',
-      icon: MagnifyingGlassIcon,
-      description: 'Zoom in/out',
-      active: activeTool === 'zoom',
-      category: 'navigation',
-      cursor: 'zoom-in',
-      shortcut: 'Z'
-    },
-    {
-      id: 'windowing',
-      name: 'Window/Level',
-      icon: AdjustmentsHorizontalIcon,
-      description: 'Adjust window/level',
-      active: activeTool === 'windowing',
-      category: 'windowing',
-      cursor: 'ew-resize',
-      shortcut: 'W'
-    },
-    {
-      id: 'length',
-      name: 'Length',
-      icon: ChartBarIcon,
-      description: 'Measure length',
-      active: activeTool === 'length',
-      category: 'measurement',
-      cursor: 'crosshair',
-      shortcut: 'L'
-    },
-    {
-      id: 'angle',
-      name: 'Angle',
-      icon: ChartBarIcon,
-      description: 'Measure angle',
-      active: activeTool === 'angle',
-      category: 'measurement',
-      cursor: 'crosshair',
-      shortcut: 'A'
-    },
-    {
-      id: 'rectangle',
-      name: 'Rectangle ROI',
-      icon: Squares2X2Icon,
-      description: 'Rectangle region of interest',
-      active: activeTool === 'rectangle',
-      category: 'measurement',
-      cursor: 'crosshair',
-      shortcut: 'R'
-    },
-    {
-      id: 'annotation',
-      name: 'Annotation',
-      icon: DocumentTextIcon,
-      description: 'Add text annotation',
-      active: activeTool === 'annotation',
-      category: 'annotation',
-      cursor: 'text',
-      shortcut: 'T'
-    },
-    {
-      id: 'magnifier',
-      name: 'Magnifier',
-      icon: MagnifyingGlassPlusIcon,
-      description: 'Magnifying glass',
-      active: activeTool === 'magnifier',
-      category: 'analysis',
-      cursor: 'zoom-in',
-      shortcut: 'M'
-    }
-  ];
+  const [annotations, setAnnotations] = useState<Annotation[]>([]);
+  const [measurements, setMeasurements] = useState<Measurement[]>([]);
+  const [aiAnalyses, setAIAnalyses] = useState<AIAnalysis[]>([]);
+  const [selectedTool, setSelectedTool] = useState<string>('pan');
+  const [isDrawing, setIsDrawing] = useState(false);
+  const [currentDrawing, setCurrentDrawing] = useState<{ x: number; y: number }[]>([]);
+  const [showControls, setShowControls] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
+  const [imageData, setImageData] = useState<ImageData | null>(null);
+  const [studyMetadata, setStudyMetadata] = useState<any>(null);
 
-  useEffect(() => {
-    loadDICOMStudy();
-  }, [studyId]);
+  // Mock study data
+  const mockStudyData = {
+    id: studyId || 'STU001',
+    patientName: 'Smith, John',
+    patientId: 'PAT001',
+    studyDescription: 'Chest CT with Contrast',
+    modality: 'CT',
+    seriesCount: 4,
+    imageCount: 256,
+    currentSeries: viewerState.currentSeries,
+    currentImage: viewerState.currentImage,
+    windowPresets: [
+      { name: 'Lung', level: -500, width: 1500 },
+      { name: 'Mediastinum', level: 50, width: 350 },
+      { name: 'Bone', level: 300, width: 1500 },
+      { name: 'Soft Tissue', level: 40, width: 400 }
+    ],
+    pixelSpacing: [0.7, 0.7],
+    sliceThickness: 5.0,
+    imagePosition: [0, 0, 0],
+    imageOrientation: [1, 0, 0, 0, 1, 0]
+  };
 
-  useEffect(() => {
-    if (seriesId && series.length > 0) {
-      const targetSeries = series.find(s => s.id === seriesId);
-      if (targetSeries) {
-        setCurrentSeries(targetSeries);
-        if (targetSeries.images.length > 0) {
-          setCurrentImage(targetSeries.images[0]);
-        }
+  const handleZoomIn = useCallback(() => {
+    setViewerState(prev => ({
+      ...prev,
+      zoom: Math.min(prev.zoom * 1.2, 10.0)
+    }));
+  }, []);
+
+  const handleZoomOut = useCallback(() => {
+    setViewerState(prev => ({
+      ...prev,
+      zoom: Math.max(prev.zoom / 1.2, 0.1)
+    }));
+  }, []);
+
+  const handlePan = useCallback((deltaX: number, deltaY: number) => {
+    setViewerState(prev => ({
+      ...prev,
+      pan: {
+        x: prev.pan.x + deltaX,
+        y: prev.pan.y + deltaY
       }
-    }
-  }, [seriesId, series]);
+    }));
+  }, []);
 
-  useEffect(() => {
-    if (imageId && currentSeries) {
-      const targetImage = currentSeries.images.find(img => img.id === imageId);
-      if (targetImage) {
-        setCurrentImage(targetImage);
-      }
-    }
-  }, [imageId, currentSeries]);
+  const handleRotate = useCallback((degrees: number) => {
+    setViewerState(prev => ({
+      ...prev,
+      rotation: (prev.rotation + degrees) % 360
+    }));
+  }, []);
 
-  useEffect(() => {
-    if (currentImage) {
-      renderDICOMImage();
-    }
-  }, [currentImage, viewerState]);
+  const handleWindowLevel = useCallback((level: number, width: number) => {
+    setViewerState(prev => ({
+      ...prev,
+      windowLevel: level,
+      windowWidth: width
+    }));
+  }, []);
 
-  useEffect(() => {
-    let interval: NodeJS.Timeout;
-    if (viewerState.playing && viewerState.cineMode && currentSeries) {
-      interval = setInterval(() => {
-        nextFrame();
-      }, 1000 / viewerState.cineSpeed);
-    }
-    return () => {
-      if (interval) clearInterval(interval);
-    };
-  }, [viewerState.playing, viewerState.cineMode, viewerState.cineSpeed, currentSeries]);
+  const handlePlayPause = useCallback(() => {
+    setViewerState(prev => ({
+      ...prev,
+      isPlaying: !prev.isPlaying
+    }));
+  }, []);
 
-  const loadDICOMStudy = async () => {
-    try {
-      setLoading(true);
-      setError(null);
+  const handleNextImage = useCallback(() => {
+    setViewerState(prev => ({
+      ...prev,
+      currentImage: Math.min(prev.currentImage + 1, mockStudyData.imageCount - 1)
+    }));
+  }, []);
 
-      // Mock data - in production, this would connect to backend DICOMProcessor.ts
-      const mockSeries: DICOMSeries[] = [
-        {
-          id: 'series_001',
-          studyId,
-          seriesNumber: 1,
-          seriesDescription: 'Axial CT Chest with Contrast',
-          modality: 'CT',
-          bodyPart: 'Chest',
-          imageCount: 128,
-          images: Array.from({ length: 128 }, (_, index) => ({
-            id: `image_${index + 1}`,
-            seriesId: 'series_001',
-            studyId,
-            instanceNumber: index + 1,
-            sopInstanceUID: `1.2.3.4.5.6.${index + 1}`,
-            imageData: null,
-            metadata: {
-              rows: 512,
-              columns: 512,
-              bitsAllocated: 16,
-              bitsStored: 12,
-              pixelRepresentation: 0,
-              photometricInterpretation: 'MONOCHROME2',
-              samplesPerPixel: 1,
-              pixelSpacing: [0.625, 0.625],
-              sliceThickness: 5.0,
-              sliceLocation: index * 5.0,
-              imagePosition: [0, 0, index * 5.0],
-              imageOrientation: [1, 0, 0, 0, 1, 0],
-              windowCenter: 40,
-              windowWidth: 400,
-              rescaleIntercept: -1024,
-              rescaleSlope: 1
-            },
-            processed: false,
-            cached: false,
-            loadTime: 0,
-            fileSize: 524288 // 512KB
-          })),
-          loaded: true,
-          loading: false
-        },
-        {
-          id: 'series_002',
-          studyId,
-          seriesNumber: 2,
-          seriesDescription: 'Coronal CT Chest with Contrast',
-          modality: 'CT',
-          bodyPart: 'Chest',
-          imageCount: 96,
-          images: Array.from({ length: 96 }, (_, index) => ({
-            id: `image_cor_${index + 1}`,
-            seriesId: 'series_002',
-            studyId,
-            instanceNumber: index + 1,
-            sopInstanceUID: `1.2.3.4.5.7.${index + 1}`,
-            imageData: null,
-            metadata: {
-              rows: 512,
-              columns: 512,
-              bitsAllocated: 16,
-              bitsStored: 12,
-              pixelRepresentation: 0,
-              photometricInterpretation: 'MONOCHROME2',
-              samplesPerPixel: 1,
-              pixelSpacing: [0.625, 0.625],
-              sliceThickness: 5.0,
-              sliceLocation: index * 5.0,
-              imagePosition: [0, index * 5.0, 0],
-              imageOrientation: [1, 0, 0, 0, 0, -1],
-              windowCenter: 40,
-              windowWidth: 400,
-              rescaleIntercept: -1024,
-              rescaleSlope: 1
-            },
-            processed: false,
-            cached: false,
-            loadTime: 0,
-            fileSize: 524288
-          })),
-          loaded: true,
-          loading: false
-        }
-      ];
+  const handlePrevImage = useCallback(() => {
+    setViewerState(prev => ({
+      ...prev,
+      currentImage: Math.max(prev.currentImage - 1, 0)
+    }));
+  }, []);
 
-      setSeries(mockSeries);
-      
-      // Set initial series and image
-      if (mockSeries.length > 0) {
-        const initialSeries = mockSeries[0];
-        setCurrentSeries(initialSeries);
-        if (initialSeries.images.length > 0) {
-          setCurrentImage(initialSeries.images[0]);
-          
-          // Set initial window/level from DICOM metadata
-          const firstImage = initialSeries.images[0];
-          if (firstImage.metadata.windowCenter && firstImage.metadata.windowWidth) {
-            setViewerState(prev => ({
-              ...prev,
-              windowLevel: firstImage.metadata.windowCenter!,
-              windowWidth: firstImage.metadata.windowWidth!
-            }));
-          }
-        }
-      }
+  const handleNextSeries = useCallback(() => {
+    setViewerState(prev => ({
+      ...prev,
+      currentSeries: Math.min(prev.currentSeries + 1, mockStudyData.seriesCount - 1),
+      currentImage: 0
+    }));
+  }, []);
 
-      setLoading(false);
-    } catch (error) {
-      console.error('Error loading DICOM study:', error);
-      setError('Failed to load DICOM study');
-      setLoading(false);
-    }
-  };
+  const handlePrevSeries = useCallback(() => {
+    setViewerState(prev => ({
+      ...prev,
+      currentSeries: Math.max(prev.currentSeries - 1, 0),
+      currentImage: 0
+    }));
+  }, []);
 
-  const renderDICOMImage = useCallback(() => {
-    if (!currentImage || !canvasRef.current) return;
-
-    const canvas = canvasRef.current;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    // Set canvas size to match container
-    const container = containerRef.current;
-    if (container) {
-      canvas.width = container.clientWidth;
-      canvas.height = container.clientHeight;
-    }
-
-    // Clear canvas
-    ctx.fillStyle = '#000000';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    // Mock DICOM image rendering
-    const { rows, columns } = currentImage.metadata;
-    const imageWidth = columns;
-    const imageHeight = rows;
-
-    // Calculate display dimensions with zoom and pan
-    const scaledWidth = imageWidth * viewerState.zoom;
-    const scaledHeight = imageHeight * viewerState.zoom;
-    const x = (canvas.width - scaledWidth) / 2 + viewerState.pan.x;
-    const y = (canvas.height - scaledHeight) / 2 + viewerState.pan.y;
-
-    // Save context for transformations
-    ctx.save();
-
-    // Apply rotation
-    if (viewerState.rotation !== 0) {
-      ctx.translate(canvas.width / 2, canvas.height / 2);
-      ctx.rotate((viewerState.rotation * Math.PI) / 180);
-      ctx.translate(-canvas.width / 2, -canvas.height / 2);
-    }
-
-    // Mock image data (gradient pattern)
-    const gradient = ctx.createRadialGradient(
-      x + scaledWidth / 2, y + scaledHeight / 2, 0,
-      x + scaledWidth / 2, y + scaledHeight / 2, Math.min(scaledWidth, scaledHeight) / 2
-    );
-
-    // Apply window/level to gradient colors
-    const normalizedLevel = (viewerState.windowLevel + 1024) / 4096; // Normalize to 0-1
-    const normalizedWidth = viewerState.windowWidth / 4096;
-    
-    if (viewerState.invert) {
-      gradient.addColorStop(0, `rgb(${255 - Math.floor(normalizedLevel * 255)}, ${255 - Math.floor(normalizedLevel * 255)}, ${255 - Math.floor(normalizedLevel * 255)})`);
-      gradient.addColorStop(1, `rgb(${255 - Math.floor((normalizedLevel + normalizedWidth) * 255)}, ${255 - Math.floor((normalizedLevel + normalizedWidth) * 255)}, ${255 - Math.floor((normalizedLevel + normalizedWidth) * 255)})`);
-    } else {
-      gradient.addColorStop(0, `rgb(${Math.floor(normalizedLevel * 255)}, ${Math.floor(normalizedLevel * 255)}, ${Math.floor(normalizedLevel * 255)})`);
-      gradient.addColorStop(1, `rgb(${Math.floor((normalizedLevel + normalizedWidth) * 255)}, ${Math.floor((normalizedLevel + normalizedWidth) * 255)}, ${Math.floor((normalizedLevel + normalizedWidth) * 255)})`);
-    }
-
-    ctx.fillStyle = gradient;
-    ctx.fillRect(x, y, scaledWidth, scaledHeight);
-
-    // Add mock anatomical pattern
-    ctx.strokeStyle = viewerState.invert ? '#333333' : '#cccccc';
-    ctx.lineWidth = 1;
-    ctx.setLineDash([5, 5]);
-    
-    // Draw some mock anatomical structures
-    ctx.beginPath();
-    ctx.ellipse(x + scaledWidth * 0.3, y + scaledHeight * 0.4, scaledWidth * 0.15, scaledHeight * 0.2, 0, 0, 2 * Math.PI);
-    ctx.stroke();
-    
-    ctx.beginPath();
-    ctx.ellipse(x + scaledWidth * 0.7, y + scaledHeight * 0.4, scaledWidth * 0.15, scaledHeight * 0.2, 0, 0, 2 * Math.PI);
-    ctx.stroke();
-
-    ctx.setLineDash([]);
-
-    // Restore context
-    ctx.restore();
-
-    // Render overlays
-    if (viewerState.overlays && showOverlays) {
-      renderOverlays(ctx, canvas);
-    }
-
-    // Render crosshairs
-    if (viewerState.crosshairs) {
-      renderCrosshairs(ctx, canvas);
-    }
-
-    // Render grid
-    if (viewerState.grid) {
-      renderGrid(ctx, canvas);
-    }
-
-    // Render rulers
-    if (viewerState.rulers) {
-      renderRulers(ctx, canvas);
-    }
-
-  }, [currentImage, viewerState, showOverlays]);
-
-  const renderOverlays = (ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) => {
-    if (!currentImage) return;
-
-    ctx.fillStyle = '#ffffff';
-    ctx.font = '12px Arial';
-    ctx.textAlign = 'left';
-
-    // Top left - Patient info
-    const topLeftInfo = [
-      `Patient: ${currentImage.studyId}`,
-      `Series: ${currentSeries?.seriesNumber} - ${currentSeries?.seriesDescription}`,
-      `Image: ${currentImage.instanceNumber}/${currentSeries?.imageCount}`
-    ];
-
-    topLeftInfo.forEach((text, index) => {
-      ctx.fillText(text, 10, 20 + index * 15);
-    });
-
-    // Top right - Study info
-    ctx.textAlign = 'right';
-    const topRightInfo = [
-      `${currentSeries?.modality}`,
-      `${currentImage.metadata.rows}x${currentImage.metadata.columns}`,
-      `Slice: ${currentImage.metadata.sliceLocation?.toFixed(1)}mm`
-    ];
-
-    topRightInfo.forEach((text, index) => {
-      ctx.fillText(text, canvas.width - 10, 20 + index * 15);
-    });
-
-    // Bottom left - Technical info
-    ctx.textAlign = 'left';
-    const bottomLeftInfo = [
-      `WL: ${viewerState.windowLevel} WW: ${viewerState.windowWidth}`,
-      `Zoom: ${(viewerState.zoom * 100).toFixed(0)}%`,
-      `Pixel Spacing: ${currentImage.metadata.pixelSpacing?.join('x') || 'N/A'}`
-    ];
-
-    bottomLeftInfo.forEach((text, index) => {
-      ctx.fillText(text, 10, canvas.height - 60 + index * 15);
-    });
-
-    // Bottom right - Mouse position and pixel value
-    ctx.textAlign = 'right';
-    const bottomRightInfo = [
-      `X: ${mousePosition.x.toFixed(0)} Y: ${mousePosition.y.toFixed(0)}`,
-      pixelValue !== null ? `Value: ${pixelValue.toFixed(0)}` : '',
-      `Frame: ${viewerState.currentFrame + 1}/${currentSeries?.imageCount || 1}`
-    ].filter(Boolean);
-
-    bottomRightInfo.forEach((text, index) => {
-      ctx.fillText(text, canvas.width - 10, canvas.height - 60 + index * 15);
-    });
-  };
-
-  const renderCrosshairs = (ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) => {
-    ctx.strokeStyle = '#00ff00';
-    ctx.lineWidth = 1;
-    ctx.setLineDash([5, 5]);
-
-    // Vertical line
-    ctx.beginPath();
-    ctx.moveTo(canvas.width / 2, 0);
-    ctx.lineTo(canvas.width / 2, canvas.height);
-    ctx.stroke();
-
-    // Horizontal line
-    ctx.beginPath();
-    ctx.moveTo(0, canvas.height / 2);
-    ctx.lineTo(canvas.width, canvas.height / 2);
-    ctx.stroke();
-
-    ctx.setLineDash([]);
-  };
-
-  const renderGrid = (ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) => {
-    ctx.strokeStyle = '#333333';
-    ctx.lineWidth = 0.5;
-    
-    const gridSize = 50;
-    
-    // Vertical lines
-    for (let x = 0; x < canvas.width; x += gridSize) {
-      ctx.beginPath();
-      ctx.moveTo(x, 0);
-      ctx.lineTo(x, canvas.height);
-      ctx.stroke();
-    }
-    
-    // Horizontal lines
-    for (let y = 0; y < canvas.height; y += gridSize) {
-      ctx.beginPath();
-      ctx.moveTo(0, y);
-      ctx.lineTo(canvas.width, y);
-      ctx.stroke();
-    }
-  };
-
-  const renderRulers = (ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) => {
-    ctx.fillStyle = '#ffffff';
-    ctx.strokeStyle = '#ffffff';
-    ctx.lineWidth = 1;
-    ctx.font = '10px Arial';
-    ctx.textAlign = 'center';
-
-    const rulerSize = 20;
-    const tickSize = 5;
-    const majorTickInterval = 50;
-    const minorTickInterval = 10;
-
-    // Top ruler
-    ctx.fillRect(0, 0, canvas.width, rulerSize);
-    ctx.strokeStyle = '#000000';
-    for (let x = 0; x < canvas.width; x += minorTickInterval) {
-      const isMajor = x % majorTickInterval === 0;
-      ctx.beginPath();
-      ctx.moveTo(x, rulerSize);
-      ctx.lineTo(x, rulerSize - (isMajor ? tickSize * 2 : tickSize));
-      ctx.stroke();
-      
-      if (isMajor && x > 0) {
-        ctx.fillStyle = '#000000';
-        ctx.fillText(x.toString(), x, rulerSize - 8);
-        ctx.fillStyle = '#ffffff';
-      }
-    }
-
-    // Left ruler
-    ctx.fillRect(0, 0, rulerSize, canvas.height);
-    for (let y = 0; y < canvas.height; y += minorTickInterval) {
-      const isMajor = y % majorTickInterval === 0;
-      ctx.beginPath();
-      ctx.moveTo(rulerSize, y);
-      ctx.lineTo(rulerSize - (isMajor ? tickSize * 2 : tickSize), y);
-      ctx.stroke();
-      
-      if (isMajor && y > 0) {
-        ctx.save();
-        ctx.translate(8, y);
-        ctx.rotate(-Math.PI / 2);
-        ctx.fillStyle = '#000000';
-        ctx.fillText(y.toString(), 0, 0);
-        ctx.restore();
-      }
-    }
-  };
-
-  const handleMouseDown = (event: React.MouseEvent<HTMLCanvasElement>) => {
-    setIsMouseDown(true);
-    const rect = canvasRef.current?.getBoundingClientRect();
-    if (rect) {
-      const x = event.clientX - rect.left;
-      const y = event.clientY - rect.top;
-      setLastMousePosition({ x, y });
-      setMousePosition({ x, y });
-      
-      // Mock pixel value calculation
-      setPixelValue(Math.floor(Math.random() * 4096 - 1024));
-    }
-  };
-
-  const handleMouseMove = (event: React.MouseEvent<HTMLCanvasElement>) => {
-    const rect = canvasRef.current?.getBoundingClientRect();
-    if (rect) {
-      const x = event.clientX - rect.left;
-      const y = event.clientY - rect.top;
-      setMousePosition({ x, y });
-      
-      // Mock pixel value calculation
-      setPixelValue(Math.floor(Math.random() * 4096 - 1024));
-
-      if (isMouseDown) {
-        const deltaX = x - lastMousePosition.x;
-        const deltaY = y - lastMousePosition.y;
-
-        switch (activeTool) {
-          case 'pan':
-            setViewerState(prev => ({
-              ...prev,
-              pan: {
-                x: prev.pan.x + deltaX,
-                y: prev.pan.y + deltaY
-              }
-            }));
-            break;
-          case 'zoom':
-            const zoomFactor = 1 + deltaY * 0.01;
-            setViewerState(prev => ({
-              ...prev,
-              zoom: Math.max(0.1, Math.min(10, prev.zoom * zoomFactor))
-            }));
-            break;
-          case 'windowing':
-            setViewerState(prev => ({
-              ...prev,
-              windowLevel: Math.max(-1024, Math.min(3071, prev.windowLevel + deltaX)),
-              windowWidth: Math.max(1, Math.min(4096, prev.windowWidth + deltaY))
-            }));
-            break;
-        }
-
-        setLastMousePosition({ x, y });
-      }
-    }
-  };
-
-  const handleMouseUp = () => {
-    setIsMouseDown(false);
-  };
-
-  const handleWheel = (event: React.WheelEvent<HTMLCanvasElement>) => {
-    event.preventDefault();
-    
-    if (event.ctrlKey) {
-      // Zoom with Ctrl+Wheel
-      const zoomFactor = event.deltaY > 0 ? 0.9 : 1.1;
-      setViewerState(prev => ({
-        ...prev,
-        zoom: Math.max(0.1, Math.min(10, prev.zoom * zoomFactor))
-      }));
-    } else {
-      // Navigate frames with Wheel
-      if (currentSeries && currentSeries.images.length > 1) {
-        const direction = event.deltaY > 0 ? 1 : -1;
-        const newFrame = Math.max(0, Math.min(currentSeries.images.length - 1, viewerState.currentFrame + direction));
-        setViewerState(prev => ({ ...prev, currentFrame: newFrame }));
-        setCurrentImage(currentSeries.images[newFrame]);
-        onImageChange?.(currentSeries.images[newFrame].id);
-      }
-    }
-  };
-
-  const selectTool = (toolId: string) => {
-    setActiveTool(toolId);
-  };
-
-  const updateViewerState = (updates: Partial<ViewerState>) => {
-    setViewerState(prev => ({ ...prev, ...updates }));
-  };
-
-  const resetViewer = () => {
+  const handleReset = useCallback(() => {
     setViewerState(prev => ({
       ...prev,
       zoom: 1.0,
       pan: { x: 0, y: 0 },
       rotation: 0,
-      windowLevel: currentImage?.metadata.windowCenter || 40,
-      windowWidth: currentImage?.metadata.windowWidth || 400
+      windowLevel: 40,
+      windowWidth: 400,
+      brightness: 50,
+      contrast: 50,
+      invert: false
     }));
-  };
+  }, []);
 
-  const nextFrame = () => {
-    if (currentSeries && currentSeries.images.length > 1) {
-      const newFrame = (viewerState.currentFrame + 1) % currentSeries.images.length;
-      setViewerState(prev => ({ ...prev, currentFrame: newFrame }));
-      setCurrentImage(currentSeries.images[newFrame]);
-      onImageChange?.(currentSeries.images[newFrame].id);
+  const handleToolChange = useCallback((tool: string) => {
+    setSelectedTool(tool);
+  }, []);
+
+  const handleCanvasClick = useCallback((event: React.MouseEvent<HTMLCanvasElement>) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const rect = canvas.getBoundingClientRect();
+    const x = event.clientX - rect.left;
+    const y = event.clientY - rect.top;
+
+    if (selectedTool === 'annotation') {
+      const annotation: Annotation = {
+        id: `ann_${Date.now()}`,
+        type: 'text',
+        coordinates: [{ x, y }],
+        text: 'New annotation',
+        color: '#0ea5e9',
+        thickness: 2,
+        timestamp: new Date().toISOString(),
+        user: 'Current User',
+        series: viewerState.currentSeries,
+        image: viewerState.currentImage
+      };
+      setAnnotations(prev => [...prev, annotation]);
+      onAnnotation?.(annotation);
+    } else if (selectedTool === 'measurement') {
+      // Start measurement
+      setCurrentDrawing([{ x, y }]);
+      setIsDrawing(true);
     }
-  };
+  }, [selectedTool, viewerState.currentSeries, viewerState.currentImage, onAnnotation]);
 
-  const previousFrame = () => {
-    if (currentSeries && currentSeries.images.length > 1) {
-      const newFrame = viewerState.currentFrame === 0 ? currentSeries.images.length - 1 : viewerState.currentFrame - 1;
-      setViewerState(prev => ({ ...prev, currentFrame: newFrame }));
-      setCurrentImage(currentSeries.images[newFrame]);
-      onImageChange?.(currentSeries.images[newFrame].id);
+  const handleCanvasMouseMove = useCallback((event: React.MouseEvent<HTMLCanvasElement>) => {
+    if (!isDrawing || selectedTool !== 'measurement') return;
+
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const rect = canvas.getBoundingClientRect();
+    const x = event.clientX - rect.left;
+    const y = event.clientY - rect.top;
+
+    if (currentDrawing.length > 0) {
+      setCurrentDrawing(prev => [...prev.slice(0, 1), { x, y }]);
     }
-  };
+  }, [isDrawing, selectedTool, currentDrawing]);
 
-  const togglePlay = () => {
-    setViewerState(prev => ({ 
-      ...prev, 
-      playing: !prev.playing,
-      cineMode: !prev.playing || prev.cineMode
-    }));
-  };
+  const handleCanvasMouseUp = useCallback(() => {
+    if (isDrawing && selectedTool === 'measurement' && currentDrawing.length >= 2) {
+      const start = currentDrawing[0];
+      const end = currentDrawing[1];
+      const distance = Math.sqrt(Math.pow(end.x - start.x, 2) + Math.pow(end.y - start.y, 2));
+      
+      const measurement: Measurement = {
+        id: `meas_${Date.now()}`,
+        type: 'length',
+        coordinates: currentDrawing,
+        value: distance * mockStudyData.pixelSpacing[0], // Convert to mm
+        unit: 'mm',
+        confidence: 95,
+        timestamp: new Date().toISOString(),
+        user: 'Current User',
+        series: viewerState.currentSeries,
+        image: viewerState.currentImage
+      };
+      
+      setMeasurements(prev => [...prev, measurement]);
+      onMeasurement?.(measurement);
+    }
+    
+    setIsDrawing(false);
+    setCurrentDrawing([]);
+  }, [isDrawing, selectedTool, currentDrawing, viewerState.currentSeries, viewerState.currentImage, onMeasurement]);
 
-  if (loading) {
-    return (
-      <div className={`medsight-viewer-glass rounded-xl flex items-center justify-center ${className}`}>
-        <div className="text-center text-white">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-medsight-primary mx-auto mb-4"></div>
-          <p>Loading DICOM images...</p>
-        </div>
-      </div>
-    );
-  }
+  // Mock AI analysis
+  useEffect(() => {
+    if (showAIOverlay) {
+      const mockAIAnalysis: AIAnalysis[] = [
+        {
+          id: 'ai_001',
+          type: 'detection',
+          region: { x: 150, y: 120, width: 80, height: 60 },
+          confidence: 92,
+          label: 'Pulmonary Nodule',
+          finding: 'Small nodule in right upper lobe',
+          severity: 'abnormal',
+          timestamp: new Date().toISOString(),
+          model: 'MedicalAI-CT-v2.1',
+          version: '2.1.0'
+        }
+      ];
+      setAIAnalyses(mockAIAnalysis);
+    }
+  }, [showAIOverlay]);
 
-  if (error) {
-    return (
-      <div className={`medsight-viewer-glass rounded-xl flex items-center justify-center ${className}`}>
-        <div className="text-center text-white">
-          <ExclamationTriangleIcon className="w-12 h-12 text-medsight-abnormal mx-auto mb-4" />
-          <p className="text-medsight-abnormal">{error}</p>
-          <button onClick={loadDICOMStudy} className="btn-medsight mt-4">
-            Retry
-          </button>
-        </div>
-      </div>
-    );
-  }
+  // Canvas rendering
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    // Clear canvas
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Draw mock medical image
+    ctx.fillStyle = '#000';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Draw mock CT scan
+    ctx.fillStyle = '#333';
+    ctx.beginPath();
+    ctx.arc(canvas.width / 2, canvas.height / 2, 150, 0, 2 * Math.PI);
+    ctx.fill();
+
+    // Draw mock organs
+    ctx.fillStyle = '#555';
+    ctx.beginPath();
+    ctx.arc(canvas.width / 2 - 50, canvas.height / 2 - 30, 40, 0, 2 * Math.PI);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(canvas.width / 2 + 50, canvas.height / 2 - 30, 40, 0, 2 * Math.PI);
+    ctx.fill();
+
+    // Draw AI analysis overlays
+    if (viewerState.aiOverlay && aiAnalyses.length > 0) {
+      aiAnalyses.forEach(analysis => {
+        ctx.strokeStyle = analysis.severity === 'critical' ? '#dc2626' : 
+                         analysis.severity === 'abnormal' ? '#ef4444' : 
+                         '#10b981';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(analysis.region.x, analysis.region.y, analysis.region.width, analysis.region.height);
+        
+        ctx.fillStyle = ctx.strokeStyle;
+        ctx.font = '12px sans-serif';
+        ctx.fillText(`${analysis.label} (${analysis.confidence}%)`, 
+                    analysis.region.x, analysis.region.y - 5);
+      });
+    }
+
+    // Draw measurements
+    if (viewerState.measurements && measurements.length > 0) {
+      measurements.forEach(measurement => {
+        if (measurement.series === viewerState.currentSeries && 
+            measurement.image === viewerState.currentImage) {
+          ctx.strokeStyle = '#0ea5e9';
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.moveTo(measurement.coordinates[0].x, measurement.coordinates[0].y);
+          for (let i = 1; i < measurement.coordinates.length; i++) {
+            ctx.lineTo(measurement.coordinates[i].x, measurement.coordinates[i].y);
+          }
+          ctx.stroke();
+          
+          ctx.fillStyle = '#0ea5e9';
+          ctx.font = '12px sans-serif';
+          ctx.fillText(`${measurement.value.toFixed(1)} ${measurement.unit}`, 
+                      measurement.coordinates[0].x + 5, measurement.coordinates[0].y - 5);
+        }
+      });
+    }
+
+    // Draw current drawing
+    if (isDrawing && currentDrawing.length > 0) {
+      ctx.strokeStyle = '#0ea5e9';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(currentDrawing[0].x, currentDrawing[0].y);
+      for (let i = 1; i < currentDrawing.length; i++) {
+        ctx.lineTo(currentDrawing[i].x, currentDrawing[i].y);
+      }
+      ctx.stroke();
+    }
+
+    // Draw annotations
+    if (viewerState.annotations && annotations.length > 0) {
+      annotations.forEach(annotation => {
+        if (annotation.series === viewerState.currentSeries && 
+            annotation.image === viewerState.currentImage) {
+          ctx.fillStyle = annotation.color;
+          ctx.font = '14px sans-serif';
+          ctx.fillText(annotation.text || '', 
+                      annotation.coordinates[0].x, annotation.coordinates[0].y);
+        }
+      });
+    }
+
+    // Draw crosshairs
+    if (viewerState.crosshairs) {
+      ctx.strokeStyle = '#10b981';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(canvas.width / 2, 0);
+      ctx.lineTo(canvas.width / 2, canvas.height);
+      ctx.moveTo(0, canvas.height / 2);
+      ctx.lineTo(canvas.width, canvas.height / 2);
+      ctx.stroke();
+    }
+
+    // Draw rulers
+    if (viewerState.rulers) {
+      ctx.strokeStyle = '#6b7280';
+      ctx.lineWidth = 1;
+      ctx.font = '10px sans-serif';
+      ctx.fillStyle = '#6b7280';
+      
+      // Top ruler
+      for (let i = 0; i < canvas.width; i += 50) {
+        ctx.beginPath();
+        ctx.moveTo(i, 0);
+        ctx.lineTo(i, 10);
+        ctx.stroke();
+        ctx.fillText(`${i}`, i + 2, 8);
+      }
+      
+      // Left ruler
+      for (let i = 0; i < canvas.height; i += 50) {
+        ctx.beginPath();
+        ctx.moveTo(0, i);
+        ctx.lineTo(10, i);
+        ctx.stroke();
+        ctx.fillText(`${i}`, 2, i - 2);
+      }
+    }
+
+    // Draw image info overlay
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+    ctx.fillRect(10, 10, 200, 100);
+    ctx.fillStyle = '#fff';
+    ctx.font = '12px sans-serif';
+    ctx.fillText(`Series: ${viewerState.currentSeries + 1}/${mockStudyData.seriesCount}`, 20, 30);
+    ctx.fillText(`Image: ${viewerState.currentImage + 1}/${mockStudyData.imageCount}`, 20, 50);
+    ctx.fillText(`W/L: ${viewerState.windowWidth}/${viewerState.windowLevel}`, 20, 70);
+    ctx.fillText(`Zoom: ${(viewerState.zoom * 100).toFixed(0)}%`, 20, 90);
+
+  }, [viewerState, annotations, measurements, aiAnalyses, isDrawing, currentDrawing]);
 
   return (
-    <div className={`relative medsight-viewer-glass rounded-xl overflow-hidden ${className}`}>
-      {/* Controls Bar */}
+    <div className={`relative h-full bg-black ${className}`}>
+      {/* Main Canvas */}
+      <canvas
+        ref={canvasRef}
+        width={800}
+        height={600}
+        className="w-full h-full cursor-crosshair"
+        onClick={handleCanvasClick}
+        onMouseMove={handleCanvasMouseMove}
+        onMouseUp={handleCanvasMouseUp}
+      />
+
+      {/* Overlay Controls */}
       {showControls && (
-        <div className="absolute top-4 left-4 right-4 z-10 flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            {/* Tools */}
-            <div className="flex items-center space-x-1 bg-black/50 rounded-lg p-1">
-              {tools.slice(0, 4).map((tool) => (
-                <button
-                  key={tool.id}
-                  onClick={() => selectTool(tool.id)}
-                  className={`p-2 rounded transition-all ${
-                    tool.active 
-                      ? 'bg-medsight-primary text-white' 
-                      : 'text-white hover:bg-white/20'
-                  }`}
-                  title={`${tool.name}${tool.shortcut ? ` (${tool.shortcut})` : ''}`}
-                >
-                  <tool.icon className="w-4 h-4" />
-                </button>
-              ))}
-            </div>
-
-            {/* Layout */}
-            <div className="flex items-center space-x-1 bg-black/50 rounded-lg p-1">
-              <button 
-                onClick={() => updateViewerState({ layout: 'single' })}
-                className={`p-2 rounded ${viewerState.layout === 'single' ? 'bg-white/20' : ''}`}
-              >
-                <PhotoIconSolid className="w-4 h-4 text-white" />
-              </button>
-              <button 
-                onClick={() => updateViewerState({ layout: 'dual' })}
-                className={`p-2 rounded ${viewerState.layout === 'dual' ? 'bg-white/20' : ''}`}
-              >
-                <RectangleStackIcon className="w-4 h-4 text-white" />
-              </button>
-            </div>
-          </div>
-
-          <div className="flex items-center space-x-2">
-            {/* Playback Controls */}
-            {currentSeries && currentSeries.images.length > 1 && (
-              <div className="flex items-center space-x-1 bg-black/50 rounded-lg p-1">
-                <button onClick={previousFrame} className="p-2 rounded hover:bg-white/20">
-                  <BackwardIcon className="w-4 h-4 text-white" />
-                </button>
-                <button onClick={togglePlay} className="p-2 rounded hover:bg-white/20">
-                  {viewerState.playing ? 
-                    <PauseIconSolid className="w-4 h-4 text-white" /> : 
-                    <PlayIconSolid className="w-4 h-4 text-white" />
-                  }
-                </button>
-                <button onClick={nextFrame} className="p-2 rounded hover:bg-white/20">
-                  <ForwardIcon className="w-4 h-4 text-white" />
-                </button>
-              </div>
-            )}
-
-            {/* View Options */}
-            <div className="flex items-center space-x-1 bg-black/50 rounded-lg p-1">
-              <button 
-                onClick={() => updateViewerState({ overlays: !viewerState.overlays })}
-                className={`p-2 rounded ${viewerState.overlays ? 'bg-white/20' : ''}`}
-                title="Toggle Overlays"
-              >
-                {viewerState.overlays ? 
-                  <EyeIconSolid className="w-4 h-4 text-white" /> : 
-                  <EyeSlashIcon className="w-4 h-4 text-white" />
-                }
-              </button>
-              <button 
-                onClick={() => updateViewerState({ crosshairs: !viewerState.crosshairs })}
-                className={`p-2 rounded ${viewerState.crosshairs ? 'bg-white/20' : ''}`}
-                title="Toggle Crosshairs"
-              >
-                <PlusIcon className="w-4 h-4 text-white" />
-              </button>
-              <button 
-                onClick={() => setShowInfo(!showInfo)}
-                className={`p-2 rounded ${showInfo ? 'bg-white/20' : ''}`}
-                title="Image Information"
-              >
-                <InformationCircleIcon className="w-4 h-4 text-white" />
-              </button>
-            </div>
-
-            {/* Settings */}
-            <button 
-              onClick={() => setShowSettings(!showSettings)}
-              className="p-2 bg-black/50 rounded-lg hover:bg-black/70 transition-colors"
-              title="Settings"
+        <div className="absolute top-4 left-4 medsight-control-glass p-3 rounded-lg">
+          <div className="flex items-center gap-2 mb-3">
+            <h3 className="text-sm font-semibold text-gray-900">DICOM Viewer</h3>
+            <button
+              onClick={() => setShowControls(false)}
+              className="text-gray-400 hover:text-gray-600"
             >
-              <CogIcon className="w-4 h-4 text-white" />
-            </button>
-
-            {/* Reset */}
-            <button 
-              onClick={resetViewer}
-              className="p-2 bg-black/50 rounded-lg hover:bg-black/70 transition-colors"
-              title="Reset View"
-            >
-              <ArrowPathIcon className="w-4 h-4 text-white" />
+              <ArrowLeftIcon className="w-4 h-4" />
             </button>
           </div>
-        </div>
-      )}
-
-      {/* DICOM Canvas */}
-      <div ref={containerRef} className="w-full h-full">
-        <canvas
-          ref={canvasRef}
-          className="w-full h-full cursor-grab active:cursor-grabbing"
-          style={{ cursor: tools.find(t => t.id === activeTool)?.cursor || 'default' }}
-          onMouseDown={handleMouseDown}
-          onMouseMove={handleMouseMove}
-          onMouseUp={handleMouseUp}
-          onMouseLeave={handleMouseUp}
-          onWheel={handleWheel}
-        />
-      </div>
-
-      {/* Series Navigator */}
-      {currentSeries && currentSeries.images.length > 1 && (
-        <div className="absolute bottom-4 left-4 right-4 z-10">
-          <div className="bg-black/50 rounded-lg p-3">
-            <div className="flex items-center space-x-3">
-              <span className="text-white text-sm font-medium">
-                {viewerState.currentFrame + 1} / {currentSeries.images.length}
-              </span>
-              <div className="flex-1">
-                <input
-                  type="range"
-                  min="0"
-                  max={currentSeries.images.length - 1}
-                  value={viewerState.currentFrame}
-                  onChange={(e) => {
-                    const frame = parseInt(e.target.value);
-                    setViewerState(prev => ({ ...prev, currentFrame: frame }));
-                    setCurrentImage(currentSeries.images[frame]);
-                    onImageChange?.(currentSeries.images[frame].id);
-                  }}
-                  className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer slider"
-                />
-              </div>
-              <span className="text-white text-sm">
-                {currentSeries.seriesDescription}
-              </span>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Image Information Panel */}
-      {showInfo && currentImage && (
-        <div className="absolute top-20 right-4 w-80 bg-black/80 rounded-lg p-4 text-white text-sm z-20">
-          <h4 className="font-semibold mb-3">Image Information</h4>
+          
           <div className="space-y-2">
-            <div className="flex justify-between">
-              <span>SOP Instance UID:</span>
-              <span className="font-mono text-xs">{currentImage.sopInstanceUID}</span>
-            </div>
-            <div className="flex justify-between">
-              <span>Instance Number:</span>
-              <span>{currentImage.instanceNumber}</span>
-            </div>
-            <div className="flex justify-between">
-              <span>Dimensions:</span>
-              <span>{currentImage.metadata.rows} × {currentImage.metadata.columns}</span>
-            </div>
-            <div className="flex justify-between">
-              <span>Pixel Spacing:</span>
-              <span>{currentImage.metadata.pixelSpacing?.join(' × ') || 'N/A'} mm</span>
-            </div>
-            <div className="flex justify-between">
-              <span>Slice Thickness:</span>
-              <span>{currentImage.metadata.sliceThickness || 'N/A'} mm</span>
-            </div>
-            <div className="flex justify-between">
-              <span>Slice Location:</span>
-              <span>{currentImage.metadata.sliceLocation?.toFixed(2) || 'N/A'} mm</span>
-            </div>
-            <div className="flex justify-between">
-              <span>Bits Allocated:</span>
-              <span>{currentImage.metadata.bitsAllocated}</span>
-            </div>
-            <div className="flex justify-between">
-              <span>Window Center:</span>
-              <span>{viewerState.windowLevel}</span>
-            </div>
-            <div className="flex justify-between">
-              <span>Window Width:</span>
-              <span>{viewerState.windowWidth}</span>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Settings Modal */}
-      {showSettings && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <div className="medsight-glass p-6 rounded-xl max-w-2xl w-full max-h-[80vh] overflow-y-auto">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-medsight-primary">DICOM Viewer Settings</h3>
-              <button 
-                onClick={() => setShowSettings(false)}
-                className="btn-medsight p-2"
-              >
-                <XMarkIcon className="w-4 h-4" />
+            {/* Navigation */}
+            <div className="flex items-center gap-1">
+              <button onClick={handlePrevImage} className="btn-medsight p-1">
+                <BackwardIcon className="w-3 h-3" />
+              </button>
+              <button onClick={handlePlayPause} className="btn-medsight p-1">
+                {viewerState.isPlaying ? <PauseIcon className="w-3 h-3" /> : <PlayIcon className="w-3 h-3" />}
+              </button>
+              <button onClick={handleNextImage} className="btn-medsight p-1">
+                <ForwardIcon className="w-3 h-3" />
               </button>
             </div>
             
-            <div className="space-y-6">
-              {/* Window/Level */}
-              <div>
-                <h4 className="font-medium text-slate-900 mb-3">Window/Level</h4>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-1">Window Level</label>
-                    <input
-                      type="number"
-                      value={viewerState.windowLevel}
-                      onChange={(e) => updateViewerState({ windowLevel: parseInt(e.target.value) })}
-                      className="input-medsight"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-1">Window Width</label>
-                    <input
-                      type="number"
-                      value={viewerState.windowWidth}
-                      onChange={(e) => updateViewerState({ windowWidth: parseInt(e.target.value) })}
-                      className="input-medsight"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Display Options */}
-              <div>
-                <h4 className="font-medium text-slate-900 mb-3">Display Options</h4>
-                <div className="space-y-3">
-                  <label className="flex items-center space-x-3">
-                    <input
-                      type="checkbox"
-                      checked={viewerState.overlays}
-                      onChange={(e) => updateViewerState({ overlays: e.target.checked })}
-                      className="rounded border-slate-300 text-medsight-primary"
-                    />
-                    <span className="text-sm text-slate-700">Show Overlays</span>
-                  </label>
-                  <label className="flex items-center space-x-3">
-                    <input
-                      type="checkbox"
-                      checked={viewerState.crosshairs}
-                      onChange={(e) => updateViewerState({ crosshairs: e.target.checked })}
-                      className="rounded border-slate-300 text-medsight-primary"
-                    />
-                    <span className="text-sm text-slate-700">Show Crosshairs</span>
-                  </label>
-                  <label className="flex items-center space-x-3">
-                    <input
-                      type="checkbox"
-                      checked={viewerState.grid}
-                      onChange={(e) => updateViewerState({ grid: e.target.checked })}
-                      className="rounded border-slate-300 text-medsight-primary"
-                    />
-                    <span className="text-sm text-slate-700">Show Grid</span>
-                  </label>
-                  <label className="flex items-center space-x-3">
-                    <input
-                      type="checkbox"
-                      checked={viewerState.rulers}
-                      onChange={(e) => updateViewerState({ rulers: e.target.checked })}
-                      className="rounded border-slate-300 text-medsight-primary"
-                    />
-                    <span className="text-sm text-slate-700">Show Rulers</span>
-                  </label>
-                  <label className="flex items-center space-x-3">
-                    <input
-                      type="checkbox"
-                      checked={viewerState.invert}
-                      onChange={(e) => updateViewerState({ invert: e.target.checked })}
-                      className="rounded border-slate-300 text-medsight-primary"
-                    />
-                    <span className="text-sm text-slate-700">Invert Colors</span>
-                  </label>
-                </div>
-              </div>
-
-              {/* Cine Mode */}
-              <div>
-                <h4 className="font-medium text-slate-900 mb-3">Cine Mode</h4>
-                <div className="space-y-3">
-                  <label className="flex items-center space-x-3">
-                    <input
-                      type="checkbox"
-                      checked={viewerState.cineMode}
-                      onChange={(e) => updateViewerState({ cineMode: e.target.checked })}
-                      className="rounded border-slate-300 text-medsight-primary"
-                    />
-                    <span className="text-sm text-slate-700">Enable Cine Mode</span>
-                  </label>
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-1">
-                      Cine Speed (FPS): {viewerState.cineSpeed}
-                    </label>
-                    <input
-                      type="range"
-                      min="1"
-                      max="30"
-                      value={viewerState.cineSpeed}
-                      onChange={(e) => updateViewerState({ cineSpeed: parseInt(e.target.value) })}
-                      className="w-full"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Interpolation */}
-              <div>
-                <h4 className="font-medium text-slate-900 mb-3">Image Interpolation</h4>
-                <select 
-                  value={viewerState.interpolation}
-                  onChange={(e) => updateViewerState({ interpolation: e.target.value as any })}
-                  className="input-medsight"
-                >
-                  <option value="nearest">Nearest Neighbor</option>
-                  <option value="linear">Linear</option>
-                  <option value="cubic">Cubic</option>
-                </select>
-              </div>
+            {/* Tools */}
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => handleToolChange('pan')}
+                className={`btn-medsight p-1 ${selectedTool === 'pan' ? 'bg-medsight-primary/20' : ''}`}
+              >
+                <ArrowsPointingOutIcon className="w-3 h-3" />
+              </button>
+              <button
+                onClick={() => handleToolChange('annotation')}
+                className={`btn-medsight p-1 ${selectedTool === 'annotation' ? 'bg-medsight-primary/20' : ''}`}
+              >
+                <PencilIcon className="w-3 h-3" />
+              </button>
+              <button
+                onClick={() => handleToolChange('measurement')}
+                className={`btn-medsight p-1 ${selectedTool === 'measurement' ? 'bg-medsight-primary/20' : ''}`}
+              >
+                <BeakerIcon className="w-3 h-3" />
+              </button>
+            </div>
+            
+            {/* Zoom */}
+            <div className="flex items-center gap-1">
+              <button onClick={handleZoomOut} className="btn-medsight p-1">
+                <ArrowsPointingInIcon className="w-3 h-3" />
+              </button>
+              <button onClick={handleZoomIn} className="btn-medsight p-1">
+                <ArrowsPointingOutIcon className="w-3 h-3" />
+              </button>
+              <button onClick={handleReset} className="btn-medsight p-1">
+                <ArrowUpIcon className="w-3 h-3" />
+              </button>
             </div>
           </div>
         </div>
+      )}
+
+      {/* Window Presets */}
+      <div className="absolute bottom-4 left-4 medsight-control-glass p-2 rounded-lg">
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-gray-600">Presets:</span>
+          {mockStudyData.windowPresets.map((preset, index) => (
+            <button
+              key={index}
+              onClick={() => handleWindowLevel(preset.level, preset.width)}
+              className="btn-medsight text-xs px-2 py-1"
+            >
+              {preset.name}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* AI Analysis Panel */}
+      {showAIOverlay && aiAnalyses.length > 0 && (
+        <div className="absolute top-4 right-4 medsight-ai-glass p-3 rounded-lg max-w-xs">
+          <div className="flex items-center gap-2 mb-2">
+            <SparklesIcon className="w-4 h-4 text-medsight-ai-high" />
+            <span className="text-sm font-medium text-white">AI Analysis</span>
+          </div>
+          <div className="space-y-2">
+            {aiAnalyses.map((analysis) => (
+              <div key={analysis.id} className="text-xs text-gray-300">
+                <div className="flex justify-between items-center">
+                  <span className="font-medium">{analysis.label}</span>
+                  <span className={`px-1 py-0.5 rounded text-xs ${
+                    analysis.confidence >= 90 ? 'bg-medsight-ai-high/20 text-medsight-ai-high' :
+                    analysis.confidence >= 70 ? 'bg-medsight-ai-medium/20 text-medsight-ai-medium' :
+                    'bg-medsight-ai-low/20 text-medsight-ai-low'
+                  }`}>
+                    {analysis.confidence}%
+                  </span>
+                </div>
+                <div className="text-gray-400 mt-1">{analysis.finding}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Loading Overlay */}
+      {isLoading && (
+        <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+          <div className="text-center">
+            <SparklesIcon className="w-8 h-8 text-medsight-primary animate-spin mx-auto mb-2" />
+            <p className="text-white">Loading DICOM images...</p>
+          </div>
+        </div>
+      )}
+
+      {/* Emergency Mode Indicator */}
+      {emergencyMode && (
+        <div className="absolute top-4 left-1/2 transform -translate-x-1/2 bg-medsight-critical/20 border border-medsight-critical text-medsight-critical px-3 py-1 rounded-lg text-sm font-medium">
+          <ExclamationTriangleIcon className="w-4 h-4 inline mr-1" />
+          Emergency Mode Active
+        </div>
+      )}
+
+      {/* Collaboration Indicator */}
+      {collaborationMode && (
+        <div className="absolute bottom-4 right-4 medsight-control-glass p-2 rounded-lg">
+          <div className="flex items-center gap-2 text-sm">
+            <UserGroupIcon className="w-4 h-4 text-medsight-primary" />
+            <span className="text-gray-600">2 users viewing</span>
+          </div>
+        </div>
+      )}
+
+      {/* Collapsed Controls Toggle */}
+      {!showControls && (
+        <button
+          onClick={() => setShowControls(true)}
+          className="absolute top-4 left-4 medsight-control-glass p-2 rounded-lg"
+        >
+          <ArrowRightIcon className="w-4 h-4" />
+        </button>
       )}
     </div>
   );

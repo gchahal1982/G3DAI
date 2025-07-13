@@ -1,0 +1,744 @@
+---
+# Horizontal Pod Autoscaler for API Gateway
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: api-gateway-hpa
+  namespace: annotateai
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: annotateai-api-gateway
+  minReplicas: 3
+  maxReplicas: 20
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80
+  - type: Pods
+    pods:
+      metric:
+        name: http_requests_per_second
+      target:
+        type: AverageValue
+        averageValue: "1000"
+  behavior:
+    scaleUp:
+      stabilizationWindowSeconds: 60
+      policies:
+      - type: Percent
+        value: 100
+        periodSeconds: 60
+      - type: Pods
+        value: 4
+        periodSeconds: 60
+      selectPolicy: Max
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+      - type: Percent
+        value: 10
+        periodSeconds: 60
+      - type: Pods
+        value: 2
+        periodSeconds: 60
+      selectPolicy: Min
+---
+# HPA for AI Services
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: ai-service-hpa
+  namespace: annotateai
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: annotateai-ai-service
+  minReplicas: 2
+  maxReplicas: 10
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 80
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 85
+  - type: Pods
+    pods:
+      metric:
+        name: ai_inference_queue_length
+      target:
+        type: AverageValue
+        averageValue: "10"
+  - type: Pods
+    pods:
+      metric:
+        name: gpu_utilization
+      target:
+        type: AverageValue
+        averageValue: "75"
+  behavior:
+    scaleUp:
+      stabilizationWindowSeconds: 120
+      policies:
+      - type: Percent
+        value: 50
+        periodSeconds: 60
+      - type: Pods
+        value: 2
+        periodSeconds: 60
+      selectPolicy: Max
+    scaleDown:
+      stabilizationWindowSeconds: 600
+      policies:
+      - type: Percent
+        value: 5
+        periodSeconds: 60
+      - type: Pods
+        value: 1
+        periodSeconds: 60
+      selectPolicy: Min
+---
+# HPA for Collaboration Service
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: collaboration-service-hpa
+  namespace: annotateai
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: annotateai-collaboration-service
+  minReplicas: 2
+  maxReplicas: 15
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 60
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 70
+  - type: Pods
+    pods:
+      metric:
+        name: websocket_connections
+      target:
+        type: AverageValue
+        averageValue: "500"
+  - type: Pods
+    pods:
+      metric:
+        name: collaboration_sessions
+      target:
+        type: AverageValue
+        averageValue: "50"
+  behavior:
+    scaleUp:
+      stabilizationWindowSeconds: 30
+      policies:
+      - type: Percent
+        value: 100
+        periodSeconds: 30
+      - type: Pods
+        value: 3
+        periodSeconds: 30
+      selectPolicy: Max
+    scaleDown:
+      stabilizationWindowSeconds: 180
+      policies:
+      - type: Percent
+        value: 10
+        periodSeconds: 60
+      - type: Pods
+        value: 1
+        periodSeconds: 60
+      selectPolicy: Min
+---
+# HPA for Video Processing Service
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: video-processing-hpa
+  namespace: annotateai
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: annotateai-video-processing
+  minReplicas: 1
+  maxReplicas: 8
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 85
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 90
+  - type: Pods
+    pods:
+      metric:
+        name: video_processing_queue_length
+      target:
+        type: AverageValue
+        averageValue: "5"
+  behavior:
+    scaleUp:
+      stabilizationWindowSeconds: 180
+      policies:
+      - type: Percent
+        value: 100
+        periodSeconds: 60
+      - type: Pods
+        value: 2
+        periodSeconds: 60
+      selectPolicy: Max
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+      - type: Percent
+        value: 25
+        periodSeconds: 60
+      - type: Pods
+        value: 1
+        periodSeconds: 60
+      selectPolicy: Min
+---
+# HPA for 3D Processing Service
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: 3d-processing-hpa
+  namespace: annotateai
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: annotateai-3d-processing
+  minReplicas: 1
+  maxReplicas: 6
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 80
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 85
+  - type: Pods
+    pods:
+      metric:
+        name: 3d_processing_queue_length
+      target:
+        type: AverageValue
+        averageValue: "3"
+  behavior:
+    scaleUp:
+      stabilizationWindowSeconds: 300
+      policies:
+      - type: Percent
+        value: 100
+        periodSeconds: 60
+      - type: Pods
+        value: 1
+        periodSeconds: 60
+      selectPolicy: Max
+    scaleDown:
+      stabilizationWindowSeconds: 600
+      policies:
+      - type: Percent
+        value: 50
+        periodSeconds: 60
+      - type: Pods
+        value: 1
+        periodSeconds: 60
+      selectPolicy: Min
+---
+# Vertical Pod Autoscaler for AI Service
+apiVersion: autoscaling.k8s.io/v1
+kind: VerticalPodAutoscaler
+metadata:
+  name: ai-service-vpa
+  namespace: annotateai
+spec:
+  targetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: annotateai-ai-service
+  updatePolicy:
+    updateMode: "Auto"
+  resourcePolicy:
+    containerPolicies:
+    - containerName: ai-service
+      maxAllowed:
+        cpu: 8
+        memory: 16Gi
+      minAllowed:
+        cpu: 500m
+        memory: 2Gi
+      controlledResources: ["cpu", "memory"]
+      controlledValues: RequestsAndLimits
+---
+# VPA for Video Processing Service
+apiVersion: autoscaling.k8s.io/v1
+kind: VerticalPodAutoscaler
+metadata:
+  name: video-processing-vpa
+  namespace: annotateai
+spec:
+  targetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: annotateai-video-processing
+  updatePolicy:
+    updateMode: "Auto"
+  resourcePolicy:
+    containerPolicies:
+    - containerName: video-processing
+      maxAllowed:
+        cpu: 4
+        memory: 8Gi
+      minAllowed:
+        cpu: 1
+        memory: 2Gi
+      controlledResources: ["cpu", "memory"]
+      controlledValues: RequestsAndLimits
+---
+# VPA for 3D Processing Service
+apiVersion: autoscaling.k8s.io/v1
+kind: VerticalPodAutoscaler
+metadata:
+  name: 3d-processing-vpa
+  namespace: annotateai
+spec:
+  targetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: annotateai-3d-processing
+  updatePolicy:
+    updateMode: "Auto"
+  resourcePolicy:
+    containerPolicies:
+    - containerName: 3d-processing
+      maxAllowed:
+        cpu: 6
+        memory: 12Gi
+      minAllowed:
+        cpu: 1
+        memory: 2Gi
+      controlledResources: ["cpu", "memory"]
+      controlledValues: RequestsAndLimits
+---
+# Custom Metrics Server Configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: custom-metrics-config
+  namespace: annotateai
+data:
+  config.yaml: |
+    rules:
+    - seriesQuery: 'http_requests_per_second{namespace!="",pod!=""}'
+      resources:
+        overrides:
+          namespace: {resource: "namespace"}
+          pod: {resource: "pod"}
+      name:
+        matches: "http_requests_per_second"
+        as: "http_requests_per_second"
+      metricsQuery: 'sum(rate(http_requests_total{<<.LabelMatchers>>}[2m])) by (<<.GroupBy>>)'
+      
+    - seriesQuery: 'ai_inference_queue_length{namespace!="",pod!=""}'
+      resources:
+        overrides:
+          namespace: {resource: "namespace"}
+          pod: {resource: "pod"}
+      name:
+        matches: "ai_inference_queue_length"
+        as: "ai_inference_queue_length"
+      metricsQuery: 'sum(ai_inference_queue_length{<<.LabelMatchers>>}) by (<<.GroupBy>>)'
+      
+    - seriesQuery: 'gpu_utilization{namespace!="",pod!=""}'
+      resources:
+        overrides:
+          namespace: {resource: "namespace"}
+          pod: {resource: "pod"}
+      name:
+        matches: "gpu_utilization"
+        as: "gpu_utilization"
+      metricsQuery: 'avg(nvidia_gpu_utilization_gpu{<<.LabelMatchers>>}) by (<<.GroupBy>>)'
+      
+    - seriesQuery: 'websocket_connections{namespace!="",pod!=""}'
+      resources:
+        overrides:
+          namespace: {resource: "namespace"}
+          pod: {resource: "pod"}
+      name:
+        matches: "websocket_connections"
+        as: "websocket_connections"
+      metricsQuery: 'sum(websocket_connections{<<.LabelMatchers>>}) by (<<.GroupBy>>)'
+      
+    - seriesQuery: 'collaboration_sessions{namespace!="",pod!=""}'
+      resources:
+        overrides:
+          namespace: {resource: "namespace"}
+          pod: {resource: "pod"}
+      name:
+        matches: "collaboration_sessions"
+        as: "collaboration_sessions"
+      metricsQuery: 'sum(collaboration_sessions{<<.LabelMatchers>>}) by (<<.GroupBy>>)'
+      
+    - seriesQuery: 'video_processing_queue_length{namespace!="",pod!=""}'
+      resources:
+        overrides:
+          namespace: {resource: "namespace"}
+          pod: {resource: "pod"}
+      name:
+        matches: "video_processing_queue_length"
+        as: "video_processing_queue_length"
+      metricsQuery: 'sum(video_processing_queue_length{<<.LabelMatchers>>}) by (<<.GroupBy>>)'
+      
+    - seriesQuery: '3d_processing_queue_length{namespace!="",pod!=""}'
+      resources:
+        overrides:
+          namespace: {resource: "namespace"}
+          pod: {resource: "pod"}
+      name:
+        matches: "3d_processing_queue_length"
+        as: "3d_processing_queue_length"
+      metricsQuery: 'sum(3d_processing_queue_length{<<.LabelMatchers>>}) by (<<.GroupBy>>)'
+---
+# Prometheus Adapter for Custom Metrics
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: prometheus-adapter
+  namespace: annotateai
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: prometheus-adapter
+  template:
+    metadata:
+      labels:
+        app: prometheus-adapter
+    spec:
+      containers:
+      - name: prometheus-adapter
+        image: k8s.gcr.io/prometheus-adapter/prometheus-adapter:v0.11.0
+        args:
+        - --secure-port=6443
+        - --cert-dir=/tmp/cert
+        - --logtostderr=true
+        - --prometheus-url=http://prometheus-service:9090
+        - --metrics-relist-interval=1m
+        - --v=4
+        - --config=/etc/adapter/config.yaml
+        ports:
+        - containerPort: 6443
+          name: https
+        volumeMounts:
+        - name: config
+          mountPath: /etc/adapter
+        - name: tmp
+          mountPath: /tmp
+        resources:
+          limits:
+            cpu: 500m
+            memory: 512Mi
+          requests:
+            cpu: 100m
+            memory: 128Mi
+      volumes:
+      - name: config
+        configMap:
+          name: custom-metrics-config
+      - name: tmp
+        emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: prometheus-adapter
+  namespace: annotateai
+spec:
+  selector:
+    app: prometheus-adapter
+  ports:
+  - port: 443
+    targetPort: 6443
+    name: https
+---
+# Cluster Autoscaler Configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cluster-autoscaler-config
+  namespace: kube-system
+data:
+  cluster-autoscaler-config: |
+    nodes:
+      min: 3
+      max: 20
+    scale-down-delay-after-add: "10m"
+    scale-down-unneeded-time: "10m"
+    scale-down-delay-after-delete: "10s"
+    scale-down-delay-after-failure: "3m"
+    scale-down-utilization-threshold: "0.5"
+    skip-nodes-with-local-storage: false
+    skip-nodes-with-system-pods: false
+    
+    # Node pools for different workloads
+    node-pools:
+      - name: "general-purpose"
+        min-nodes: 2
+        max-nodes: 10
+        instance-types: ["m5.large", "m5.xlarge", "m5.2xlarge"]
+        zones: ["us-west-2a", "us-west-2b", "us-west-2c"]
+        
+      - name: "compute-intensive"
+        min-nodes: 0
+        max-nodes: 5
+        instance-types: ["c5.2xlarge", "c5.4xlarge", "c5.9xlarge"]
+        zones: ["us-west-2a", "us-west-2b", "us-west-2c"]
+        taints:
+          - key: "workload-type"
+            value: "compute-intensive"
+            effect: "NoSchedule"
+        
+      - name: "gpu-enabled"
+        min-nodes: 0
+        max-nodes: 3
+        instance-types: ["p3.2xlarge", "p3.8xlarge"]
+        zones: ["us-west-2a", "us-west-2b"]
+        taints:
+          - key: "nvidia.com/gpu"
+            value: "true"
+            effect: "NoSchedule"
+        
+      - name: "memory-intensive"
+        min-nodes: 0
+        max-nodes: 4
+        instance-types: ["r5.2xlarge", "r5.4xlarge", "r5.8xlarge"]
+        zones: ["us-west-2a", "us-west-2b", "us-west-2c"]
+        taints:
+          - key: "workload-type"
+            value: "memory-intensive"
+            effect: "NoSchedule"
+---
+# Pod Disruption Budgets
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: api-gateway-pdb
+  namespace: annotateai
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app: annotateai-api-gateway
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: ai-service-pdb
+  namespace: annotateai
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: annotateai-ai-service
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: collaboration-service-pdb
+  namespace: annotateai
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: annotateai-collaboration-service
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: storage-service-pdb
+  namespace: annotateai
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: annotateai-storage-service
+---
+# Predictive Scaling CronJob
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: predictive-scaling
+  namespace: annotateai
+spec:
+  schedule: "*/5 * * * *"  # Run every 5 minutes
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: predictive-scaling
+            image: python:3.9-slim
+            command:
+            - python
+            - -c
+            - |
+              import requests
+              import json
+              import os
+              from datetime import datetime, timedelta
+              
+              # Prometheus metrics endpoint
+              PROMETHEUS_URL = os.getenv('PROMETHEUS_URL', 'http://prometheus-service:9090')
+              
+              # Kubernetes API endpoint
+              K8S_API_URL = os.getenv('K8S_API_URL', 'https://kubernetes.default.svc.cluster.local')
+              
+              def get_metric(query, time_range='5m'):
+                  url = f"{PROMETHEUS_URL}/api/v1/query"
+                  params = {'query': query}
+                  response = requests.get(url, params=params)
+                  return response.json()
+              
+              def predict_scaling_needs():
+                  # Get current metrics
+                  cpu_usage = get_metric('avg(rate(container_cpu_usage_seconds_total{namespace="annotateai"}[5m]))')
+                  memory_usage = get_metric('avg(container_memory_usage_bytes{namespace="annotateai"})')
+                  request_rate = get_metric('sum(rate(http_requests_total{namespace="annotateai"}[5m]))')
+                  
+                  # Get historical patterns
+                  historical_cpu = get_metric('avg_over_time(rate(container_cpu_usage_seconds_total{namespace="annotateai"}[5m])[1h:5m])')
+                  historical_memory = get_metric('avg_over_time(container_memory_usage_bytes{namespace="annotateai"}[1h:5m])')
+                  
+                  # Simple prediction logic (can be enhanced with ML)
+                  current_hour = datetime.now().hour
+                  
+                  # Peak hours prediction (9 AM - 6 PM)
+                  if 9 <= current_hour <= 18:
+                      scale_factor = 1.5
+                  elif 19 <= current_hour <= 22:
+                      scale_factor = 1.2
+                  else:
+                      scale_factor = 0.8
+                  
+                  # Extract current values
+                  try:
+                      current_cpu = float(cpu_usage['data']['result'][0]['value'][1])
+                      current_requests = float(request_rate['data']['result'][0]['value'][1])
+                      
+                      # Predict if scaling is needed
+                      if current_cpu > 0.7 and current_requests > 500:
+                          return {"action": "scale_up", "factor": scale_factor}
+                      elif current_cpu < 0.3 and current_requests < 100:
+                          return {"action": "scale_down", "factor": scale_factor}
+                      else:
+                          return {"action": "maintain", "factor": 1.0}
+                  except:
+                      return {"action": "maintain", "factor": 1.0}
+              
+              def apply_scaling(prediction):
+                  if prediction["action"] == "scale_up":
+                      print(f"Predicting scale up with factor {prediction['factor']}")
+                      # Could trigger pre-emptive scaling here
+                  elif prediction["action"] == "scale_down":
+                      print(f"Predicting scale down with factor {prediction['factor']}")
+                      # Could trigger pre-emptive scaling here
+                  else:
+                      print("No scaling action predicted")
+              
+              # Main execution
+              try:
+                  prediction = predict_scaling_needs()
+                  apply_scaling(prediction)
+                  print(f"Predictive scaling analysis completed: {prediction}")
+              except Exception as e:
+                  print(f"Error in predictive scaling: {e}")
+            env:
+            - name: PROMETHEUS_URL
+              value: "http://prometheus-service:9090"
+            - name: K8S_API_URL
+              value: "https://kubernetes.default.svc.cluster.local"
+          restartPolicy: OnFailure
+---
+# Resource Quotas for the namespace
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: annotateai-resource-quota
+  namespace: annotateai
+spec:
+  hard:
+    requests.cpu: "100"
+    requests.memory: "200Gi"
+    limits.cpu: "200"
+    limits.memory: "400Gi"
+    persistentvolumeclaims: "20"
+    pods: "100"
+    services: "30"
+    configmaps: "50"
+    secrets: "20"
+---
+# Limit Range for pods
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: annotateai-limit-range
+  namespace: annotateai
+spec:
+  limits:
+  - default:
+      cpu: "1"
+      memory: "2Gi"
+    defaultRequest:
+      cpu: "100m"
+      memory: "256Mi"
+    type: Container
+  - max:
+      cpu: "8"
+      memory: "16Gi"
+    min:
+      cpu: "50m"
+      memory: "128Mi"
+    type: Container 

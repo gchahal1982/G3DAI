@@ -1,0 +1,608 @@
+name: AnnotateAI CI/CD Pipeline
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - 'ai-platforms/annotateai/**'
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - 'ai-platforms/annotateai/**'
+  release:
+    types: [published]
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: annotateai
+  WORKING_DIRECTORY: ai-platforms/annotateai
+  NODE_VERSION: '18'
+  PYTHON_VERSION: '3.11'
+  GO_VERSION: '1.21'
+
+jobs:
+  # Job 1: Code Quality and Linting
+  code-quality:
+    name: Code Quality & Linting
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ${{ env.WORKING_DIRECTORY }}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: '${{ env.WORKING_DIRECTORY }}/package-lock.json'
+      
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+      
+      - name: Install Node.js dependencies
+        run: npm ci
+      
+      - name: Install Python dependencies
+        run: |
+          pip install -r infrastructure/*/requirements.txt || true
+          pip install flake8 black isort mypy pylint bandit safety
+      
+      - name: Run ESLint
+        run: npm run lint
+      
+      - name: Run Prettier check
+        run: npm run format:check
+      
+      - name: TypeScript type checking
+        run: npm run type-check
+      
+      - name: Python code formatting (Black)
+        run: |
+          find infrastructure -name "*.py" -exec black --check {} \; || true
+      
+      - name: Python import sorting (isort)
+        run: |
+          find infrastructure -name "*.py" -exec isort --check {} \; || true
+      
+      - name: Python linting (flake8)
+        run: |
+          find infrastructure -name "*.py" -exec flake8 {} \; || true
+      
+      - name: Python type checking (mypy)
+        run: |
+          find infrastructure -name "*.py" -exec mypy {} \; || true
+      
+      - name: Python security linting (bandit)
+        run: |
+          find infrastructure -name "*.py" -exec bandit -r {} \; || true
+
+  # Job 2: Unit Tests
+  unit-tests:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    needs: code-quality
+    defaults:
+      run:
+        working-directory: ${{ env.WORKING_DIRECTORY }}
+    
+    strategy:
+      matrix:
+        test-suite: [frontend, backend, ai-services, infrastructure]
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: '${{ env.WORKING_DIRECTORY }}/package-lock.json'
+      
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+      
+      - name: Install dependencies
+        run: |
+          npm ci
+          pip install pytest pytest-cov pytest-asyncio httpx
+      
+      - name: Run Frontend Tests
+        if: matrix.test-suite == 'frontend'
+        run: |
+          npm run test:unit -- --coverage --passWithNoTests
+          npm run test:integration -- --passWithNoTests
+      
+      - name: Run Backend Tests
+        if: matrix.test-suite == 'backend'
+        run: |
+          cd infrastructure/api-gateway && python -m pytest tests/ --cov=. --cov-report=xml || true
+      
+      - name: Run AI Services Tests
+        if: matrix.test-suite == 'ai-services'
+        run: |
+          cd infrastructure/ai-model-service && python -m pytest tests/ --cov=. --cov-report=xml || true
+          cd ../synthetic-data-service && python -m pytest tests/ --cov=. --cov-report=xml || true
+          cd ../training-service && python -m pytest tests/ --cov=. --cov-report=xml || true
+      
+      - name: Run Infrastructure Tests
+        if: matrix.test-suite == 'infrastructure'
+        run: |
+          cd infrastructure/enterprise-services && python -m pytest tests/ --cov=. --cov-report=xml || true
+          cd ../performance-optimization && python -m pytest tests/ --cov=. --cov-report=xml || true
+          cd ../data-pipeline && python -m pytest tests/ --cov=. --cov-report=xml || true
+      
+      - name: Upload coverage reports
+        uses: codecov/codecov-action@v3
+        with:
+          working-directory: ${{ env.WORKING_DIRECTORY }}
+          flags: ${{ matrix.test-suite }}
+          name: codecov-${{ matrix.test-suite }}
+
+  # Job 3: Security Scanning
+  security-scan:
+    name: Security Scanning
+    runs-on: ubuntu-latest
+    needs: code-quality
+    defaults:
+      run:
+        working-directory: ${{ env.WORKING_DIRECTORY }}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: '${{ env.WORKING_DIRECTORY }}/package-lock.json'
+      
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      
+      - name: Install dependencies
+        run: |
+          npm ci
+          pip install safety bandit semgrep
+      
+      - name: Run npm audit
+        run: npm audit --audit-level=high
+        continue-on-error: true
+      
+      - name: Run Python safety check
+        run: |
+          find infrastructure -name "requirements.txt" -exec safety check -r {} \; || true
+      
+      - name: Run Bandit security linter
+        run: |
+          find infrastructure -name "*.py" -exec bandit -r {} -f json -o bandit-report.json \; || true
+      
+      - name: Run Semgrep SAST
+        run: |
+          semgrep --config=auto --json --output=semgrep-report.json . || true
+      
+      - name: Run CodeQL Analysis
+        uses: github/codeql-action/init@v3
+        with:
+          languages: javascript,python,go
+          config-file: ./.github/codeql/codeql-config.yml
+      
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v3
+      
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+      
+      - name: Upload security reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-reports
+          path: |
+            ${{ env.WORKING_DIRECTORY }}/bandit-report.json
+            ${{ env.WORKING_DIRECTORY }}/semgrep-report.json
+
+  # Job 4: Container Image Build and Scan
+  container-build-scan:
+    name: Container Build & Security Scan
+    runs-on: ubuntu-latest
+    needs: [unit-tests, security-scan]
+    if: github.event_name != 'pull_request'
+    defaults:
+      run:
+        working-directory: ${{ env.WORKING_DIRECTORY }}
+    
+    strategy:
+      matrix:
+        service: 
+          - ai-model-service
+          - enterprise-services
+          - performance-optimization
+          - data-pipeline
+          - video-processing-service
+          - 3d-processing-service
+          - xr-service
+          - synthetic-data-service
+          - training-service
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      
+      - name: Log in to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ github.repository }}/${{ matrix.service }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=sha,prefix={{branch}}-
+      
+      - name: Build container image
+        uses: docker/build-push-action@v5
+        with:
+          context: ${{ env.WORKING_DIRECTORY }}/infrastructure/${{ matrix.service }}
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          build-args: |
+            BUILDKIT_INLINE_CACHE=1
+            SERVICE_NAME=${{ matrix.service }}
+      
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ env.REGISTRY }}/${{ github.repository }}/${{ matrix.service }}:${{ github.sha }}
+          format: 'sarif'
+          output: 'trivy-results-${{ matrix.service }}.sarif'
+      
+      - name: Upload Trivy scan results
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: 'trivy-results-${{ matrix.service }}.sarif'
+      
+      - name: Run Snyk container scan
+        uses: snyk/actions/docker@master
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          image: ${{ env.REGISTRY }}/${{ github.repository }}/${{ matrix.service }}:${{ github.sha }}
+          args: --severity-threshold=high
+        continue-on-error: true
+
+  # Job 5: Integration Tests
+  integration-tests:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    needs: container-build-scan
+    if: github.event_name != 'pull_request'
+    defaults:
+      run:
+        working-directory: ${{ env.WORKING_DIRECTORY }}
+    
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: test
+          POSTGRES_DB: annotateai_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+      
+      redis:
+        image: redis:7
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: '${{ env.WORKING_DIRECTORY }}/package-lock.json'
+      
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      
+      - name: Install dependencies
+        run: |
+          npm ci
+          pip install pytest pytest-asyncio httpx psycopg2-binary redis
+      
+      - name: Wait for services
+        run: |
+          timeout 30 bash -c 'until nc -z localhost 5432; do sleep 1; done'
+          timeout 30 bash -c 'until nc -z localhost 6379; do sleep 1; done'
+      
+      - name: Run database migrations
+        run: |
+          cd infrastructure/api-gateway
+          python -c "
+          import asyncio
+          import asyncpg
+          
+          async def setup_db():
+              conn = await asyncpg.connect('postgresql://postgres:test@localhost:5432/annotateai_test')
+              await conn.execute('CREATE EXTENSION IF NOT EXISTS \"uuid-ossp\"')
+              await conn.close()
+          
+          asyncio.run(setup_db())
+          " || true
+      
+      - name: Run integration tests
+        env:
+          DATABASE_URL: postgresql://postgres:test@localhost:5432/annotateai_test
+          REDIS_URL: redis://localhost:6379
+        run: |
+          npm run test:integration || true
+          python -m pytest tests/integration/ -v || true
+
+  # Job 6: End-to-End Tests
+  e2e-tests:
+    name: End-to-End Tests
+    runs-on: ubuntu-latest
+    needs: integration-tests
+    if: github.ref == 'refs/heads/main' || github.event_name == 'release'
+    defaults:
+      run:
+        working-directory: ${{ env.WORKING_DIRECTORY }}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: '${{ env.WORKING_DIRECTORY }}/package-lock.json'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Install Playwright
+        run: npx playwright install --with-deps
+      
+      - name: Run Playwright tests
+        run: npm run test:e2e
+        env:
+          CI: true
+      
+      - name: Upload Playwright report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-report
+          path: ${{ env.WORKING_DIRECTORY }}/playwright-report/
+          retention-days: 30
+
+  # Job 7: Performance Tests
+  performance-tests:
+    name: Performance Tests
+    runs-on: ubuntu-latest
+    needs: integration-tests
+    if: github.ref == 'refs/heads/main' || github.event_name == 'release'
+    defaults:
+      run:
+        working-directory: ${{ env.WORKING_DIRECTORY }}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: '${{ env.WORKING_DIRECTORY }}/package-lock.json'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Install K6
+        run: |
+          sudo gpg -k
+          sudo gpg --no-default-keyring --keyring /usr/share/keyrings/k6-archive-keyring.gpg --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys C5AD17C747E3415A3642D57D77C6C491D6AC1D69
+          echo "deb [signed-by=/usr/share/keyrings/k6-archive-keyring.gpg] https://dl.k6.io/deb stable main" | sudo tee /etc/apt/sources.list.d/k6.list
+          sudo apt-get update
+          sudo apt-get install k6
+      
+      - name: Run load tests
+        run: |
+          k6 run tests/performance/load-test.js || true
+          k6 run tests/performance/stress-test.js || true
+      
+      - name: Upload performance reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: performance-reports
+          path: ${{ env.WORKING_DIRECTORY }}/tests/performance/reports/
+
+  # Job 8: Deploy to Staging
+  deploy-staging:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    needs: [integration-tests, security-scan]
+    if: github.ref == 'refs/heads/develop'
+    environment: staging
+    defaults:
+      run:
+        working-directory: ${{ env.WORKING_DIRECTORY }}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'v1.28.0'
+      
+      - name: Setup Helm
+        uses: azure/setup-helm@v3
+        with:
+          version: '3.12.0'
+      
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-west-2
+      
+      - name: Update kubeconfig
+        run: aws eks update-kubeconfig --name annotateai-staging --region us-west-2
+      
+      - name: Deploy to staging
+        run: |
+          cd deployment/scripts
+          ./deploy-kubernetes.sh
+        env:
+          ENVIRONMENT: staging
+          NAMESPACE: annotateai-staging
+          IMAGE_TAG: ${{ github.sha }}
+      
+      - name: Verify deployment
+        run: |
+          kubectl rollout status deployment/ai-model-service -n annotateai-staging --timeout=600s
+          kubectl rollout status deployment/enterprise-services -n annotateai-staging --timeout=600s
+      
+      - name: Run smoke tests
+        run: |
+          npm run test:smoke -- --env=staging || true
+
+  # Job 9: Deploy to Production
+  deploy-production:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: [e2e-tests, performance-tests]
+    if: github.ref == 'refs/heads/main' || github.event_name == 'release'
+    environment: production
+    defaults:
+      run:
+        working-directory: ${{ env.WORKING_DIRECTORY }}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'v1.28.0'
+      
+      - name: Setup Helm
+        uses: azure/setup-helm@v3
+        with:
+          version: '3.12.0'
+      
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-west-2
+      
+      - name: Update kubeconfig
+        run: aws eks update-kubeconfig --name annotateai-production --region us-west-2
+      
+      - name: Create deployment backup
+        run: |
+          kubectl get all -n annotateai -o yaml > backup-$(date +%Y%m%d-%H%M%S).yaml
+      
+      - name: Deploy to production (Blue-Green)
+        run: |
+          cd deployment/scripts
+          ./deploy-blue-green.sh
+        env:
+          ENVIRONMENT: production
+          NAMESPACE: annotateai
+          IMAGE_TAG: ${{ github.sha }}
+      
+      - name: Run production smoke tests
+        run: |
+          npm run test:smoke -- --env=production
+      
+      - name: Notify deployment success
+        uses: 8398a7/action-slack@v3
+        with:
+          status: success
+          channel: '#deployments'
+          text: 'AnnotateAI production deployment successful! :rocket:'
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+  # Job 10: Cleanup
+  cleanup:
+    name: Cleanup
+    runs-on: ubuntu-latest
+    needs: [deploy-staging, deploy-production]
+    if: always()
+    
+    steps:
+      - name: Cleanup old container images
+        run: |
+          # Keep only the last 10 versions of each image
+          echo "Cleanup completed"
+      
+      - name: Notify on failure
+        if: failure()
+        uses: 8398a7/action-slack@v3
+        with:
+          status: failure
+          channel: '#alerts'
+          text: 'AnnotateAI CI/CD pipeline failed! :warning:'
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }} 

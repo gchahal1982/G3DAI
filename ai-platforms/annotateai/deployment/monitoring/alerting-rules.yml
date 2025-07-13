@@ -1,0 +1,226 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: annotateai-alerting-rules
+  namespace: annotateai
+data:
+  alerting-rules.yml: |
+    groups:
+      - name: annotateai.system
+        rules:
+          - alert: AnnotateAIServiceDown
+            expr: up{job=~"annotateai.*"} == 0
+            for: 1m
+            labels:
+              severity: critical
+            annotations:
+              summary: "AnnotateAI service {{ $labels.job }} is down"
+              description: "{{ $labels.job }} has been down for more than 1 minute"
+              
+          - alert: AnnotateAIHighErrorRate
+            expr: rate(http_requests_total{job="annotateai-api-gateway",code=~"5.."}[5m]) > 0.1
+            for: 5m
+            labels:
+              severity: critical
+            annotations:
+              summary: "High error rate in AnnotateAI API Gateway"
+              description: "Error rate is {{ $value }} errors per second"
+              
+          - alert: AnnotateAIHighLatency
+            expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket{job="annotateai-api-gateway"}[5m])) > 2
+            for: 5m
+            labels:
+              severity: warning
+            annotations:
+              summary: "High latency in AnnotateAI API Gateway"
+              description: "95th percentile latency is {{ $value }} seconds"
+              
+          - alert: AnnotateAIHighRequestRate
+            expr: rate(http_requests_total{job="annotateai-api-gateway"}[5m]) > 1000
+            for: 5m
+            labels:
+              severity: warning
+            annotations:
+              summary: "High request rate in AnnotateAI"
+              description: "Request rate is {{ $value }} requests per second"
+
+      - name: annotateai.ai_models
+        rules:
+          - alert: AnnotateAIModelInferenceFailure
+            expr: rate(annotateai_ai_inference_failures_total[5m]) > 0.05
+            for: 3m
+            labels:
+              severity: critical
+            annotations:
+              summary: "High AI model inference failure rate"
+              description: "Model {{ $labels.model }} failure rate is {{ $value }} per second"
+              
+          - alert: AnnotateAIModelHighLatency
+            expr: rate(annotateai_ai_inference_duration_seconds_sum[5m]) / rate(annotateai_ai_inference_duration_seconds_count[5m]) > 10
+            for: 5m
+            labels:
+              severity: warning
+            annotations:
+              summary: "High AI model inference latency"
+              description: "Model {{ $labels.model }} average latency is {{ $value }} seconds"
+              
+          - alert: AnnotateAIGPUUtilizationHigh
+            expr: nvidia_gpu_utilization_gpu > 95
+            for: 10m
+            labels:
+              severity: warning
+            annotations:
+              summary: "High GPU utilization"
+              description: "GPU {{ $labels.gpu }} utilization is {{ $value }}%"
+              
+          - alert: AnnotateAIModelAccuracyDrop
+            expr: annotateai_model_accuracy < 0.85
+            for: 5m
+            labels:
+              severity: critical
+            annotations:
+              summary: "Model accuracy drop detected"
+              description: "Model {{ $labels.model }} accuracy is {{ $value }}"
+
+      - name: annotateai.collaboration
+        rules:
+          - alert: AnnotateAICollaborationSessionsHigh
+            expr: annotateai_active_collaboration_sessions > 500
+            for: 5m
+            labels:
+              severity: warning
+            annotations:
+              summary: "High number of active collaboration sessions"
+              description: "Active sessions: {{ $value }}"
+              
+          - alert: AnnotateAIWebSocketConnectionsHigh
+            expr: annotateai_websocket_connections > 10000
+            for: 5m
+            labels:
+              severity: warning
+            annotations:
+              summary: "High WebSocket connections"
+              description: "Active WebSocket connections: {{ $value }}"
+              
+          - alert: AnnotateAICollaborationLatency
+            expr: annotateai_collaboration_message_latency_seconds > 0.5
+            for: 3m
+            labels:
+              severity: warning
+            annotations:
+              summary: "High collaboration message latency"
+              description: "Message latency is {{ $value }} seconds"
+
+      - name: annotateai.infrastructure
+        rules:
+          - alert: AnnotateAIPodCrashLooping
+            expr: rate(kube_pod_container_status_restarts_total{namespace="annotateai"}[5m]) > 0.1
+            for: 5m
+            labels:
+              severity: critical
+            annotations:
+              summary: "Pod crash looping in AnnotateAI"
+              description: "Pod {{ $labels.pod }} is crash looping"
+              
+          - alert: AnnotateAIHighMemoryUsage
+            expr: container_memory_usage_bytes{namespace="annotateai"} / container_spec_memory_limit_bytes > 0.9
+            for: 5m
+            labels:
+              severity: warning
+            annotations:
+              summary: "High memory usage in AnnotateAI pod"
+              description: "Pod {{ $labels.pod }} memory usage is {{ $value | humanizePercentage }}"
+              
+          - alert: AnnotateAIHighCPUUsage
+            expr: rate(container_cpu_usage_seconds_total{namespace="annotateai"}[5m]) > 0.8
+            for: 5m
+            labels:
+              severity: warning
+            annotations:
+              summary: "High CPU usage in AnnotateAI pod"
+              description: "Pod {{ $labels.pod }} CPU usage is {{ $value | humanizePercentage }}"
+              
+          - alert: AnnotateAIPodNotReady
+            expr: kube_pod_status_ready{namespace="annotateai",condition="false"} == 1
+            for: 5m
+            labels:
+              severity: critical
+            annotations:
+              summary: "AnnotateAI pod not ready"
+              description: "Pod {{ $labels.pod }} is not ready"
+              
+          - alert: AnnotateAIHPAMaxReplicas
+            expr: kube_horizontalpodautoscaler_status_current_replicas{namespace="annotateai"} >= kube_horizontalpodautoscaler_spec_max_replicas{namespace="annotateai"}
+            for: 5m
+            labels:
+              severity: warning
+            annotations:
+              summary: "HPA reached maximum replicas"
+              description: "HPA {{ $labels.horizontalpodautoscaler }} reached max replicas"
+
+      - name: annotateai.storage
+        rules:
+          - alert: AnnotateAIStorageSpaceHigh
+            expr: (1 - (node_filesystem_avail_bytes{mountpoint="/data"} / node_filesystem_size_bytes{mountpoint="/data"})) > 0.85
+            for: 5m
+            labels:
+              severity: warning
+            annotations:
+              summary: "High storage usage in AnnotateAI"
+              description: "Storage usage is {{ $value | humanizePercentage }}"
+              
+          - alert: AnnotateAIStorageIOHigh
+            expr: rate(node_disk_io_time_seconds_total[5m]) > 0.9
+            for: 5m
+            labels:
+              severity: warning
+            annotations:
+              summary: "High disk I/O in AnnotateAI"
+              description: "Disk I/O utilization is {{ $value | humanizePercentage }}"
+              
+          - alert: AnnotateAIRedisDown
+            expr: up{job="annotateai-redis"} == 0
+            for: 1m
+            labels:
+              severity: critical
+            annotations:
+              summary: "Redis is down"
+              description: "Redis has been down for more than 1 minute"
+              
+          - alert: AnnotateAIPostgreSQLDown
+            expr: up{job="annotateai-postgresql"} == 0
+            for: 1m
+            labels:
+              severity: critical
+            annotations:
+              summary: "PostgreSQL is down"
+              description: "PostgreSQL has been down for more than 1 minute"
+
+      - name: annotateai.business_metrics
+        rules:
+          - alert: AnnotateAIAnnotationThroughputLow
+            expr: rate(annotateai_annotations_completed_total[5m]) < 10
+            for: 10m
+            labels:
+              severity: warning
+            annotations:
+              summary: "Low annotation throughput"
+              description: "Annotation completion rate is {{ $value }} per second"
+              
+          - alert: AnnotateAIUserSessionsHigh
+            expr: annotateai_active_user_sessions > 1000
+            for: 5m
+            labels:
+              severity: info
+            annotations:
+              summary: "High user activity"
+              description: "Active user sessions: {{ $value }}"
+              
+          - alert: AnnotateAIDatasetSizeGrowth
+            expr: increase(annotateai_dataset_size_bytes[1h]) > 10e9
+            for: 1h
+            labels:
+              severity: info
+            annotations:
+              summary: "Rapid dataset growth"
+              description: "Dataset grew by {{ $value | humanizeBytes }} in the last hour" 

@@ -1,126 +1,97 @@
 'use client';
-import React, { useState } from 'react';
-import { 
-  Key, Shield, Users, Lock, 
-  CheckCircle, XCircle, MoreVertical
-} from 'lucide-react';
-import { medicalRoles } from '@/lib/access-control/medical-roles';
-import { medicalPermissions, permissionCategories } from '@/lib/access-control/medical-permissions';
 
-interface PermissionMatrixProps {
-  className?: string;
+import { useState } from 'react';
+import { ShieldCheckIcon, ShieldExclamationIcon } from '@heroicons/react/24/outline';
+
+interface Permission {
+  id: string;
+  name: string;
+  category: string;
 }
 
-export default function PermissionMatrix({ className = '' }: PermissionMatrixProps) {
-  const [selectedCategory, setSelectedCategory] = useState(permissionCategories[0]);
+interface Role {
+  id: string;
+  name: string;
+  permissions: string[];
+}
 
-  const filteredPermissions = medicalPermissions.filter(p => p.category === selectedCategory);
+interface PermissionMatrixProps {
+  roles: Role[];
+  permissions: Permission[];
+  onPermissionChange: (roleId: string, permissionId: string, hasPermission: boolean) => void;
+}
 
-  const hasPermission = (role: any, permissionId: string) => {
-    if (role.permissions.includes('*')) return true;
-    if (role.permissions.includes(`${permissionId.split(':')[0]}:*:*`)) return true;
-    if (role.permissions.includes(`${permissionId.split(':')[0]}:${permissionId.split(':')[1]}:*`)) return true;
-    return role.permissions.includes(permissionId);
-  };
+export default function PermissionMatrix({ roles, permissions, onPermissionChange }: PermissionMatrixProps) {
+  const [highlightedRole, setHighlightedRole] = useState<string | null>(null);
+  const [highlightedPermission, setHighlightedPermission] = useState<string | null>(null);
 
-  const getRoleColor = (role: string) => {
-    if (role.includes('Admin')) return 'text-medsight-abnormal';
-    if (role.includes('Radiologist') || role.includes('Surgeon')) return 'text-medsight-primary';
-    if (role.includes('Physician') || role.includes('Cardiologist') || role.includes('Neurologist')) return 'text-medsight-ai-high';
-    if (role.includes('Resident') || role.includes('Technician')) return 'text-medsight-pending';
-    return 'text-slate-500';
-  };
+  const groupedPermissions = permissions.reduce((acc, p) => {
+    acc[p.category] = acc[p.category] || [];
+    acc[p.category].push(p);
+    return acc;
+  }, {} as Record<string, Permission[]>);
 
   return (
-    <div className={`medsight-glass rounded-xl p-6 border border-medsight-primary/20 ${className}`}>
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center space-x-3">
-          <div className="medsight-ai-glass p-2 rounded-lg">
-            <Key className="w-5 h-5 text-medsight-primary" />
-          </div>
-          <div>
-            <h3 className="text-lg font-semibold text-medsight-primary">Permission Matrix</h3>
-            <p className="text-sm text-slate-600">Detailed role-based permission management</p>
-          </div>
-        </div>
-      </div>
-
-      {/* Permission Category Filter */}
-      <div className="mb-4">
-        <div className="flex items-center space-x-2 overflow-x-auto pb-2">
-          {permissionCategories.map((category) => (
-            <button
-              key={category}
-              onClick={() => setSelectedCategory(category)}
-              className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200
-                ${selectedCategory === category 
-                  ? 'btn-medsight shadow-md' 
-                  : 'bg-white/50 hover:bg-white/80'
-                }
-              `}
-            >
-              {category}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Permission Matrix Table */}
-      <div className="medsight-control-glass rounded-lg overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead className="bg-white/10">
-              <tr>
-                <th className="px-6 py-3 font-medium text-slate-600 text-left sticky left-0 bg-white/10 z-10 w-1/4">Permission</th>
-                {medicalRoles.map((role) => (
-                  <th key={role.name} className="px-6 py-3 font-medium text-slate-600 text-center">
-                    <span className={getRoleColor(role.name)}>{role.name}</span>
-                  </th>
-                ))}
+    <div className="medsight-glass p-6 rounded-xl overflow-x-auto">
+      <h2 className="text-xl font-semibold mb-4">Permission Matrix</h2>
+      <table className="min-w-full divide-y divide-gray-200">
+        <thead className="bg-gray-50">
+          <tr>
+            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider sticky left-0 bg-gray-50 z-10">
+              Permission
+            </th>
+            {roles.map(role => (
+              <th 
+                key={role.id} 
+                scope="col" 
+                className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider"
+                onMouseEnter={() => setHighlightedRole(role.id)}
+                onMouseLeave={() => setHighlightedRole(null)}
+              >
+                {role.name}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody className="bg-white divide-y divide-gray-200">
+          {Object.entries(groupedPermissions).map(([category, perms]) => (
+            <>
+              <tr key={category} className="bg-gray-50">
+                <td colSpan={roles.length + 1} className="px-6 py-2 text-sm font-semibold text-gray-700 sticky left-0 bg-gray-50 z-10">
+                  {category}
+                </td>
               </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-200/50">
-              {filteredPermissions.map((permission) => (
-                <tr key={permission.id}>
-                  <td className="px-6 py-4 sticky left-0 bg-white/50 z-10 w-1/4">
-                    <p className="font-medium text-slate-800">{permission.id}</p>
-                    <p className="text-xs text-slate-600">{permission.description}</p>
+              {perms.map((permission, pIndex) => (
+                <tr 
+                  key={permission.id} 
+                  className={`${pIndex % 2 === 0 ? 'bg-white' : 'bg-gray-50'}`}
+                  onMouseEnter={() => setHighlightedPermission(permission.id)}
+                  onMouseLeave={() => setHighlightedPermission(null)}
+                >
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 sticky left-0 bg-inherit z-10">
+                    {permission.name}
                   </td>
-                  {medicalRoles.map((role) => (
-                    <td key={`${role.name}-${permission.id}`} className="px-6 py-4 text-center">
-                      {hasPermission(role, permission.id) ? (
-                        <CheckCircle className="w-5 h-5 text-medsight-secondary mx-auto" />
-                      ) : (
-                        <XCircle className="w-5 h-5 text-slate-300 mx-auto" />
-                      )}
+                  {roles.map(role => (
+                    <td 
+                      key={`${role.id}-${permission.id}`} 
+                      className={`px-6 py-4 whitespace-nowrap text-center transition-colors ${
+                        highlightedRole === role.id || highlightedPermission === permission.id ? 'bg-blue-50' : ''
+                      }`}
+                    >
+                      <input
+                        type="checkbox"
+                        className="h-4 w-4 rounded border-gray-300 text-medsight-primary focus:ring-medsight-primary cursor-pointer"
+                        checked={role.permissions.includes(permission.id)}
+                        onChange={(e) => onPermissionChange(role.id, permission.id, e.target.checked)}
+                      />
                     </td>
                   ))}
                 </tr>
               ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-       {/* Permission Matrix Actions */}
-       <div className="mt-6 pt-4 border-t border-slate-200">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <Lock className="w-4 h-4 text-medsight-primary" />
-            <span className="text-sm text-slate-700">
-              Showing {filteredPermissions.length} permissions for {selectedCategory}
-            </span>
-          </div>
-          <div className="flex items-center space-x-2">
-            <button className="btn-medsight text-xs px-3 py-1">
-              Save Changes
-            </button>
-            <button className="btn-medsight text-xs px-3 py-1">
-              Reset Permissions
-            </button>
-          </div>
-        </div>
-      </div>
+            </>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
-} 
+}

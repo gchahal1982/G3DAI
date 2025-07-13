@@ -1,0 +1,543 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: annotateai-config
+  namespace: annotateai
+  labels:
+    app: annotateai
+    component: config
+data:
+  # Database Configuration
+  DATABASE_HOST: "postgres-service"
+  DATABASE_PORT: "5432"
+  DATABASE_NAME: "annotateai"
+  DATABASE_SSL_MODE: "require"
+  DATABASE_POOL_SIZE: "50"
+  DATABASE_MAX_OVERFLOW: "100"
+  
+  # Redis Configuration
+  REDIS_HOST: "redis-service"
+  REDIS_PORT: "6379"
+  REDIS_DB: "0"
+  REDIS_SENTINEL_HOSTS: "redis-sentinel-0:26379,redis-sentinel-1:26379,redis-sentinel-2:26379"
+  REDIS_MASTER_NAME: "mymaster"
+  
+  # AI Model Service Configuration
+  MODEL_STORAGE_PATH: "/data/models"
+  MODEL_CACHE_SIZE: "10GB"
+  GPU_ENABLED: "true"
+  CUDA_VISIBLE_DEVICES: "0,1,2,3"
+  TENSORRT_ENABLED: "true"
+  ONNX_ENABLED: "true"
+  
+  # Synthetic Data Service Configuration
+  DIFFUSION_MODEL_PATH: "/data/models/diffusion"
+  CONTROLNET_MODEL_PATH: "/data/models/controlnet"
+  SYNTHETIC_OUTPUT_PATH: "/data/synthetic"
+  MAX_BATCH_SIZE: "32"
+  
+  # Training Service Configuration
+  TRAINING_DATA_PATH: "/data/training"
+  CHECKPOINT_PATH: "/data/checkpoints"
+  TENSORBOARD_LOG_DIR: "/data/logs/tensorboard"
+  DISTRIBUTED_TRAINING: "true"
+  HOROVOD_ENABLED: "true"
+  RAY_CLUSTER_ADDRESS: "ray-head-service:10001"
+  
+  # 3D Processing Service Configuration
+  COLMAP_BIN_PATH: "/usr/local/bin/colmap"
+  OPEN3D_ENABLED: "true"
+  POINT_CLOUD_PATH: "/data/pointclouds"
+  MESH_OUTPUT_PATH: "/data/meshes"
+  LIDAR_PROCESSING: "true"
+  
+  # Video Processing Service Configuration
+  FFMPEG_BIN_PATH: "/usr/local/bin/ffmpeg"
+  VIDEO_INPUT_PATH: "/data/videos/input"
+  VIDEO_OUTPUT_PATH: "/data/videos/output"
+  TRACKING_MODEL_PATH: "/data/models/tracking"
+  TEMPORAL_ANALYSIS: "true"
+  
+  # XR Service Configuration
+  WEBXR_ENABLED: "true"
+  SPATIAL_ANCHOR_STORAGE: "/data/anchors"
+  HAND_TRACKING_MODEL: "/data/models/hand_tracking"
+  VOICE_MODEL_PATH: "/data/models/voice"
+  HAPTIC_FEEDBACK: "true"
+  
+  # Enterprise Services Configuration
+  JWT_ALGORITHM: "HS256"
+  JWT_EXPIRATION_HOURS: "24"
+  SAML_SETTINGS_PATH: "/config/saml_settings.json"
+  OAUTH2_CLIENTS_CONFIG: "/config/oauth2_clients.json"
+  AUDIT_LOG_RETENTION_DAYS: "2555"
+  GDPR_ENABLED: "true"
+  HIPAA_ENABLED: "false"
+  SOC2_ENABLED: "false"
+  MFA_ENABLED: "true"
+  
+  # Performance Optimization Configuration
+  CACHE_TTL_DEFAULT: "3600"
+  CACHE_TTL_SHORT: "300"
+  CACHE_TTL_LONG: "86400"
+  CDN_PROVIDER: "cloudflare"
+  AUTO_SCALING_ENABLED: "true"
+  DATADOG_ENABLED: "true"
+  NEWRELIC_ENABLED: "false"
+  ELASTICSEARCH_HOSTS: "elasticsearch-service:9200"
+  INFLUXDB_URL: "http://influxdb-service:8086"
+  
+  # Data Pipeline Configuration
+  AIRFLOW_HOME: "/opt/airflow"
+  DASK_SCHEDULER_ADDRESS: "tcp://dask-scheduler-service:8786"
+  DATA_STORAGE_PATH: "/data/pipeline"
+  STAGING_PATH: "/data/staging"
+  PROCESSED_PATH: "/data/processed"
+  BACKUP_PATH: "/data/backup"
+  DATAHUB_GMS_HOST: "http://datahub-gms-service:8080"
+  ENABLE_DATA_PROFILING: "true"
+  ENABLE_GREAT_EXPECTATIONS: "true"
+  
+  # Storage Configuration
+  S3_BUCKET: "annotateai-data"
+  S3_REGION: "us-west-2"
+  MINIO_ENDPOINT: "minio-service:9000"
+  MINIO_BUCKET: "annotateai"
+  
+  # Monitoring Configuration
+  PROMETHEUS_ENABLED: "true"
+  GRAFANA_ENABLED: "true"
+  JAEGER_ENABLED: "true"
+  ELASTIC_APM_ENABLED: "true"
+  
+  # Security Configuration
+  SECURITY_SCAN_ENABLED: "true"
+  VULNERABILITY_SCAN_ENABLED: "true"
+  COMPLIANCE_MONITORING: "true"
+  
+  # Network Configuration
+  SERVICE_MESH_ENABLED: "true"
+  ISTIO_ENABLED: "true"
+  CERT_MANAGER_ENABLED: "true"
+  INGRESS_CLASS: "nginx"
+  
+  # Backup Configuration
+  BACKUP_ENABLED: "true"
+  BACKUP_SCHEDULE: "0 2 * * *"
+  BACKUP_RETENTION_DAYS: "30"
+  
+  # Scaling Configuration
+  MIN_REPLICAS: "2"
+  MAX_REPLICAS: "100"
+  TARGET_CPU_UTILIZATION: "70"
+  TARGET_MEMORY_UTILIZATION: "80"
+  
+  # Logging Configuration
+  LOG_LEVEL: "INFO"
+  LOG_FORMAT: "json"
+  LOG_OUTPUT: "stdout"
+  ELK_ENABLED: "true"
+  FLUENTD_ENABLED: "true"
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nginx-config
+  namespace: annotateai
+  labels:
+    app: nginx
+    component: config
+data:
+  nginx.conf: |
+    worker_processes auto;
+    error_log /var/log/nginx/error.log warn;
+    pid /var/run/nginx.pid;
+    
+    events {
+        worker_connections 1024;
+        use epoll;
+        multi_accept on;
+    }
+    
+    http {
+        include /etc/nginx/mime.types;
+        default_type application/octet-stream;
+        
+        # Logging
+        log_format main '$remote_addr - $remote_user [$time_local] "$request" '
+                       '$status $body_bytes_sent "$http_referer" '
+                       '"$http_user_agent" "$http_x_forwarded_for"';
+        access_log /var/log/nginx/access.log main;
+        
+        # Performance
+        sendfile on;
+        tcp_nopush on;
+        tcp_nodelay on;
+        keepalive_timeout 65;
+        types_hash_max_size 2048;
+        
+        # Compression
+        gzip on;
+        gzip_vary on;
+        gzip_min_length 1024;
+        gzip_types text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript;
+        
+        # Security headers
+        add_header X-Frame-Options DENY;
+        add_header X-Content-Type-Options nosniff;
+        add_header X-XSS-Protection "1; mode=block";
+        add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+        
+        # Rate limiting
+        limit_req_zone $binary_remote_addr zone=api:10m rate=10r/s;
+        limit_req_zone $binary_remote_addr zone=upload:10m rate=1r/s;
+        
+        # Upstream services
+        upstream api-gateway {
+            least_conn;
+            server api-gateway-service:8000 max_fails=3 fail_timeout=30s;
+        }
+        
+        upstream ai-model-service {
+            least_conn;
+            server ai-model-service:8000 max_fails=3 fail_timeout=30s;
+        }
+        
+        upstream enterprise-services {
+            least_conn;
+            server enterprise-services:8000 max_fails=3 fail_timeout=30s;
+        }
+        
+        # Main server block
+        server {
+            listen 80;
+            server_name _;
+            
+            # Redirect HTTP to HTTPS
+            return 301 https://$server_name$request_uri;
+        }
+        
+        server {
+            listen 443 ssl http2;
+            server_name annotateai.com www.annotateai.com;
+            
+            # SSL configuration
+            ssl_certificate /etc/ssl/certs/tls.crt;
+            ssl_certificate_key /etc/ssl/private/tls.key;
+            ssl_protocols TLSv1.2 TLSv1.3;
+            ssl_ciphers ECDHE-RSA-AES256-GCM-SHA512:DHE-RSA-AES256-GCM-SHA512:ECDHE-RSA-AES256-GCM-SHA384:DHE-RSA-AES256-GCM-SHA384;
+            ssl_prefer_server_ciphers off;
+            
+            # API Gateway
+            location /api/ {
+                limit_req zone=api burst=20 nodelay;
+                proxy_pass http://api-gateway;
+                proxy_set_header Host $host;
+                proxy_set_header X-Real-IP $remote_addr;
+                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                proxy_set_header X-Forwarded-Proto $scheme;
+                proxy_connect_timeout 30s;
+                proxy_send_timeout 30s;
+                proxy_read_timeout 30s;
+            }
+            
+            # AI Model Service
+            location /ai/ {
+                limit_req zone=api burst=10 nodelay;
+                proxy_pass http://ai-model-service;
+                proxy_set_header Host $host;
+                proxy_set_header X-Real-IP $remote_addr;
+                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                proxy_set_header X-Forwarded-Proto $scheme;
+                proxy_connect_timeout 60s;
+                proxy_send_timeout 300s;
+                proxy_read_timeout 300s;
+            }
+            
+            # Enterprise Services
+            location /auth/ {
+                limit_req zone=api burst=5 nodelay;
+                proxy_pass http://enterprise-services;
+                proxy_set_header Host $host;
+                proxy_set_header X-Real-IP $remote_addr;
+                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                proxy_set_header X-Forwarded-Proto $scheme;
+            }
+            
+            # File uploads
+            location /upload/ {
+                limit_req zone=upload burst=5 nodelay;
+                client_max_body_size 1G;
+                proxy_pass http://api-gateway;
+                proxy_set_header Host $host;
+                proxy_set_header X-Real-IP $remote_addr;
+                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                proxy_set_header X-Forwarded-Proto $scheme;
+                proxy_connect_timeout 300s;
+                proxy_send_timeout 300s;
+                proxy_read_timeout 300s;
+            }
+            
+            # Health checks
+            location /health {
+                access_log off;
+                return 200 "healthy\n";
+                add_header Content-Type text/plain;
+            }
+            
+            # Static files
+            location /static/ {
+                alias /var/www/static/;
+                expires 1y;
+                add_header Cache-Control "public, immutable";
+            }
+            
+            # WebSocket support
+            location /ws/ {
+                proxy_pass http://api-gateway;
+                proxy_http_version 1.1;
+                proxy_set_header Upgrade $http_upgrade;
+                proxy_set_header Connection "upgrade";
+                proxy_set_header Host $host;
+                proxy_set_header X-Real-IP $remote_addr;
+                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                proxy_set_header X-Forwarded-Proto $scheme;
+            }
+        }
+    }
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prometheus-config
+  namespace: annotateai
+  labels:
+    app: prometheus
+    component: config
+data:
+  prometheus.yml: |
+    global:
+      scrape_interval: 15s
+      evaluation_interval: 15s
+      external_labels:
+        cluster: 'annotateai-production'
+        environment: 'production'
+    
+    rule_files:
+      - "alert_rules.yml"
+    
+    alerting:
+      alertmanagers:
+        - static_configs:
+            - targets:
+              - alertmanager:9093
+    
+    scrape_configs:
+      # Kubernetes API Server
+      - job_name: 'kubernetes-api-server'
+        kubernetes_sd_configs:
+          - role: endpoints
+            namespaces:
+              names:
+                - default
+        scheme: https
+        tls_config:
+          ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+          insecure_skip_verify: true
+        bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+        relabel_configs:
+          - source_labels: [__meta_kubernetes_namespace, __meta_kubernetes_service_name, __meta_kubernetes_endpoint_port_name]
+            action: keep
+            regex: default;kubernetes;https
+      
+      # Kubernetes Nodes
+      - job_name: 'kubernetes-nodes'
+        kubernetes_sd_configs:
+          - role: node
+        scheme: https
+        tls_config:
+          ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+          insecure_skip_verify: true
+        bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+        relabel_configs:
+          - action: labelmap
+            regex: __meta_kubernetes_node_label_(.+)
+      
+      # Kubernetes Pods
+      - job_name: 'kubernetes-pods'
+        kubernetes_sd_configs:
+          - role: pod
+            namespaces:
+              names:
+                - annotateai
+                - annotateai-staging
+                - annotateai-dev
+        relabel_configs:
+          - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
+            action: keep
+            regex: true
+          - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_path]
+            action: replace
+            target_label: __metrics_path__
+            regex: (.+)
+          - source_labels: [__address__, __meta_kubernetes_pod_annotation_prometheus_io_port]
+            action: replace
+            regex: ([^:]+)(?::\d+)?;(\d+)
+            replacement: $1:$2
+            target_label: __address__
+          - action: labelmap
+            regex: __meta_kubernetes_pod_label_(.+)
+          - source_labels: [__meta_kubernetes_namespace]
+            action: replace
+            target_label: kubernetes_namespace
+          - source_labels: [__meta_kubernetes_pod_name]
+            action: replace
+            target_label: kubernetes_pod_name
+      
+      # AnnotateAI Services
+      - job_name: 'ai-model-service'
+        static_configs:
+          - targets: ['ai-model-service:8000']
+        metrics_path: '/metrics'
+        scrape_interval: 30s
+      
+      - job_name: 'enterprise-services'
+        static_configs:
+          - targets: ['enterprise-services:8000']
+        metrics_path: '/metrics'
+        scrape_interval: 30s
+      
+      - job_name: 'performance-optimization'
+        static_configs:
+          - targets: ['performance-optimization-service:8000']
+        metrics_path: '/metrics'
+        scrape_interval: 15s
+      
+      - job_name: 'data-pipeline'
+        static_configs:
+          - targets: ['data-pipeline-service:8000']
+        metrics_path: '/metrics'
+        scrape_interval: 30s
+      
+      - job_name: 'video-processing'
+        static_configs:
+          - targets: ['video-processing-service:8000']
+        metrics_path: '/metrics'
+        scrape_interval: 30s
+      
+      - job_name: 'xr-service'
+        static_configs:
+          - targets: ['xr-service:8000']
+        metrics_path: '/metrics'
+        scrape_interval: 30s
+      
+      # Infrastructure Services
+      - job_name: 'postgres-exporter'
+        static_configs:
+          - targets: ['postgres-exporter:9187']
+      
+      - job_name: 'redis-exporter'
+        static_configs:
+          - targets: ['redis-exporter:9121']
+      
+      - job_name: 'nginx-exporter'
+        static_configs:
+          - targets: ['nginx-exporter:9113']
+      
+      # Node Exporter
+      - job_name: 'node-exporter'
+        kubernetes_sd_configs:
+          - role: endpoints
+            namespaces:
+              names:
+                - kube-system
+        relabel_configs:
+          - source_labels: [__meta_kubernetes_endpoints_name]
+            regex: 'node-exporter'
+            action: keep
+
+  alert_rules.yml: |
+    groups:
+      - name: annotateai.rules
+        rules:
+          # High CPU Usage
+          - alert: HighCPUUsage
+            expr: (100 - (avg by (instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100)) > 80
+            for: 5m
+            labels:
+              severity: warning
+            annotations:
+              summary: "High CPU usage detected"
+              description: "CPU usage is above 80% for more than 5 minutes on {{ $labels.instance }}"
+          
+          # High Memory Usage
+          - alert: HighMemoryUsage
+            expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100 > 85
+            for: 5m
+            labels:
+              severity: warning
+            annotations:
+              summary: "High memory usage detected"
+              description: "Memory usage is above 85% for more than 5 minutes on {{ $labels.instance }}"
+          
+          # High Disk Usage
+          - alert: HighDiskUsage
+            expr: (1 - (node_filesystem_avail_bytes / node_filesystem_size_bytes)) * 100 > 90
+            for: 5m
+            labels:
+              severity: critical
+            annotations:
+              summary: "High disk usage detected"
+              description: "Disk usage is above 90% for more than 5 minutes on {{ $labels.instance }}"
+          
+          # Service Down
+          - alert: ServiceDown
+            expr: up == 0
+            for: 2m
+            labels:
+              severity: critical
+            annotations:
+              summary: "Service is down"
+              description: "{{ $labels.job }} service is down for more than 2 minutes"
+          
+          # High Error Rate
+          - alert: HighErrorRate
+            expr: rate(http_requests_total{status=~"5.."}[5m]) / rate(http_requests_total[5m]) > 0.05
+            for: 5m
+            labels:
+              severity: warning
+            annotations:
+              summary: "High error rate detected"
+              description: "Error rate is above 5% for more than 5 minutes in {{ $labels.job }}"
+          
+          # Database Connection Issues
+          - alert: DatabaseConnectionHigh
+            expr: pg_stat_activity_count > 80
+            for: 5m
+            labels:
+              severity: warning
+            annotations:
+              summary: "High database connections"
+              description: "Database has more than 80 active connections"
+          
+          # Redis Memory Usage
+          - alert: RedisMemoryHigh
+            expr: redis_memory_used_bytes / redis_memory_max_bytes > 0.8
+            for: 5m
+            labels:
+              severity: warning
+            annotations:
+              summary: "Redis memory usage high"
+              description: "Redis memory usage is above 80%"
+          
+          # AI Model Inference Latency
+          - alert: HighInferenceLatency
+            expr: histogram_quantile(0.95, rate(ai_inference_duration_seconds_bucket[5m])) > 2
+            for: 5m
+            labels:
+              severity: warning
+            annotations:
+              summary: "High AI inference latency"
+              description: "95th percentile inference latency is above 2 seconds" 

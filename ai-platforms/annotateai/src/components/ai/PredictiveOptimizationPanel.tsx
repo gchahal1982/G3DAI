@@ -34,10 +34,32 @@ import {
   Shield,
   Lightbulb,
   Eye,
-  RefreshCw
+  RefreshCw,
+  X
 } from 'lucide-react';
 
-// Import types from backend
+// Import real backend services
+import { OptimizationEngine } from '../../performance/OptimizationEngine';
+import { PredictiveOptimization } from '../../ai/PredictiveOptimization';
+import { ModelRunner } from '../../ai/ModelRunner';
+import { Profiler } from '../../performance/Profiler';
+import { LoadBalancer } from '../../performance/LoadBalancer';
+import { MemoryManager } from '../../performance/MemoryManager';
+import { GPUCompute } from '../../performance/GPUCompute';
+import { AIWorkflowEngine } from '../../core/AIWorkflowEngine';
+import { LightingSystem } from '../../core/LightingSystem';
+import { MeshProcessor } from '../../core/MeshProcessor';
+import { SpatialAnalyzer } from '../../core/SpatialAnalyzer';
+import { PointCloudProcessor } from '../../core/PointCloudProcessor';
+import { CollaborationEngine } from '../../core/CollaborationEngine';
+import { ThreeDRenderer } from '../../core/ThreeDRenderer';
+import { PhysicsEngine } from '../../core/PhysicsEngine';
+import { ParticleSystem } from '../../core/ParticleSystem';
+import { CloudIntegration } from '../../enterprise/CloudIntegration';
+import { WorkflowEngine } from '../../enterprise/WorkflowEngine';
+import { PerformanceOptimizer } from '../../integration/PerformanceOptimizer';
+
+// Real backend interfaces
 interface PerformancePrediction {
   metric: string;
   currentValue: number;
@@ -244,6 +266,7 @@ interface PredictiveOptimizationPanelProps {
   onConfigurationChange?: (config: any) => void;
   onOptimizationStart?: (profile: string) => void;
   onOptimizationStop?: () => void;
+  onClose?: () => void;
   className?: string;
 }
 
@@ -251,6 +274,7 @@ export function PredictiveOptimizationPanel({
   onConfigurationChange,
   onOptimizationStart,
   onOptimizationStop,
+  onClose,
   className = ''
 }: PredictiveOptimizationPanelProps) {
   // State management
@@ -269,82 +293,373 @@ export function PredictiveOptimizationPanel({
   const [error, setError] = useState<string | null>(null);
   const [recommendations, setRecommendations] = useState<OptimizationRecommendation[]>([]);
 
-  // Mock backend connection - replace with actual backend calls
-  const predictiveOptimizationRef = useRef<any>(null);
+  // Real backend service instances
+  const optimizationEngineRef = useRef<OptimizationEngine | null>(null);
+  const predictiveOptimizationRef = useRef<PredictiveOptimization | null>(null);
+  const profilerRef = useRef<Profiler | null>(null);
+  const modelRunnerRef = useRef<ModelRunner | null>(null);
+  const loadBalancerRef = useRef<LoadBalancer | null>(null);
+  const memoryManagerRef = useRef<MemoryManager | null>(null);
+  const gpuComputeRef = useRef<GPUCompute | null>(null);
+  const aiWorkflowEngineRef = useRef<AIWorkflowEngine | null>(null);
+  const lightingSystemRef = useRef<LightingSystem | null>(null);
+  const meshProcessorRef = useRef<MeshProcessor | null>(null);
+  const spatialAnalyzerRef = useRef<SpatialAnalyzer | null>(null);
+  const pointCloudProcessorRef = useRef<PointCloudProcessor | null>(null);
+  const collaborationEngineRef = useRef<CollaborationEngine | null>(null);
+  const threeDRendererRef = useRef<ThreeDRenderer | null>(null);
+  const physicsEngineRef = useRef<PhysicsEngine | null>(null);
+  const particleSystemRef = useRef<ParticleSystem | null>(null);
+  const cloudIntegrationRef = useRef<CloudIntegration | null>(null);
+  const workflowEngineRef = useRef<WorkflowEngine | null>(null);
+  const performanceOptimizerRef = useRef<PerformanceOptimizer | null>(null);
 
-  // Initialize backend connection
+  // Initialize all backend services
   useEffect(() => {
     const initializeBackend = async () => {
       try {
-        // Mock initialization - replace with actual backend initialization
-        predictiveOptimizationRef.current = {
-          predictPerformance: async (metrics: string[], timeframe: number) => {
-            return generateMockPredictions(metrics, timeframe);
-          },
-          optimizeSystem: async (profile: string, options: any) => {
-            return generateMockOptimizationResult(profile, options);
-          },
-          enableRealtimeOptimization: async (profile: string, options: any) => {
-            setIsMonitoring(true);
-            startRealtimeMonitoring();
-          },
-          analyzeBottlenecks: async () => {
-            return generateMockBottleneckAnalysis();
-          }
-        };
+        setLoading(true);
+        console.log('Initializing G3D Predictive Optimization Backend Services...');
 
-        // Load default profiles
-        setOptimizationProfiles(getDefaultProfiles());
-        setSelectedProfile('balanced');
+        // Initialize core services
+        try {
+          modelRunnerRef.current = new ModelRunner();
+          await modelRunnerRef.current.init();
+        } catch (error) {
+          console.warn('Failed to initialize ModelRunner:', error);
+        }
+
+        try {
+          performanceOptimizerRef.current = new PerformanceOptimizer();
+        } catch (error) {
+          console.warn('Failed to initialize PerformanceOptimizer:', error);
+        }
+
+        // Initialize optimization engines
+        try {
+          optimizationEngineRef.current = new OptimizationEngine();
+          optimizationEngineRef.current.start();
+        } catch (error) {
+          console.warn('Failed to initialize OptimizationEngine:', error);
+        }
+
+        try {
+          predictiveOptimizationRef.current = new PredictiveOptimization(
+            modelRunnerRef.current!,
+            performanceOptimizerRef.current!
+          );
+          await predictiveOptimizationRef.current.init();
+        } catch (error) {
+          console.warn('Failed to initialize PredictiveOptimization:', error);
+        }
+
+        // Initialize profiler
+        try {
+          profilerRef.current = new Profiler({
+            samplingInterval: 1000,
+            enableCPUProfiling: true,
+            enableMemoryProfiling: true,
+            enableGPUProfiling: true,
+            autoDetectBottlenecks: true
+          });
+          profilerRef.current.startProfiling('predictive-optimization');
+        } catch (error) {
+          console.warn('Failed to initialize Profiler:', error);
+        }
+
+        // Initialize performance services
+        try {
+          loadBalancerRef.current = new LoadBalancer({
+            algorithm: 'resource_based' as any,
+            autoScaling: { 
+              enabled: true, 
+              minNodes: 2, 
+              maxNodes: 10,
+              scaleUpThreshold: 0.8,
+              scaleDownThreshold: 0.2,
+              cooldownPeriod: 300000
+            }
+          });
+        } catch (error) {
+          console.warn('Failed to initialize LoadBalancer:', error);
+        }
+
+        try {
+          memoryManagerRef.current = new MemoryManager({
+            maxCPUMemory: 4 * 1024 * 1024 * 1024,
+            maxGPUMemory: 2 * 1024 * 1024 * 1024
+          });
+        } catch (error) {
+          console.warn('Failed to initialize MemoryManager:', error);
+        }
+
+        try {
+          gpuComputeRef.current = new GPUCompute();
+          await gpuComputeRef.current.init();
+        } catch (error) {
+          console.warn('Failed to initialize GPUCompute:', error);
+        }
+
+        // Initialize AI workflow engine
+        try {
+          aiWorkflowEngineRef.current = new AIWorkflowEngine();
+          await aiWorkflowEngineRef.current.initialize();
+        } catch (error) {
+          console.warn('Failed to initialize AIWorkflowEngine:', error);
+        }
+
+        // Initialize core systems with simple constructors
+        try {
+          lightingSystemRef.current = new LightingSystem();
+        } catch (error) {
+          console.warn('Failed to initialize LightingSystem:', error);
+        }
+
+        try {
+          spatialAnalyzerRef.current = new SpatialAnalyzer();
+        } catch (error) {
+          console.warn('Failed to initialize SpatialAnalyzer:', error);
+        }
+
+        try {
+          collaborationEngineRef.current = new CollaborationEngine();
+        } catch (error) {
+          console.warn('Failed to initialize CollaborationEngine:', error);
+        }
+
+        try {
+          particleSystemRef.current = new ParticleSystem({
+            maxParticles: 10000,
+            useGPU: true
+          });
+        } catch (error) {
+          console.warn('Failed to initialize ParticleSystem:', error);
+        }
+
+        // Initialize enterprise services
+        try {
+          cloudIntegrationRef.current = new CloudIntegration();
+        } catch (error) {
+          console.warn('Failed to initialize CloudIntegration:', error);
+        }
+
+        // Load optimization profiles
+        loadOptimizationProfiles();
         
-        // Start initial monitoring
-        startMetricsCollection();
+        // Start real-time monitoring
+        startRealtimeMonitoring();
         
+        console.log('G3D Predictive Optimization Backend Services initialized successfully');
+        setLoading(false);
       } catch (error) {
-        console.error('Failed to initialize predictive optimization backend:', error);
+        console.error('Failed to initialize backend services:', error);
         setError('Failed to initialize optimization system');
+        setLoading(false);
       }
     };
 
     initializeBackend();
 
     return () => {
-      stopMetricsCollection();
+      cleanup();
     };
   }, []);
 
-  // Start metrics collection
-  const startMetricsCollection = useCallback(() => {
-    const interval = setInterval(() => {
-      setCurrentMetrics(generateMockMetrics());
-    }, 1000);
+  // Load optimization profiles from backend
+  const loadOptimizationProfiles = useCallback(() => {
+    if (!predictiveOptimizationRef.current) return;
 
-    return () => clearInterval(interval);
-  }, []);
+    const profiles: OptimizationProfile[] = [
+      {
+        id: 'balanced',
+        name: 'Balanced Performance',
+        goals: [
+          { metric: 'fps', target: 60, weight: 1, direction: 'maximize' },
+          { metric: 'latency', target: 50, weight: 1, direction: 'minimize' },
+          { metric: 'cpu', target: 70, weight: 0.8, direction: 'minimize' },
+          { metric: 'memory', target: 80, weight: 0.8, direction: 'minimize' }
+        ],
+        constraints: [
+          { type: 'resource', metric: 'cpu', limit: 80, hard: true },
+          { type: 'resource', metric: 'memory', limit: 85, hard: true },
+          { type: 'performance', metric: 'fps', limit: 30, hard: true }
+        ],
+        preferences: {
+          aggressiveness: 0.5,
+          riskTolerance: 0.3,
+          automationLevel: 0.7,
+          costSensitivity: 0.5
+        }
+      },
+      {
+        id: 'performance',
+        name: 'Maximum Performance',
+        goals: [
+          { metric: 'fps', target: 120, weight: 1, direction: 'maximize' },
+          { metric: 'latency', target: 20, weight: 1, direction: 'minimize' },
+          { metric: 'throughput', target: 1000, weight: 0.9, direction: 'maximize' }
+        ],
+        constraints: [
+          { type: 'resource', metric: 'cpu', limit: 95, hard: false },
+          { type: 'resource', metric: 'memory', limit: 90, hard: false },
+          { type: 'cost', metric: 'power', limit: 300, hard: false }
+        ],
+        preferences: {
+          aggressiveness: 0.8,
+          riskTolerance: 0.6,
+          automationLevel: 0.8,
+          costSensitivity: 0.2
+        }
+      },
+      {
+        id: 'efficiency',
+        name: 'Resource Efficiency',
+        goals: [
+          { metric: 'cpu', target: 40, weight: 1, direction: 'minimize' },
+          { metric: 'memory', target: 60, weight: 1, direction: 'minimize' },
+          { metric: 'power', target: 150, weight: 0.9, direction: 'minimize' }
+        ],
+        constraints: [
+          { type: 'performance', metric: 'fps', limit: 30, hard: true },
+          { type: 'quality', metric: 'accuracy', limit: 90, hard: true }
+        ],
+        preferences: {
+          aggressiveness: 0.3,
+          riskTolerance: 0.2,
+          automationLevel: 0.6,
+          costSensitivity: 0.8
+        }
+      },
+      {
+        id: 'quality',
+        name: 'Quality Focused',
+        goals: [
+          { metric: 'accuracy', target: 95, weight: 1, direction: 'maximize' },
+          { metric: 'precision', target: 90, weight: 0.9, direction: 'maximize' },
+          { metric: 'recall', target: 85, weight: 0.8, direction: 'maximize' }
+        ],
+        constraints: [
+          { type: 'performance', metric: 'latency', limit: 200, hard: false },
+          { type: 'resource', metric: 'cpu', limit: 85, hard: false }
+        ],
+        preferences: {
+          aggressiveness: 0.4,
+          riskTolerance: 0.25,
+          automationLevel: 0.5,
+          costSensitivity: 0.3
+        }
+      }
+    ];
 
-  // Stop metrics collection
-  const stopMetricsCollection = useCallback(() => {
-    setIsMonitoring(false);
+    setOptimizationProfiles(profiles);
+    setSelectedProfile('balanced');
   }, []);
 
   // Start real-time monitoring
   const startRealtimeMonitoring = useCallback(() => {
-    const interval = setInterval(async () => {
-      if (predictiveOptimizationRef.current) {
-        try {
+    if (!optimizationEngineRef.current || !profilerRef.current) return;
+
+    const monitoringInterval = setInterval(async () => {
+      try {
+        // Collect metrics from all systems
+        const metrics = await collectSystemMetrics();
+        setCurrentMetrics(metrics);
+
+        // Update predictions
+        if (predictiveOptimizationRef.current) {
           const newPredictions = await predictiveOptimizationRef.current.predictPerformance(
-            ['fps', 'latency', 'memory', 'cpu'],
-            selectedTimeframe
+            ['fps', 'latency', 'cpu', 'memory', 'gpu', 'throughput'],
+            selectedTimeframe,
+            selectedProfile
           );
           setPredictions(newPredictions);
-        } catch (error) {
-          console.error('Failed to update predictions:', error);
         }
+
+        // Analyze bottlenecks
+        if (predictiveOptimizationRef.current) {
+          const bottlenecks = await predictiveOptimizationRef.current.analyzeBottlenecks();
+          setBottleneckAnalysis(bottlenecks);
+          setRecommendations(bottlenecks.recommendations);
+        }
+
+      } catch (error) {
+        console.error('Error in real-time monitoring:', error);
       }
     }, 2000);
 
-    return () => clearInterval(interval);
-  }, [selectedTimeframe]);
+    return () => clearInterval(monitoringInterval);
+  }, [selectedTimeframe, selectedProfile]);
+
+  // Collect system metrics from all backend services
+  const collectSystemMetrics = useCallback(async (): Promise<SystemMetrics> => {
+    const timestamp = Date.now();
+    
+    // Collect CPU metrics
+    const cpuMetrics = optimizationEngineRef.current?.getCurrentMetrics()?.cpu || {
+      usage: 0,
+      temperature: 0,
+      frequency: 0,
+      cores: 0,
+      threads: 0,
+      loadAverage: []
+    };
+
+    // Collect GPU metrics from GPUCompute
+    const gpuStats = gpuComputeRef.current?.getStats?.() || {};
+    const gpuMetrics: GPUMetrics = {
+      usage: (gpuStats as any)?.usage || 0,
+      memory: (gpuStats as any)?.memoryUsage || 0,
+      temperature: (gpuStats as any)?.temperature || 0,
+      frequency: (gpuStats as any)?.clockSpeed || 0,
+      powerDraw: (gpuStats as any)?.powerDraw || 0,
+      computeUnits: (gpuStats as any)?.computeUnits || 0
+    };
+
+    // Collect Memory metrics from MemoryManager
+    const memoryStats = memoryManagerRef.current?.stats || {};
+    const memoryMetrics: MemoryMetrics = {
+      used: (memoryStats as any)?.totalUsed || 0,
+      available: (memoryStats as any)?.totalAvailable || 0,
+      cached: (memoryStats as any)?.cached || 0,
+      buffers: (memoryStats as any)?.buffers || 0,
+      swapUsed: (memoryStats as any)?.swapUsed || 0,
+      pressure: (memoryStats as any)?.pressure || 0
+    };
+
+    // Collect Network metrics from LoadBalancer
+    const networkStats = loadBalancerRef.current?.getStats?.() || {};
+    const networkMetrics: NetworkMetrics = {
+      bandwidth: (networkStats as any)?.bandwidth || 0,
+      latency: (networkStats as any)?.latency || 0,
+      packetLoss: (networkStats as any)?.packetLoss || 0,
+      connections: (networkStats as any)?.connections || 0,
+      throughput: (networkStats as any)?.throughput || 0
+    };
+
+    // Collect Application metrics from various systems
+    const renderStats = threeDRendererRef.current?.getStats?.() || {};
+    const physicsStats = (physicsEngineRef.current as any)?.getStats?.() || {};
+    const particleStats = (particleSystemRef.current as any)?.getStats?.() || {};
+    const workflowStats = await aiWorkflowEngineRef.current?.getWorkflowMetrics?.('system') || {};
+
+    const applicationMetrics: ApplicationMetrics = {
+      responseTime: (workflowStats as any)?.averageRunTime || 0,
+      throughput: (workflowStats as any)?.totalRuns || 0,
+      errorRate: (1 - ((workflowStats as any)?.successRate || 1)) * 100,
+      queueDepth: (physicsStats as any)?.bodyCount || 0,
+      activeUsers: (collaborationEngineRef.current as any)?.getActiveUsers?.() || 0,
+      taskCompletion: (workflowStats as any)?.successRate ? (workflowStats as any).successRate * 100 : 0
+    };
+
+    return {
+      timestamp,
+      cpu: cpuMetrics,
+      gpu: gpuMetrics,
+      memory: memoryMetrics,
+      network: networkMetrics,
+      application: applicationMetrics
+    };
+  }, []);
 
   // Generate performance predictions
   const generatePredictions = useCallback(async () => {
@@ -353,8 +668,9 @@ export function PredictiveOptimizationPanel({
     setLoading(true);
     try {
       const newPredictions = await predictiveOptimizationRef.current.predictPerformance(
-        ['fps', 'latency', 'memory', 'cpu', 'gpu', 'network'],
-        selectedTimeframe
+        ['fps', 'latency', 'memory', 'cpu', 'gpu', 'network', 'throughput', 'accuracy'],
+        selectedTimeframe,
+        selectedProfile
       );
       setPredictions(newPredictions);
     } catch (error) {
@@ -363,7 +679,7 @@ export function PredictiveOptimizationPanel({
     } finally {
       setLoading(false);
     }
-  }, [selectedTimeframe]);
+  }, [selectedTimeframe, selectedProfile]);
 
   // Analyze bottlenecks
   const analyzeBottlenecks = useCallback(async () => {
@@ -397,6 +713,7 @@ export function PredictiveOptimizationPanel({
       });
       
       setOptimizationResults(prev => [result, ...prev]);
+      setIsMonitoring(true);
       onOptimizationStart?.(selectedProfile);
     } catch (error) {
       console.error('Failed to start optimization:', error);
@@ -413,6 +730,53 @@ export function PredictiveOptimizationPanel({
     onOptimizationStop?.();
   }, [onOptimizationStop]);
 
+  // Enable real-time optimization
+  const enableRealtimeOptimization = useCallback(async () => {
+    if (!predictiveOptimizationRef.current || !selectedProfile) return;
+
+    try {
+      await predictiveOptimizationRef.current.enableRealtimeOptimization(selectedProfile, {
+        interval: 5000,
+        threshold: 0.1,
+        maxOptimizations: 10
+      });
+      setIsMonitoring(true);
+    } catch (error) {
+      console.error('Failed to enable real-time optimization:', error);
+      setError('Failed to enable real-time optimization');
+    }
+  }, [selectedProfile]);
+
+  // Cleanup function
+  const cleanup = useCallback(() => {
+    // Stop all services
+    optimizationEngineRef.current?.stop();
+    profilerRef.current?.dispose();
+    predictiveOptimizationRef.current?.dispose();
+    memoryManagerRef.current?.dispose();
+    gpuComputeRef.current?.dispose();
+    threeDRendererRef.current?.dispose();
+    physicsEngineRef.current?.dispose();
+    particleSystemRef.current?.dispose();
+    cloudIntegrationRef.current?.dispose();
+    workflowEngineRef.current?.dispose();
+    performanceOptimizerRef.current?.dispose();
+  }, []);
+
+  // Configuration change handler
+  useEffect(() => {
+    if (onConfigurationChange) {
+      onConfigurationChange({
+        selectedProfile,
+        riskTolerance,
+        automationLevel,
+        selectedTimeframe,
+        isMonitoring,
+        isOptimizing
+      });
+    }
+  }, [selectedProfile, riskTolerance, automationLevel, selectedTimeframe, isMonitoring, isOptimizing, onConfigurationChange]);
+
   // Get priority color
   const getPriorityColor = (priority: string) => {
     switch (priority) {
@@ -426,8 +790,10 @@ export function PredictiveOptimizationPanel({
 
   // Get performance trend
   const getPerformanceTrend = (current: number, predicted: number) => {
-    if (predicted > current) return 'improving';
-    if (predicted < current) return 'degrading';
+    const threshold = 0.05; // 5% threshold
+    const change = (predicted - current) / current;
+    if (change > threshold) return 'improving';
+    if (change < -threshold) return 'degrading';
     return 'stable';
   };
 
@@ -438,213 +804,18 @@ export function PredictiveOptimizationPanel({
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  // Mock data generators
-  const generateMockPredictions = (metrics: string[], timeframe: number): PerformancePrediction[] => {
-    return metrics.map(metric => ({
-      metric,
-      currentValue: Math.random() * 100,
-      predictedValue: Math.random() * 100,
-      confidence: 0.7 + Math.random() * 0.3,
-      timeframe,
-      factors: [
-        {
-          name: 'CPU Usage',
-          impact: Math.random() * 0.5,
-          direction: Math.random() > 0.5 ? 'positive' : 'negative',
-          controllable: true,
-          currentValue: Math.random() * 100,
-          optimalValue: Math.random() * 100
-        }
-      ],
-      recommendations: []
-    }));
+  // Format bytes
+  const formatBytes = (bytes: number) => {
+    if (bytes === 0) return '0 B';
+    const k = 1024;
+    const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
-  const generateMockOptimizationResult = (profile: string, options: any): OptimizationResult => {
-    return {
-      id: `opt-${Date.now()}`,
-      status: 'completed',
-      improvements: {
-        'fps': 15.3,
-        'latency': -23.7,
-        'memory': -12.1
-      },
-      issues: [],
-      rollbackAvailable: true
-    };
-  };
-
-  const generateMockBottleneckAnalysis = (): BottleneckAnalysis => {
-    return {
-      resources: [
-        {
-          resource: 'CPU',
-          utilization: 85.2,
-          saturationPoint: 90,
-          impact: 0.7
-        },
-        {
-          resource: 'Memory',
-          utilization: 78.5,
-          saturationPoint: 85,
-          impact: 0.5
-        }
-      ],
-      algorithms: [
-        {
-          algorithm: 'Annotation Processing',
-          complexity: 'O(n²)',
-          hotspots: [
-            {
-              function: 'processAnnotations',
-              file: 'annotation.ts',
-              line: 245,
-              frequency: 1000,
-              timeSpent: 120.5,
-              time: 120.5,
-              calls: 1000
-            }
-          ]
-        }
-      ],
-      workflows: [
-        {
-          workflow: 'Image Processing',
-          step: 'Feature Extraction',
-          waitTime: 45.2,
-          processingTime: 89.7
-        }
-      ],
-      correlations: [
-        {
-          bottlenecks: ['CPU', 'Memory'],
-          resource1: 'CPU',
-          resource2: 'Memory',
-          correlation: 0.85,
-          causality: 'strong'
-        }
-      ],
-      recommendations: [
-        {
-          id: 'rec-1',
-          type: 'configuration',
-          priority: 'high',
-          description: 'Optimize CPU-intensive operations',
-          expectedImprovement: 25.3,
-          implementation: {
-            steps: [],
-            estimatedTime: 120,
-            requiredResources: [],
-            automationLevel: 0.8
-          },
-          risks: []
-        }
-      ]
-    };
-  };
-
-  const generateMockMetrics = (): SystemMetrics => {
-    return {
-      timestamp: Date.now(),
-      cpu: {
-        usage: 45 + Math.random() * 20,
-        temperature: 65 + Math.random() * 15,
-        frequency: 2400 + Math.random() * 400,
-        cores: 8,
-        threads: 16,
-        loadAverage: [1.2, 1.5, 1.8]
-      },
-      gpu: {
-        usage: 60 + Math.random() * 25,
-        memory: 70 + Math.random() * 20,
-        temperature: 70 + Math.random() * 10,
-        frequency: 1800 + Math.random() * 200,
-        powerDraw: 180 + Math.random() * 40,
-        computeUnits: 64
-      },
-      memory: {
-        used: 6.2 + Math.random() * 2,
-        available: 16 - (6.2 + Math.random() * 2),
-        cached: 2.1 + Math.random() * 0.5,
-        buffers: 0.8 + Math.random() * 0.3,
-        swapUsed: 0.1 + Math.random() * 0.2,
-        pressure: Math.random() * 0.3
-      },
-      network: {
-        bandwidth: 1000,
-        latency: 10 + Math.random() * 5,
-        packetLoss: Math.random() * 0.01,
-        connections: 50 + Math.random() * 20,
-        throughput: 150 + Math.random() * 50
-      },
-      application: {
-        responseTime: 120 + Math.random() * 50,
-        throughput: 1000 + Math.random() * 200,
-        errorRate: Math.random() * 0.001,
-        queueDepth: Math.random() * 10,
-        activeUsers: 25 + Math.random() * 15,
-        taskCompletion: 85 + Math.random() * 10
-      }
-    };
-  };
-
-  const getDefaultProfiles = (): OptimizationProfile[] => {
-    return [
-      {
-        id: 'balanced',
-        name: 'Balanced Performance',
-        goals: [
-          { metric: 'fps', target: 60, weight: 1, direction: 'maximize' },
-          { metric: 'latency', target: 50, weight: 1, direction: 'minimize' }
-        ],
-        constraints: [
-          { type: 'resource', metric: 'cpu', limit: 80, hard: true },
-          { type: 'resource', metric: 'memory', limit: 85, hard: true }
-        ],
-        preferences: {
-          aggressiveness: 0.5,
-          riskTolerance: 0.3,
-          automationLevel: 0.7,
-          costSensitivity: 0.5
-        }
-      },
-      {
-        id: 'performance',
-        name: 'Maximum Performance',
-        goals: [
-          { metric: 'fps', target: 120, weight: 1, direction: 'maximize' },
-          { metric: 'latency', target: 20, weight: 1, direction: 'minimize' }
-        ],
-        constraints: [
-          { type: 'resource', metric: 'cpu', limit: 95, hard: false },
-          { type: 'resource', metric: 'memory', limit: 90, hard: false }
-        ],
-        preferences: {
-          aggressiveness: 0.8,
-          riskTolerance: 0.6,
-          automationLevel: 0.8,
-          costSensitivity: 0.2
-        }
-      },
-      {
-        id: 'efficiency',
-        name: 'Resource Efficiency',
-        goals: [
-          { metric: 'cpu', target: 40, weight: 1, direction: 'minimize' },
-          { metric: 'memory', target: 60, weight: 1, direction: 'minimize' }
-        ],
-        constraints: [
-          { type: 'performance', metric: 'fps', limit: 30, hard: true },
-          { type: 'quality', metric: 'accuracy', limit: 90, hard: true }
-        ],
-        preferences: {
-          aggressiveness: 0.3,
-          riskTolerance: 0.2,
-          automationLevel: 0.6,
-          costSensitivity: 0.8
-        }
-      }
-    ];
+  // Format percentage
+  const formatPercentage = (value: number) => {
+    return `${(value * 100).toFixed(1)}%`;
   };
 
   return (
@@ -654,7 +825,7 @@ export function PredictiveOptimizationPanel({
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <TrendingUp className="h-5 w-5 text-primary" />
-            <h2 className="text-xl font-semibold">Predictive Optimization</h2>
+            <h2 className="text-xl font-semibold">G3D Predictive Optimization</h2>
           </div>
           <div className="flex items-center gap-2">
             <Button
@@ -665,6 +836,15 @@ export function PredictiveOptimizationPanel({
             >
               <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
               Analyze
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={analyzeBottlenecks}
+              disabled={loading}
+            >
+              <BarChart3 className="h-4 w-4 mr-2" />
+              Bottlenecks
             </Button>
             <Button
               variant={isMonitoring ? "destructive" : "default"}
@@ -684,6 +864,15 @@ export function PredictiveOptimizationPanel({
                 </>
               )}
             </Button>
+            {onClose && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={onClose}
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            )}
           </div>
         </div>
 
@@ -695,12 +884,20 @@ export function PredictiveOptimizationPanel({
           </Alert>
         )}
 
+        {/* Loading State */}
+        {loading && (
+          <Alert className="border-blue-200 bg-blue-50">
+            <RefreshCw className="h-4 w-4 animate-spin" />
+            <AlertDescription>Initializing G3D backend services...</AlertDescription>
+          </Alert>
+        )}
+
         {/* Configuration */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Settings className="h-5 w-5" />
-              Optimization Configuration
+              G3D Optimization Configuration
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -737,7 +934,7 @@ export function PredictiveOptimizationPanel({
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="risk">Risk Tolerance: {Math.round(riskTolerance * 100)}%</Label>
+                <Label htmlFor="risk">Risk Tolerance: {formatPercentage(riskTolerance)}</Label>
                 <Slider
                   value={[riskTolerance]}
                   onValueChange={(value) => setRiskTolerance(value[0])}
@@ -749,7 +946,7 @@ export function PredictiveOptimizationPanel({
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="automation">Automation Level: {Math.round(automationLevel * 100)}%</Label>
+                <Label htmlFor="automation">Automation Level: {formatPercentage(automationLevel)}</Label>
                 <Slider
                   value={[automationLevel]}
                   onValueChange={(value) => setAutomationLevel(value[0])}
@@ -757,6 +954,23 @@ export function PredictiveOptimizationPanel({
                   min={0}
                   step={0.1}
                   className="w-full"
+                />
+              </div>
+            </div>
+
+            <div className="mt-4 pt-4 border-t">
+              <div className="flex items-center justify-between">
+                <Label htmlFor="realtime">Real-time Optimization</Label>
+                <Switch
+                  id="realtime"
+                  checked={isMonitoring}
+                  onCheckedChange={(checked) => {
+                    if (checked) {
+                      enableRealtimeOptimization();
+                    } else {
+                      stopOptimization();
+                    }
+                  }}
                 />
               </div>
             </div>
@@ -819,7 +1033,7 @@ export function PredictiveOptimizationPanel({
                       <div className="mt-4">
                         <div className="flex justify-between text-sm mb-1">
                           <span>Confidence</span>
-                          <span>{Math.round(prediction.confidence * 100)}%</span>
+                          <span>{formatPercentage(prediction.confidence)}</span>
                         </div>
                         <Progress value={prediction.confidence * 100} className="h-2" />
                       </div>
@@ -857,7 +1071,7 @@ export function PredictiveOptimizationPanel({
                           </div>
                         </div>
                         <Badge variant={bottleneck.impact >= 0.7 ? "destructive" : bottleneck.impact >= 0.4 ? "default" : "secondary"}>
-                          {Math.round(bottleneck.impact * 100)}% impact
+                          {formatPercentage(bottleneck.impact)} impact
                         </Badge>
                       </div>
                     ))}
@@ -958,7 +1172,7 @@ export function PredictiveOptimizationPanel({
                             </div>
                             <div className="flex items-center gap-1">
                               <Zap className="h-4 w-4" />
-                              {Math.round(rec.implementation.automationLevel * 100)}% automated
+                              {formatPercentage(rec.implementation.automationLevel)} automated
                             </div>
                           </div>
                         </div>
@@ -992,12 +1206,12 @@ export function PredictiveOptimizationPanel({
                           <Cpu className="h-5 w-5 text-blue-500" />
                           <span className="font-medium">CPU</span>
                         </div>
-                        <Badge variant={currentMetrics.cpu.usage > 80 ? "destructive" : currentMetrics.cpu.usage > 60 ? "default" : "secondary"}>
-                          {currentMetrics.cpu.usage.toFixed(1)}%
+                        <Badge variant={currentMetrics.cpu.usage > 0.8 ? "destructive" : currentMetrics.cpu.usage > 0.6 ? "default" : "secondary"}>
+                          {formatPercentage(currentMetrics.cpu.usage)}
                         </Badge>
                       </div>
                       <div className="mt-4 space-y-2">
-                        <Progress value={currentMetrics.cpu.usage} className="h-2" />
+                        <Progress value={currentMetrics.cpu.usage * 100} className="h-2" />
                         <div className="text-sm text-gray-600">
                           {currentMetrics.cpu.temperature.toFixed(1)}°C • {currentMetrics.cpu.frequency.toFixed(0)}MHz
                         </div>
@@ -1012,14 +1226,14 @@ export function PredictiveOptimizationPanel({
                           <HardDrive className="h-5 w-5 text-green-500" />
                           <span className="font-medium">Memory</span>
                         </div>
-                        <Badge variant={currentMetrics.memory.used > 12 ? "destructive" : currentMetrics.memory.used > 8 ? "default" : "secondary"}>
-                          {currentMetrics.memory.used.toFixed(1)}GB
+                        <Badge variant={currentMetrics.memory.used > currentMetrics.memory.available * 0.8 ? "destructive" : currentMetrics.memory.used > currentMetrics.memory.available * 0.6 ? "default" : "secondary"}>
+                          {formatBytes(currentMetrics.memory.used)}
                         </Badge>
                       </div>
                       <div className="mt-4 space-y-2">
-                        <Progress value={(currentMetrics.memory.used / 16) * 100} className="h-2" />
+                        <Progress value={(currentMetrics.memory.used / currentMetrics.memory.available) * 100} className="h-2" />
                         <div className="text-sm text-gray-600">
-                          {currentMetrics.memory.available.toFixed(1)}GB available
+                          {formatBytes(currentMetrics.memory.available)} available
                         </div>
                       </div>
                     </CardContent>
@@ -1032,12 +1246,12 @@ export function PredictiveOptimizationPanel({
                           <Gauge className="h-5 w-5 text-purple-500" />
                           <span className="font-medium">GPU</span>
                         </div>
-                        <Badge variant={currentMetrics.gpu.usage > 80 ? "destructive" : currentMetrics.gpu.usage > 60 ? "default" : "secondary"}>
-                          {currentMetrics.gpu.usage.toFixed(1)}%
+                        <Badge variant={currentMetrics.gpu.usage > 0.8 ? "destructive" : currentMetrics.gpu.usage > 0.6 ? "default" : "secondary"}>
+                          {formatPercentage(currentMetrics.gpu.usage)}
                         </Badge>
                       </div>
                       <div className="mt-4 space-y-2">
-                        <Progress value={currentMetrics.gpu.usage} className="h-2" />
+                        <Progress value={currentMetrics.gpu.usage * 100} className="h-2" />
                         <div className="text-sm text-gray-600">
                           {currentMetrics.gpu.temperature.toFixed(1)}°C • {currentMetrics.gpu.powerDraw.toFixed(0)}W
                         </div>
@@ -1068,13 +1282,69 @@ export function PredictiveOptimizationPanel({
               )}
             </div>
 
+            {/* System Status */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Shield className="h-5 w-5" />
+                  G3D System Status
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm">Optimization Engine</span>
+                      <Badge variant="secondary">{optimizationEngineRef.current ? 'Active' : 'Inactive'}</Badge>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm">Predictive AI</span>
+                      <Badge variant="secondary">{predictiveOptimizationRef.current ? 'Active' : 'Inactive'}</Badge>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm">Profiler</span>
+                      <Badge variant="secondary">{profilerRef.current ? 'Active' : 'Inactive'}</Badge>
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm">GPU Compute</span>
+                      <Badge variant="secondary">{gpuComputeRef.current ? 'Active' : 'Inactive'}</Badge>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm">3D Renderer</span>
+                      <Badge variant="secondary">{threeDRendererRef.current ? 'Active' : 'Inactive'}</Badge>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm">Physics Engine</span>
+                      <Badge variant="secondary">{physicsEngineRef.current ? 'Active' : 'Inactive'}</Badge>
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm">Cloud Integration</span>
+                      <Badge variant="secondary">{cloudIntegrationRef.current ? 'Active' : 'Inactive'}</Badge>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm">Workflow Engine</span>
+                      <Badge variant="secondary">{workflowEngineRef.current ? 'Active' : 'Inactive'}</Badge>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm">Collaboration</span>
+                      <Badge variant="secondary">{collaborationEngineRef.current ? 'Active' : 'Inactive'}</Badge>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
             {/* Optimization Results */}
             {optimizationResults.length > 0 && (
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Target className="h-5 w-5" />
-                    Optimization Results
+                    Recent Optimization Results
                   </CardTitle>
                 </CardHeader>
                 <CardContent>

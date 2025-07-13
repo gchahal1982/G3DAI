@@ -775,14 +775,4 @@ export const sessionIntegration = new SessionIntegration({
   emergencyOverrideEnabled: true,
   supervisorApprovalRequired: false,
   complianceMode: 'strict'
-});
-
-// Export types for use in components
-export type {
-  SessionUser,
-  SessionConfig,
-  SessionData,
-  SessionEvent,
-  SessionViolation,
-  SessionAlert
-}; 
+}); 

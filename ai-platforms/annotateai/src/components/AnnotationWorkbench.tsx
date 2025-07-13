@@ -56,9 +56,10 @@ import XRAnnotationInterface from './xr/XRAnnotationInterface';
 import ThreeDReconstructionPanel from './3d/ThreeDReconstructionPanel';
 import PhysicsSimulationPanel from './physics/PhysicsSimulationPanel';
 import AdvancedCollaborationDashboard from './collaboration/AdvancedCollaborationDashboard';
-import SplineEditingTools from './geometry/SplineEditingTools';
+import { SplineEditingTools } from './geometry/SplineEditingTools';
 import SpatialAnalysisPanel from './spatial/SpatialAnalysisPanel';
 import MeshProcessingTools from './mesh/MeshProcessingTools';
+import { AIAssistantPanel } from './ai/AIAssistantPanel';
 import { UserRole } from './CollaborationEngine';
 
 // Icons
@@ -215,6 +216,7 @@ export const AnnotationWorkbench: React.FC<WorkbenchProps> = ({
     const [showSplineTools, setShowSplineTools] = useState(false);
     const [showSpatialAnalysis, setShowSpatialAnalysis] = useState(false);
     const [showMeshProcessing, setShowMeshProcessing] = useState(false);
+    const [showAIAssistant, setShowAIAssistant] = useState(false);
     const [activePanel, setActivePanel] = useState<string | null>(null);
 
     // Video-specific state
@@ -275,7 +277,7 @@ export const AnnotationWorkbench: React.FC<WorkbenchProps> = ({
             icon: SparklesIcon,
             hotkey: 'a',
             description: 'AI-powered annotation suggestions',
-            active: selectedTool === 'ai-assist',
+            active: selectedTool === 'ai-assist' || showAIAssistant,
             category: 'ai'
         },
         {
@@ -305,7 +307,7 @@ export const AnnotationWorkbench: React.FC<WorkbenchProps> = ({
             active: showMeshProcessing,
             category: 'measurement'
         }
-    ], [selectedTool]);
+    ], [selectedTool, xrMode, showSplineTools, showMeshProcessing, showAIAssistant]);
 
     // Initialize engines and load project
     useEffect(() => {
@@ -500,8 +502,48 @@ export const AnnotationWorkbench: React.FC<WorkbenchProps> = ({
 
     // Tool selection handlers
     const selectTool = useCallback((toolId: string) => {
-        setSelectedTool(toolId);
-    }, []);
+        console.log('Tool selected:', toolId);
+        
+        // Handle special tools that have their own state
+        switch (toolId) {
+            case 'xr-mode':
+                console.log('Toggling XR mode from', xrMode, 'to', !xrMode);
+                setXRMode(!xrMode);
+                break;
+            case 'spline-editor':
+                console.log('Toggling spline tools from', showSplineTools, 'to', !showSplineTools);
+                setShowSplineTools(!showSplineTools);
+                setSelectedTool(toolId);
+                break;
+            case 'mesh-processing':
+                console.log('Toggling mesh processing from', showMeshProcessing, 'to', !showMeshProcessing);
+                setShowMeshProcessing(!showMeshProcessing);
+                setSelectedTool(toolId);
+                break;
+            case 'ai-assist':
+                console.log('Setting AI assist tool');
+                setSelectedTool(toolId);
+                setShowAIAssistant(true);
+                break;
+            case 'bbox':
+            case 'polygon':
+            case 'circle':
+            case 'freehand':
+            case 'point':
+                console.log('Setting selected tool to:', toolId);
+                setSelectedTool(toolId);
+                // These are drawing tools - they affect the main canvas
+                break;
+            case 'cursor':
+                console.log('Setting cursor tool');
+                setSelectedTool(toolId);
+                break;
+            default:
+                console.log('Setting selected tool to:', toolId);
+                setSelectedTool(toolId);
+                break;
+        }
+    }, [xrMode, showSplineTools, showMeshProcessing]);
 
     // Keyboard shortcuts
     useHotkeys('v', () => selectTool('cursor'));
@@ -531,6 +573,21 @@ export const AnnotationWorkbench: React.FC<WorkbenchProps> = ({
         e.preventDefault();
         if (mode === 'video') {
             togglePlayback();
+        }
+    });
+
+    // Close tools with escape key
+    useHotkeys('escape', () => {
+        if (xrMode) setXRMode(false);
+        if (showSplineTools) setShowSplineTools(false);
+        if (showMeshProcessing) setShowMeshProcessing(false);
+        if (show3DReconstruction) setShow3DReconstruction(false);
+        if (showPhysicsSimulation) setShowPhysicsSimulation(false);
+        if (showAdvancedCollaboration) setShowAdvancedCollaboration(false);
+        if (showSpatialAnalysis) setShowSpatialAnalysis(false);
+        if (showAIAssistant) {
+            setShowAIAssistant(false);
+            setSelectedTool('cursor');
         }
     });
 
@@ -811,6 +868,31 @@ export const AnnotationWorkbench: React.FC<WorkbenchProps> = ({
 
                     {/* Main viewport */}
                     <div className="flex-1 relative bg-gradient-to-br from-indigo-950/50 via-purple-950/30 to-gray-950/50">
+                        {/* Tool Status Indicator */}
+                        <div className="absolute top-4 left-4 z-20 bg-black/50 backdrop-blur-sm rounded-lg px-3 py-2 border border-white/20">
+                            <div className="flex items-center gap-2">
+                                <div className={`w-2 h-2 rounded-full ${selectedTool === 'cursor' ? 'bg-blue-400' : 'bg-green-400'}`} />
+                                <span className="text-white text-sm font-medium">
+                                    {selectedTool === 'cursor' && 'Select Tool - Click to select annotations'}
+                                    {selectedTool === 'bbox' && 'Bounding Box - Click and drag to create boxes'}
+                                    {selectedTool === 'polygon' && 'Polygon Tool - Click points to create polygons'}
+                                    {selectedTool === 'circle' && 'Circle Tool - Click and drag to create circles'}
+                                    {selectedTool === 'freehand' && 'Freehand - Click and drag to draw freehand'}
+                                    {selectedTool === 'point' && 'Point Tool - Click to place annotation points'}
+                                    {selectedTool === 'ai-assist' && 'AI Assistant - AI-powered annotation suggestions'}
+                                    {!['cursor', 'bbox', 'polygon', 'circle', 'freehand', 'point', 'ai-assist'].includes(selectedTool) && `${selectedTool.charAt(0).toUpperCase() + selectedTool.slice(1)} Tool`}
+                                </span>
+                            </div>
+                        </div>
+
+                        {/* Crosshair cursor indicator for drawing tools */}
+                        {['bbox', 'polygon', 'circle', 'freehand', 'point'].includes(selectedTool) && (
+                            <div className="absolute inset-0 pointer-events-none">
+                                <div className="absolute top-1/2 left-0 w-full h-px bg-white/20" />
+                                <div className="absolute top-0 left-1/2 w-px h-full bg-white/20" />
+                            </div>
+                        )}
+
                         <AnnotationViewport
                             ref={canvasRef}
                             mode={mode}
@@ -991,6 +1073,7 @@ export const AnnotationWorkbench: React.FC<WorkbenchProps> = ({
                             <XRAnnotationInterface
                                 onSessionStart={(session) => setXRDeviceConnected(true)}
                                 onSessionEnd={() => setXRDeviceConnected(false)}
+                                onClose={() => setXRMode(false)}
                             />
                         </motion.div>
                     )}
@@ -1002,7 +1085,7 @@ export const AnnotationWorkbench: React.FC<WorkbenchProps> = ({
                             exit={{ opacity: 0, x: 100 }}
                             className="fixed top-16 right-4 w-96 max-h-[calc(100vh-80px)] overflow-y-auto z-50"
                         >
-                            <ThreeDReconstructionPanel />
+                            <ThreeDReconstructionPanel onClose={() => setShow3DReconstruction(false)} />
                         </motion.div>
                     )}
 
@@ -1016,6 +1099,7 @@ export const AnnotationWorkbench: React.FC<WorkbenchProps> = ({
                             <PhysicsSimulationPanel
                                 projectId={projectId}
                                 sessionId={sessionId}
+                                onClose={() => setShowPhysicsSimulation(false)}
                             />
                         </motion.div>
                     )}
@@ -1072,6 +1156,7 @@ export const AnnotationWorkbench: React.FC<WorkbenchProps> = ({
                                         accuracy: 0
                                     }
                                 }}
+                                onClose={() => setShowAdvancedCollaboration(false)}
                             />
                         </motion.div>
                     )}
@@ -1083,7 +1168,7 @@ export const AnnotationWorkbench: React.FC<WorkbenchProps> = ({
                             exit={{ opacity: 0, x: 100 }}
                             className="fixed top-16 right-4 w-96 max-h-[calc(100vh-80px)] overflow-y-auto z-50"
                         >
-                            <SplineEditingTools />
+                            <SplineEditingTools onClose={() => setShowSplineTools(false)} />
                         </motion.div>
                     )}
 
@@ -1094,7 +1179,7 @@ export const AnnotationWorkbench: React.FC<WorkbenchProps> = ({
                             exit={{ opacity: 0, x: 100 }}
                             className="fixed top-16 right-4 w-96 max-h-[calc(100vh-80px)] overflow-y-auto z-50"
                         >
-                            <SpatialAnalysisPanel />
+                            <SpatialAnalysisPanel onClose={() => setShowSpatialAnalysis(false)} />
                         </motion.div>
                     )}
 
@@ -1107,6 +1192,31 @@ export const AnnotationWorkbench: React.FC<WorkbenchProps> = ({
                         >
                             <MeshProcessingTools
                                 projectId={projectId}
+                                onClose={() => setShowMeshProcessing(false)}
+                            />
+                        </motion.div>
+                    )}
+
+                    {showAIAssistant && (
+                        <motion.div
+                            initial={{ opacity: 0, x: 100 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            exit={{ opacity: 0, x: 100 }}
+                            className="fixed top-16 right-4 w-96 max-h-[calc(100vh-80px)] overflow-y-auto z-50"
+                        >
+                            <AIAssistantPanel
+                                onClose={() => {
+                                    setShowAIAssistant(false);
+                                    setSelectedTool('cursor');
+                                }}
+                                onSuggestionAccept={(suggestion) => {
+                                    console.log('AI suggestion accepted:', suggestion);
+                                    // Add suggestion to annotations
+                                }}
+                                onSuggestionReject={(suggestion) => {
+                                    console.log('AI suggestion rejected:', suggestion);
+                                }}
+                                isProcessing={isAIProcessing}
                             />
                         </motion.div>
                     )}
@@ -1458,6 +1568,100 @@ const AnnotationViewport = React.forwardRef<HTMLCanvasElement, {
         const y = event.clientY - rect.top;
 
         console.log(`Canvas click at (${x}, ${y}) with tool: ${selectedTool}`);
+        
+        // Create visual feedback based on selected tool
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return;
+
+        // Clear any previous temporary annotations
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        // Draw sample annotation based on tool type
+        ctx.strokeStyle = '#3B82F6';
+        ctx.fillStyle = 'rgba(59, 130, 246, 0.2)';
+        ctx.lineWidth = 2;
+        
+        switch (selectedTool) {
+            case 'bbox':
+                // Draw a sample bounding box
+                const boxSize = 80;
+                ctx.strokeRect(x - boxSize/2, y - boxSize/2, boxSize, boxSize);
+                ctx.fillRect(x - boxSize/2, y - boxSize/2, boxSize, boxSize);
+                break;
+                
+            case 'circle':
+                // Draw a sample circle
+                const radius = 40;
+                ctx.beginPath();
+                ctx.arc(x, y, radius, 0, 2 * Math.PI);
+                ctx.stroke();
+                ctx.fill();
+                break;
+                
+            case 'point':
+                // Draw a point marker
+                ctx.fillStyle = '#3B82F6';
+                ctx.beginPath();
+                ctx.arc(x, y, 6, 0, 2 * Math.PI);
+                ctx.fill();
+                // Add outer ring
+                ctx.strokeStyle = '#FFFFFF';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.arc(x, y, 8, 0, 2 * Math.PI);
+                ctx.stroke();
+                break;
+                
+            case 'polygon':
+                // Draw a sample triangle polygon
+                ctx.beginPath();
+                ctx.moveTo(x, y - 30);
+                ctx.lineTo(x - 25, y + 20);
+                ctx.lineTo(x + 25, y + 20);
+                ctx.closePath();
+                ctx.stroke();
+                ctx.fill();
+                break;
+                
+            case 'freehand':
+                // Draw a sample curved line
+                ctx.beginPath();
+                ctx.moveTo(x - 30, y);
+                ctx.quadraticCurveTo(x, y - 20, x + 30, y);
+                ctx.stroke();
+                break;
+                
+            case 'ai-assist':
+                // Draw AI suggestion indicator
+                ctx.fillStyle = '#8B5CF6';
+                ctx.strokeStyle = '#8B5CF6';
+                ctx.beginPath();
+                ctx.arc(x, y, 20, 0, 2 * Math.PI);
+                ctx.stroke();
+                // Add sparkle effect
+                for (let i = 0; i < 4; i++) {
+                    const angle = (i * Math.PI) / 2;
+                    const sparkleX = x + Math.cos(angle) * 25;
+                    const sparkleY = y + Math.sin(angle) * 25;
+                    ctx.fillRect(sparkleX - 2, sparkleY - 2, 4, 4);
+                }
+                break;
+                
+            default:
+                // Default cursor - just show click position
+                ctx.fillStyle = '#10B981';
+                ctx.beginPath();
+                ctx.arc(x, y, 4, 0, 2 * Math.PI);
+                ctx.fill();
+                break;
+        }
+        
+        // Clear the temporary annotation after 2 seconds
+        setTimeout(() => {
+            if (ctx) {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+            }
+        }, 2000);
     };
 
     return (

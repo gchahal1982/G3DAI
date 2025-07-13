@@ -1,125 +1,130 @@
-import React from 'react';
-import { 
-  Users, UserCheck, Search, Filter, 
-  MoreVertical, Shield, Key, Edit,
-  ArrowRight, Save
-} from 'lucide-react';
-import { medicalRoles } from '@/lib/access-control/medical-roles';
+'use client';
 
-interface UserRoleAssignmentProps {
-  className?: string;
+import { useState } from 'react';
+import { UserGroupIcon, ArrowRightIcon, CheckCircleIcon } from '@heroicons/react/24/outline';
+
+interface User {
+  id: string;
+  name: string;
+  email: string;
+  currentRole: string;
 }
 
-export default function UserRoleAssignment({ className = '' }: UserRoleAssignmentProps) {
-  const users = [
-    { name: 'Dr. Sarah Chen', role: 'Radiologist', lastLogin: '2 hours ago', avatar: 'SC' },
-    { name: 'Dr. Michael Rodriguez', role: 'Cardiologist', lastLogin: '5 hours ago', avatar: 'MR' },
-    { name: 'Dr. Emily Johnson', role: 'Neurologist', lastLogin: '1 day ago', avatar: 'EJ' },
-    { name: 'Dr. James Wilson', role: 'Surgeon', lastLogin: '3 days ago', avatar: 'JW' },
-    { name: 'Dr. Lisa Park', role: 'Resident Physician', lastLogin: '1 week ago', avatar: 'LP' },
-    { name: 'David Miller', role: 'Radiology Technician', lastLogin: '2 weeks ago', avatar: 'DM' },
-  ];
+interface Role {
+  id: string;
+  name: string;
+}
 
-  const getRoleColor = (role: string) => {
-    if (role.includes('Admin')) return 'text-medsight-abnormal bg-medsight-abnormal/10';
-    if (role.includes('Radiologist') || role.includes('Surgeon')) return 'text-medsight-primary bg-medsight-primary/10';
-    if (role.includes('Physician') || role.includes('Cardiologist') || role.includes('Neurologist')) return 'text-medsight-ai-high bg-medsight-ai-high/10';
-    if (role.includes('Resident') || role.includes('Technician')) return 'text-medsight-pending bg-medsight-pending/10';
-    return 'text-slate-500 bg-slate-100';
+interface UserRoleAssignmentProps {
+  users: User[];
+  roles: Role[];
+  onAssignRole: (userId: string, roleId: string) => void;
+}
+
+export default function UserRoleAssignment({ users, roles, onAssignRole }: UserRoleAssignmentProps) {
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [selectedRole, setSelectedRole] = useState<string>('');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [assigning, setAssigning] = useState(false);
+  const [feedback, setFeedback] = useState<{ type: 'success' | 'error', message: string } | null>(null);
+
+  const handleAssign = async () => {
+    if (!selectedUser || !selectedRole) return;
+
+    setAssigning(true);
+    setFeedback(null);
+    try {
+      await onAssignRole(selectedUser.id, selectedRole);
+      setFeedback({ type: 'success', message: `Successfully assigned ${getRoleName(selectedRole)} to ${selectedUser.name}.` });
+      setSelectedUser(null);
+      setSelectedRole('');
+    } catch (error) {
+      setFeedback({ type: 'error', message: 'Failed to assign role.' });
+    } finally {
+      setAssigning(false);
+    }
   };
 
+  const filteredUsers = users.filter(user =>
+    user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    user.email.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+  
+  const getRoleName = (roleId: string) => roles.find(r => r.id === roleId)?.name || 'N/A';
+
   return (
-    <div className={`medsight-glass rounded-xl p-6 border border-medsight-primary/20 ${className}`}>
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center space-x-3">
-          <div className="medsight-ai-glass p-2 rounded-lg">
-            <UserCheck className="w-5 h-5 text-medsight-primary" />
-          </div>
-          <div>
-            <h3 className="text-lg font-semibold text-medsight-primary">User Role Assignment</h3>
-            <p className="text-sm text-slate-600">Assign and manage user roles</p>
-          </div>
-        </div>
-        <button className="btn-medsight flex items-center space-x-2 px-3 py-2">
-          <Save className="w-4 h-4" />
-          <span className="text-sm">Save All</span>
-        </button>
+    <div className="medsight-glass p-6 rounded-xl">
+      <div className="flex items-center space-x-3 mb-4">
+        <UserGroupIcon className="w-6 h-6 text-medsight-primary" />
+        <h2 className="text-xl font-semibold">User Role Assignment</h2>
       </div>
 
-      {/* User Search and Filters */}
-      <div className="flex items-center space-x-4 mb-4">
-        <div className="flex-1 relative">
-          <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400" />
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {/* Users List */}
+        <div className="md:col-span-1">
+          <h3 className="font-medium mb-2">Users</h3>
           <input
             type="text"
             placeholder="Search users..."
-            className="input-medsight pl-10 w-full text-sm"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="input-medsight w-full mb-2"
           />
-        </div>
-        <button className="btn-medsight flex items-center space-x-2 px-3 py-2">
-          <Filter className="w-4 h-4" />
-          <span className="text-sm">Filter</span>
-        </button>
-      </div>
-
-      {/* User Role Assignment List */}
-      <div className="space-y-4 max-h-96 overflow-y-auto">
-        {users.map((user, index) => (
-          <div key={index} className="medsight-control-glass rounded-lg p-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 bg-medsight-primary/10 rounded-full flex items-center justify-center">
-                  <span className="text-sm font-medium text-medsight-primary">
-                    {user.avatar}
-                  </span>
-                </div>
-                <div>
-                  <h5 className="font-medium text-slate-800">{user.name}</h5>
-                  <p className="text-xs text-slate-600">Last login: {user.lastLogin}</p>
-                </div>
+          <div className="max-h-96 overflow-y-auto border rounded-lg">
+            {filteredUsers.map(user => (
+              <div
+                key={user.id}
+                onClick={() => setSelectedUser(user)}
+                className={`p-3 cursor-pointer hover:bg-gray-100 ${selectedUser?.id === user.id ? 'bg-medsight-primary/10' : ''}`}
+              >
+                <p className="font-medium">{user.name}</p>
+                <p className="text-sm text-gray-500">{user.email}</p>
+                <p className="text-xs text-gray-400">Current Role: {getRoleName(user.currentRole)}</p>
               </div>
-              <div className="flex items-center space-x-3">
-                <div className="w-48">
-                  <select 
-                    defaultValue={user.role}
-                    className="input-medsight w-full text-sm py-2"
-                  >
-                    <option disabled>Select a role</option>
-                    {medicalRoles.map(role => (
-                      <option key={role.name} value={role.name}>
-                        {role.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <button className="p-1 hover:bg-slate-100 rounded">
-                  <MoreVertical className="w-4 h-4 text-slate-500" />
-                </button>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Role Assignment Actions */}
-      <div className="mt-6 pt-4 border-t border-slate-200">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <Users className="w-4 h-4 text-medsight-primary" />
-            <span className="text-sm text-slate-700">Total Users: {users.length}</span>
-          </div>
-          <div className="flex items-center space-x-2">
-            <button className="btn-medsight text-xs px-3 py-1">
-              <Shield className="w-3 h-3 mr-1" />
-              Manage Roles
-            </button>
-            <button className="btn-medsight text-xs px-3 py-1">
-              <Key className="w-3 h-3 mr-1" />
-              Manage Permissions
-            </button>
+            ))}
           </div>
         </div>
+
+        {/* Roles List */}
+        <div className="md:col-span-1">
+          <h3 className="font-medium mb-2">Roles</h3>
+          <div className="max-h-96 overflow-y-auto border rounded-lg">
+            {roles.map(role => (
+              <div
+                key={role.id}
+                onClick={() => setSelectedRole(role.id)}
+                className={`p-3 cursor-pointer hover:bg-gray-100 ${selectedRole === role.id ? 'bg-medsight-primary/10' : ''}`}
+              >
+                <p className="font-medium">{role.name}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Assignment Action */}
+        <div className="md:col-span-1 flex flex-col items-center justify-center bg-gray-50 rounded-lg p-6">
+          <h3 className="font-medium text-center mb-4">Confirm Assignment</h3>
+          <div className="text-center">
+            <p className="font-medium">{selectedUser?.name || 'Select a user'}</p>
+            <ArrowRightIcon className="w-6 h-6 my-2 mx-auto text-gray-400" />
+            <p className="font-medium">{getRoleName(selectedRole) || 'Select a role'}</p>
+          </div>
+          <button
+            onClick={handleAssign}
+            disabled={!selectedUser || !selectedRole || assigning}
+            className="btn-medsight w-full mt-6"
+          >
+            {assigning ? 'Assigning...' : 'Assign Role'}
+          </button>
+        </div>
       </div>
+      
+      {feedback && (
+        <div className={`mt-4 p-3 rounded-lg flex items-center ${feedback.type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+          <CheckCircleIcon className="w-5 h-5 mr-2" />
+          {feedback.message}
+        </div>
+      )}
     </div>
   );
-} 
+}

@@ -1,0 +1,636 @@
+---
+# Elasticsearch
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: elasticsearch
+  namespace: annotateai
+spec:
+  serviceName: elasticsearch
+  replicas: 3
+  selector:
+    matchLabels:
+      app: elasticsearch
+  template:
+    metadata:
+      labels:
+        app: elasticsearch
+    spec:
+      containers:
+      - name: elasticsearch
+        image: docker.elastic.co/elasticsearch/elasticsearch:8.10.4
+        ports:
+        - containerPort: 9200
+          name: rest
+        - containerPort: 9300
+          name: inter-node
+        volumeMounts:
+        - name: data
+          mountPath: /usr/share/elasticsearch/data
+        env:
+        - name: cluster.name
+          value: annotateai-cluster
+        - name: node.name
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: discovery.seed_hosts
+          value: "elasticsearch-0.elasticsearch,elasticsearch-1.elasticsearch,elasticsearch-2.elasticsearch"
+        - name: cluster.initial_master_nodes
+          value: "elasticsearch-0,elasticsearch-1,elasticsearch-2"
+        - name: ES_JAVA_OPTS
+          value: "-Xms1g -Xmx1g"
+        - name: xpack.security.enabled
+          value: "false"
+        - name: xpack.security.enrollment.enabled
+          value: "false"
+        resources:
+          limits:
+            cpu: 2000m
+            memory: 2Gi
+          requests:
+            cpu: 500m
+            memory: 1Gi
+        readinessProbe:
+          httpGet:
+            path: /_cluster/health
+            port: 9200
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        livenessProbe:
+          httpGet:
+            path: /_cluster/health
+            port: 9200
+          initialDelaySeconds: 60
+          periodSeconds: 30
+  volumeClaimTemplates:
+  - metadata:
+      name: data
+    spec:
+      accessModes: ["ReadWriteOnce"]
+      resources:
+        requests:
+          storage: 50Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: elasticsearch
+  namespace: annotateai
+spec:
+  selector:
+    app: elasticsearch
+  ports:
+  - port: 9200
+    targetPort: 9200
+    name: rest
+  - port: 9300
+    targetPort: 9300
+    name: inter-node
+  clusterIP: None
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: elasticsearch-lb
+  namespace: annotateai
+spec:
+  selector:
+    app: elasticsearch
+  ports:
+  - port: 9200
+    targetPort: 9200
+    name: rest
+  type: LoadBalancer
+---
+# Logstash
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: logstash-config
+  namespace: annotateai
+data:
+  logstash.yml: |
+    http.host: "0.0.0.0"
+    path.config: /usr/share/logstash/pipeline
+    pipeline.workers: 4
+    pipeline.batch.size: 1000
+    pipeline.batch.delay: 50
+    
+  pipeline.yml: |
+    - pipeline.id: annotateai-logs
+      path.config: "/usr/share/logstash/pipeline/annotateai.conf"
+      
+  annotateai.conf: |
+    input {
+      beats {
+        port => 5044
+      }
+      
+      # Kubernetes logs
+      http {
+        port => 8080
+        codec => json
+        additional_codecs => {
+          "application/json" => "json"
+        }
+      }
+      
+      # Application logs from Redis
+      redis {
+        host => "redis-service"
+        port => 6379
+        data_type => "list"
+        key => "annotateai:logs"
+        codec => json
+      }
+    }
+    
+    filter {
+      # Parse container logs
+      if [kubernetes] {
+        mutate {
+          add_field => { "log_source" => "kubernetes" }
+        }
+        
+        # Parse JSON logs
+        if [message] =~ /^\{.*\}$/ {
+          json {
+            source => "message"
+          }
+        }
+        
+        # Add metadata
+        mutate {
+          add_field => { "service" => "%{[kubernetes][container][name]}" }
+          add_field => { "namespace" => "%{[kubernetes][namespace]}" }
+          add_field => { "pod" => "%{[kubernetes][pod][name]}" }
+        }
+      }
+      
+      # Parse AnnotateAI application logs
+      if [service] =~ /annotateai/ {
+        grok {
+          match => { 
+            "message" => "%{TIMESTAMP_ISO8601:timestamp} %{LOGLEVEL:level} %{DATA:logger} - %{GREEDYDATA:log_message}"
+          }
+        }
+        
+        date {
+          match => [ "timestamp", "ISO8601" ]
+        }
+        
+        # Extract user context
+        if [log_message] =~ /user_id/ {
+          grok {
+            match => { 
+              "log_message" => ".*user_id:(?<user_id>[^\\s,]+)"
+            }
+          }
+        }
+        
+        # Extract project context
+        if [log_message] =~ /project_id/ {
+          grok {
+            match => { 
+              "log_message" => ".*project_id:(?<project_id>[^\\s,]+)"
+            }
+          }
+        }
+        
+        # Extract annotation context
+        if [log_message] =~ /annotation_id/ {
+          grok {
+            match => { 
+              "log_message" => ".*annotation_id:(?<annotation_id>[^\\s,]+)"
+            }
+          }
+        }
+        
+        # Extract AI model context
+        if [log_message] =~ /model_name/ {
+          grok {
+            match => { 
+              "log_message" => ".*model_name:(?<model_name>[^\\s,]+)"
+            }
+          }
+        }
+        
+        # Extract performance metrics
+        if [log_message] =~ /duration/ {
+          grok {
+            match => { 
+              "log_message" => ".*duration:(?<duration>[0-9.]+)"
+            }
+          }
+          mutate {
+            convert => { "duration" => "float" }
+          }
+        }
+        
+        # Extract error details
+        if [level] == "ERROR" {
+          grok {
+            match => { 
+              "log_message" => ".*error:(?<error_type>[^\\s,]+).*message:(?<error_message>[^\\n]+)"
+            }
+          }
+        }
+      }
+      
+      # Parse access logs
+      if [service] =~ /nginx|api-gateway/ {
+        grok {
+          match => { 
+            "message" => "%{COMBINEDAPACHELOG}"
+          }
+        }
+        
+        mutate {
+          convert => { "response" => "integer" }
+          convert => { "bytes" => "integer" }
+        }
+        
+        # Extract custom headers
+        if [message] =~ /X-User-ID/ {
+          grok {
+            match => { 
+              "message" => ".*X-User-ID: (?<user_id>[^\\s]+)"
+            }
+          }
+        }
+        
+        if [message] =~ /X-Request-ID/ {
+          grok {
+            match => { 
+              "message" => ".*X-Request-ID: (?<request_id>[^\\s]+)"
+            }
+          }
+        }
+      }
+      
+      # Clean up
+      mutate {
+        remove_field => [ "host", "agent", "ecs", "input", "tags" ]
+      }
+    }
+    
+    output {
+      elasticsearch {
+        hosts => ["elasticsearch-lb:9200"]
+        index => "annotateai-logs-%{+YYYY.MM.dd}"
+        template_name => "annotateai-logs"
+        template_pattern => "annotateai-logs-*"
+        template => {
+          "index_patterns" => ["annotateai-logs-*"]
+          "settings" => {
+            "number_of_shards" => 3
+            "number_of_replicas" => 1
+            "index.refresh_interval" => "30s"
+          }
+          "mappings" => {
+            "properties" => {
+              "@timestamp" => { "type" => "date" }
+              "level" => { "type" => "keyword" }
+              "service" => { "type" => "keyword" }
+              "namespace" => { "type" => "keyword" }
+              "pod" => { "type" => "keyword" }
+              "user_id" => { "type" => "keyword" }
+              "project_id" => { "type" => "keyword" }
+              "annotation_id" => { "type" => "keyword" }
+              "model_name" => { "type" => "keyword" }
+              "duration" => { "type" => "float" }
+              "error_type" => { "type" => "keyword" }
+              "request_id" => { "type" => "keyword" }
+              "message" => { "type" => "text" }
+              "log_message" => { "type" => "text" }
+            }
+          }
+        }
+      }
+      
+      # Debug output
+      if [level] == "DEBUG" {
+        file {
+          path => "/tmp/debug.log"
+        }
+      }
+    }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: logstash
+  namespace: annotateai
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: logstash
+  template:
+    metadata:
+      labels:
+        app: logstash
+    spec:
+      containers:
+      - name: logstash
+        image: docker.elastic.co/logstash/logstash:8.10.4
+        ports:
+        - containerPort: 5044
+          name: beats
+        - containerPort: 8080
+          name: http
+        - containerPort: 9600
+          name: monitoring
+        volumeMounts:
+        - name: config
+          mountPath: /usr/share/logstash/config
+        - name: pipeline
+          mountPath: /usr/share/logstash/pipeline
+        env:
+        - name: LS_JAVA_OPTS
+          value: "-Xmx1g -Xms1g"
+        resources:
+          limits:
+            cpu: 1000m
+            memory: 2Gi
+          requests:
+            cpu: 500m
+            memory: 1Gi
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 9600
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 9600
+          initialDelaySeconds: 60
+          periodSeconds: 30
+      volumes:
+      - name: config
+        configMap:
+          name: logstash-config
+          items:
+          - key: logstash.yml
+            path: logstash.yml
+          - key: pipeline.yml
+            path: pipeline.yml
+      - name: pipeline
+        configMap:
+          name: logstash-config
+          items:
+          - key: annotateai.conf
+            path: annotateai.conf
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: logstash-service
+  namespace: annotateai
+spec:
+  selector:
+    app: logstash
+  ports:
+  - port: 5044
+    targetPort: 5044
+    name: beats
+  - port: 8080
+    targetPort: 8080
+    name: http
+  - port: 9600
+    targetPort: 9600
+    name: monitoring
+---
+# Kibana
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kibana
+  namespace: annotateai
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kibana
+  template:
+    metadata:
+      labels:
+        app: kibana
+    spec:
+      containers:
+      - name: kibana
+        image: docker.elastic.co/kibana/kibana:8.10.4
+        ports:
+        - containerPort: 5601
+          name: ui
+        env:
+        - name: ELASTICSEARCH_HOSTS
+          value: "http://elasticsearch-lb:9200"
+        - name: SERVER_NAME
+          value: "annotateai-kibana"
+        - name: SERVER_HOST
+          value: "0.0.0.0"
+        - name: XPACK_SECURITY_ENABLED
+          value: "false"
+        - name: XPACK_ENCRYPTEDSAVEDOBJECTS_ENCRYPTIONKEY
+          value: "annotateai-kibana-encryption-key-32-chars"
+        resources:
+          limits:
+            cpu: 1000m
+            memory: 1Gi
+          requests:
+            cpu: 500m
+            memory: 512Mi
+        readinessProbe:
+          httpGet:
+            path: /api/status
+            port: 5601
+          initialDelaySeconds: 60
+          periodSeconds: 10
+        livenessProbe:
+          httpGet:
+            path: /api/status
+            port: 5601
+          initialDelaySeconds: 120
+          periodSeconds: 30
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kibana-service
+  namespace: annotateai
+spec:
+  selector:
+    app: kibana
+  ports:
+  - port: 5601
+    targetPort: 5601
+    name: ui
+  type: LoadBalancer
+---
+# Filebeat DaemonSet for log collection
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: filebeat-config
+  namespace: annotateai
+data:
+  filebeat.yml: |
+    filebeat.inputs:
+    - type: container
+      paths:
+        - /var/log/containers/*.log
+      processors:
+        - add_kubernetes_metadata:
+            host: ${NODE_NAME}
+            matchers:
+            - logs_path:
+                logs_path: "/var/log/containers/"
+        - decode_json_fields:
+            fields: ["message"]
+            target: ""
+            overwrite_keys: true
+    
+    # Application-specific log parsing
+    - type: log
+      enabled: true
+      paths:
+        - /var/log/annotateai/*.log
+      fields:
+        log_source: "annotateai_app"
+      fields_under_root: true
+      multiline.pattern: '^\d{4}-\d{2}-\d{2}'
+      multiline.negate: true
+      multiline.match: after
+    
+    processors:
+    - add_cloud_metadata: ~
+    - add_docker_metadata: ~
+    - add_kubernetes_metadata: ~
+    
+    output.logstash:
+      hosts: ["logstash-service:5044"]
+    
+    setup.template.settings:
+      index.number_of_shards: 3
+      index.codec: best_compression
+      index.refresh_interval: "30s"
+    
+    logging.level: info
+    logging.to_files: true
+    logging.files:
+      path: /var/log/filebeat
+      name: filebeat
+      keepfiles: 7
+      permissions: 0644
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: filebeat
+  namespace: annotateai
+spec:
+  selector:
+    matchLabels:
+      app: filebeat
+  template:
+    metadata:
+      labels:
+        app: filebeat
+    spec:
+      serviceAccountName: filebeat
+      terminationGracePeriodSeconds: 30
+      containers:
+      - name: filebeat
+        image: docker.elastic.co/beats/filebeat:8.10.4
+        args: [
+          "-c", "/etc/filebeat.yml",
+          "-e",
+        ]
+        env:
+        - name: NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        securityContext:
+          runAsUser: 0
+        resources:
+          limits:
+            memory: 200Mi
+          requests:
+            cpu: 100m
+            memory: 100Mi
+        volumeMounts:
+        - name: config
+          mountPath: /etc/filebeat.yml
+          readOnly: true
+          subPath: filebeat.yml
+        - name: data
+          mountPath: /usr/share/filebeat/data
+        - name: varlibdockercontainers
+          mountPath: /var/lib/docker/containers
+          readOnly: true
+        - name: varlog
+          mountPath: /var/log
+          readOnly: true
+        - name: annotateai-logs
+          mountPath: /var/log/annotateai
+          readOnly: true
+      volumes:
+      - name: config
+        configMap:
+          defaultMode: 0600
+          name: filebeat-config
+      - name: varlibdockercontainers
+        hostPath:
+          path: /var/lib/docker/containers
+      - name: varlog
+        hostPath:
+          path: /var/log
+      - name: annotateai-logs
+        hostPath:
+          path: /var/log/annotateai
+          type: DirectoryOrCreate
+      - name: data
+        hostPath:
+          path: /var/lib/filebeat-data
+          type: DirectoryOrCreate
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: filebeat
+  namespace: annotateai
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: filebeat
+rules:
+- apiGroups: [""]
+  resources:
+  - nodes
+  - namespaces
+  - pods
+  - services
+  verbs: ["get", "list", "watch"]
+- apiGroups: ["apps"]
+  resources:
+  - replicasets
+  verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: filebeat
+subjects:
+- kind: ServiceAccount
+  name: filebeat
+  namespace: annotateai
+roleRef:
+  kind: ClusterRole
+  name: filebeat
+  apiGroup: rbac.authorization.k8s.io 

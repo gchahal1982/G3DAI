@@ -25,7 +25,7 @@ interface MedicalOverviewData {
   aiAccuracy: number;
   averageReviewTime: string;
   systemStatus: {
-    dicomServer: 'online' | 'offline' | 'warning';
+    dicomServer: 'online' | 'offline' | 'warning' | 'processing';
     aiEngine: 'online' | 'offline' | 'processing';
     database: 'online' | 'offline' | 'warning';
   };
@@ -79,7 +79,7 @@ export function MedicalOverview({ data }: MedicalOverviewProps) {
     {
       id: 'dicom-processing',
       name: 'DICOM Processing',
-      status: data.systemStatus.dicomServer === 'online' ? 'online' : 'offline',
+      status: data.systemStatus.dicomServer,
       description: 'Medical image processing pipeline',
       lastUpdate: new Date().toISOString()
     },

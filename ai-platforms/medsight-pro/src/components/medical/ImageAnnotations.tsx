@@ -6,7 +6,7 @@ import {
   Square2StackIcon,
   CircleStackIcon,
   CursorArrowRaysIcon,
-  RulerIcon,
+  ScaleIcon,
   CalculatorIcon,
   ChatBubbleLeftIcon,
   EyeIcon,
@@ -124,7 +124,7 @@ export function ImageAnnotations({
 }: ImageAnnotationsProps) {
   const svgRef = useRef<SVGSVGElement>(null);
   const [isDrawing, setIsDrawing] = useState(false);
-  const [currentTool, setCurrentTool] = useState<'select' | 'rectangle' | 'circle' | 'polygon' | 'line' | 'measurement' | 'text'>('select');
+  const [currentTool, setCurrentTool] = useState<'select' | Annotation['type']>('select');
   const [currentPoints, setCurrentPoints] = useState<Point[]>([]);
   const [tempAnnotation, setTempAnnotation] = useState<Annotation | null>(null);
   const [showAnnotationPanel, setShowAnnotationPanel] = useState(true);
@@ -276,7 +276,7 @@ export function ImageAnnotations({
 
     if (currentPoints.length >= 2 || currentTool === 'text') {
       const newAnnotation: Omit<Annotation, 'id'> = {
-        type: currentTool === 'measurement' ? 'line' : currentTool,
+        type: currentTool as Annotation['type'],
         points: currentPoints,
         style: {
           strokeColor: '#2563eb',
@@ -659,7 +659,7 @@ export function ImageAnnotations({
               className={`p-2 rounded-lg ${currentTool === 'measurement' ? 'bg-medsight-primary text-white' : 'text-medsight-primary hover:bg-medsight-primary/10'} disabled:opacity-50`}
               title="Measurement Tool"
             >
-              <RulerIcon className="w-4 h-4" />
+              <ScaleIcon className="w-4 h-4" />
             </button>
             
             <button

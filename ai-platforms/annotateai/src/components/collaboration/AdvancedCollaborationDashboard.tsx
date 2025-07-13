@@ -80,54 +80,29 @@ import {
     Download,
     Upload,
     Copy,
-    ExternalLink
+    ExternalLink,
+    X
 } from 'lucide-react';
 
-// UI Components
-import {
-    Button,
-    Card,
-    CardContent,
-    CardHeader,
-    CardTitle,
-    Badge,
-    Avatar,
-    AvatarImage,
-    AvatarFallback,
-    Switch,
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-    Tooltip,
-    TooltipContent,
-    TooltipProvider,
-    TooltipTrigger,
-    Progress,
-    Tabs,
-    TabsContent,
-    TabsList,
-    TabsTrigger,
-    Alert,
-    AlertDescription,
-    Input,
-    Label,
-    Separator,
-    ScrollArea,
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
-    DropdownMenuSeparator,
-    Dialog,
-    DialogContent,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger,
-    Textarea,
-    Slider
-} from '../../../../../shared/components/ui';
+// UI Components - Import individually to avoid undefined imports
+import { Button } from '../../../../../shared/components/ui/Button';
+import { Card, CardContent, CardHeader, CardTitle } from '../../../../../shared/components/ui/Card';
+import { Badge } from '../../../../../shared/components/ui/Badge';
+import { Avatar, AvatarImage, AvatarFallback } from '../../../../../shared/components/ui/Avatar';
+import { Switch } from '../../../../../shared/components/ui/Switch';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../../../shared/components/ui/Select';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../../../../../shared/components/ui/Tooltip';
+import { Progress } from '../../../../../shared/components/ui/Progress';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../../../../shared/components/ui/Tabs';
+import { Alert, AlertDescription } from '../../../../../shared/components/ui/Alert';
+import { Input } from '../../../../../shared/components/ui/Input';
+import { Label } from '../../../../../shared/components/ui/Label';
+import { Separator } from '../../../../../shared/components/ui/Separator';
+import { ScrollArea } from '../../../../../shared/components/ui/ScrollArea';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '../../../../../shared/components/ui/DropdownMenu';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '../../../../../shared/components/ui/Dialog';
+import { Textarea } from '../../../../../shared/components/ui/Textarea';
+import { Slider } from '../../../../../shared/components/ui/Slider';
 
 // Backend Service Integration
 import { 
@@ -184,6 +159,7 @@ interface AdvancedCollaborationDashboardProps {
     onUserLeft?: (userId: string) => void;
     onAnnotationShared?: (annotation: CollaborativeAnnotation) => void;
     onConflictResolved?: (conflict: Conflict) => void;
+    onClose?: () => void;
     isVisible?: boolean;
     className?: string;
 }
@@ -195,6 +171,7 @@ export function AdvancedCollaborationDashboard({
     onUserLeft,
     onAnnotationShared,
     onConflictResolved,
+    onClose,
     isVisible = true,
     className = ""
 }: AdvancedCollaborationDashboardProps) {
@@ -891,6 +868,22 @@ export function AdvancedCollaborationDashboard({
                                         </TooltipTrigger>
                                         <TooltipContent>{isExpanded ? 'Collapse' : 'Expand'}</TooltipContent>
                                     </Tooltip>
+                                    
+                                    {onClose && (
+                                        <Tooltip>
+                                            <TooltipTrigger asChild>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    onClick={onClose}
+                                                    className="h-8 w-8 p-0 text-white/60 hover:text-white"
+                                                >
+                                                    <X className="w-4 h-4" />
+                                                </Button>
+                                            </TooltipTrigger>
+                                            <TooltipContent>Close</TooltipContent>
+                                        </Tooltip>
+                                    )}
                                 </div>
                             </div>
                         </CardHeader>

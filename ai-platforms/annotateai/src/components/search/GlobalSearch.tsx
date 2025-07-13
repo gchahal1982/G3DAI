@@ -241,7 +241,7 @@ export default function GlobalSearch({
       />
       
       {/* Search Modal */}
-      <div className="relative w-full max-w-2xl bg-gray-900/95 backdrop-blur-xl border border-gray-700/50 rounded-2xl shadow-2xl shadow-black/50">
+      <div className="relative w-full max-w-4xl bg-gray-900/95 backdrop-blur-xl border border-gray-700/50 rounded-2xl shadow-2xl shadow-black/50">
         {/* Search Header */}
         <div className="p-6 border-b border-gray-700/30">
           <div className="flex items-center space-x-4">
@@ -269,18 +269,18 @@ export default function GlobalSearch({
 
         {/* Search Categories */}
         <div className="px-6 py-3 border-b border-white/10">
-          <div className="flex items-center space-x-2 overflow-x-auto">
+          <div className="flex items-center justify-center space-x-1">
             {SEARCH_CATEGORIES.map((category) => (
               <button
                 key={category.id}
                 onClick={() => setSelectedCategory(category.id)}
-                className={`flex items-center space-x-2 px-3 py-2 rounded-xl text-sm whitespace-nowrap transition-all duration-200 ${
+                className={`flex items-center space-x-1.5 px-2.5 py-1.5 rounded-lg text-xs whitespace-nowrap transition-all duration-200 ${
                   selectedCategory === category.id
                     ? 'bg-indigo-600 text-white'
                     : 'bg-white/5 text-white/70 hover:bg-white/10 hover:text-white'
                 }`}
               >
-                <span>{category.icon}</span>
+                <span className="text-sm">{category.icon}</span>
                 <span>{category.label}</span>
               </button>
             ))}

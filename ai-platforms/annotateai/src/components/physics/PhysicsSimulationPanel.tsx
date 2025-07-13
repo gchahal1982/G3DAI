@@ -23,22 +23,23 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 // Icons
 import {
-    PlayIcon,
-    PauseIcon,
-    StopIcon,
-    PlusIcon,
-    TrashIcon,
-    CogIcon,
-    BeakerIcon,
-    CubeIcon,
-    ArrowPathIcon,
-    AdjustmentsHorizontalIcon,
-    ChartBarIcon,
-    ExclamationTriangleIcon,
-    CheckCircleIcon,
-    EyeIcon,
-    EyeSlashIcon
-} from '@heroicons/react/24/outline';
+    Play,
+    Pause,
+    Square,
+    Plus,
+    Trash2,
+    Settings,
+    Beaker,
+    Box,
+    RefreshCw,
+    Sliders,
+    BarChart3,
+    AlertTriangle,
+    CheckCircle,
+    Eye,
+    EyeOff,
+    X
+} from 'lucide-react';
 
 // UI Components
 import {
@@ -116,12 +117,14 @@ interface SimulationSettings {
 interface PhysicsSimulationPanelProps {
     projectId: string;
     sessionId?: string;
+    onClose?: () => void;
     className?: string;
 }
 
 const PhysicsSimulationPanel: React.FC<PhysicsSimulationPanelProps> = ({
     projectId,
     sessionId,
+    onClose,
     className = ""
 }) => {
     // Backend Service Integration
@@ -383,7 +386,7 @@ const PhysicsSimulationPanel: React.FC<PhysicsSimulationPanelProps> = ({
             <div className={`physics-simulation-panel ${className}`}>
                 <Card className="bg-white/10 backdrop-blur-lg border-white/20 p-6">
                     <div className="text-center">
-                        <ArrowPathIcon className="w-8 h-8 mx-auto mb-4 animate-spin text-green-400" />
+                        <RefreshCw className="w-8 h-8 mx-auto mb-4 animate-spin text-green-400" />
                         <p className="text-white/60">Initializing physics engine...</p>
                     </div>
                 </Card>
@@ -396,13 +399,13 @@ const PhysicsSimulationPanel: React.FC<PhysicsSimulationPanelProps> = ({
             <Card className="bg-white/10 backdrop-blur-lg border-white/20">
                 <div className="p-6">
                     <div className="flex items-center justify-between mb-6">
-                        <div className="flex items-center gap-3">
-                            <BeakerIcon className="w-8 h-8 text-green-400" />
-                            <div>
-                                <h2 className="text-xl font-bold text-white">Physics Simulation</h2>
-                                <p className="text-white/60">Real-time physics engine controls</p>
-                            </div>
+                                            <div className="flex items-center gap-3">
+                        <Beaker className="w-8 h-8 text-green-400" />
+                        <div>
+                            <h2 className="text-xl font-bold text-white">Physics Simulation</h2>
+                            <p className="text-white/60">Real-time physics engine controls</p>
                         </div>
+                    </div>
                         
                         <div className="flex items-center gap-2">
                             <Badge variant={isInitialized ? 'success' : 'error'}>
@@ -412,46 +415,57 @@ const PhysicsSimulationPanel: React.FC<PhysicsSimulationPanelProps> = ({
                             <Badge variant="secondary">
                                 {objects.length} objects
                             </Badge>
+                            
+                            {onClose && (
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={onClose}
+                                    className="h-8 w-8 p-0 text-white/60 hover:text-white"
+                                >
+                                    <X className="w-4 h-4" />
+                                </Button>
+                            )}
                         </div>
                     </div>
 
                     {/* Control Panel */}
                     <div className="mb-6">
                         <div className="flex items-center gap-3 mb-4">
-                            <Button
-                                onClick={startSimulation}
-                                disabled={!isInitialized || isSimulating}
-                                className="bg-green-600 hover:bg-green-700"
-                            >
-                                <PlayIcon className="w-4 h-4 mr-2" />
-                                Start
-                            </Button>
+                                                    <Button
+                            onClick={startSimulation}
+                            disabled={!isInitialized || isSimulating}
+                            className="bg-green-600 hover:bg-green-700"
+                        >
+                            <Play className="w-4 h-4 mr-2" />
+                            Start
+                        </Button>
                             
-                            <Button
-                                onClick={pauseSimulation}
-                                disabled={!isSimulating}
-                                variant="outline"
-                            >
-                                <PauseIcon className="w-4 h-4 mr-2" />
-                                {isPaused ? 'Resume' : 'Pause'}
-                            </Button>
-                            
-                            <Button
-                                onClick={stopSimulation}
-                                disabled={!isSimulating && !isPaused}
-                                variant="outline"
-                            >
-                                <StopIcon className="w-4 h-4 mr-2" />
-                                Stop
-                            </Button>
-                            
-                            <Button
-                                onClick={resetSimulation}
-                                variant="outline"
-                            >
-                                <ArrowPathIcon className="w-4 h-4 mr-2" />
-                                Reset
-                            </Button>
+                                                    <Button
+                            onClick={pauseSimulation}
+                            disabled={!isSimulating}
+                            variant="outline"
+                        >
+                            <Pause className="w-4 h-4 mr-2" />
+                            {isPaused ? 'Resume' : 'Pause'}
+                        </Button>
+                        
+                        <Button
+                            onClick={stopSimulation}
+                            disabled={!isSimulating && !isPaused}
+                            variant="outline"
+                        >
+                            <Square className="w-4 h-4 mr-2" />
+                            Stop
+                        </Button>
+                        
+                        <Button
+                            onClick={resetSimulation}
+                            variant="outline"
+                        >
+                            <RefreshCw className="w-4 h-4 mr-2" />
+                            Reset
+                        </Button>
                         </div>
 
                         {/* Status Display */}
@@ -488,10 +502,10 @@ const PhysicsSimulationPanel: React.FC<PhysicsSimulationPanelProps> = ({
                             <div>
                                 <h3 className="text-lg font-semibold text-white mb-3">Add Objects</h3>
                                 <div className="flex gap-2">
-                                    <Button onClick={() => addObject('box')} variant="outline">
-                                        <CubeIcon className="w-4 h-4 mr-2" />
-                                        Box
-                                    </Button>
+                                                                    <Button onClick={() => addObject('box')} variant="outline">
+                                    <Box className="w-4 h-4 mr-2" />
+                                    Box
+                                </Button>
                                     <Button onClick={() => addObject('sphere')} variant="outline">
                                         <div className="w-4 h-4 rounded-full bg-current mr-2" />
                                         Sphere
@@ -525,7 +539,7 @@ const PhysicsSimulationPanel: React.FC<PhysicsSimulationPanelProps> = ({
                                             <div className="flex items-center gap-2">
                                                 <Tooltip content={obj.visible ? 'Hide object' : 'Show object'}>
                                                     <Button variant="ghost" size="sm">
-                                                        {obj.visible ? <EyeIcon className="w-4 h-4" /> : <EyeSlashIcon className="w-4 h-4" />}
+                                                        {obj.visible ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
                                                     </Button>
                                                 </Tooltip>
                                                 <Tooltip content="Remove object">
@@ -534,7 +548,7 @@ const PhysicsSimulationPanel: React.FC<PhysicsSimulationPanelProps> = ({
                                                         size="sm"
                                                         onClick={() => removeObject(obj.id)}
                                                     >
-                                                        <TrashIcon className="w-4 h-4" />
+                                                        <Trash2 className="w-4 h-4" />
                                                     </Button>
                                                 </Tooltip>
                                             </div>

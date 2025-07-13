@@ -1,0 +1,68 @@
+# AnnotateAI Performance Optimization Service - Python Dependencies
+# Phase 4.2 Performance Optimization & Caching Infrastructure
+
+# FastAPI and web framework
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+pydantic==2.5.0
+python-multipart==0.0.6
+
+# Database optimization
+sqlalchemy==2.0.23
+psycopg2-binary==2.9.9
+
+# Caching systems
+redis==5.0.1
+redis[hiredis]==5.0.1
+python-memcached==1.59
+aiomcache==0.12.2
+
+# CDN and cloud services
+boto3==1.34.0
+cloudflare==2.17.0
+tinify==1.6.0
+
+# Image optimization
+Pillow==10.1.0
+
+# APM and monitoring
+datadog==0.47.0
+newrelic==9.4.0
+opentelemetry-api==1.21.0
+opentelemetry-sdk==1.21.0
+opentelemetry-exporter-jaeger==1.21.0
+
+# System monitoring
+prometheus-client==0.19.0
+psutil==5.9.6
+GPUtil==1.4.0
+pymongo==4.6.0
+elasticsearch==8.11.1
+
+# Auto-scaling
+kubernetes==28.1.0
+docker==6.1.3
+
+# Async processing
+celery==5.3.4
+pika==1.3.2
+aio-pika==9.3.1
+
+# Compression
+brotli==1.1.0
+zstandard==0.22.0
+
+# HTTP clients
+httpx==0.25.2
+aiohttp==3.9.1
+
+# Time series databases
+influxdb-client==1.39.0
+
+# Utilities
+python-dotenv==1.0.0
+asyncio==3.4.3
+
+# Development
+pytest==7.4.3
+pytest-asyncio==0.21.1 

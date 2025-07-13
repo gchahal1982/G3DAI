@@ -1,0 +1,849 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: annotateai-prod
+  labels:
+    environment: production
+    app: annotateai
+
+---
+# ConfigMap for application configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: annotateai-config
+  namespace: annotateai-prod
+data:
+  environment: "production"
+  log_level: "info"
+  database_pool_size: "20"
+  redis_pool_size: "10"
+  max_upload_size: "100MB"
+  jwt_expiry: "24h"
+  rate_limit_requests: "1000"
+  rate_limit_window: "60s"
+
+---
+# Secret for sensitive configuration
+apiVersion: v1
+kind: Secret
+metadata:
+  name: annotateai-secrets
+  namespace: annotateai-prod
+type: Opaque
+data:
+  database-url: cG9zdGdyZXNxbDovL2Fubm90YXRlYWk6c2VjdXJlcGFzc3dvcmRAcG9zdGdyZXM6NTQzMi9hbm5vdGF0ZWFp  # base64 encoded
+  redis-url: cmVkaXM6Ly9yZWRpczozODc5ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg  # base64 encoded  
+  minio-access-key: YWRtaW4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIA==  # base64 encoded
+  minio-secret-key: cGFzc3dvcmQxMjMgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg  # base64 encoded
+  jwt-secret: c3VwZXItc2VjdXJlLWp3dC1rZXktZm9yLXByb2R1Y3Rpb24gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg  # base64 encoded
+
+---
+# Persistent Volume Claim for PostgreSQL
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: postgres-pvc
+  namespace: annotateai-prod
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: fast-ssd
+  resources:
+    requests:
+      storage: 500Gi
+
+---
+# Persistent Volume Claim for Redis
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: redis-pvc
+  namespace: annotateai-prod
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: fast-ssd
+  resources:
+    requests:
+      storage: 100Gi
+
+---
+# Persistent Volume Claim for MinIO
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: minio-pvc
+  namespace: annotateai-prod
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: standard
+  resources:
+    requests:
+      storage: 5Ti
+
+---
+# PostgreSQL Database Deployment
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: postgres
+  namespace: annotateai-prod
+spec:
+  serviceName: postgres
+  replicas: 3  # High availability with streaming replication
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      containers:
+      - name: postgres
+        image: postgres:15.4
+        env:
+        - name: POSTGRES_DB
+          value: "annotateai"
+        - name: POSTGRES_USER
+          value: "annotateai"
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: annotateai-secrets
+              key: database-password
+        - name: POSTGRES_REPLICATION_MODE
+          value: "master"
+        - name: POSTGRES_REPLICATION_USER
+          value: "replicator"
+        - name: POSTGRES_REPLICATION_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: annotateai-secrets
+              key: replication-password
+        ports:
+        - containerPort: 5432
+        volumeMounts:
+        - name: postgres-storage
+          mountPath: /var/lib/postgresql/data
+        resources:
+          requests:
+            memory: "2Gi"
+            cpu: "1000m"
+          limits:
+            memory: "4Gi"
+            cpu: "2000m"
+        livenessProbe:
+          exec:
+            command:
+            - /bin/sh
+            - -c
+            - pg_isready -U annotateai -d annotateai
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          exec:
+            command:
+            - /bin/sh
+            - -c
+            - pg_isready -U annotateai -d annotateai
+          initialDelaySeconds: 5
+          periodSeconds: 5
+  volumeClaimTemplates:
+  - metadata:
+      name: postgres-storage
+    spec:
+      accessModes: ["ReadWriteOnce"]
+      storageClassName: "fast-ssd"
+      resources:
+        requests:
+          storage: 200Gi
+
+---
+# Redis Deployment
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: redis
+  namespace: annotateai-prod
+spec:
+  serviceName: redis
+  replicas: 3  # Redis Cluster
+  selector:
+    matchLabels:
+      app: redis
+  template:
+    metadata:
+      labels:
+        app: redis
+    spec:
+      containers:
+      - name: redis
+        image: redis:7.2.1-alpine
+        command:
+        - redis-server
+        - /etc/redis/redis.conf
+        ports:
+        - containerPort: 6379
+        - containerPort: 16379  # Cluster bus port
+        volumeMounts:
+        - name: redis-storage
+          mountPath: /data
+        - name: redis-config
+          mountPath: /etc/redis
+        resources:
+          requests:
+            memory: "1Gi"
+            cpu: "500m"
+          limits:
+            memory: "2Gi"
+            cpu: "1000m"
+        livenessProbe:
+          exec:
+            command:
+            - redis-cli
+            - ping
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          exec:
+            command:
+            - redis-cli
+            - ping
+          initialDelaySeconds: 5
+          periodSeconds: 5
+      volumes:
+      - name: redis-config
+        configMap:
+          name: redis-config
+  volumeClaimTemplates:
+  - metadata:
+      name: redis-storage
+    spec:
+      accessModes: ["ReadWriteOnce"]
+      storageClassName: "fast-ssd"
+      resources:
+        requests:
+          storage: 50Gi
+
+---
+# MinIO S3-compatible Storage
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: minio
+  namespace: annotateai-prod
+spec:
+  serviceName: minio
+  replicas: 4  # Distributed MinIO
+  selector:
+    matchLabels:
+      app: minio
+  template:
+    metadata:
+      labels:
+        app: minio
+    spec:
+      containers:
+      - name: minio
+        image: minio/minio:RELEASE.2023-08-23T10-07-06Z
+        command:
+        - /bin/bash
+        - -c
+        args:
+        - minio server http://minio-{0...3}.minio.annotateai-prod.svc.cluster.local/data --console-address ":9001"
+        env:
+        - name: MINIO_ROOT_USER
+          valueFrom:
+            secretKeyRef:
+              name: annotateai-secrets
+              key: minio-access-key
+        - name: MINIO_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: annotateai-secrets
+              key: minio-secret-key
+        - name: MINIO_PROMETHEUS_AUTH_TYPE
+          value: "public"
+        ports:
+        - containerPort: 9000
+        - containerPort: 9001
+        volumeMounts:
+        - name: minio-storage
+          mountPath: /data
+        resources:
+          requests:
+            memory: "2Gi"
+            cpu: "1000m"
+          limits:
+            memory: "4Gi"
+            cpu: "2000m"
+        livenessProbe:
+          httpGet:
+            path: /minio/health/live
+            port: 9000
+          initialDelaySeconds: 60
+          periodSeconds: 30
+        readinessProbe:
+          httpGet:
+            path: /minio/health/ready
+            port: 9000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+  volumeClaimTemplates:
+  - metadata:
+      name: minio-storage
+    spec:
+      accessModes: ["ReadWriteOnce"]
+      storageClassName: "standard"
+      resources:
+        requests:
+          storage: 1Ti
+
+---
+# API Gateway Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api-gateway
+  namespace: annotateai-prod
+spec:
+  replicas: 5
+  selector:
+    matchLabels:
+      app: api-gateway
+  template:
+    metadata:
+      labels:
+        app: api-gateway
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8000"
+        prometheus.io/path: "/metrics"
+    spec:
+      containers:
+      - name: api-gateway
+        image: annotateai/api-gateway:latest
+        ports:
+        - containerPort: 8000
+        env:
+        - name: ENVIRONMENT
+          value: "production"
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: annotateai-secrets
+              key: database-url
+        - name: REDIS_URL
+          valueFrom:
+            secretKeyRef:
+              name: annotateai-secrets
+              key: redis-url
+        - name: JWT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: annotateai-secrets
+              key: jwt-secret
+        envFrom:
+        - configMapRef:
+            name: annotateai-config
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "1Gi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 8000
+          initialDelaySeconds: 10
+          periodSeconds: 5
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 1000
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+
+---
+# Authentication Service Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: auth-service
+  namespace: annotateai-prod
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: auth-service
+  template:
+    metadata:
+      labels:
+        app: auth-service
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8001"
+    spec:
+      containers:
+      - name: auth-service
+        image: annotateai/auth-service:latest
+        ports:
+        - containerPort: 8001
+        env:
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: annotateai-secrets
+              key: database-url
+        - name: REDIS_URL
+          valueFrom:
+            secretKeyRef:
+              name: annotateai-secrets
+              key: redis-url
+        - name: JWT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: annotateai-secrets
+              key: jwt-secret
+        envFrom:
+        - configMapRef:
+            name: annotateai-config
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "250m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8001
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 8001
+          initialDelaySeconds: 10
+          periodSeconds: 5
+
+---
+# AI Model Service Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ai-model-service
+  namespace: annotateai-prod
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: ai-model-service
+  template:
+    metadata:
+      labels:
+        app: ai-model-service
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8002"
+    spec:
+      nodeSelector:
+        node-type: gpu  # Schedule on GPU nodes
+      containers:
+      - name: ai-model-service
+        image: annotateai/ai-model-service:latest
+        ports:
+        - containerPort: 8002
+        env:
+        - name: CUDA_VISIBLE_DEVICES
+          value: "0"
+        - name: MODEL_CACHE_DIR
+          value: "/models"
+        envFrom:
+        - configMapRef:
+            name: annotateai-config
+        volumeMounts:
+        - name: model-cache
+          mountPath: /models
+        resources:
+          requests:
+            memory: "4Gi"
+            cpu: "2000m"
+            nvidia.com/gpu: 1
+          limits:
+            memory: "8Gi"
+            cpu: "4000m"
+            nvidia.com/gpu: 1
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8002
+          initialDelaySeconds: 60
+          periodSeconds: 30
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 8002
+          initialDelaySeconds: 30
+          periodSeconds: 15
+      volumes:
+      - name: model-cache
+        persistentVolumeClaim:
+          claimName: model-cache-pvc
+
+---
+# Collaboration Service Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: collaboration-service
+  namespace: annotateai-prod
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: collaboration-service
+  template:
+    metadata:
+      labels:
+        app: collaboration-service
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8011"
+    spec:
+      containers:
+      - name: collaboration-service
+        image: annotateai/collaboration-service:latest
+        ports:
+        - containerPort: 8011
+        env:
+        - name: REDIS_URL
+          valueFrom:
+            secretKeyRef:
+              name: annotateai-secrets
+              key: redis-url
+        envFrom:
+        - configMapRef:
+            name: annotateai-config
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "1Gi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8011
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 8011
+          initialDelaySeconds: 10
+          periodSeconds: 5
+
+---
+# Storage Service Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: storage-service
+  namespace: annotateai-prod
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: storage-service
+  template:
+    metadata:
+      labels:
+        app: storage-service
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8009"
+    spec:
+      containers:
+      - name: storage-service
+        image: annotateai/storage-service:latest
+        ports:
+        - containerPort: 8009
+        env:
+        - name: MINIO_ENDPOINT
+          value: "minio:9000"
+        - name: MINIO_ACCESS_KEY
+          valueFrom:
+            secretKeyRef:
+              name: annotateai-secrets
+              key: minio-access-key
+        - name: MINIO_SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: annotateai-secrets
+              key: minio-secret-key
+        envFrom:
+        - configMapRef:
+            name: annotateai-config
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "250m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8009
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 8009
+          initialDelaySeconds: 10
+          periodSeconds: 5
+
+---
+# Horizontal Pod Autoscaler for API Gateway
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: api-gateway-hpa
+  namespace: annotateai-prod
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: api-gateway
+  minReplicas: 3
+  maxReplicas: 20
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80
+  behavior:
+    scaleUp:
+      stabilizationWindowSeconds: 60
+      policies:
+      - type: Percent
+        value: 100
+        periodSeconds: 15
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+      - type: Percent
+        value: 10
+        periodSeconds: 60
+
+---
+# Service for API Gateway
+apiVersion: v1
+kind: Service
+metadata:
+  name: api-gateway
+  namespace: annotateai-prod
+  annotations:
+    service.beta.kubernetes.io/aws-load-balancer-type: "nlb"
+    service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled: "true"
+spec:
+  selector:
+    app: api-gateway
+  ports:
+  - port: 80
+    targetPort: 8000
+    protocol: TCP
+  type: LoadBalancer
+
+---
+# Service for Authentication Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: auth-service
+  namespace: annotateai-prod
+spec:
+  selector:
+    app: auth-service
+  ports:
+  - port: 8001
+    targetPort: 8001
+  type: ClusterIP
+
+---
+# Service for PostgreSQL
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres
+  namespace: annotateai-prod
+spec:
+  selector:
+    app: postgres
+  ports:
+  - port: 5432
+    targetPort: 5432
+  type: ClusterIP
+
+---
+# Service for Redis
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis
+  namespace: annotateai-prod
+spec:
+  selector:
+    app: redis
+  ports:
+  - port: 6379
+    targetPort: 6379
+  type: ClusterIP
+
+---
+# Service for MinIO
+apiVersion: v1
+kind: Service
+metadata:
+  name: minio
+  namespace: annotateai-prod
+spec:
+  selector:
+    app: minio
+  ports:
+  - name: api
+    port: 9000
+    targetPort: 9000
+  - name: console
+    port: 9001
+    targetPort: 9001
+  type: ClusterIP
+
+---
+# Network Policy for security
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: annotateai-network-policy
+  namespace: annotateai-prod
+spec:
+  podSelector: {}
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: annotateai-prod
+    - namespaceSelector:
+        matchLabels:
+          name: istio-system
+  egress:
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          name: annotateai-prod
+  - to: []
+    ports:
+    - protocol: TCP
+      port: 53
+    - protocol: UDP
+      port: 53
+    - protocol: TCP
+      port: 443
+
+---
+# Pod Disruption Budget for API Gateway
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: api-gateway-pdb
+  namespace: annotateai-prod
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app: api-gateway
+
+---
+# Pod Disruption Budget for Auth Service
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: auth-service-pdb
+  namespace: annotateai-prod
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: auth-service
+
+---
+# Ingress for external access
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: annotateai-ingress
+  namespace: annotateai-prod
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/rate-limit-rpm: "1000"
+    nginx.ingress.kubernetes.io/rate-limit-burst-multiplier: "5"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+spec:
+  tls:
+  - hosts:
+    - api.annotateai.com
+    secretName: annotateai-tls
+  rules:
+  - host: api.annotateai.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: api-gateway
+            port:
+              number: 80
+
+---
+# ServiceMonitor for Prometheus
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: annotateai-services
+  namespace: annotateai-prod
+spec:
+  selector:
+    matchLabels:
+      monitoring: "true"
+  endpoints:
+  - port: http-metrics
+    interval: 30s
+    path: /metrics 

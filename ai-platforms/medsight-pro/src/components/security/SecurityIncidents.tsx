@@ -591,3 +591,4 @@ export function SecurityIncidents({ data = {} }: SecurityIncidentsProps) {
     </div>
   );
 } 
+ 

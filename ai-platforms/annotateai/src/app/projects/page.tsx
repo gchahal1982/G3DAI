@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useAuth } from '../../hooks/useAuth';
 
 interface Project {
   id: string;
@@ -38,6 +39,38 @@ interface ProjectStats {
 
 export default function ProjectsPage() {
   const router = useRouter();
+  const { isAuthenticated, isLoading } = useAuth();
+  
+  // Redirect to login if not authenticated
+  useEffect(() => {
+    if (!isLoading && !isAuthenticated) {
+      router.push('/');
+    }
+  }, [isAuthenticated, isLoading, router]);
+
+  // Show loading while checking auth
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl p-8">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-400 mx-auto"></div>
+          <p className="text-white/70 mt-4 text-center">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Don't render if not authenticated
+  if (!isAuthenticated) {
+    return null;
+  }
+
+  return <ProjectsPageContent />;
+}
+
+// Separate component for the actual page content
+function ProjectsPageContent() {
+  const router = useRouter();
   const [projects, setProjects] = useState<Project[]>([]);
   const [stats, setStats] = useState<ProjectStats | null>(null);
   const [loading, setLoading] = useState(true);
@@ -57,22 +90,126 @@ export default function ProjectsPage() {
   const loadProjects = async () => {
     try {
       setLoading(true);
-      const params = new URLSearchParams({
-        status: filterStatus !== 'all' ? filterStatus : '',
-        type: filterType !== 'all' ? filterType : '',
-        sortBy,
-        sortOrder,
-        search: searchQuery,
-      });
+      
+      // Mock data for testing - replace with actual API call
+      const mockProjects: Project[] = [
+        {
+          id: '1',
+          name: '3D Point Cloud Analysis',
+          description: 'LiDAR point cloud segmentation for autonomous vehicle computer vision systems',
+          type: 'image',
+          status: 'active',
+          progress: 12,
+          annotationsCount: 156,
+          collaboratorsCount: 4,
+          createdAt: '2024-01-10T00:00:00Z',
+          updatedAt: '2024-01-16T00:00:00Z',
+          owner: { id: '1', name: 'John Doe' },
+          collaborators: [
+            { id: '1', name: 'Alice Johnson' },
+            { id: '2', name: 'Bob Smith' },
+            { id: '3', name: 'Carol Davis' },
+            { id: '4', name: 'David Wilson' }
+          ],
+          tags: ['3d', 'lidar', 'construction'],
+          isStarred: false
+        },
+        {
+          id: '2',
+          name: 'Medical Image Segmentation',
+          description: 'Segmentation of brain tumors in MRI scans for deep learning model training',
+          type: 'medical',
+          status: 'active',
+          progress: 67,
+          annotationsCount: 1250,
+          collaboratorsCount: 3,
+          createdAt: '2024-01-20T00:00:00Z',
+          updatedAt: '2024-01-20T00:00:00Z',
+          owner: { id: '2', name: 'Dr. Sarah Chen' },
+          collaborators: [
+            { id: '5', name: 'Michael Lee' },
+            { id: '6', name: 'Lisa Zhang' },
+            { id: '7', name: 'Tom Anderson' }
+          ],
+          tags: ['medical', 'segmentation', 'brain'],
+          isStarred: true
+        },
+        {
+          id: '3',
+          name: 'Autonomous Vehicle Dataset',
+          description: 'Object detection and tracking for self-driving car computer vision systems',
+          type: 'video',
+          status: 'active',
+          progress: 45,
+          annotationsCount: 3420,
+          collaboratorsCount: 5,
+          createdAt: '2024-01-19T00:00:00Z',
+          updatedAt: '2024-01-19T00:00:00Z',
+          owner: { id: '3', name: 'Emma Rodriguez' },
+          collaborators: [
+            { id: '8', name: 'James Brown' },
+            { id: '9', name: 'Maria Garcia' },
+            { id: '10', name: 'Kevin Park' },
+            { id: '11', name: 'Jennifer Taylor' },
+            { id: '12', name: 'Chris Johnson' }
+          ],
+          tags: ['automotive', 'object-detection', 'video'],
+          isStarred: false
+        },
+        {
+          id: '4',
+          name: 'Retail Product Recognition',
+          description: 'Image classification for retail inventory management and checkout automation',
+          type: 'image',
+          status: 'completed',
+          progress: 100,
+          annotationsCount: 8750,
+          collaboratorsCount: 2,
+          createdAt: '2024-01-06T00:00:00Z',
+          updatedAt: '2024-01-06T00:00:00Z',
+          owner: { id: '4', name: 'Rachel Green' },
+          collaborators: [
+            { id: '13', name: 'Daniel Kim' },
+            { id: '14', name: 'Sophie White' }
+          ],
+          tags: ['retail', 'classification', 'products'],
+          isStarred: true
+        },
+        {
+          id: '5',
+          name: 'Wildlife Conservation Dataset',
+          description: 'Animal detection and counting from camera trap images for conservation research',
+          type: 'image',
+          status: 'archived',
+          progress: 100,
+          annotationsCount: 5600,
+          collaboratorsCount: 4,
+          createdAt: '2023-12-01T00:00:00Z',
+          updatedAt: '2023-12-15T00:00:00Z',
+          owner: { id: '5', name: 'Dr. Mark Thompson' },
+          collaborators: [
+            { id: '15', name: 'Anna Martinez' },
+            { id: '16', name: 'Paul Wilson' },
+            { id: '17', name: 'Helen Davis' },
+            { id: '18', name: 'Ryan Miller' }
+          ],
+          tags: ['wildlife', 'conservation', 'detection'],
+          isStarred: false
+        }
+      ];
 
-      const response = await fetch(`/api/projects?${params}`);
-      if (!response.ok) {
-        throw new Error('Failed to load projects');
-      }
+      const mockStats: ProjectStats = {
+        total: 5,
+        active: 2,
+        completed: 1,
+        archived: 1
+      };
 
-      const data = await response.json();
-      setProjects(data.projects);
-      setStats(data.stats);
+      // Simulate API delay
+      await new Promise(resolve => setTimeout(resolve, 800));
+
+      setProjects(mockProjects);
+      setStats(mockStats);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
@@ -397,10 +534,10 @@ export default function ProjectsPage() {
 
         {/* Projects Grid/List */}
         {viewMode === 'grid' ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 lg:gap-6">
             {filteredProjects.map((project) => (
-              <div key={project.id} className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6 hover:bg-white/10 hover:border-indigo-500/30 hover:scale-105 transition-all duration-300">
-                <div className="flex items-start justify-between mb-4">
+              <div key={project.id} className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-4 lg:p-6 hover:bg-white/10 hover:border-indigo-500/30 hover:scale-105 transition-all duration-300">
+                <div className="flex items-start justify-between mb-3 lg:mb-4">
                   <div className="flex items-center gap-2">
                     <input
                       type="checkbox"
@@ -414,13 +551,13 @@ export default function ProjectsPage() {
                       }}
                       className="rounded border-white/20"
                     />
-                    <div className="text-indigo-400">
+                    <div className="text-indigo-400 flex-shrink-0">
                       {getTypeIcon(project.type)}
                     </div>
                   </div>
                   <button
                     onClick={() => handleStarProject(project.id)}
-                    className={`p-1 rounded ${project.isStarred ? 'text-yellow-400' : 'text-white/40 hover:text-white/70'} transition-colors`}
+                    className={`p-1 rounded flex-shrink-0 ${project.isStarred ? 'text-yellow-400' : 'text-white/40 hover:text-white/70'} transition-colors`}
                   >
                     <svg className="w-4 h-4" fill={project.isStarred ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
@@ -429,8 +566,8 @@ export default function ProjectsPage() {
                 </div>
 
                 <Link href={`/projects/${project.id}`} className="block">
-                  <h3 className="text-white font-semibold mb-2 hover:text-indigo-400 transition-colors">{project.name}</h3>
-                  <p className="text-white/70 text-sm mb-4 line-clamp-2">{project.description}</p>
+                  <h3 className="text-white font-semibold mb-2 hover:text-indigo-400 transition-colors text-sm lg:text-base line-clamp-2">{project.name}</h3>
+                  <p className="text-white/70 text-xs lg:text-sm mb-3 lg:mb-4 line-clamp-2">{project.description}</p>
                   
                   <div className="mb-3">
                     <div className="flex items-center gap-2 mb-2">
@@ -439,52 +576,63 @@ export default function ProjectsPage() {
                       </span>
                     </div>
                     <div className="flex flex-wrap gap-1">
-                      {project.tags.slice(0, 4).map((tag, index) => (
+                      {project.tags.slice(0, 3).map((tag, index) => (
                         <span key={index} className="px-2 py-1 bg-white/10 text-white/70 rounded text-xs whitespace-nowrap">
                           {tag}
                         </span>
                       ))}
-                      {project.tags.length > 4 && (
+                      {project.tags.length > 3 && (
                         <span className="px-2 py-1 bg-white/5 text-white/50 rounded text-xs">
-                          +{project.tags.length - 4}
+                          +{project.tags.length - 3}
                         </span>
                       )}
                     </div>
                   </div>
 
                   <div className="mb-3">
-                    <div className="flex items-center justify-between text-sm text-white/70 mb-1">
+                    <div className="flex items-center justify-between text-xs lg:text-sm text-white/70 mb-1">
                       <span>Progress</span>
                       <span>{project.progress}%</span>
                     </div>
-                    <div className="w-full bg-white/10 rounded-full h-2">
+                    <div className="w-full bg-white/10 rounded-full h-1.5 lg:h-2">
                       <div 
-                        className="bg-gradient-to-r from-indigo-500 to-purple-500 h-2 rounded-full transition-all duration-300"
+                        className="bg-gradient-to-r from-indigo-500 to-purple-500 h-1.5 lg:h-2 rounded-full transition-all duration-300"
                         style={{ width: `${project.progress}%` }}
                       ></div>
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-between text-sm text-white/70">
-                    <div className="flex items-center gap-4">
-                      <span>{project.annotationsCount} annotations</span>
-                      <span>{project.collaboratorsCount} collaborators</span>
+                  <div className="flex items-center justify-between text-xs lg:text-sm text-white/70">
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-w-0 flex-1">
+                      <span className="whitespace-nowrap">{project.annotationsCount} annotations</span>
+                      <span className="whitespace-nowrap">{project.collaboratorsCount} collaborators</span>
                     </div>
-                    <div className="flex -space-x-2">
+                    <div className="flex -space-x-1 ml-2 flex-shrink-0">
                       {project.collaborators.slice(0, 3).map((collaborator, index) => (
-                        <div key={index} className="w-6 h-6 bg-indigo-600 rounded-full flex items-center justify-center text-xs font-medium border-2 border-white/20">
-                          {collaborator.name.charAt(0)}
+                        <div 
+                          key={index} 
+                          className="w-5 h-5 lg:w-6 lg:h-6 bg-indigo-600 rounded-full flex items-center justify-center text-xs font-medium border-2 border-white/20 relative"
+                          title={collaborator.name}
+                        >
+                          <span className="text-white text-[9px] lg:text-[10px] leading-none">
+                            {collaborator.name.charAt(0).toUpperCase()}
+                          </span>
                         </div>
                       ))}
                       {project.collaborators.length > 3 && (
-                        <div className="w-6 h-6 bg-white/20 rounded-full flex items-center justify-center text-xs font-medium border-2 border-white/20">
-                          +{project.collaborators.length - 3}
+                        <div 
+                          className="w-5 h-5 lg:w-6 lg:h-6 bg-white/20 rounded-full flex items-center justify-center text-xs font-medium border-2 border-white/20 relative"
+                          title={`+${project.collaborators.length - 3} more collaborators`}
+                        >
+                          <span className="text-white text-[9px] lg:text-[10px] leading-none">
+                            +{project.collaborators.length - 3}
+                          </span>
                         </div>
                       )}
                     </div>
                   </div>
 
-                  <div className="text-xs text-white/50 mt-3">
+                  <div className="text-xs text-white/50 mt-2 lg:mt-3">
                     Updated {new Date(project.updatedAt).toLocaleDateString()}
                   </div>
                 </Link>
@@ -568,13 +716,24 @@ export default function ProjectsPage() {
                       <td className="py-4 px-6">
                         <div className="flex -space-x-1">
                           {project.collaborators.slice(0, 3).map((collaborator, index) => (
-                            <div key={index} className="w-6 h-6 bg-indigo-600 rounded-full flex items-center justify-center text-xs font-medium border border-white/20">
-                              {collaborator.name.charAt(0)}
+                            <div 
+                              key={index} 
+                              className="w-6 h-6 bg-indigo-600 rounded-full flex items-center justify-center text-xs font-medium border border-white/20 relative"
+                              title={collaborator.name}
+                            >
+                              <span className="text-white text-[10px] leading-none">
+                                {collaborator.name.charAt(0).toUpperCase()}
+                              </span>
                             </div>
                           ))}
                           {project.collaborators.length > 3 && (
-                            <div className="w-6 h-6 bg-white/20 rounded-full flex items-center justify-center text-xs font-medium border border-white/20">
-                              +{project.collaborators.length - 3}
+                            <div 
+                              className="w-6 h-6 bg-white/20 rounded-full flex items-center justify-center text-xs font-medium border border-white/20 relative"
+                              title={`+${project.collaborators.length - 3} more collaborators`}
+                            >
+                              <span className="text-white text-[10px] leading-none">
+                                +{project.collaborators.length - 3}
+                              </span>
                             </div>
                           )}
                         </div>

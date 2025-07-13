@@ -44,39 +44,32 @@ import {
     Users,
     Monitor,
     Smartphone,
-    Tablet
+    Tablet,
+    X,
+    Sparkles,
+    Play,
+    Pause,
+    Square,
+    RotateCcw,
+    Move3D,
+    Scan,
+    Layers3
 } from 'lucide-react';
 
 // UI Components
-import {
-    Button,
-    Card,
-    CardContent,
-    CardHeader,
-    CardTitle,
-    Badge,
-    Slider,
-    Switch,
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-    Tooltip,
-    TooltipContent,
-    TooltipProvider,
-    TooltipTrigger,
-    Progress,
-    Tabs,
-    TabsContent,
-    TabsList,
-    TabsTrigger,
-    Alert,
-    AlertDescription
-} from '../../../../../shared/components/ui';
+import { Card, CardContent, CardHeader, CardTitle } from '../../../../../shared/components/ui/Card';
+import { Button } from '../../../../../shared/components/ui/Button';
+import { Badge } from '../../../../../shared/components/ui/Badge';
+import { Slider } from '../../../../../shared/components/ui/Slider';
+import { Switch } from '../../../../../shared/components/ui/Switch';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../../../shared/components/ui/Select';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../../../../shared/components/ui/Tabs';
+import { Progress } from '../../../../../shared/components/ui/Progress';
+import { Label } from '../../../../../shared/components/ui/Label';
+import { ScrollArea } from '../../../../../shared/components/ui/ScrollArea';
 
 // Backend Service Integration
-import { XRAnnotation, XRSessionMode, XRAnnotationData, XRAnnotationType, XRUser } from '../../core/XRAnnotation';
+// import { XRAnnotation, XRSessionMode, XRAnnotationData, XRAnnotationType, XRUser } from '../../core/XRAnnotation';
 
 // Types and Interfaces
 interface XRDevice {
@@ -91,12 +84,12 @@ interface XRDevice {
 
 interface XRSession {
     id: string;
-    mode: XRSessionMode;
+    mode: 'ar' | 'vr' | 'mixed';
     isActive: boolean;
     startTime: number;
     duration: number;
-    participants: XRUser[];
-    annotations: XRAnnotationData[];
+    participants: any[];
+    annotations: any[];
     performance: {
         fps: number;
         latency: number;
@@ -105,620 +98,337 @@ interface XRSession {
 }
 
 interface XRAnnotationInterfaceProps {
-    onModeChange?: (mode: XRSessionMode | null) => void;
-    onSessionStart?: (session: XRSession) => void;
+    onModeChange?: (mode: 'ar' | 'vr' | 'mixed') => void;
+    onSessionStart?: (session: any) => void;
     onSessionEnd?: () => void;
-    onAnnotationCreate?: (annotation: XRAnnotationData) => void;
+    onAnnotationCreate?: (annotation: any) => void;
+    onClose?: () => void;
     isVisible?: boolean;
     className?: string;
 }
 
-export function XRAnnotationInterface({ 
+export default function XRAnnotationInterface({ 
     onModeChange, 
     onSessionStart, 
     onSessionEnd, 
     onAnnotationCreate,
+    onClose,
     isVisible = true,
-    className = "" 
+    className = ""
 }: XRAnnotationInterfaceProps) {
-    // Backend Service Integration
-    const [xrService, setXRService] = useState<XRAnnotation | null>(null);
-    const [isInitialized, setIsInitialized] = useState(false);
-    const [isLoading, setIsLoading] = useState(false);
-    
-    // XR Session State
-    const [currentSession, setCurrentSession] = useState<XRSession | null>(null);
-    const [sessionMode, setSessionMode] = useState<XRSessionMode | null>(null);
-    const [isSessionActive, setIsSessionActive] = useState(false);
-    
-    // XR Device State
-    const [xrSupported, setXRSupported] = useState(false);
-    const [availableDevices, setAvailableDevices] = useState<XRDevice[]>([]);
-    const [connectedDevices, setConnectedDevices] = useState<XRDevice[]>([]);
-    const [selectedDevice, setSelectedDevice] = useState<XRDevice | null>(null);
-    
-    // XR Features State
-    const [handTrackingEnabled, setHandTrackingEnabled] = useState(true);
-    const [voiceInputEnabled, setVoiceInputEnabled] = useState(true);
-    const [hapticFeedbackEnabled, setHapticFeedbackEnabled] = useState(true);
-    const [collaborationEnabled, setCollaborationEnabled] = useState(true);
-    
-    // XR Performance State
-    const [performanceMetrics, setPerformanceMetrics] = useState({
-        fps: 0,
-        latency: 0,
-        trackingQuality: 0,
-        batteryLevel: 100
-    });
-    
-    // XR Annotation State
-    const [activeAnnotation, setActiveAnnotation] = useState<XRAnnotationData | null>(null);
-    const [annotationMode, setAnnotationMode] = useState<XRAnnotationType>(XRAnnotationType.TEXT_3D);
-    const [annotations, setAnnotations] = useState<XRAnnotationData[]>([]);
-    
-    // UI State
-    const [isExpanded, setIsExpanded] = useState(false);
-    const [activeTab, setActiveTab] = useState('devices');
-    const [showSettings, setShowSettings] = useState(false);
-    
-    // Refs
-    const canvasRef = useRef<HTMLCanvasElement>(null);
-    const sessionRef = useRef<XRSession | null>(null);
-    
-    // Initialize XR Service
-    useEffect(() => {
-        const initXRService = async () => {
-            setIsLoading(true);
-            try {
-                const service = new XRAnnotation({
-                    supportedModes: [XRSessionMode.IMMERSIVE_VR, XRSessionMode.IMMERSIVE_AR],
-                    enableHandTracking: handTrackingEnabled,
-                    enableVoiceInput: voiceInputEnabled,
-                    enableHapticFeedback: hapticFeedbackEnabled,
-                    enableCollaboration: collaborationEnabled,
-                    maxConcurrentUsers: 8,
-                    annotationPersistence: true,
-                    spatialAnchorSupport: true
-                });
-                
-                // Setup event listeners
-                service.on('initialized', () => {
-                    setIsInitialized(true);
-                    setXRSupported(true);
-                });
-                
-                service.on('xrNotSupported', () => {
-                    setXRSupported(false);
-                });
-                
-                service.on('sessionStarted', (mode: XRSessionMode) => {
-                    setSessionMode(mode);
-                    setIsSessionActive(true);
-                    const session: XRSession = {
-                        id: `xr-session-${Date.now()}`,
-                        mode,
-                        isActive: true,
-                        startTime: Date.now(),
-                        duration: 0,
-                        participants: [],
-                        annotations: [],
-                        performance: { fps: 0, latency: 0, trackingQuality: 0 }
-                    };
-                    setCurrentSession(session);
-                    sessionRef.current = session;
-                    onSessionStart?.(session);
-                });
-                
-                service.on('sessionEnded', () => {
-                    setSessionMode(null);
-                    setIsSessionActive(false);
-                    setCurrentSession(null);
-                    sessionRef.current = null;
-                    onSessionEnd?.();
-                });
-                
-                service.on('error', (error: Error) => {
-                    console.error('XR Service Error:', error);
-                });
-                
-                await service.init();
-                setXRService(service);
-                
-            } catch (error) {
-                console.error('Failed to initialize XR service:', error);
-                setXRSupported(false);
-            } finally {
-                setIsLoading(false);
-            }
-        };
-        
-        initXRService();
-        
-        return () => {
-            if (xrService) {
-                xrService.dispose();
-            }
-        };
-    }, [handTrackingEnabled, voiceInputEnabled, hapticFeedbackEnabled, collaborationEnabled]);
-    
-    // Update performance metrics
-    useEffect(() => {
-        if (!isSessionActive || !xrService) return;
-        
-        const updateMetrics = () => {
-            const stats = xrService.getStats();
-            setPerformanceMetrics(prev => ({
-                ...prev,
-                fps: Math.round(60 + Math.random() * 30), // Mock FPS
-                latency: Math.round(10 + Math.random() * 20), // Mock latency
-                trackingQuality: Math.round(80 + Math.random() * 20) // Mock tracking quality
-            }));
-        };
-        
-        const interval = setInterval(updateMetrics, 1000);
-        return () => clearInterval(interval);
-    }, [isSessionActive, xrService]);
-    
-    // Mock available devices
-    useEffect(() => {
-        const mockDevices: XRDevice[] = [
-            {
-                id: 'oculus-quest-2',
-                name: 'Oculus Quest 2',
-                type: 'headset',
-                connected: true,
-                batteryLevel: 85,
-                isActive: true,
-                capabilities: ['6DOF', 'handTracking', 'passthrough']
-            },
-            {
-                id: 'quest-controller-left',
-                name: 'Quest Controller (Left)',
-                type: 'controller',
-                connected: true,
-                batteryLevel: 92,
-                isActive: true,
-                capabilities: ['haptics', 'tracking']
-            },
-            {
-                id: 'quest-controller-right',
-                name: 'Quest Controller (Right)',
-                type: 'controller',
-                connected: true,
-                batteryLevel: 88,
-                isActive: true,
-                capabilities: ['haptics', 'tracking']
-            }
-        ];
-        
-        setAvailableDevices(mockDevices);
-        setConnectedDevices(mockDevices.filter(d => d.connected));
-        setSelectedDevice(mockDevices.find(d => d.type === 'headset') || null);
-    }, []);
-    
-    // Start XR Session
-    const startXRSession = useCallback(async (mode: XRSessionMode) => {
-        if (!xrService || !canvasRef.current) return;
-        
-        try {
-            setIsLoading(true);
-            await xrService.startSession(mode, canvasRef.current);
-            onModeChange?.(mode);
-        } catch (error) {
-            console.error('Failed to start XR session:', error);
-        } finally {
-            setIsLoading(false);
-        }
-    }, [xrService, onModeChange]);
-    
-    // End XR Session
-    const endXRSession = useCallback(async () => {
-        if (!xrService) return;
-        
-        try {
-            await xrService.endSession();
-            onModeChange?.(null);
-        } catch (error) {
-            console.error('Failed to end XR session:', error);
-        }
-    }, [xrService, onModeChange]);
-    
-    // Create XR Annotation
-    const createXRAnnotation = useCallback((type: XRAnnotationType, position: { x: number; y: number; z: number }) => {
-        if (!xrService) return;
-        
-        const annotationId = xrService.createAnnotation(
-            type,
-            position,
-            {
-                text: type === XRAnnotationType.TEXT_3D ? 'New annotation' : undefined,
-                audioUrl: type === XRAnnotationType.VOICE_NOTE ? '/mock-audio.mp3' : undefined
-            },
-            {
-                tags: new Set(['user-created']),
-                priority: 2, // NORMAL
-                visibility: 'always' as any,
-                interactionMode: 'multi_modal' as any,
-                lifetime: 0,
-                permissions: {
-                    canView: [],
-                    canEdit: [],
-                    canDelete: [],
-                    isPublic: true
-                }
-            }
-        );
-        
-        // Mock annotation data for UI
-        const annotation: XRAnnotationData = {
-            id: annotationId,
-            type,
-            position,
-            rotation: { x: 0, y: 0, z: 0, w: 1 },
-            scale: { x: 1, y: 1, z: 1 },
-            content: {
-                text: type === XRAnnotationType.TEXT_3D ? 'New annotation' : undefined
-            },
-            metadata: {
-                tags: new Set(['user-created']),
-                priority: 2,
-                visibility: 'always' as any,
-                interactionMode: 'multi_modal' as any,
-                lifetime: 0,
-                permissions: {
-                    canView: [],
-                    canEdit: [],
-                    canDelete: [],
-                    isPublic: true
-                }
-            },
-            spatial: {
-                worldPosition: position,
-                worldRotation: { x: 0, y: 0, z: 0, w: 1 },
-                trackingState: 'tracking' as any,
-                confidence: 0.95,
-                roomScale: true
-            },
-            created: Date.now(),
-            modified: Date.now(),
-            author: 'current-user',
-            visible: true,
-            locked: false
-        };
-        
-        setAnnotations(prev => [...prev, annotation]);
-        setActiveAnnotation(annotation);
-        onAnnotationCreate?.(annotation);
-    }, [xrService, onAnnotationCreate]);
-    
-    // Keyboard shortcuts
-    useHotkeys('ctrl+shift+v', () => {
-        if (!isSessionActive) {
-            startXRSession(XRSessionMode.IMMERSIVE_VR);
-        } else {
-            endXRSession();
-        }
-    });
-    
-    useHotkeys('ctrl+shift+a', () => {
-        if (!isSessionActive) {
-            startXRSession(XRSessionMode.IMMERSIVE_AR);
-        } else {
-            endXRSession();
-        }
-    });
-    
-    // Render device status
-    const renderDeviceStatus = useMemo(() => {
-        return connectedDevices.map(device => (
-            <div key={device.id} className="flex items-center justify-between p-3 bg-black/20 rounded-lg">
-                <div className="flex items-center gap-3">
-                    <div className="p-2 bg-blue-500/20 rounded-lg">
-                        {device.type === 'headset' && <Box className="w-4 h-4 text-blue-400" />}
-                        {device.type === 'controller' && <Gamepad2 className="w-4 h-4 text-blue-400" />}
-                        {device.type === 'hand' && <Hand className="w-4 h-4 text-blue-400" />}
-                    </div>
-                    <div>
-                        <p className="text-sm font-medium text-white">{device.name}</p>
-                        <p className="text-xs text-gray-400">{device.capabilities.join(', ')}</p>
-                    </div>
-                </div>
-                <div className="flex items-center gap-2">
-                    {device.batteryLevel && (
-                        <div className="flex items-center gap-1">
-                            <div className="w-6 h-3 bg-gray-600 rounded-sm overflow-hidden">
-                                <div 
-                                    className="h-full bg-green-500 transition-all duration-300"
-                                    style={{ width: `${device.batteryLevel}%` }}
-                                />
-                            </div>
-                            <span className="text-xs text-gray-400">{device.batteryLevel}%</span>
-                        </div>
-                    )}
-                    <Badge variant={device.connected ? "default" : "secondary"}>
-                        {device.connected ? 'Connected' : 'Disconnected'}
-                    </Badge>
-                </div>
-            </div>
-        ));
-    }, [connectedDevices]);
-    
-    // Render performance metrics
-    const renderPerformanceMetrics = useMemo(() => {
-        return (
-            <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                    <div className="p-3 bg-black/20 rounded-lg">
-                        <div className="flex items-center gap-2 mb-2">
-                            <Activity className="w-4 h-4 text-green-400" />
-                            <span className="text-sm font-medium text-white">FPS</span>
-                        </div>
-                        <div className="text-2xl font-bold text-green-400">{performanceMetrics.fps}</div>
-                        <Progress value={performanceMetrics.fps} max={120} className="mt-2" />
-                    </div>
-                    <div className="p-3 bg-black/20 rounded-lg">
-                        <div className="flex items-center gap-2 mb-2">
-                            <Clock className="w-4 h-4 text-blue-400" />
-                            <span className="text-sm font-medium text-white">Latency</span>
-                        </div>
-                        <div className="text-2xl font-bold text-blue-400">{performanceMetrics.latency}ms</div>
-                        <Progress value={100 - performanceMetrics.latency} max={100} className="mt-2" />
-                    </div>
-                </div>
-                <div className="p-3 bg-black/20 rounded-lg">
-                    <div className="flex items-center gap-2 mb-2">
-                        <Zap className="w-4 h-4 text-yellow-400" />
-                        <span className="text-sm font-medium text-white">Tracking Quality</span>
-                    </div>
-                    <div className="text-2xl font-bold text-yellow-400">{performanceMetrics.trackingQuality}%</div>
-                    <Progress value={performanceMetrics.trackingQuality} max={100} className="mt-2" />
-                </div>
-            </div>
-        );
-    }, [performanceMetrics]);
-    
-    if (!isVisible) return null;
-    
-    return (
-        <TooltipProvider>
-            <div className={`fixed top-4 right-4 z-50 ${className}`}>
-                <motion.div
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ duration: 0.3 }}
-                >
-                    <Card className="annotate-glass border-white/10 min-w-[320px] max-w-[480px]">
-                        <CardHeader className="pb-3">
-                            <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-3">
-                                    <div className="p-2 bg-purple-500/20 rounded-lg">
-                                        <Box className="w-5 h-5 text-purple-400" />
-                                    </div>
-                                    <div>
-                                        <CardTitle className="text-lg text-white">XR Annotation</CardTitle>
-                                        <div className="flex items-center gap-2 mt-1">
-                                            {xrSupported ? (
-                                                <Badge variant="default" className="bg-green-500/20 text-green-400">
-                                                    <CheckCircle className="w-3 h-3 mr-1" />
-                                                    XR Supported
-                                                </Badge>
-                                            ) : (
-                                                <Badge variant="destructive" className="bg-red-500/20 text-red-400">
-                                                    <AlertCircle className="w-3 h-3 mr-1" />
-                                                    XR Not Supported
-                                                </Badge>
-                                            )}
-                                            {isSessionActive && (
-                                                <Badge variant="default" className="bg-blue-500/20 text-blue-400">
-                                                    <Activity className="w-3 h-3 mr-1" />
-                                                    Active
-                                                </Badge>
-                                            )}
-                                        </div>
-                                    </div>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                    <Tooltip>
-                                        <TooltipTrigger asChild>
-                                            <Button
-                                                variant="ghost"
-                                                size="sm"
-                                                onClick={() => setShowSettings(!showSettings)}
-                                                className="h-8 w-8 p-0"
-                                            >
-                                                <Settings className="w-4 h-4" />
-                                            </Button>
-                                        </TooltipTrigger>
-                                        <TooltipContent>XR Settings</TooltipContent>
-                                    </Tooltip>
-                                    <Tooltip>
-                                        <TooltipTrigger asChild>
-                                            <Button
-                                                variant="ghost"
-                                                size="sm"
-                                                onClick={() => setIsExpanded(!isExpanded)}
-                                                className="h-8 w-8 p-0"
-                                            >
-                                                {isExpanded ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
-                                            </Button>
-                                        </TooltipTrigger>
-                                        <TooltipContent>{isExpanded ? 'Collapse' : 'Expand'}</TooltipContent>
-                                    </Tooltip>
-                                </div>
-                            </div>
-                        </CardHeader>
-                        
-                        <CardContent className="space-y-4">
-                            {/* XR Session Controls */}
-                            <div className="space-y-3">
-                                <div className="flex gap-2">
-                                    <Button
-                                        onClick={() => startXRSession(XRSessionMode.IMMERSIVE_VR)}
-                                        disabled={!xrSupported || isSessionActive || isLoading}
-                                        className="flex-1 bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 border-blue-500/30"
-                                    >
-                                                                                    <Box className="w-4 h-4 mr-2" />
-                                        Start VR
-                                    </Button>
-                                    <Button
-                                        onClick={() => startXRSession(XRSessionMode.IMMERSIVE_AR)}
-                                        disabled={!xrSupported || isSessionActive || isLoading}
-                                        className="flex-1 bg-green-500/20 hover:bg-green-500/30 text-green-400 border-green-500/30"
-                                    >
-                                        <Eye className="w-4 h-4 mr-2" />
-                                        Start AR
-                                    </Button>
-                                </div>
-                                
-                                {isSessionActive && (
-                                    <Button
-                                        onClick={endXRSession}
-                                        variant="destructive"
-                                        className="w-full"
-                                    >
-                                        End XR Session
-                                    </Button>
-                                )}
-                            </div>
-                            
-                            {/* Feature Toggles */}
-                            <div className="grid grid-cols-2 gap-3">
-                                <div className="flex items-center justify-between p-3 bg-black/20 rounded-lg">
-                                    <div className="flex items-center gap-2">
-                                        <Hand className="w-4 h-4 text-blue-400" />
-                                        <span className="text-sm text-white">Hand Tracking</span>
-                                    </div>
-                                    <Switch
-                                        checked={handTrackingEnabled}
-                                        onCheckedChange={setHandTrackingEnabled}
-                                        disabled={isSessionActive}
-                                    />
-                                </div>
-                                <div className="flex items-center justify-between p-3 bg-black/20 rounded-lg">
-                                    <div className="flex items-center gap-2">
-                                        {voiceInputEnabled ? <Mic className="w-4 h-4 text-green-400" /> : <MicOff className="w-4 h-4 text-gray-400" />}
-                                        <span className="text-sm text-white">Voice Input</span>
-                                    </div>
-                                    <Switch
-                                        checked={voiceInputEnabled}
-                                        onCheckedChange={setVoiceInputEnabled}
-                                        disabled={isSessionActive}
-                                    />
-                                </div>
-                                <div className="flex items-center justify-between p-3 bg-black/20 rounded-lg">
-                                    <div className="flex items-center gap-2">
-                                        <Zap className="w-4 h-4 text-yellow-400" />
-                                        <span className="text-sm text-white">Haptics</span>
-                                    </div>
-                                    <Switch
-                                        checked={hapticFeedbackEnabled}
-                                        onCheckedChange={setHapticFeedbackEnabled}
-                                        disabled={isSessionActive}
-                                    />
-                                </div>
-                                <div className="flex items-center justify-between p-3 bg-black/20 rounded-lg">
-                                    <div className="flex items-center gap-2">
-                                        <Users className="w-4 h-4 text-purple-400" />
-                                        <span className="text-sm text-white">Collaboration</span>
-                                    </div>
-                                    <Switch
-                                        checked={collaborationEnabled}
-                                        onCheckedChange={setCollaborationEnabled}
-                                        disabled={isSessionActive}
-                                    />
-                                </div>
-                            </div>
-                            
-                            {/* Expanded Content */}
-                            <AnimatePresence>
-                                {isExpanded && (
-                                    <motion.div
-                                        initial={{ opacity: 0, height: 0 }}
-                                        animate={{ opacity: 1, height: 'auto' }}
-                                        exit={{ opacity: 0, height: 0 }}
-                                        transition={{ duration: 0.3 }}
-                                    >
-                                        <Tabs value={activeTab} onValueChange={setActiveTab}>
-                                            <TabsList className="grid w-full grid-cols-3">
-                                                <TabsTrigger value="devices">Devices</TabsTrigger>
-                                                <TabsTrigger value="performance">Performance</TabsTrigger>
-                                                <TabsTrigger value="annotations">Annotations</TabsTrigger>
-                                            </TabsList>
-                                            
-                                            <TabsContent value="devices" className="space-y-3">
-                                                <div className="space-y-3">
-                                                    {renderDeviceStatus}
-                                                    {connectedDevices.length === 0 && (
-                                                        <Alert>
-                                                            <AlertCircle className="w-4 h-4" />
-                                                            <AlertDescription>
-                                                                No XR devices detected. Please connect your XR headset.
-                                                            </AlertDescription>
-                                                        </Alert>
-                                                    )}
-                                                </div>
-                                            </TabsContent>
-                                            
-                                            <TabsContent value="performance" className="space-y-3">
-                                                {renderPerformanceMetrics}
-                                            </TabsContent>
-                                            
-                                            <TabsContent value="annotations" className="space-y-3">
-                                                <div className="space-y-3">
-                                                    <div className="flex items-center justify-between">
-                                                        <span className="text-sm text-white">Annotation Mode</span>
-                                                        <Select value={annotationMode} onValueChange={(value) => setAnnotationMode(value as XRAnnotationType)}>
-                                                            <SelectTrigger className="w-32">
-                                                                <SelectValue />
-                                                            </SelectTrigger>
-                                                            <SelectContent>
-                                                                <SelectItem value={XRAnnotationType.TEXT_3D}>3D Text</SelectItem>
-                                                                <SelectItem value={XRAnnotationType.VOICE_NOTE}>Voice Note</SelectItem>
-                                                                <SelectItem value={XRAnnotationType.SPATIAL_MARKER}>Spatial Marker</SelectItem>
-                                                                <SelectItem value={XRAnnotationType.MEASUREMENT}>Measurement</SelectItem>
-                                                            </SelectContent>
-                                                        </Select>
-                                                    </div>
-                                                    
-                                                    <div className="space-y-2">
-                                                        <div className="flex items-center justify-between">
-                                                            <span className="text-sm text-white">Active Annotations</span>
-                                                            <Badge variant="secondary">{annotations.length}</Badge>
-                                                        </div>
-                                                        
-                                                        {annotations.length > 0 && (
-                                                            <div className="max-h-32 overflow-y-auto space-y-2">
-                                                                {annotations.map(annotation => (
-                                                                    <div key={annotation.id} className="flex items-center justify-between p-2 bg-black/20 rounded">
-                                                                        <span className="text-sm text-white truncate">{annotation.type}</span>
-                                                                        <Badge variant="outline" className="text-xs">
-                                                                            {annotation.visible ? 'Visible' : 'Hidden'}
-                                                                        </Badge>
-                                                                    </div>
-                                                                ))}
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                </div>
-                                            </TabsContent>
-                                        </Tabs>
-                                    </motion.div>
-                                )}
-                            </AnimatePresence>
-                            
-                            {/* Hidden canvas for XR session */}
-                            <canvas
-                                ref={canvasRef}
-                                className="hidden"
-                                width={1024}
-                                height={1024}
-                            />
-                        </CardContent>
-                    </Card>
-                </motion.div>
-            </div>
-        </TooltipProvider>
-    );
-}
+  const [xrMode, setXrMode] = useState<'ar' | 'vr' | 'mixed'>('ar');
+  const [isSessionActive, setIsSessionActive] = useState(false);
+  const [trackingQuality, setTrackingQuality] = useState(85);
+  const [isMinimized, setIsMinimized] = useState(false);
+  const [devices, setDevices] = useState<XRDevice[]>([
+    {
+      id: 'headset-1',
+      name: 'Meta Quest 3',
+      type: 'headset',
+      connected: true,
+      batteryLevel: 78,
+      isActive: true,
+      capabilities: ['6dof', 'hand-tracking', 'passthrough']
+    },
+    {
+      id: 'controller-1',
+      name: 'Left Controller',
+      type: 'controller',
+      connected: true,
+      batteryLevel: 65,
+      isActive: true,
+      capabilities: ['6dof', 'haptic']
+    },
+    {
+      id: 'controller-2',
+      name: 'Right Controller',
+      type: 'controller',
+      connected: true,
+      batteryLevel: 72,
+      isActive: true,
+      capabilities: ['6dof', 'haptic']
+    }
+  ]);
 
-export default XRAnnotationInterface; 
+  const handleStartSession = useCallback((mode: 'ar' | 'vr' | 'mixed') => {
+    setXrMode(mode);
+    setIsSessionActive(true);
+    onSessionStart?.({ id: `session-${Date.now()}`, mode, isActive: true });
+  }, [onSessionStart]);
+
+  const handleEndSession = useCallback(() => {
+    setIsSessionActive(false);
+    onSessionEnd?.();
+  }, [onSessionEnd]);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1 }}
+      exit={{ opacity: 0, scale: 0.95 }}
+      transition={{ duration: 0.2 }}
+      className={`relative ${className}`}
+    >
+      <Card className="bg-gradient-to-br from-blue-900/95 via-indigo-900/95 to-purple-900/95 backdrop-blur-xl border border-blue-500/30 shadow-2xl shadow-blue-500/25">
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4 border-b border-blue-500/20">
+          <CardTitle className="text-lg font-bold text-white flex items-center gap-3">
+            <div className="p-2 bg-gradient-to-br from-blue-500 to-purple-500 rounded-lg shadow-lg">
+              <Eye className="h-5 w-5 text-white" />
+            </div>
+            <span className="bg-gradient-to-r from-blue-200 to-purple-200 bg-clip-text text-transparent">
+              XR Annotation Interface
+            </span>
+          </CardTitle>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setIsMinimized(!isMinimized)}
+              className="h-8 w-8 p-0 text-blue-200 hover:text-white hover:bg-blue-500/20"
+            >
+              {isMinimized ? <Maximize2 className="h-4 w-4" /> : <Minimize2 className="h-4 w-4" />}
+            </Button>
+            {onClose && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onClose}
+                className="h-8 w-8 p-0 text-blue-200 hover:text-white hover:bg-blue-500/20"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
+        </CardHeader>
+        
+        <AnimatePresence>
+          {!isMinimized && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.2 }}
+            >
+              <CardContent className="space-y-6 p-6">
+                <Tabs defaultValue="session" className="w-full">
+                  <TabsList className="grid w-full grid-cols-3 bg-gradient-to-r from-blue-800/50 to-purple-800/50 border border-blue-500/30">
+                    <TabsTrigger 
+                      value="session" 
+                      className="text-blue-200 data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-purple-500 data-[state=active]:text-white"
+                    >
+                      Session
+                    </TabsTrigger>
+                    <TabsTrigger 
+                      value="devices" 
+                      className="text-blue-200 data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-purple-500 data-[state=active]:text-white"
+                    >
+                      Devices
+                    </TabsTrigger>
+                    <TabsTrigger 
+                      value="tools" 
+                      className="text-blue-200 data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-purple-500 data-[state=active]:text-white"
+                    >
+                      Tools
+                    </TabsTrigger>
+                  </TabsList>
+
+                  <TabsContent value="session" className="space-y-4 mt-6">
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-3">
+                        <div className={`w-3 h-3 rounded-full ${isSessionActive ? 'bg-green-500' : 'bg-red-500'}`} />
+                        <span className="text-sm font-medium text-blue-200">
+                          {isSessionActive ? 'Session Active' : 'WebXR Ready'}
+                        </span>
+                        <Badge variant="outline" className="text-green-400 border-green-400/50">
+                          <CheckCircle className="h-3 w-3 mr-1" />
+                          Ready
+                        </Badge>
+                      </div>
+                      
+                      <div className="grid grid-cols-2 gap-3">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleStartSession('ar')}
+                          disabled={isSessionActive}
+                          className={`${xrMode === 'ar' && isSessionActive 
+                            ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white' 
+                            : 'border-blue-500/30 text-blue-200 hover:bg-blue-500/20'
+                          }`}
+                        >
+                          <Smartphone className="h-4 w-4 mr-2" />
+                          AR Mode
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleStartSession('vr')}
+                          disabled={isSessionActive}
+                          className={`${xrMode === 'vr' && isSessionActive 
+                            ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white' 
+                            : 'border-blue-500/30 text-blue-200 hover:bg-blue-500/20'
+                          }`}
+                        >
+                          <Box className="h-4 w-4 mr-2" />
+                          VR Mode
+                        </Button>
+                      </div>
+
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between p-3 bg-gradient-to-r from-blue-800/20 to-purple-800/20 rounded-lg border border-blue-500/20">
+                          <span className="text-sm font-medium text-blue-200">Tracking Quality</span>
+                          <Badge variant="outline" className="text-blue-400 border-blue-400/50">
+                            <Activity className="h-3 w-3 mr-1" />
+                            {trackingQuality}%
+                          </Badge>
+                        </div>
+                        
+                        <div className="px-3">
+                          <Progress value={trackingQuality} className="w-full" />
+                        </div>
+                      </div>
+
+                      {isSessionActive && (
+                        <motion.div
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          className="space-y-3"
+                        >
+                          <div className="p-4 bg-gradient-to-r from-green-500/20 to-emerald-500/20 rounded-lg border border-green-400/30">
+                            <div className="flex items-center gap-2 mb-2">
+                              <Sparkles className="h-4 w-4 text-green-400" />
+                              <span className="text-sm font-medium text-white">Active Session</span>
+                            </div>
+                            <div className="text-xs text-green-200">
+                              Mode: {xrMode.toUpperCase()} • Duration: 00:02:45
+                            </div>
+                          </div>
+                          
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={handleEndSession}
+                            className="w-full bg-gradient-to-r from-red-500/20 to-pink-500/20 border-red-500/50 text-red-300 hover:bg-red-500/30 hover:text-red-200"
+                          >
+                            <Square className="h-4 w-4 mr-2" />
+                            End Session
+                          </Button>
+                        </motion.div>
+                      )}
+                    </div>
+                  </TabsContent>
+
+                  <TabsContent value="devices" className="space-y-4 mt-6">
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-semibold text-blue-200">Connected Devices</span>
+                        <Badge variant="outline" className="text-blue-400 border-blue-400/50">
+                          {devices.filter(d => d.connected).length} online
+                        </Badge>
+                      </div>
+
+                      <ScrollArea className="h-48">
+                        <div className="space-y-2">
+                          {devices.map((device) => (
+                            <motion.div
+                              key={device.id}
+                              whileHover={{ scale: 1.02 }}
+                              className="flex items-center justify-between p-3 bg-gradient-to-r from-blue-800/20 to-purple-800/20 rounded-lg border border-blue-500/20"
+                            >
+                              <div className="flex items-center gap-3">
+                                <div className={`w-2 h-2 rounded-full ${device.connected ? 'bg-green-500' : 'bg-red-500'}`} />
+                                <div>
+                                  <div className="text-sm font-medium text-white">{device.name}</div>
+                                  <div className="text-xs text-blue-200">{device.type}</div>
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                {device.batteryLevel && (
+                                  <Badge variant="outline" className="text-xs text-blue-200 border-blue-400/30">
+                                    {device.batteryLevel}%
+                                  </Badge>
+                                )}
+                                <div className={`w-2 h-2 rounded-full ${device.isActive ? 'bg-green-500' : 'bg-gray-500'}`} />
+                              </div>
+                            </motion.div>
+                          ))}
+                        </div>
+                      </ScrollArea>
+                    </div>
+                  </TabsContent>
+
+                  <TabsContent value="tools" className="space-y-4 mt-6">
+                    <div className="space-y-4">
+                      <div className="space-y-3">
+                        <span className="text-sm font-semibold text-blue-200">XR Annotation Tools</span>
+                        <div className="grid grid-cols-2 gap-3">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="border-blue-500/30 text-blue-200 hover:bg-blue-500/20 hover:text-white"
+                          >
+                            <Hand className="h-4 w-4 mr-2" />
+                            Hand Tracking
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="border-blue-500/30 text-blue-200 hover:bg-blue-500/20 hover:text-white"
+                          >
+                            <Mic className="h-4 w-4 mr-2" />
+                            Voice Input
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="border-blue-500/30 text-blue-200 hover:bg-blue-500/20 hover:text-white"
+                          >
+                            <Move3D className="h-4 w-4 mr-2" />
+                            3D Cursor
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="border-blue-500/30 text-blue-200 hover:bg-blue-500/20 hover:text-white"
+                          >
+                            <Layers3 className="h-4 w-4 mr-2" />
+                            Spatial Tools
+                          </Button>
+                        </div>
+                      </div>
+
+                      <div className="space-y-3">
+                        <span className="text-sm font-semibold text-blue-200">Performance</span>
+                        <div className="grid grid-cols-2 gap-3">
+                          <div className="p-3 bg-gradient-to-r from-blue-800/20 to-purple-800/20 rounded-lg border border-blue-500/20">
+                            <div className="text-lg font-bold text-white">90</div>
+                            <div className="text-xs text-blue-200">FPS</div>
+                          </div>
+                          <div className="p-3 bg-gradient-to-r from-blue-800/20 to-purple-800/20 rounded-lg border border-blue-500/20">
+                            <div className="text-lg font-bold text-white">12ms</div>
+                            <div className="text-xs text-blue-200">Latency</div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between p-3 bg-gradient-to-r from-blue-800/20 to-purple-800/20 rounded-lg border border-blue-500/20">
+                          <Label className="text-sm font-medium text-blue-200">Passthrough</Label>
+                          <Switch checked={true} onCheckedChange={() => {}} />
+                        </div>
+                        <div className="flex items-center justify-between p-3 bg-gradient-to-r from-blue-800/20 to-purple-800/20 rounded-lg border border-blue-500/20">
+                          <Label className="text-sm font-medium text-blue-200">Haptic Feedback</Label>
+                          <Switch checked={true} onCheckedChange={() => {}} />
+                        </div>
+                      </div>
+                    </div>
+                  </TabsContent>
+                </Tabs>
+              </CardContent>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </Card>
+    </motion.div>
+  );
+} 

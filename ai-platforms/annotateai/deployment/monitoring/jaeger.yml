@@ -1,0 +1,434 @@
+jaeger:
+  # Jaeger configuration for distributed tracing
+  version: 1
+  
+  # Sampling configuration
+  sampling:
+    default_strategy:
+      type: probabilistic
+      param: 0.1  # Sample 10% of traces
+    per_service_strategies:
+      - service: "annotateai-api-gateway"
+        type: probabilistic
+        param: 0.5  # Sample 50% of API gateway traces
+      - service: "annotateai-auth-service"
+        type: probabilistic
+        param: 0.3  # Sample 30% of auth service traces
+      - service: "annotateai-collaboration-service"
+        type: probabilistic
+        param: 0.8  # Sample 80% of collaboration traces
+      - service: "annotateai-ai-model-service"
+        type: probabilistic
+        param: 0.2  # Sample 20% of AI model traces
+      - service: "annotateai-training-service"
+        type: probabilistic
+        param: 1.0  # Sample 100% of training traces
+      - service: "annotateai-storage-service"
+        type: probabilistic
+        param: 0.1  # Sample 10% of storage traces
+      - service: "annotateai-video-processing-service"
+        type: probabilistic
+        param: 0.3  # Sample 30% of video processing traces
+      - service: "annotateai-3d-processing-service"
+        type: probabilistic
+        param: 0.3  # Sample 30% of 3D processing traces
+      - service: "annotateai-clip-service"
+        type: probabilistic
+        param: 0.2  # Sample 20% of CLIP service traces
+      - service: "annotateai-tracking-service"
+        type: probabilistic
+        param: 0.2  # Sample 20% of tracking service traces
+      - service: "annotateai-medical-imaging-service"
+        type: probabilistic
+        param: 0.2  # Sample 20% of medical imaging traces
+      - service: "annotateai-pointcloud-service"
+        type: probabilistic
+        param: 0.2  # Sample 20% of point cloud traces
+      - service: "annotateai-synthetic-data-service"
+        type: probabilistic
+        param: 0.1  # Sample 10% of synthetic data traces
+      - service: "annotateai-data-pipeline"
+        type: probabilistic
+        param: 0.3  # Sample 30% of data pipeline traces
+      - service: "annotateai-asset-processor"
+        type: probabilistic
+        param: 0.2  # Sample 20% of asset processor traces
+      - service: "annotateai-pre-annotation-service"
+        type: probabilistic
+        param: 0.3  # Sample 30% of pre-annotation traces
+      - service: "annotateai-xr-service"
+        type: probabilistic
+        param: 0.4  # Sample 40% of XR service traces
+    max_traces_per_second: 10000
+    
+  # Storage configuration
+  storage:
+    type: elasticsearch
+    elasticsearch:
+      server-urls: http://elasticsearch:9200
+      index-prefix: jaeger
+      max-span-age: 168h  # 7 days
+      max-num-spans: 10000000
+      username: ""
+      password: ""
+      sniffer: false
+      tls:
+        enabled: false
+        skip-host-verify: false
+      create-index-templates: true
+      bulk:
+        actions: 1000
+        size: 5000000
+        flush-interval: 200ms
+        workers: 1
+      tags-as-fields:
+        all: true
+        include: "http.method,http.status_code,service.name,service.version,environment,operation"
+      
+  # Collector configuration
+  collector:
+    receivers:
+      otlp:
+        protocols:
+          grpc:
+            endpoint: 0.0.0.0:4317
+          http:
+            endpoint: 0.0.0.0:4318
+      jaeger:
+        protocols:
+          grpc:
+            endpoint: 0.0.0.0:14250
+          thrift_http:
+            endpoint: 0.0.0.0:14268
+          thrift_compact:
+            endpoint: 0.0.0.0:6831
+          thrift_binary:
+            endpoint: 0.0.0.0:6832
+      zipkin:
+        endpoint: 0.0.0.0:9411
+    
+    processors:
+      batch:
+        timeout: 1s
+        send_batch_size: 1024
+        send_batch_max_size: 2048
+      memory_limiter:
+        limit_mib: 512
+        spike_limit_mib: 128
+      resource:
+        attributes:
+          - key: service.name
+            from_attribute: service
+            action: insert
+          - key: service.version
+            from_attribute: version
+            action: insert
+          - key: environment
+            value: production
+            action: insert
+    
+    exporters:
+      jaeger:
+        endpoint: jaeger-collector:14250
+        tls:
+          insecure: true
+      elasticsearch:
+        endpoints: [http://elasticsearch:9200]
+        index: jaeger-spans
+        pipeline: jaeger-pipeline
+        
+  # Query configuration
+  query:
+    base-path: /jaeger
+    static-files: /go/jaeger-ui/
+    ui-config: /etc/jaeger/ui-config.json
+    max-clock-skew-adjustment: 30s
+    
+  # Agent configuration
+  agent:
+    server:
+      host-port: 0.0.0.0:5775
+      http-port: 5778
+    processor:
+      jaeger-compact:
+        server-max-packet-size: 65000
+        server-host-port: 0.0.0.0:6831
+      jaeger-binary:
+        server-max-packet-size: 65000
+        server-host-port: 0.0.0.0:6832
+    reporter:
+      grpc:
+        host-port: jaeger-collector:14250
+        
+  # Ingester configuration (for Kafka-based architecture)
+  ingester:
+    parallelism: 1000
+    deadlock-interval: 1m
+    
+  # Metrics configuration
+  metrics:
+    backend: prometheus
+    prometheus:
+      server-url: http://prometheus:9090
+      
+  # Logging configuration
+  logging:
+    level: info
+    format: json
+    
+  # Health check configuration
+  health-check:
+    http-port: 8080
+    
+  # Admin configuration
+  admin:
+    http:
+      host-port: 0.0.0.0:14269
+      
+  # Span processor configuration
+  span-processor:
+    num-workers: 100
+    queue-size: 2000
+    
+  # Downsampling configuration
+  downsampling:
+    ratio: 0.001
+    hash-salt: "jaeger"
+    
+  # Dependencies configuration
+  dependencies:
+    storage-type: elasticsearch
+    
+  # UI configuration
+  ui:
+    base-path: /jaeger
+    static-files: /go/jaeger-ui/
+    config-file: /etc/jaeger/ui-config.json
+    
+# UI Configuration
+ui-config:
+  monitor:
+    menuEnabled: true
+  dependencies:
+    menuEnabled: true
+    dagMaxNumServices: 200
+  archiveEnabled: true
+  tracking:
+    gaID: ""
+    trackErrors: false
+  search:
+    maxLookback: 
+      label: "30 days"
+      value: "30d"
+    maxTraceDuration:
+      label: "1 hour"
+      value: "1h"
+  linkPatterns:
+    - type: "logs"
+      key: "service.name"
+      url: "http://kibana:5601/app/discover#/?_g=(filters:!(),refreshInterval:(pause:!t,value:0),time:(from:'{startTime}',to:'{endTime}'))&_a=(columns:!(_source),filters:!(('$state':(store:appState),meta:(alias:!n,disabled:!f,index:'logs-*',key:service.name,negate:!f,params:(query:'{value}'),type:phrase),query:(match:(service.name:(query:'{value}',type:phrase))))),index:'logs-*',interval:auto,query:(language:kuery,query:''),sort:!(!('@timestamp',desc)))"
+      text: "View Logs"
+    - type: "metrics"
+      key: "service.name"
+      url: "http://grafana:3000/d/service-metrics/service-metrics?orgId=1&var-service={value}&from={startTime}&to={endTime}"
+      text: "View Metrics"
+    - type: "traces"
+      key: "service.name"
+      url: "http://jaeger:16686/search?service={value}&start={startTime}&end={endTime}"
+      text: "View Similar Traces"
+      
+# Sampling strategies
+sampling-strategies:
+  default_strategy:
+    type: probabilistic
+    param: 0.1
+  per_service_strategies:
+    - service: "annotateai-api-gateway"
+      type: probabilistic
+      param: 0.5
+      max_traces_per_second: 1000
+    - service: "annotateai-auth-service"
+      type: probabilistic
+      param: 0.3
+      max_traces_per_second: 500
+    - service: "annotateai-collaboration-service"
+      type: probabilistic
+      param: 0.8
+      max_traces_per_second: 2000
+    - service: "annotateai-ai-model-service"
+      type: probabilistic
+      param: 0.2
+      max_traces_per_second: 100
+    - service: "annotateai-training-service"
+      type: probabilistic
+      param: 1.0
+      max_traces_per_second: 50
+    - service: "annotateai-storage-service"
+      type: probabilistic
+      param: 0.1
+      max_traces_per_second: 200
+    - service: "annotateai-video-processing-service"
+      type: probabilistic
+      param: 0.3
+      max_traces_per_second: 100
+    - service: "annotateai-3d-processing-service"
+      type: probabilistic
+      param: 0.3
+      max_traces_per_second: 50
+    - service: "annotateai-clip-service"
+      type: probabilistic
+      param: 0.2
+      max_traces_per_second: 100
+    - service: "annotateai-tracking-service"
+      type: probabilistic
+      param: 0.2
+      max_traces_per_second: 100
+    - service: "annotateai-medical-imaging-service"
+      type: probabilistic
+      param: 0.2
+      max_traces_per_second: 50
+    - service: "annotateai-pointcloud-service"
+      type: probabilistic
+      param: 0.2
+      max_traces_per_second: 50
+    - service: "annotateai-synthetic-data-service"
+      type: probabilistic
+      param: 0.1
+      max_traces_per_second: 50
+    - service: "annotateai-data-pipeline"
+      type: probabilistic
+      param: 0.3
+      max_traces_per_second: 200
+    - service: "annotateai-asset-processor"
+      type: probabilistic
+      param: 0.2
+      max_traces_per_second: 100
+    - service: "annotateai-pre-annotation-service"
+      type: probabilistic
+      param: 0.3
+      max_traces_per_second: 100
+    - service: "annotateai-xr-service"
+      type: probabilistic
+      param: 0.4
+      max_traces_per_second: 100
+      
+# Operation strategies
+operation-strategies:
+  - operation: "POST /annotations"
+    type: probabilistic
+    param: 0.8
+  - operation: "GET /health"
+    type: probabilistic
+    param: 0.01
+  - operation: "GET /metrics"
+    type: probabilistic
+    param: 0.01
+  - operation: "POST /ai/inference"
+    type: probabilistic
+    param: 0.5
+  - operation: "POST /training/jobs"
+    type: probabilistic
+    param: 1.0
+  - operation: "WebSocket /collaboration"
+    type: probabilistic
+    param: 0.3
+    
+# Adaptive sampling configuration
+adaptive-sampling:
+  max-traces-per-second: 1000
+  strategies:
+    - service: "annotateai-api-gateway"
+      max-traces-per-second: 500
+    - service: "annotateai-collaboration-service"
+      max-traces-per-second: 1000
+    - service: "annotateai-training-service"
+      max-traces-per-second: 50
+      
+# Span filtering configuration
+span-filtering:
+  policies:
+    - name: "ignore-health-checks"
+      type: "numeric"
+      numeric:
+        attribute: "http.status_code"
+        min_value: 200
+        max_value: 299
+      operations:
+        - "/health"
+        - "/metrics"
+        - "/ready"
+        - "/live"
+    - name: "ignore-static-assets"
+      type: "string"
+      string:
+        attribute: "http.url"
+        values:
+          - "*.css"
+          - "*.js"
+          - "*.png"
+          - "*.jpg"
+          - "*.ico"
+    - name: "sample-errors"
+      type: "numeric"
+      numeric:
+        attribute: "http.status_code"
+        min_value: 400
+        max_value: 599
+      sample_rate: 1.0
+      
+# Archival configuration
+archival:
+  enabled: true
+  storage:
+    type: elasticsearch
+    elasticsearch:
+      server-urls: http://elasticsearch:9200
+      index-prefix: jaeger-archive
+      max-span-age: 2160h  # 90 days
+      
+# Ingestion configuration
+ingestion:
+  kafka:
+    brokers: ["kafka:9092"]
+    topic: "jaeger-spans"
+    encoding: "json"
+    consumer:
+      group-id: "jaeger-ingester"
+      parallelism: 1000
+      
+# Metrics configuration
+metrics:
+  backend: prometheus
+  prometheus:
+    server-url: http://prometheus:9090
+    namespace: jaeger
+    
+# Profiling configuration
+profiling:
+  enabled: true
+  port: 6060
+  
+# Feature flags
+feature-flags:
+  archive-traces: true
+  adaptive-sampling: true
+  kafka-ingestion: false
+  
+# Rate limiting configuration
+rate-limiting:
+  traces-per-second: 10000
+  max-traces-per-second: 20000
+  
+# Debugging configuration
+debug:
+  enabled: false
+  port: 8081
+  
+# Extensions configuration
+extensions:
+  health_check:
+    endpoint: 0.0.0.0:8080
+  pprof:
+    endpoint: 0.0.0.0:6060
+  zpages:
+    endpoint: 0.0.0.0:55679 

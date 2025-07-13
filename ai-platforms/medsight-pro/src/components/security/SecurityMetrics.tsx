@@ -478,3 +478,4 @@ export function SecurityMetrics({ data = {} }: SecurityMetricsProps) {
     </div>
   );
 } 
+ 

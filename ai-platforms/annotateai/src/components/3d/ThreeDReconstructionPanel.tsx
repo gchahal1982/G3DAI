@@ -63,46 +63,25 @@ import {
     Copy,
     ImageIcon,
     FileText,
-    Layers3
+    Layers3,
+    X
 } from 'lucide-react';
 
 // UI Components
-import {
-    Button,
-    Card,
-    CardContent,
-    CardHeader,
-    CardTitle,
-    Badge,
-    Slider,
-    Switch,
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-    Tooltip,
-    TooltipContent,
-    TooltipProvider,
-    TooltipTrigger,
-    Progress,
-    Tabs,
-    TabsContent,
-    TabsList,
-    TabsTrigger,
-    Alert,
-    AlertDescription,
-    Input,
-    Label,
-    Separator,
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-    ScrollArea
-} from '../../../../../shared/components/ui';
+import { Button } from '../../../../../shared/components/ui/Button';
+import { Card, CardContent, CardHeader, CardTitle } from '../../../../../shared/components/ui/Card';
+import { Badge } from '../../../../../shared/components/ui/Badge';
+import { Slider } from '../../../../../shared/components/ui/Slider';
+import { Switch } from '../../../../../shared/components/ui/Switch';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../../../shared/components/ui/Select';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../../../../../shared/components/ui/Tooltip';
+import { Progress } from '../../../../../shared/components/ui/Progress';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../../../../shared/components/ui/Tabs';
+import { Alert, AlertDescription } from '../../../../../shared/components/ui/Alert';
+import { Input } from '../../../../../shared/components/ui/Input';
+import { Label } from '../../../../../shared/components/ui/Label';
+import { Separator } from '../../../../../shared/components/ui/Separator';
+import { ScrollArea } from '../../../../../shared/components/ui/ScrollArea';
 
 // Backend Service Integration
 import { 
@@ -163,6 +142,7 @@ interface ThreeDReconstructionPanelProps {
     onReconstructionComplete?: (result: ReconstructionResult) => void;
     onProgressUpdate?: (progress: number) => void;
     onError?: (error: Error) => void;
+    onClose?: () => void;
     isVisible?: boolean;
     className?: string;
 }
@@ -171,6 +151,7 @@ export function ThreeDReconstructionPanel({
     onReconstructionComplete,
     onProgressUpdate,
     onError,
+    onClose,
     isVisible = true,
     className = ""
 }: ThreeDReconstructionPanelProps) {
@@ -815,6 +796,21 @@ export function ThreeDReconstructionPanel({
                                         </TooltipTrigger>
                                         <TooltipContent>{isExpanded ? 'Collapse' : 'Expand'}</TooltipContent>
                                     </Tooltip>
+                                    {onClose && (
+                                        <Tooltip>
+                                            <TooltipTrigger asChild>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    onClick={onClose}
+                                                    className="h-8 w-8 p-0 text-white/60 hover:text-white"
+                                                >
+                                                    <X className="w-4 h-4" />
+                                                </Button>
+                                            </TooltipTrigger>
+                                            <TooltipContent>Close</TooltipContent>
+                                        </Tooltip>
+                                    )}
                                 </div>
                             </div>
                         </CardHeader>

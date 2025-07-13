@@ -1,0 +1,57 @@
+# AnnotateAI 3D Processing Service - Python Dependencies
+# Phase 3.1 Advanced 3D & Video Processing - 3D Reconstruction & Photogrammetry
+
+# FastAPI and web framework
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+pydantic==2.5.0
+python-multipart==0.0.6
+
+# Core 3D Processing Libraries
+open3d==0.18.0
+trimesh==4.0.5
+pymeshlab==2023.12
+numpy==1.24.3
+scipy==1.11.4
+
+# Computer Vision and Image Processing
+opencv-python==4.8.1.78
+Pillow==10.1.0
+matplotlib==3.8.2
+scikit-image==0.22.0
+
+# Machine Learning for 3D
+torch==2.1.1+cu118
+torchvision==0.16.1+cu118
+torch-geometric==2.4.0
+pytorch3d==0.7.5
+scikit-learn==1.3.2
+
+# Photogrammetry and Structure-from-Motion
+pycolmap==0.4.0
+hloc @ git+https://github.com/cvg/Hierarchical-Localization.git
+
+# Point Cloud Processing
+pandas==2.1.4
+laspy==2.5.1
+plyfile==1.0.1
+pyntcloud==0.3.1
+
+# Data Processing and Analysis
+plotly==5.17.0
+imageio==2.31.6
+
+# Performance and Monitoring
+redis==5.0.1
+prometheus-client==0.19.0
+psutil==5.9.6
+
+# Utilities
+asyncio==3.4.3
+aiofiles==23.2.1
+python-dotenv==1.0.0
+
+# Development
+pytest==7.4.3
+pytest-asyncio==0.21.1
+httpx==0.25.2 

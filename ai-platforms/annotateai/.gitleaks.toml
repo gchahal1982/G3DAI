@@ -1,0 +1,287 @@
+title = "AnnotateAI GitLeaks Configuration"
+
+# GitLeaks configuration for AnnotateAI platform
+# This config scans for secrets, API keys, passwords, and other sensitive data
+
+[extend]
+# Extend the default gitleaks config
+useDefault = true
+
+[allowlist]
+# Allow specific patterns that are not actual secrets
+paths = [
+    '''.*\.md$''',
+    '''.*\.txt$''',
+    '''.*\.json\.example$''',
+    '''.*\.env\.example$''',
+    '''.*test.*''',
+    '''.*spec.*''',
+    '''.*mock.*''',
+    '''.*\.d\.ts$''',
+]
+
+# Allow specific commit patterns
+commits = [
+    '''Initial commit''',
+    '''Merge pull request''',
+]
+
+# Allow specific regexes
+regexes = [
+    '''placeholder''',
+    '''example''',
+    '''test.*''',
+    '''mock.*''',
+    '''fake.*''',
+    '''dummy.*''',
+    '''sample.*''',
+    '''your.*key.*here''',
+    '''insert.*key.*here''',
+    '''replace.*with.*''',
+]
+
+# Custom rules for AnnotateAI specific patterns
+[[rules]]
+id = "annotateai-api-key"
+description = "AnnotateAI API Key"
+regex = '''(?i)(annotateai[_-]?api[_-]?key)\s*[:=]\s*['"]?([a-f0-9]{32,})['"]?'''
+keywords = ["annotateai_api_key", "annotateai-api-key", "ANNOTATEAI_API_KEY"]
+path = '''.*\.(py|js|ts|yaml|yml|json|env)$'''
+
+[[rules]]
+id = "jwt-secret"
+description = "JWT Secret Key"
+regex = '''(?i)(jwt[_-]?secret[_-]?key?)\s*[:=]\s*['"]?([a-zA-Z0-9+/]{32,})['"]?'''
+keywords = ["jwt_secret", "jwt-secret", "JWT_SECRET"]
+path = '''.*\.(py|js|ts|yaml|yml|json|env)$'''
+
+[[rules]]
+id = "database-url"
+description = "Database Connection String"
+regex = '''(?i)(database[_-]?url|db[_-]?url)\s*[:=]\s*['"]?(postgresql|mysql|mongodb)://[^'">\s]+'''
+keywords = ["database_url", "db_url", "DATABASE_URL"]
+path = '''.*\.(py|js|ts|yaml|yml|json|env)$'''
+
+[[rules]]
+id = "redis-url"
+description = "Redis Connection String"
+regex = '''(?i)(redis[_-]?url)\s*[:=]\s*['"]?redis://[^'">\s]+'''
+keywords = ["redis_url", "REDIS_URL"]
+path = '''.*\.(py|js|ts|yaml|yml|json|env)$'''
+
+[[rules]]
+id = "aws-access-key"
+description = "AWS Access Key ID"
+regex = '''AKIA[0-9A-Z]{16}'''
+keywords = ["aws_access_key", "AWS_ACCESS_KEY"]
+
+[[rules]]
+id = "aws-secret-key"
+description = "AWS Secret Access Key"
+regex = '''(?i)(aws[_-]?secret[_-]?access[_-]?key)\s*[:=]\s*['"]?([a-zA-Z0-9+/]{40})['"]?'''
+keywords = ["aws_secret_access_key", "AWS_SECRET_ACCESS_KEY"]
+
+[[rules]]
+id = "openai-api-key"
+description = "OpenAI API Key"
+regex = '''sk-[a-zA-Z0-9]{48}'''
+keywords = ["openai_api_key", "OPENAI_API_KEY"]
+
+[[rules]]
+id = "anthropic-api-key"
+description = "Anthropic API Key"
+regex = '''(?i)(anthropic[_-]?api[_-]?key)\s*[:=]\s*['"]?([a-zA-Z0-9-_]{32,})['"]?'''
+keywords = ["anthropic_api_key", "ANTHROPIC_API_KEY"]
+
+[[rules]]
+id = "huggingface-token"
+description = "Hugging Face API Token"
+regex = '''hf_[a-zA-Z0-9]{32}'''
+keywords = ["huggingface_token", "HUGGINGFACE_TOKEN"]
+
+[[rules]]
+id = "datadog-api-key"
+description = "Datadog API Key"
+regex = '''(?i)(datadog[_-]?api[_-]?key)\s*[:=]\s*['"]?([a-f0-9]{32})['"]?'''
+keywords = ["datadog_api_key", "DATADOG_API_KEY"]
+
+[[rules]]
+id = "datadog-app-key"
+description = "Datadog Application Key"
+regex = '''(?i)(datadog[_-]?app[_-]?key)\s*[:=]\s*['"]?([a-f0-9]{40})['"]?'''
+keywords = ["datadog_app_key", "DATADOG_APP_KEY"]
+
+[[rules]]
+id = "slack-webhook"
+description = "Slack Webhook URL"
+regex = '''https://hooks\.slack\.com/services/T[a-zA-Z0-9_]{8,12}/B[a-zA-Z0-9_]{8,12}/[a-zA-Z0-9_]{24}'''
+keywords = ["slack_webhook", "SLACK_WEBHOOK"]
+
+[[rules]]
+id = "slack-bot-token"
+description = "Slack Bot Token"
+regex = '''xoxb-[0-9]{11,13}-[0-9]{11,13}-[a-zA-Z0-9]{24}'''
+keywords = ["slack_bot_token", "SLACK_BOT_TOKEN"]
+
+[[rules]]
+id = "github-token"
+description = "GitHub Personal Access Token"
+regex = '''ghp_[a-zA-Z0-9]{36}'''
+keywords = ["github_token", "GITHUB_TOKEN"]
+
+[[rules]]
+id = "github-app-token"
+description = "GitHub App Token"
+regex = '''(ghu|ghs)_[a-zA-Z0-9]{36}'''
+keywords = ["github_app_token"]
+
+[[rules]]
+id = "docker-config"
+description = "Docker Config with Authentication"
+regex = '''(?i)"auth"\s*:\s*"[a-zA-Z0-9+/=]{20,}"'''
+keywords = ["dockerconfigjson", "docker_config"]
+
+[[rules]]
+id = "kubernetes-token"
+description = "Kubernetes Service Account Token"
+regex = '''eyJ[a-zA-Z0-9+/=]{100,}'''
+keywords = ["kubernetes_token", "service_account_token"]
+path = '''.*\.(yaml|yml)$'''
+
+[[rules]]
+id = "stripe-key"
+description = "Stripe API Key"
+regex = '''(?i)(stripe[_-]?api[_-]?key)\s*[:=]\s*['"]?(sk|pk)_[a-zA-Z0-9]{24,}['"]?'''
+keywords = ["stripe_api_key", "STRIPE_API_KEY"]
+
+[[rules]]
+id = "sendgrid-key"
+description = "SendGrid API Key"
+regex = '''SG\.[a-zA-Z0-9_-]{22}\.[a-zA-Z0-9_-]{43}'''
+keywords = ["sendgrid_api_key", "SENDGRID_API_KEY"]
+
+[[rules]]
+id = "twilio-sid"
+description = "Twilio Account SID"
+regex = '''AC[a-fA-F0-9]{32}'''
+keywords = ["twilio_account_sid", "TWILIO_ACCOUNT_SID"]
+
+[[rules]]
+id = "twilio-auth-token"
+description = "Twilio Auth Token"
+regex = '''(?i)(twilio[_-]?auth[_-]?token)\s*[:=]\s*['"]?([a-f0-9]{32})['"]?'''
+keywords = ["twilio_auth_token", "TWILIO_AUTH_TOKEN"]
+
+[[rules]]
+id = "cloudflare-api-token"
+description = "Cloudflare API Token"
+regex = '''(?i)(cloudflare[_-]?api[_-]?token)\s*[:=]\s*['"]?([a-zA-Z0-9_-]{40})['"]?'''
+keywords = ["cloudflare_api_token", "CLOUDFLARE_API_TOKEN"]
+
+[[rules]]
+id = "nvidia-ngc-key"
+description = "NVIDIA NGC API Key"
+regex = '''(?i)(nvidia[_-]?ngc[_-]?api[_-]?key)\s*[:=]\s*['"]?([a-zA-Z0-9+/=]{32,})['"]?'''
+keywords = ["nvidia_ngc_api_key", "NVIDIA_NGC_API_KEY"]
+
+[[rules]]
+id = "private-key"
+description = "Private Key"
+regex = '''-----BEGIN (RSA |EC |DSA |OPENSSH |PGP )?PRIVATE KEY-----'''
+keywords = ["private_key", "-----BEGIN"]
+
+[[rules]]
+id = "certificate"
+description = "Certificate"
+regex = '''-----BEGIN CERTIFICATE-----'''
+keywords = ["certificate", "-----BEGIN CERTIFICATE"]
+
+[[rules]]
+id = "password-in-code"
+description = "Password in Code"
+regex = '''(?i)(password|passwd|pwd)\s*[:=]\s*['"][^'"\s]{8,}['"]'''
+keywords = ["password", "passwd", "pwd"]
+path = '''.*\.(py|js|ts|java|go|php|rb)$'''
+
+[[rules]]
+id = "email-credentials"
+description = "Email Credentials"
+regex = '''(?i)(smtp[_-]?password|email[_-]?password)\s*[:=]\s*['"][^'"]{8,}['"]'''
+keywords = ["smtp_password", "email_password"]
+
+[[rules]]
+id = "api-key-generic"
+description = "Generic API Key Pattern"
+regex = '''(?i)(api[_-]?key|apikey)\s*[:=]\s*['"][a-zA-Z0-9+/=]{20,}['"]'''
+keywords = ["api_key", "apikey", "API_KEY"]
+
+[[rules]]
+id = "secret-generic"
+description = "Generic Secret Pattern"
+regex = '''(?i)(secret|token)\s*[:=]\s*['"][a-zA-Z0-9+/=]{20,}['"]'''
+keywords = ["secret", "token", "SECRET", "TOKEN"]
+
+# Entropy detection rules
+[[rules]]
+id = "high-entropy-string"
+description = "High Entropy String (Possible Secret)"
+regex = '''['"][a-zA-Z0-9+/=]{32,}['"]'''
+entropy = 4.5
+path = '''.*\.(py|js|ts|yaml|yml|json|env)$'''
+
+# Kubernetes secrets detection
+[[rules]]
+id = "kubernetes-secret"
+description = "Kubernetes Secret in YAML"
+regex = '''(?i)kind:\s*secret'''
+keywords = ["kind: Secret", "kind:Secret"]
+path = '''.*\.(yaml|yml)$'''
+
+# Docker secrets detection
+[[rules]]
+id = "docker-secret"
+description = "Docker Secret"
+regex = '''(?i)DOCKER_PASSWORD|DOCKER_TOKEN'''
+keywords = ["docker_password", "docker_token"]
+
+# Special patterns for test files (to exclude them)
+[[rules]]
+id = "test-data"
+description = "Test Data (Should be excluded)"
+regex = '''(test|mock|fake|dummy|example).*'''
+keywords = ["test", "mock", "fake", "dummy", "example"]
+path = '''.*test.*'''
+# This rule will be excluded by the allowlist
+
+# Report configuration
+[report]
+format = "sarif"
+path = "gitleaks-report.sarif"
+
+# Scanning configuration
+[scan]
+# Include all file types
+include = ["*"]
+
+# Exclude patterns
+exclude = [
+    ".git/",
+    "node_modules/",
+    "dist/",
+    "build/",
+    "coverage/",
+    "*.log",
+    "*.min.js",
+    "*.min.css",
+]
+
+# Performance settings
+[performance]
+# Maximum file size to scan (in bytes)
+maxFileSize = 10485760  # 10MB
+
+# Maximum number of goroutines
+workers = 10
+
+# Timeout for scanning (in seconds)
+timeout = 300 

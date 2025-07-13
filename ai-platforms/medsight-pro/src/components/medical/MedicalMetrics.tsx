@@ -671,3 +671,58 @@ export function MedicalMetrics() {
     </div>
   );
 } 
+export interface MedicalMetricsData {
+  clinicalMetrics: {
+    totalCases: number;
+    completedCases: number;
+    pendingCases: number;
+    criticalCases: number;
+    averageReviewTime: number; // minutes
+    accuracyRate: number; // percentage
+    productivityScore: number; // percentage
+    qualityScore: number; // percentage
+  };
+  aiMetrics: {
+    aiAccuracy: number; // percentage
+    aiConfidence: number; // percentage
+    aiProcessingTime: number; // seconds
+    aiRecommendations: number;
+    aiValidationRate: number; // percentage
+    falsePositiveRate: number; // percentage
+    falseNegativeRate: number; // percentage
+  };
+  systemMetrics: {
+    systemUptime: number; // percentage
+    averageResponseTime: number; // milliseconds
+    errorRate: number; // percentage
+    throughput: number; // cases per hour
+    storageUsage: number; // percentage
+    networkLatency: number; // milliseconds
+  };
+  timeMetrics: {
+    currentHour: number;
+    todayCompleted: number;
+    yesterdayCompleted: number;
+    weeklyCompleted: number;
+    monthlyCompleted: number;
+    yearlyCompleted: number;
+  };
+  trends: {
+    casesChange: number; // percentage change
+    accuracyChange: number; // percentage change
+    productivityChange: number; // percentage change
+    aiPerformanceChange: number; // percentage change
+  };
+}
+
+export interface MedicalMetricsProps {
+  metrics?: MedicalMetricsData;
+  timeRange?: 'today' | 'week' | 'month' | 'year';
+  user?: {
+    id: string;
+    name: string;
+    role: string;
+    specialization: string;
+  };
+  onMetricClick?: (metric: string) => void;
+} 

@@ -1,0 +1,223 @@
+name: "AnnotateAI CodeQL Configuration"
+
+# Disable the default queries in case of performance issues
+disable-default-queries: false
+
+# Query packs to run
+queries:
+  - uses: security-and-quality
+  - uses: security-extended
+  - name: Run custom security queries
+    uses: ./.github/codeql/custom-queries
+
+# Paths to include and exclude
+paths:
+  - "ai-platforms/annotateai/src/**"
+  - "ai-platforms/annotateai/infrastructure/**"
+  - "ai-platforms/annotateai/deployment/**"
+  - "ai-platforms/annotateai/.github/**"
+
+paths-ignore:
+  - "ai-platforms/annotateai/node_modules/**"
+  - "ai-platforms/annotateai/dist/**"
+  - "ai-platforms/annotateai/build/**"
+  - "ai-platforms/annotateai/coverage/**"
+  - "ai-platforms/annotateai/**/*.test.ts"
+  - "ai-platforms/annotateai/**/*.spec.ts"
+  - "ai-platforms/annotateai/**/*.d.ts"
+  - "ai-platforms/annotateai/docs/**"
+  - "ai-platforms/annotateai/**/*.md"
+
+# Language-specific configurations
+python:
+  # Python-specific query suites
+  queries:
+    - uses: python/security-and-quality
+    - uses: python/security-extended
+  
+  # Python vulnerability patterns
+  patterns:
+    - "sql-injection"
+    - "command-injection"
+    - "path-traversal"
+    - "xxe"
+    - "xss"
+    - "weak-crypto"
+    - "hardcoded-credentials"
+    - "insecure-random"
+    - "pickle-unsafe-deserialization"
+
+javascript:
+  # JavaScript/TypeScript query suites
+  queries:
+    - uses: javascript/security-and-quality
+    - uses: javascript/security-extended
+  
+  # JavaScript vulnerability patterns
+  patterns:
+    - "xss"
+    - "prototype-pollution"
+    - "regex-injection"
+    - "eval-injection"
+    - "path-traversal"
+    - "insecure-random"
+    - "weak-crypto"
+    - "hardcoded-credentials"
+
+# Custom query configurations
+query-filters:
+  - exclude:
+      # Exclude specific false positives
+      id: js/unused-local-variable
+      severity: note
+  
+  - exclude:
+      # Exclude test files from certain checks
+      id: py/hardcoded-credentials
+      path: "**/*test*.py"
+  
+  - include:
+      # Include high-confidence security issues only
+      tags: security
+      precision: high
+
+# Build configuration
+build:
+  # Build commands for multi-language projects
+  python:
+    # Setup Python environment
+    setup: |
+      python -m pip install --upgrade pip
+      pip install -r ai-platforms/annotateai/infrastructure/*/requirements.txt || true
+  
+  javascript:
+    # Setup Node.js environment
+    setup: |
+      cd ai-platforms/annotateai
+      npm ci
+
+# Analysis configuration
+analysis:
+  # Timeout for analysis
+  timeout: 45m
+  
+  # Memory limits
+  memory: 8192
+  
+  # Analysis depth
+  depth: deep
+  
+  # Custom analysis options
+  options:
+    # Enable experimental features
+    experimental: true
+    
+    # Include indirect dependencies
+    include-dependencies: true
+    
+    # Maximum number of paths to explore
+    max-paths: 10000
+
+# Security-specific configurations
+security:
+  # Vulnerability databases to check against
+  databases:
+    - cve
+    - github-advisory
+    - npm-advisory
+    - pypi-advisory
+  
+  # Severity levels to report
+  severity-levels:
+    - critical
+    - high
+    - medium
+    - low
+  
+  # Security categories to focus on
+  categories:
+    - injection
+    - authentication
+    - authorization
+    - cryptography
+    - data-validation
+    - error-handling
+    - logging
+    - configuration
+
+# Reporting configuration
+reporting:
+  # Output formats
+  formats:
+    - sarif
+    - csv
+    - json
+  
+  # Report locations
+  output-dir: "security-reports"
+  
+  # Include source code snippets
+  include-source: true
+  
+  # Group results by category
+  group-by: category
+
+# Alerting configuration
+alerts:
+  # Severity threshold for alerts
+  threshold: medium
+  
+  # Webhook for notifications
+  webhook-url: "${SECURITY_WEBHOOK_URL}"
+  
+  # Email notifications
+  email:
+    enabled: true
+    recipients:
+      - security-team@annotateai.com
+      - dev-team@annotateai.com
+  
+  # Slack notifications
+  slack:
+    enabled: true
+    channel: "#security-alerts"
+    webhook: "${SLACK_WEBHOOK_URL}"
+
+# Performance tuning
+performance:
+  # Parallel processing
+  parallel: true
+  threads: 4
+  
+  # Caching
+  cache:
+    enabled: true
+    ttl: 24h
+    size: 1GB
+  
+  # Resource limits
+  limits:
+    cpu: "4"
+    memory: "8Gi"
+    disk: "50Gi"
+
+# Integration settings
+integrations:
+  # GitHub Security tab
+  github-security:
+    enabled: true
+    upload-sarif: true
+  
+  # Third-party security tools
+  external-tools:
+    - name: "Snyk"
+      enabled: true
+      config: "${SNYK_CONFIG}"
+    
+    - name: "Semgrep"
+      enabled: true
+      config: "${SEMGREP_CONFIG}"
+    
+    - name: "Bandit"
+      enabled: true
+      config: "${BANDIT_CONFIG}" 

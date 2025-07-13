@@ -241,6 +241,19 @@ function LoginForm() {
     }, 500);
   };
 
+  // Quick demo login - bypass form
+  const handleQuickDemo = () => {
+    localStorage.setItem('access_token', 'demo-token-123');
+    window.location.reload();
+  };
+
+  // Force logout - clear all tokens
+  const handleForceLogout = () => {
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('refresh_token');
+    window.location.reload();
+  };
+
   return (
     <div className="min-h-screen flex items-start justify-center px-4 sm:px-6 lg:px-8 pt-8 sm:pt-12 pb-8">
       <div className="max-w-lg w-full space-y-6">
@@ -388,6 +401,16 @@ function LoginForm() {
             >
               <CheckCircleIcon className="w-5 h-5 mr-2" />
               Try Demo Account
+            </button>
+
+            {/* Quick Demo Login Button */}
+            <button
+              type="button"
+              onClick={handleQuickDemo}
+              className="w-full flex items-center justify-center px-4 py-3 rounded-lg bg-white/10 backdrop-blur-sm border border-white/20 hover:bg-white/20 text-white/80 font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-white/20"
+            >
+              <CheckCircleIcon className="w-5 h-5 mr-2" />
+              Quick Demo Login
             </button>
           </form>
 
