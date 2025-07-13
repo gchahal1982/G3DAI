@@ -5,6 +5,26 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../../hooks/useAuth';
 
+// Custom Checkbox Component with better contrast
+const CustomCheckbox = ({ checked, onChange, className = "" }: { checked: boolean; onChange: (checked: boolean) => void; className?: string }) => {
+  return (
+    <button
+      onClick={() => onChange(!checked)}
+      className={`relative w-5 h-5 rounded border-2 transition-all duration-200 flex items-center justify-center ${
+        checked 
+          ? 'bg-indigo-600 border-indigo-600 shadow-lg shadow-indigo-500/25' 
+          : 'bg-white/10 border-white/30 hover:border-white/50'
+      } ${className}`}
+    >
+      {checked && (
+        <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+        </svg>
+      )}
+    </button>
+  );
+};
+
 interface Project {
   id: string;
   name: string;
@@ -353,7 +373,7 @@ function ProjectsPageContent() {
   }
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
@@ -532,222 +552,227 @@ function ProjectsPageContent() {
           )}
         </div>
 
-        {/* Projects Grid/List */}
-        {viewMode === 'grid' ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 lg:gap-6">
-            {filteredProjects.map((project) => (
-              <div key={project.id} className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-4 lg:p-6 hover:bg-white/10 hover:border-indigo-500/30 hover:scale-105 transition-all duration-300">
-                <div className="flex items-start justify-between mb-3 lg:mb-4">
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      checked={selectedProjects.includes(project.id)}
-                      onChange={(e) => {
-                        if (e.target.checked) {
-                          setSelectedProjects([...selectedProjects, project.id]);
-                        } else {
-                          setSelectedProjects(selectedProjects.filter(id => id !== project.id));
-                        }
-                      }}
-                      className="rounded border-white/20"
-                    />
-                    <div className="text-indigo-400 flex-shrink-0">
-                      {getTypeIcon(project.type)}
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => handleStarProject(project.id)}
-                    className={`p-1 rounded flex-shrink-0 ${project.isStarred ? 'text-yellow-400' : 'text-white/40 hover:text-white/70'} transition-colors`}
-                  >
-                    <svg className="w-4 h-4" fill={project.isStarred ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
-                    </svg>
-                  </button>
-                </div>
-
-                <Link href={`/projects/${project.id}`} className="block">
-                  <h3 className="text-white font-semibold mb-2 hover:text-indigo-400 transition-colors text-sm lg:text-base line-clamp-2">{project.name}</h3>
-                  <p className="text-white/70 text-xs lg:text-sm mb-3 lg:mb-4 line-clamp-2">{project.description}</p>
-                  
-                  <div className="mb-3">
-                    <div className="flex items-center gap-2 mb-2">
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium text-white ${getStatusColor(project.status)}`}>
-                        {project.status.charAt(0).toUpperCase() + project.status.slice(1)}
-                      </span>
-                    </div>
-                    <div className="flex flex-wrap gap-1">
-                      {project.tags.slice(0, 3).map((tag, index) => (
-                        <span key={index} className="px-2 py-1 bg-white/10 text-white/70 rounded text-xs whitespace-nowrap">
-                          {tag}
-                        </span>
-                      ))}
-                      {project.tags.length > 3 && (
-                        <span className="px-2 py-1 bg-white/5 text-white/50 rounded text-xs">
-                          +{project.tags.length - 3}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="mb-3">
-                    <div className="flex items-center justify-between text-xs lg:text-sm text-white/70 mb-1">
-                      <span>Progress</span>
-                      <span>{project.progress}%</span>
-                    </div>
-                    <div className="w-full bg-white/10 rounded-full h-1.5 lg:h-2">
-                      <div 
-                        className="bg-gradient-to-r from-indigo-500 to-purple-500 h-1.5 lg:h-2 rounded-full transition-all duration-300"
-                        style={{ width: `${project.progress}%` }}
-                      ></div>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center justify-between text-xs lg:text-sm text-white/70">
-                    <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-w-0 flex-1">
-                      <span className="whitespace-nowrap">{project.annotationsCount} annotations</span>
-                      <span className="whitespace-nowrap">{project.collaboratorsCount} collaborators</span>
-                    </div>
-                    <div className="flex -space-x-1 ml-2 flex-shrink-0">
-                      {project.collaborators.slice(0, 3).map((collaborator, index) => (
-                        <div 
-                          key={index} 
-                          className="w-5 h-5 lg:w-6 lg:h-6 bg-indigo-600 rounded-full flex items-center justify-center text-xs font-medium border-2 border-white/20 relative"
-                          title={collaborator.name}
-                        >
-                          <span className="text-white text-[9px] lg:text-[10px] leading-none">
-                            {collaborator.name.charAt(0).toUpperCase()}
-                          </span>
-                        </div>
-                      ))}
-                      {project.collaborators.length > 3 && (
-                        <div 
-                          className="w-5 h-5 lg:w-6 lg:h-6 bg-white/20 rounded-full flex items-center justify-center text-xs font-medium border-2 border-white/20 relative"
-                          title={`+${project.collaborators.length - 3} more collaborators`}
-                        >
-                          <span className="text-white text-[9px] lg:text-[10px] leading-none">
-                            +{project.collaborators.length - 3}
-                          </span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="text-xs text-white/50 mt-2 lg:mt-3">
-                    Updated {new Date(project.updatedAt).toLocaleDateString()}
-                  </div>
-                </Link>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-white/5">
-                  <tr>
-                    <th className="text-left py-4 px-6 text-white/80 font-medium">
-                      <input
-                        type="checkbox"
-                        checked={selectedProjects.length === filteredProjects.length}
-                        onChange={(e) => {
-                          if (e.target.checked) {
-                            setSelectedProjects(filteredProjects.map(p => p.id));
+        {/* Projects Grid/Table */}
+        <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6">
+          {viewMode === 'grid' ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 lg:gap-6">
+              {filteredProjects.map((project) => (
+                <div key={project.id} className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-4 lg:p-6 hover:bg-white/10 hover:border-indigo-500/30 hover:scale-105 transition-all duration-300">
+                  <div className="flex items-start justify-between mb-3 lg:mb-4">
+                    <div className="flex items-center gap-2">
+                      <CustomCheckbox
+                        checked={selectedProjects.includes(project.id)}
+                        onChange={(checked) => {
+                          if (checked) {
+                            setSelectedProjects([...selectedProjects, project.id]);
                           } else {
-                            setSelectedProjects([]);
+                            setSelectedProjects(selectedProjects.filter(id => id !== project.id));
                           }
                         }}
-                        className="rounded border-white/20"
                       />
-                    </th>
-                    <th className="text-left py-4 px-6 text-white/80 font-medium">Name</th>
-                    <th className="text-left py-4 px-6 text-white/80 font-medium">Type</th>
-                    <th className="text-left py-4 px-6 text-white/80 font-medium">Status</th>
-                    <th className="text-left py-4 px-6 text-white/80 font-medium">Progress</th>
-                    <th className="text-left py-4 px-6 text-white/80 font-medium">Annotations</th>
-                    <th className="text-left py-4 px-6 text-white/80 font-medium">Collaborators</th>
-                    <th className="text-left py-4 px-6 text-white/80 font-medium">Updated</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredProjects.map((project) => (
-                    <tr key={project.id} className="border-t border-white/10 hover:bg-white/5 transition-colors">
-                      <td className="py-4 px-6">
-                        <input
-                          type="checkbox"
-                          checked={selectedProjects.includes(project.id)}
-                          onChange={(e) => {
-                            if (e.target.checked) {
-                              setSelectedProjects([...selectedProjects, project.id]);
-                            } else {
-                              setSelectedProjects(selectedProjects.filter(id => id !== project.id));
-                            }
-                          }}
-                          className="rounded border-white/20"
-                        />
-                      </td>
-                      <td className="py-4 px-6">
-                        <Link href={`/projects/${project.id}`} className="text-white/90 hover:text-indigo-400 font-medium">
-                          {project.name}
-                        </Link>
-                      </td>
-                      <td className="py-4 px-6">
-                        <div className="flex items-center gap-2 text-white/80">
-                          {getTypeIcon(project.type)}
-                          <span className="capitalize">{project.type}</span>
-                        </div>
-                      </td>
-                      <td className="py-4 px-6">
+                      <div className="text-indigo-400 flex-shrink-0">
+                        {getTypeIcon(project.type)}
+                      </div>
+                    </div>
+                    <button
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        // Handle star toggle
+                      }}
+                      className="text-white/40 hover:text-yellow-400 transition-colors"
+                    >
+                      <svg className="w-5 h-5" fill={project.isStarred ? "currentColor" : "none"} stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+                      </svg>
+                    </button>
+                  </div>
+
+                  <Link href={`/projects/${project.id}`} className="block">
+                    <h3 className="text-white font-semibold mb-2 hover:text-indigo-400 transition-colors text-sm lg:text-base line-clamp-2">{project.name}</h3>
+                    <p className="text-white/70 text-xs lg:text-sm mb-3 lg:mb-4 line-clamp-2">{project.description}</p>
+                    
+                    <div className="mb-3">
+                      <div className="flex items-center gap-2 mb-2">
                         <span className={`px-2 py-1 rounded-full text-xs font-medium text-white ${getStatusColor(project.status)}`}>
                           {project.status.charAt(0).toUpperCase() + project.status.slice(1)}
                         </span>
-                      </td>
-                      <td className="py-4 px-6">
-                        <div className="flex items-center gap-2">
-                          <div className="w-16 bg-white/10 rounded-full h-2">
-                            <div 
-                              className="bg-gradient-to-r from-indigo-500 to-purple-500 h-2 rounded-full"
-                              style={{ width: `${project.progress}%` }}
-                            ></div>
-                          </div>
-                          <span className="text-white/70 text-sm">{project.progress}%</span>
-                        </div>
-                      </td>
-                      <td className="py-4 px-6 text-white/90">{project.annotationsCount}</td>
-                      <td className="py-4 px-6">
-                        <div className="flex -space-x-1">
+                      </div>
+                      <div className="flex flex-wrap gap-1">
+                        {project.tags.slice(0, 3).map((tag, index) => (
+                          <span key={index} className="px-2 py-1 bg-white/10 text-white/70 rounded text-xs whitespace-nowrap">
+                            {tag}
+                          </span>
+                        ))}
+                        {project.tags.length > 3 && (
+                          <span className="px-2 py-1 bg-white/5 text-white/50 rounded text-xs">
+                            +{project.tags.length - 3}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="mb-3">
+                      <div className="flex items-center justify-between text-xs lg:text-sm text-white/70 mb-1">
+                        <span>Progress</span>
+                        <span>{project.progress}%</span>
+                      </div>
+                      <div className="w-full bg-white/10 rounded-full h-1.5 lg:h-2">
+                        <div 
+                          className="bg-gradient-to-r from-indigo-500 to-purple-500 h-1.5 lg:h-2 rounded-full transition-all duration-300"
+                          style={{ width: `${project.progress}%` }}
+                        ></div>
+                      </div>
+                    </div>
+
+                    {/* Fixed Layout for Annotations and Collaborators */}
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between text-xs lg:text-sm text-white/70">
+                        <span className="whitespace-nowrap">{project.annotationsCount} annotations</span>
+                        <span className="whitespace-nowrap">{project.collaboratorsCount} collaborators</span>
+                      </div>
+                      
+                      {/* Collaborator Avatars - Fixed spacing */}
+                      <div className="flex items-center justify-end">
+                        <div className="flex items-center gap-1.5">
                           {project.collaborators.slice(0, 3).map((collaborator, index) => (
                             <div 
                               key={index} 
-                              className="w-6 h-6 bg-indigo-600 rounded-full flex items-center justify-center text-xs font-medium border border-white/20 relative"
+                              className="w-7 h-7 bg-indigo-600 rounded-full flex items-center justify-center text-xs font-medium border-2 border-white/20 shadow-lg"
                               title={collaborator.name}
                             >
-                              <span className="text-white text-[10px] leading-none">
+                              <span className="text-white text-[11px] font-semibold leading-none">
                                 {collaborator.name.charAt(0).toUpperCase()}
                               </span>
                             </div>
                           ))}
                           {project.collaborators.length > 3 && (
                             <div 
-                              className="w-6 h-6 bg-white/20 rounded-full flex items-center justify-center text-xs font-medium border border-white/20 relative"
+                              className="w-7 h-7 bg-white/30 rounded-full flex items-center justify-center text-xs font-medium border-2 border-white/20 shadow-lg"
                               title={`+${project.collaborators.length - 3} more collaborators`}
                             >
-                              <span className="text-white text-[10px] leading-none">
+                              <span className="text-white text-[10px] font-semibold leading-none">
                                 +{project.collaborators.length - 3}
                               </span>
                             </div>
                           )}
                         </div>
-                      </td>
-                      <td className="py-4 px-6 text-white/70 text-sm">
-                        {new Date(project.updatedAt).toLocaleDateString()}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                      </div>
+                    </div>
+
+                    <div className="text-xs text-white/50 mt-2 lg:mt-3">
+                      Updated {new Date(project.updatedAt).toLocaleDateString()}
+                    </div>
+                  </Link>
+                </div>
+              ))}
             </div>
-          </div>
-        )}
+          ) : (
+            <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-white/5">
+                    <tr>
+                      <th className="text-left py-4 px-6 text-white/80 font-medium">
+                        <CustomCheckbox
+                          checked={selectedProjects.length === filteredProjects.length}
+                          onChange={(checked) => {
+                            if (checked) {
+                              setSelectedProjects(filteredProjects.map(p => p.id));
+                            } else {
+                              setSelectedProjects([]);
+                            }
+                          }}
+                        />
+                      </th>
+                      <th className="text-left py-4 px-6 text-white/80 font-medium">Name</th>
+                      <th className="text-left py-4 px-6 text-white/80 font-medium">Type</th>
+                      <th className="text-left py-4 px-6 text-white/80 font-medium">Status</th>
+                      <th className="text-left py-4 px-6 text-white/80 font-medium">Progress</th>
+                      <th className="text-left py-4 px-6 text-white/80 font-medium">Annotations</th>
+                      <th className="text-left py-4 px-6 text-white/80 font-medium">Collaborators</th>
+                      <th className="text-left py-4 px-6 text-white/80 font-medium">Updated</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredProjects.map((project) => (
+                      <tr key={project.id} className="border-t border-white/10 hover:bg-white/5 transition-colors">
+                        <td className="py-4 px-6">
+                          <CustomCheckbox
+                            checked={selectedProjects.includes(project.id)}
+                            onChange={(checked) => {
+                              if (checked) {
+                                setSelectedProjects([...selectedProjects, project.id]);
+                              } else {
+                                setSelectedProjects(selectedProjects.filter(id => id !== project.id));
+                              }
+                            }}
+                          />
+                        </td>
+                        <td className="py-4 px-6">
+                          <Link href={`/projects/${project.id}`} className="text-white/90 hover:text-indigo-400 font-medium">
+                            {project.name}
+                          </Link>
+                        </td>
+                        <td className="py-4 px-6">
+                          <div className="flex items-center gap-2 text-white/80">
+                            {getTypeIcon(project.type)}
+                            <span className="capitalize">{project.type}</span>
+                          </div>
+                        </td>
+                        <td className="py-4 px-6">
+                          <span className={`px-2 py-1 rounded-full text-xs font-medium text-white ${getStatusColor(project.status)}`}>
+                            {project.status.charAt(0).toUpperCase() + project.status.slice(1)}
+                          </span>
+                        </td>
+                        <td className="py-4 px-6">
+                          <div className="flex items-center gap-2">
+                            <div className="w-16 bg-white/10 rounded-full h-2">
+                              <div 
+                                className="bg-gradient-to-r from-indigo-500 to-purple-500 h-2 rounded-full"
+                                style={{ width: `${project.progress}%` }}
+                              ></div>
+                            </div>
+                            <span className="text-white/70 text-sm">{project.progress}%</span>
+                          </div>
+                        </td>
+                        <td className="py-4 px-6 text-white/90">{project.annotationsCount}</td>
+                        <td className="py-4 px-6">
+                          <div className="flex items-center gap-1.5">
+                            {project.collaborators.slice(0, 3).map((collaborator, index) => (
+                              <div 
+                                key={index} 
+                                className="w-8 h-8 bg-indigo-600 rounded-full flex items-center justify-center text-xs font-medium border-2 border-white/20 shadow-lg"
+                                title={collaborator.name}
+                              >
+                                <span className="text-white text-[11px] font-semibold leading-none">
+                                  {collaborator.name.charAt(0).toUpperCase()}
+                                </span>
+                              </div>
+                            ))}
+                            {project.collaborators.length > 3 && (
+                              <div 
+                                className="w-8 h-8 bg-white/30 rounded-full flex items-center justify-center text-xs font-medium border-2 border-white/20 shadow-lg"
+                                title={`+${project.collaborators.length - 3} more collaborators`}
+                              >
+                                <span className="text-white text-[10px] font-semibold leading-none">
+                                  +{project.collaborators.length - 3}
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                        </td>
+                        <td className="py-4 px-6 text-white/70 text-sm">
+                          {new Date(project.updatedAt).toLocaleDateString()}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+        </div>
 
         {filteredProjects.length === 0 && (
           <div className="annotate-glass rounded-xl p-12 text-center">

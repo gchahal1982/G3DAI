@@ -12,7 +12,7 @@
  */
 
 import { VolumeRenderer } from '@/core/VolumeRenderer';
-import { MedicalAuth } from '@/lib/auth/medical-auth';
+import { MedicalAuthService } from '@/lib/auth/medical-auth';
 import { ComplianceAuditTrail } from '@/lib/compliance/audit-trail';
 
 // Volume Rendering Data Structures
@@ -138,7 +138,7 @@ export interface VolumeMetrics {
 // Volume Rendering Integration Class
 export class VolumeRenderingIntegration {
   private renderer: VolumeRenderer;
-  private auth: MedicalAuth;
+  private auth: MedicalAuthService;
   private auditTrail: ComplianceAuditTrail;
   private volumeCache: Map<string, VolumeData> = new Map();
   private presetCache: Map<string, RenderingPreset> = new Map();
@@ -148,7 +148,7 @@ export class VolumeRenderingIntegration {
 
   constructor() {
     this.renderer = new VolumeRenderer();
-    this.auth = new MedicalAuth();
+    this.auth = MedicalAuthService.getInstance();
     this.auditTrail = new ComplianceAuditTrail();
     this.loadDefaultPresets();
   }

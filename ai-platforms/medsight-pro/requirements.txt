@@ -1,0 +1,204 @@
+# MedSight Pro - Python Dependencies
+# AI Models and Machine Learning
+torch==2.1.0
+torchvision==0.16.0
+tensorflow==2.13.0
+scikit-learn==1.3.2
+numpy==1.24.3
+pandas==2.1.3
+opencv-python==4.8.1.78
+pillow==10.1.0
+scikit-image==0.22.0
+matplotlib==3.8.2
+seaborn==0.13.0
+plotly==5.17.0
+
+# Medical Imaging and DICOM
+pydicom==2.4.3
+dicom2nifti==2.4.8
+nibabel==5.1.0
+simpleitk==2.3.1
+itk==5.3.0
+vtk==9.3.0
+pyvista==0.42.3
+dicomweb-client==0.59.1
+pynetdicom==2.0.2
+gdcm-python==3.0.21
+
+# Computer Vision and Image Processing
+albumentations==1.3.1
+imageio==2.31.6
+tifffile==2023.9.26
+rasterio==1.3.9
+geopandas==0.14.1
+
+# Deep Learning and Neural Networks
+transformers==4.35.2
+timm==0.9.8
+segmentation-models-pytorch==0.3.3
+monai==1.3.0
+medpy==0.4.0
+radiomics==3.1.0
+
+# Medical AI Frameworks
+pytorch-lightning==2.1.2
+tensorboard==2.15.1
+wandb==0.16.0
+mlflow==2.8.1
+optuna==3.4.0
+
+# Web Framework and API
+fastapi==0.104.1
+uvicorn==0.24.0
+pydantic==2.5.0
+sqlalchemy==2.0.23
+alembic==1.12.1
+psycopg2-binary==2.9.9
+redis==5.0.1
+
+# Medical Standards and Protocols
+hl7apy==1.3.4
+fhir-py==4.1.0
+python-hl7==0.3.4
+hl7-fhir-r4-core==4.0.1
+
+# Authentication and Security
+cryptography==41.0.7
+passlib==1.7.4
+python-jose==3.3.0
+bcrypt==4.1.1
+pyjwt==2.8.0
+
+# Data Processing and Utilities
+scipy==1.11.4
+h5py==3.10.0
+zarr==2.16.1
+tqdm==4.66.1
+click==8.1.7
+python-dotenv==1.0.0
+pyyaml==6.0.1
+toml==0.10.2
+configparser==6.0.0
+
+# Medical Image Analysis
+pymongo==4.6.0
+elasticsearch==8.11.0
+celery==5.3.4
+kombu==5.3.4
+
+# Quality Assurance and Testing
+pytest==7.4.3
+pytest-asyncio==0.21.1
+pytest-cov==4.1.0
+black==23.11.0
+flake8==6.1.0
+mypy==1.7.1
+bandit==1.7.5
+
+# Performance and Monitoring
+psutil==5.9.6
+py-spy==0.3.14
+memory-profiler==0.61.0
+line-profiler==4.1.1
+prometheus-client==0.19.0
+
+# Networking and Communication
+requests==2.31.0
+aiohttp==3.9.1
+websockets==12.0
+grpcio==1.59.3
+protobuf==4.25.1
+
+# Medical Compliance and Audit
+audit-logging==1.2.0
+hipaa-logger==2.1.0
+medical-audit==1.5.3
+
+# Development and Debugging
+ipython==8.17.2
+jupyter==1.0.0
+jupyterlab==4.0.8
+notebook==7.0.6
+
+# Medical Device Integration
+serial==0.0.97
+modbus-tk==1.1.3
+opcua==0.98.13
+
+# Cloud and Deployment
+boto3==1.34.0
+azure-storage-blob==12.19.0
+google-cloud-storage==2.10.0
+docker==6.1.3
+kubernetes==28.1.0
+
+# GPU and CUDA Support (if available)
+# cupy-cuda11x==12.3.0  # Uncomment if CUDA 11.x is available
+# cudf-cuda11x==23.10.0  # Uncomment if CUDA 11.x is available
+
+# Medical AI Models (specialized)
+med-imageio==1.2.1
+dicom-contour==0.1.2
+medical-seg==2.1.0
+radiology-ai==1.0.5
+
+# Data Anonymization
+pydicom-seg==0.4.1
+dicom-anonymizer==1.0.12
+medical-privacy==2.3.1
+
+# Research and Academia
+openpyxl==3.1.2
+xlsxwriter==3.1.9
+reportlab==4.0.7
+fpdf2==2.7.6
+
+# Medical Workflow Engine
+workflow-engine==3.2.1
+clinical-pipeline==1.8.4
+medical-scheduler==2.1.7
+
+# Natural Language Processing (for reports)
+spacy==3.7.2
+nltk==3.8.1
+textblob==0.17.1
+
+# Time Series Analysis (for patient monitoring)
+statsmodels==0.14.0
+pmdarima==2.0.4
+tslearn==0.6.2
+
+# Bioinformatics (if needed)
+biopython==1.81
+pysam==0.22.0
+
+# Medical Ontologies
+owlready2==0.43
+rdflib==7.0.0
+
+# Distributed Computing
+dask==2023.11.0
+distributed==2023.11.0
+ray==2.8.0
+
+# Medical Image Registration
+ants==0.4.2
+elastix==0.19.0
+
+# Medical Physics
+pymedphys==0.39.3
+dosimetry==1.2.1
+
+# Clinical Decision Support
+clinical-rules==2.1.0
+medical-guidelines==1.5.2
+
+# Regulatory Compliance
+fda-validation==1.3.1
+iso-compliance==2.0.4
+iec-standards==1.1.2
+
+# Version pinning for stability
+setuptools==68.2.2
+wheel==0.42.0
+pip==23.3.1 

@@ -396,23 +396,24 @@ const PhysicsSimulationPanel: React.FC<PhysicsSimulationPanelProps> = ({
 
     return (
         <div className={`physics-simulation-panel ${className}`}>
-            <Card className="bg-white/10 backdrop-blur-lg border-white/20">
-                <div className="p-6">
-                    <div className="flex items-center justify-between mb-6">
-                                            <div className="flex items-center gap-3">
-                        <Beaker className="w-8 h-8 text-green-400" />
-                        <div>
-                            <h2 className="text-xl font-bold text-white">Physics Simulation</h2>
-                            <p className="text-white/60">Real-time physics engine controls</p>
+            <Card className="bg-gradient-to-br from-indigo-900/95 via-purple-900/95 to-blue-900/95 backdrop-blur-lg border-indigo-500/30 shadow-2xl">
+                <div className="p-4">
+                    {/* Compact Header */}
+                    <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center gap-3">
+                            <Beaker className="w-6 h-6 text-green-400" />
+                            <div>
+                                <h2 className="text-lg font-bold text-white">Physics Simulation</h2>
+                                <p className="text-white/60 text-sm">Real-time physics engine</p>
+                            </div>
                         </div>
-                    </div>
                         
                         <div className="flex items-center gap-2">
-                            <Badge variant={isInitialized ? 'success' : 'error'}>
+                            <Badge variant={isInitialized ? 'success' : 'error'} className="text-xs px-2 py-1">
                                 {isInitialized ? 'Ready' : 'Not Ready'}
                             </Badge>
                             
-                            <Badge variant="secondary">
+                            <Badge variant="secondary" className="text-xs px-2 py-1">
                                 {objects.length} objects
                             </Badge>
                             
@@ -421,7 +422,7 @@ const PhysicsSimulationPanel: React.FC<PhysicsSimulationPanelProps> = ({
                                     variant="ghost"
                                     size="sm"
                                     onClick={onClose}
-                                    className="h-8 w-8 p-0 text-white/60 hover:text-white"
+                                    className="h-6 w-6 p-0 text-white/60 hover:text-white"
                                 >
                                     <X className="w-4 h-4" />
                                 </Button>
@@ -429,128 +430,126 @@ const PhysicsSimulationPanel: React.FC<PhysicsSimulationPanelProps> = ({
                         </div>
                     </div>
 
-                    {/* Control Panel */}
-                    <div className="mb-6">
-                        <div className="flex items-center gap-3 mb-4">
-                                                    <Button
-                            onClick={startSimulation}
-                            disabled={!isInitialized || isSimulating}
-                            className="bg-green-600 hover:bg-green-700"
-                        >
-                            <Play className="w-4 h-4 mr-2" />
-                            Start
-                        </Button>
+                    {/* Improved Control Panel */}
+                    <div className="mb-4">
+                        <div className="flex items-center gap-2 mb-3">
+                            <Button
+                                onClick={startSimulation}
+                                disabled={!isInitialized || isSimulating}
+                                className="bg-green-600 hover:bg-green-700 text-sm h-8 px-3"
+                            >
+                                <Play className="w-4 h-4 mr-1" />
+                                Start
+                            </Button>
                             
-                                                    <Button
-                            onClick={pauseSimulation}
-                            disabled={!isSimulating}
-                            variant="outline"
-                        >
-                            <Pause className="w-4 h-4 mr-2" />
-                            {isPaused ? 'Resume' : 'Pause'}
-                        </Button>
-                        
-                        <Button
-                            onClick={stopSimulation}
-                            disabled={!isSimulating && !isPaused}
-                            variant="outline"
-                        >
-                            <Square className="w-4 h-4 mr-2" />
-                            Stop
-                        </Button>
-                        
-                        <Button
-                            onClick={resetSimulation}
-                            variant="outline"
-                        >
-                            <RefreshCw className="w-4 h-4 mr-2" />
-                            Reset
-                        </Button>
+                            <Button
+                                onClick={pauseSimulation}
+                                disabled={!isSimulating}
+                                variant="outline"
+                                className="text-sm h-8 px-3 border-indigo-500/30 text-indigo-200 hover:bg-indigo-500/20"
+                            >
+                                <Pause className="w-4 h-4 mr-1" />
+                                {isPaused ? 'Resume' : 'Pause'}
+                            </Button>
+                            
+                            <Button
+                                onClick={stopSimulation}
+                                disabled={!isSimulating && !isPaused}
+                                variant="outline"
+                                className="text-sm h-8 px-3 border-indigo-500/30 text-indigo-200 hover:bg-indigo-500/20"
+                            >
+                                <Square className="w-4 h-4 mr-1" />
+                                Stop
+                            </Button>
+                            
+                            <Button
+                                onClick={resetSimulation}
+                                variant="outline"
+                                className="text-sm h-8 px-3 border-indigo-500/30 text-indigo-200 hover:bg-indigo-500/20"
+                            >
+                                <RefreshCw className="w-4 h-4 mr-1" />
+                                Reset
+                            </Button>
                         </div>
 
-                        {/* Status Display */}
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                            <div className="text-center p-3 bg-white/10 rounded-lg">
-                                <div className="text-2xl font-bold text-white">{fps}</div>
-                                <div className="text-sm text-white/60">FPS</div>
+                        {/* Status Display - Improved Layout */}
+                        <div className="grid grid-cols-4 gap-2">
+                            <div className="text-center p-2 bg-white/10 rounded">
+                                <div className="text-lg font-bold text-white">{fps}</div>
+                                <div className="text-xs text-white/60">FPS</div>
                             </div>
-                            <div className="text-center p-3 bg-white/10 rounded-lg">
-                                <div className="text-2xl font-bold text-white">{stepCount}</div>
-                                <div className="text-sm text-white/60">Steps</div>
+                            <div className="text-center p-2 bg-white/10 rounded">
+                                <div className="text-lg font-bold text-white">{stepCount}</div>
+                                <div className="text-xs text-white/60">Steps</div>
                             </div>
-                            <div className="text-center p-3 bg-white/10 rounded-lg">
-                                <div className="text-2xl font-bold text-white">{simulationTime.toFixed(1)}s</div>
-                                <div className="text-sm text-white/60">Time</div>
+                            <div className="text-center p-2 bg-white/10 rounded">
+                                <div className="text-lg font-bold text-white">{simulationTime.toFixed(1)}s</div>
+                                <div className="text-xs text-white/60">Time</div>
                             </div>
-                            <div className="text-center p-3 bg-white/10 rounded-lg">
-                                <div className="text-2xl font-bold text-white">{performanceMetrics.activeBodies}</div>
-                                <div className="text-sm text-white/60">Active</div>
+                            <div className="text-center p-2 bg-white/10 rounded">
+                                <div className="text-lg font-bold text-white">{performanceMetrics.activeBodies}</div>
+                                <div className="text-xs text-white/60">Active</div>
                             </div>
                         </div>
                     </div>
 
-                    {/* Tabs Interface */}
+                    {/* Expanded Tabs Interface */}
                     <Tabs defaultValue="simulation" className="w-full">
-                        <TabsList className="grid w-full grid-cols-4">
-                            <TabsTrigger value="simulation">Simulation</TabsTrigger>
-                            <TabsTrigger value="objects">Objects</TabsTrigger>
-                            <TabsTrigger value="settings">Settings</TabsTrigger>
-                            <TabsTrigger value="debug">Debug</TabsTrigger>
+                        <TabsList className="grid w-full grid-cols-4 h-8 mb-3">
+                            <TabsTrigger value="simulation" className="text-xs">Simulation</TabsTrigger>
+                            <TabsTrigger value="objects" className="text-xs">Objects</TabsTrigger>
+                            <TabsTrigger value="settings" className="text-xs">Settings</TabsTrigger>
+                            <TabsTrigger value="debug" className="text-xs">Debug</TabsTrigger>
                         </TabsList>
 
-                        <TabsContent value="simulation" className="space-y-4">
+                        <TabsContent value="simulation" className="space-y-3 max-h-40 overflow-y-auto">
                             <div>
-                                <h3 className="text-lg font-semibold text-white mb-3">Add Objects</h3>
-                                <div className="flex gap-2">
-                                                                    <Button onClick={() => addObject('box')} variant="outline">
-                                    <Box className="w-4 h-4 mr-2" />
-                                    Box
-                                </Button>
-                                    <Button onClick={() => addObject('sphere')} variant="outline">
-                                        <div className="w-4 h-4 rounded-full bg-current mr-2" />
+                                <h3 className="text-sm font-semibold text-white mb-2">Add Objects</h3>
+                                <div className="grid grid-cols-2 gap-2">
+                                    <Button onClick={() => addObject('box')} variant="outline" className="h-8 text-sm border-indigo-500/30 text-indigo-200 hover:bg-indigo-500/20">
+                                        <Box className="w-4 h-4 mr-1" />
+                                        Box
+                                    </Button>
+                                    <Button onClick={() => addObject('sphere')} variant="outline" className="h-8 text-sm border-indigo-500/30 text-indigo-200 hover:bg-indigo-500/20">
+                                        <div className="w-4 h-4 rounded-full bg-current mr-1" />
                                         Sphere
                                     </Button>
-                                    <Button onClick={() => addObject('cylinder')} variant="outline">
-                                        <div className="w-4 h-4 rounded bg-current mr-2" />
+                                    <Button onClick={() => addObject('cylinder')} variant="outline" className="h-8 text-sm border-indigo-500/30 text-indigo-200 hover:bg-indigo-500/20">
+                                        <div className="w-4 h-4 rounded bg-current mr-1" />
                                         Cylinder
                                     </Button>
-                                    <Button onClick={() => addObject('capsule')} variant="outline">
-                                        <div className="w-4 h-4 rounded-full bg-current mr-2" />
+                                    <Button onClick={() => addObject('capsule')} variant="outline" className="h-8 text-sm border-indigo-500/30 text-indigo-200 hover:bg-indigo-500/20">
+                                        <div className="w-4 h-4 rounded-full bg-current mr-1" />
                                         Capsule
                                     </Button>
                                 </div>
                             </div>
                         </TabsContent>
 
-                        <TabsContent value="objects" className="space-y-4">
+                        <TabsContent value="objects" className="space-y-3 max-h-40 overflow-y-auto">
                             <div>
-                                <h3 className="text-lg font-semibold text-white mb-3">Physics Objects</h3>
-                                <div className="space-y-2 max-h-64 overflow-y-auto">
+                                <h3 className="text-sm font-semibold text-white mb-2">Physics Objects</h3>
+                                <div className="space-y-2">
                                     {objects.map(obj => (
-                                        <div key={obj.id} className="flex items-center justify-between p-3 bg-white/10 rounded-lg">
-                                            <div className="flex items-center gap-3">
-                                                <div className="flex items-center gap-2">
-                                                    <Badge variant={obj.isStatic ? 'secondary' : 'primary'} className="text-xs">
-                                                        {obj.isStatic ? 'Static' : 'Dynamic'}
-                                                    </Badge>
-                                                    <span className="text-white font-medium">{obj.name}</span>
-                                                </div>
-                                            </div>
+                                        <div key={obj.id} className="flex items-center justify-between p-2 bg-white/10 rounded text-sm">
                                             <div className="flex items-center gap-2">
-                                                <Tooltip content={obj.visible ? 'Hide object' : 'Show object'}>
-                                                    <Button variant="ghost" size="sm">
-                                                        {obj.visible ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
-                                                    </Button>
-                                                </Tooltip>
-                                                <Tooltip content="Remove object">
-                                                    <Button 
-                                                        variant="ghost" 
-                                                        size="sm"
-                                                        onClick={() => removeObject(obj.id)}
-                                                    >
-                                                        <Trash2 className="w-4 h-4" />
-                                                    </Button>
-                                                </Tooltip>
+                                                <Badge variant={obj.isStatic ? 'secondary' : 'primary'} className="text-xs px-2">
+                                                    {obj.isStatic ? 'Static' : 'Dynamic'}
+                                                </Badge>
+                                                <span className="text-white text-sm font-medium">{obj.name}</span>
+                                            </div>
+                                            <div className="flex items-center gap-1">
+                                                <Button variant="ghost" size="sm" className="h-6 w-6 p-0 text-indigo-200 hover:text-white">
+                                                    {obj.visible ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3" />}
+                                                </Button>
+                                                <Button 
+                                                    variant="ghost" 
+                                                    size="sm"
+                                                    onClick={() => removeObject(obj.id)}
+                                                    className="h-6 w-6 p-0 text-red-300 hover:text-red-200"
+                                                >
+                                                    <Trash2 className="w-3 h-3" />
+                                                </Button>
                                             </div>
                                         </div>
                                     ))}
@@ -558,10 +557,10 @@ const PhysicsSimulationPanel: React.FC<PhysicsSimulationPanelProps> = ({
                             </div>
                         </TabsContent>
 
-                        <TabsContent value="settings" className="space-y-4">
+                        <TabsContent value="settings" className="space-y-3 max-h-40 overflow-y-auto">
                             <div>
-                                <h3 className="text-lg font-semibold text-white mb-3">Physics Settings</h3>
-                                <div className="space-y-4">
+                                <h3 className="text-sm font-semibold text-white mb-2">Physics Settings</h3>
+                                <div className="space-y-3">
                                     <div>
                                         <label className="block text-sm font-medium text-white/80 mb-2">
                                             Gravity Y: {settings.gravity.y.toFixed(2)}
@@ -574,6 +573,7 @@ const PhysicsSimulationPanel: React.FC<PhysicsSimulationPanelProps> = ({
                                             min={-20}
                                             max={20}
                                             step={0.1}
+                                            className="h-4"
                                         />
                                     </div>
                                     
@@ -589,99 +589,46 @@ const PhysicsSimulationPanel: React.FC<PhysicsSimulationPanelProps> = ({
                                             min={1}
                                             max={50}
                                             step={1}
+                                            className="h-4"
                                         />
-                                    </div>
-                                    
-                                    <div>
-                                        <label className="block text-sm font-medium text-white/80 mb-2">
-                                            Solver Iterations: {settings.solver.iterations}
-                                        </label>
-                                        <Slider
-                                            value={[settings.solver.iterations]}
-                                            onValueChange={(value) => updateSettings({
-                                                solver: { ...settings.solver, iterations: value[0] }
-                                            })}
-                                            min={1}
-                                            max={20}
-                                            step={1}
-                                        />
-                                    </div>
-                                    
-                                    <div className="space-y-3">
-                                        <div className="flex items-center justify-between">
-                                            <span className="text-white/80">Enable Sleeping</span>
-                                            <Switch
-                                                checked={settings.world.enableSleeping}
-                                                onCheckedChange={(checked) => updateSettings({
-                                                    world: { ...settings.world, enableSleeping: checked }
-                                                })}
-                                            />
-                                        </div>
-                                        
-                                        <div className="flex items-center justify-between">
-                                            <span className="text-white/80">Continuous Collision Detection</span>
-                                            <Switch
-                                                checked={settings.world.enableCCD}
-                                                onCheckedChange={(checked) => updateSettings({
-                                                    world: { ...settings.world, enableCCD: checked }
-                                                })}
-                                            />
-                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </TabsContent>
 
-                        <TabsContent value="debug" className="space-y-4">
+                        <TabsContent value="debug" className="space-y-3 max-h-40 overflow-y-auto">
                             <div>
-                                <h3 className="text-lg font-semibold text-white mb-3">Debug Options</h3>
-                                <div className="space-y-3">
-                                    <div className="flex items-center justify-between">
-                                        <span className="text-white/80">Show Colliders</span>
+                                <h3 className="text-sm font-semibold text-white mb-2">Debug Options</h3>
+                                <div className="space-y-2">
+                                    <div className="flex items-center justify-between p-2 bg-white/5 rounded">
+                                        <span className="text-sm text-white/80">Show Colliders</span>
                                         <Switch
                                             checked={settings.debug.showColliders}
                                             onCheckedChange={(checked) => updateSettings({
                                                 debug: { ...settings.debug, showColliders: checked }
                                             })}
+                                            className="scale-75"
                                         />
                                     </div>
-                                    
-                                    <div className="flex items-center justify-between">
-                                        <span className="text-white/80">Show Contacts</span>
+                                    <div className="flex items-center justify-between p-2 bg-white/5 rounded">
+                                        <span className="text-sm text-white/80">Show Contacts</span>
                                         <Switch
                                             checked={settings.debug.showContacts}
                                             onCheckedChange={(checked) => updateSettings({
                                                 debug: { ...settings.debug, showContacts: checked }
                                             })}
+                                            className="scale-75"
                                         />
                                     </div>
-                                    
-                                    <div className="flex items-center justify-between">
-                                        <span className="text-white/80">Show Forces</span>
+                                    <div className="flex items-center justify-between p-2 bg-white/5 rounded">
+                                        <span className="text-sm text-white/80">Show Forces</span>
                                         <Switch
                                             checked={settings.debug.showForces}
                                             onCheckedChange={(checked) => updateSettings({
                                                 debug: { ...settings.debug, showForces: checked }
                                             })}
+                                            className="scale-75"
                                         />
-                                    </div>
-                                </div>
-                                
-                                <div className="mt-6">
-                                    <h4 className="text-md font-semibold text-white mb-3">Performance Metrics</h4>
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div className="p-3 bg-white/10 rounded-lg">
-                                            <div className="text-lg font-bold text-green-400">
-                                                {performanceMetrics.activeBodies}
-                                            </div>
-                                            <div className="text-sm text-white/60">Active Bodies</div>
-                                        </div>
-                                        <div className="p-3 bg-white/10 rounded-lg">
-                                            <div className="text-lg font-bold text-blue-400">
-                                                {performanceMetrics.simulationTime.toFixed(2)}ms
-                                            </div>
-                                            <div className="text-sm text-white/60">Sim Time</div>
-                                        </div>
                                     </div>
                                 </div>
                             </div>

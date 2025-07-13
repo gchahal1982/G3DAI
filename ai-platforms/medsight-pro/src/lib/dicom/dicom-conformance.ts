@@ -456,8 +456,8 @@ class DICOMConformanceStatement {
     const unsupportedKeys = queryKeys.filter(key => !supportedKeys.includes(key));
 
     // Validate matching criteria
-    const hasValidMatchingCriteria = query.patientID || query.accessionNumber || 
-                                   query.scheduledProcedureStepSequence?.scheduledProcedureStepStartDate;
+    const hasValidMatchingCriteria = Boolean(query.patientID || query.accessionNumber || 
+                                   query.scheduledProcedureStepSequence?.scheduledProcedureStepStartDate);
 
     return {
       valid: unsupportedKeys.length === 0 && hasValidMatchingCriteria,

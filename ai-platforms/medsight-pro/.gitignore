@@ -1,0 +1,435 @@
+# MedSight Pro - Git Ignore Configuration
+# Medical platform specific exclusions
+
+# ============================================================================
+# Environment and Configuration
+# ============================================================================
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env.*.local
+
+# Medical device configuration
+medical-config.json
+device-config.json
+compliance-config.json
+
+# ============================================================================
+# Dependencies
+# ============================================================================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Python dependencies
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Poetry
+poetry.lock
+.venv/
+venv/
+ENV/
+env/
+.env
+
+# ============================================================================
+# Build Output
+# ============================================================================
+.next/
+out/
+build/
+dist/
+.vercel
+.netlify
+
+# Python build
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+pip-log.txt
+pip-delete-this-directory.txt
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+.pytest_cache/
+
+# ============================================================================
+# IDE and Editor Files
+# ============================================================================
+.vscode/
+.idea/
+*.swp
+*.swo
+*.tmp
+*.temp
+*~
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# ============================================================================
+# Medical Data and PHI (HIPAA Compliance)
+# ============================================================================
+# CRITICAL: Never commit medical data or PHI
+/medical-data/
+/patient-data/
+/phi-data/
+/dicom-storage/
+/uploads/
+/temp-uploads/
+*.dcm
+*.dicom
+patient-*.json
+phi-*.json
+
+# Medical imaging files
+*.nii
+*.nii.gz
+*.mha
+*.mhd
+*.raw
+*.img
+*.hdr
+
+# ============================================================================
+# Logs and Audit Files
+# ============================================================================
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Medical audit logs (sensitive)
+audit-logs/
+medical-audit/
+hipaa-audit/
+fda-audit/
+compliance-logs/
+
+# ============================================================================
+# Database Files
+# ============================================================================
+*.db
+*.sqlite
+*.sqlite3
+*.db-journal
+*.db-shm
+*.db-wal
+
+# Database backups
+*.sql
+*.dump
+*.backup
+
+# ============================================================================
+# AI Models and Data
+# ============================================================================
+models/
+*.pth
+*.pt
+*.ckpt
+*.h5
+*.pkl
+*.pickle
+*.model
+*.weights
+*.onnx
+*.tflite
+*.pb
+
+# Training data
+training-data/
+validation-data/
+test-data/
+datasets/
+
+# Model outputs
+model-outputs/
+predictions/
+inference-results/
+
+# ============================================================================
+# Security and Encryption
+# ============================================================================
+*.key
+*.pem
+*.crt
+*.csr
+*.p12
+*.pfx
+*.jks
+*.keystore
+*.truststore
+
+# SSL certificates
+ssl/
+certs/
+certificates/
+
+# Encryption keys
+encryption-keys/
+master-keys/
+*.aes
+*.gpg
+
+# ============================================================================
+# Docker and Container Files
+# ============================================================================
+.dockerignore
+docker-compose.override.yml
+docker-compose.local.yml
+Dockerfile.local
+.docker/
+
+# Container volumes
+volumes/
+docker-volumes/
+
+# ============================================================================
+# Testing and Coverage
+# ============================================================================
+coverage/
+.nyc_output/
+.jest/
+test-results/
+coverage.xml
+junit.xml
+*.lcov
+
+# E2E test artifacts
+test-results/
+playwright-report/
+playwright/.cache/
+
+# ============================================================================
+# Temporary Files
+# ============================================================================
+*.tmp
+*.temp
+*.bak
+*.swp
+*.swo
+.tmp/
+temp/
+tmp/
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# ============================================================================
+# Package Manager Files
+# ============================================================================
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+.pnpm-store/
+.yarn/
+
+# ============================================================================
+# Next.js Specific
+# ============================================================================
+.next/
+out/
+.vercel
+.env*.local
+
+# ============================================================================
+# TypeScript
+# ============================================================================
+*.tsbuildinfo
+tsconfig.tsbuildinfo
+
+# ============================================================================
+# Monitoring and Metrics
+# ============================================================================
+prometheus-data/
+grafana-data/
+metrics/
+monitoring/
+
+# ============================================================================
+# Backup Files
+# ============================================================================
+*.backup
+*.bak
+*.old
+backup/
+backups/
+
+# ============================================================================
+# Documentation Build
+# ============================================================================
+docs/build/
+docs/_build/
+site/
+
+# ============================================================================
+# Cloud and Deployment
+# ============================================================================
+.terraform/
+*.tfstate
+*.tfstate.backup
+.terraform.lock.hcl
+
+# Kubernetes
+*.kubeconfig
+kube-config
+
+# Cloud provider configs
+.aws/
+.gcp/
+.azure/
+
+# ============================================================================
+# Medical Compliance Exclusions
+# ============================================================================
+# FDA validation files (sensitive)
+fda-validation/
+regulatory-submissions/
+clinical-validation/
+
+# HIPAA compliance files
+hipaa-assessment/
+risk-assessment/
+security-assessment/
+
+# Quality system files
+quality-system/
+iso-13485/
+iso-14971/
+
+# ============================================================================
+# Performance and Profiling
+# ============================================================================
+.profile
+*.prof
+*.trace
+.cpuprofile
+.heapsnapshot
+
+# ============================================================================
+# Miscellaneous
+# ============================================================================
+*.tar
+*.tar.gz
+*.zip
+*.rar
+*.7z
+
+# Runtime data
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# Optional npm cache directory
+.npm
+
+# Optional eslint cache
+.eslintcache
+
+# Optional stylelint cache
+.stylelintcache
+
+# Microbundle cache
+.rpt2_cache/
+.rts2_cache_cjs/
+.rts2_cache_es/
+.rts2_cache_umd/
+
+# Optional REPL history
+.node_repl_history
+
+# Output of 'npm pack'
+*.tgz
+
+# Yarn Integrity file
+.yarn-integrity
+
+# parcel-bundler cache (https://parceljs.org/)
+.cache
+.parcel-cache
+
+# SvelteKit build / generate output
+.svelte-kit
+
+# End of https://www.toptal.com/developers/gitignore/api/node,python,nextjs,react,typescript
+
+# ============================================================================
+# Medical Device Specific
+# ============================================================================
+# Device serial numbers and identifiers
+device-serial.txt
+device-id.txt
+medical-device-config.json
+
+# Clinical trial data
+clinical-trials/
+study-data/
+trial-results/
+
+# Medical professional credentials
+medical-licenses/
+credentials/
+certifications/
+
+# ============================================================================
+# IMPORTANT MEDICAL COMPLIANCE NOTES
+# ============================================================================
+# This gitignore is configured for HIPAA compliance
+# Never commit:
+# 1. Patient Health Information (PHI)
+# 2. Medical device serial numbers
+# 3. Clinical data or studies
+# 4. Medical professional credentials
+# 5. Audit logs with patient information
+# 6. DICOM files with patient data
+# 7. Encryption keys or certificates
+# 8. Database backups with PHI
+# 9. AI models trained on patient data
+# 10. Any files containing medical information 

@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { 
   ServerIcon, CpuChipIcon, CircleStackIcon, CloudIcon,
   WifiIcon, SignalIcon, BoltIcon, FireIcon,
-  ChartBarIcon, ChartLineIcon, ArrowTrendingUpIcon,
+  ChartBarIcon, ChartBarIcon as ChartLineIcon, ArrowTrendingUpIcon,
   ArrowTrendingDownIcon, ExclamationTriangleIcon,
   CheckCircleIcon, XCircleIcon, ClockIcon,
   ArrowPathIcon, PlayIcon, PauseIcon, StopIcon,
@@ -24,7 +24,7 @@ import {
   PhotoIcon, VideoCameraIcon, MicrophoneIcon,
   SpeakerWaveIcon, DeviceTabletIcon, CubeIcon,
   ArchiveBoxIcon, BanknotesIcon, CreditCardIcon,
-  ScaleIcon, GavelIcon, HandRaisedIcon,
+  ScaleIcon, ScaleIcon as GavelIcon, HandRaisedIcon,
   KeyIcon, LightBulbIcon, SparklesIcon
 } from '@heroicons/react/24/outline';
 

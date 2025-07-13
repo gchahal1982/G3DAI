@@ -1,0 +1,309 @@
+[tool.poetry]
+name = "medsight-pro"
+version = "1.0.0"
+description = "MedSight Pro - Medical Imaging & AI Analysis Platform"
+authors = ["MedSight Pro Development Team <dev@medsight.com>"]
+license = "Proprietary"
+readme = "README.md"
+homepage = "https://medsight.com"
+repository = "https://github.com/hospital/medsight-pro"
+documentation = "https://docs.medsight.com"
+keywords = ["medical-imaging", "ai-diagnostics", "dicom", "radiology", "healthcare"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Environment :: Web Environment",
+    "Framework :: FastAPI",
+    "Intended Audience :: Healthcare Industry",
+    "License :: Other/Proprietary License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Topic :: Scientific/Engineering :: Medical Science Apps.",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Scientific/Engineering :: Image Processing",
+]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+
+# Core AI and Machine Learning
+torch = "^2.1.0"
+torchvision = "^0.16.0"
+tensorflow = "^2.13.0"
+scikit-learn = "^1.3.2"
+numpy = "^1.24.3"
+pandas = "^2.1.3"
+opencv-python = "^4.8.1"
+pillow = "^10.1.0"
+scikit-image = "^0.22.0"
+matplotlib = "^3.8.2"
+seaborn = "^0.13.0"
+plotly = "^5.17.0"
+
+# Medical Imaging and DICOM
+pydicom = "^2.4.3"
+dicom2nifti = "^2.4.8"
+nibabel = "^5.1.0"
+simpleitk = "^2.3.1"
+itk = "^5.3.0"
+vtk = "^9.3.0"
+pyvista = "^0.42.3"
+dicomweb-client = "^0.59.1"
+pynetdicom = "^2.0.2"
+
+# Computer Vision and Image Processing
+albumentations = "^1.3.1"
+imageio = "^2.31.6"
+tifffile = "^2023.9.26"
+
+# Deep Learning Frameworks
+transformers = "^4.35.2"
+timm = "^0.9.8"
+segmentation-models-pytorch = "^0.3.3"
+monai = "^1.3.0"
+pytorch-lightning = "^2.1.2"
+tensorboard = "^2.15.1"
+
+# Web Framework and API
+fastapi = "^0.104.1"
+uvicorn = {extras = ["standard"], version = "^0.24.0"}
+pydantic = "^2.5.0"
+sqlalchemy = "^2.0.23"
+alembic = "^1.12.1"
+psycopg2-binary = "^2.9.9"
+redis = "^5.0.1"
+
+# Medical Standards and Protocols
+hl7apy = "^1.3.4"
+python-hl7 = "^0.3.4"
+
+# Authentication and Security
+cryptography = "^41.0.7"
+passlib = "^1.7.4"
+python-jose = {extras = ["cryptography"], version = "^3.3.0"}
+bcrypt = "^4.1.1"
+pyjwt = "^2.8.0"
+
+# Data Processing and Utilities
+scipy = "^1.11.4"
+h5py = "^3.10.0"
+tqdm = "^4.66.1"
+click = "^8.1.7"
+python-dotenv = "^1.0.0"
+pyyaml = "^6.0.1"
+
+# Task Queue and Async Processing
+celery = "^5.3.4"
+kombu = "^5.3.4"
+
+# Networking and Communication
+requests = "^2.31.0"
+aiohttp = "^3.9.1"
+websockets = "^12.0"
+grpcio = "^1.59.3"
+protobuf = "^4.25.1"
+
+# Performance and Monitoring
+psutil = "^5.9.6"
+prometheus-client = "^0.19.0"
+
+# Development and Debugging
+ipython = {version = "^8.17.2", optional = true}
+jupyter = {version = "^1.0.0", optional = true}
+jupyterlab = {version = "^4.0.8", optional = true}
+
+# Cloud and Deployment
+boto3 = {version = "^1.34.0", optional = true}
+azure-storage-blob = {version = "^12.19.0", optional = true}
+google-cloud-storage = {version = "^2.10.0", optional = true}
+
+# Natural Language Processing
+spacy = {version = "^3.7.2", optional = true}
+nltk = {version = "^3.8.1", optional = true}
+
+# Time Series Analysis
+statsmodels = {version = "^0.14.0", optional = true}
+
+# Distributed Computing
+dask = {version = "^2023.11.0", optional = true}
+distributed = {version = "^2023.11.0", optional = true}
+ray = {version = "^2.8.0", optional = true}
+
+[tool.poetry.extras]
+dev = ["ipython", "jupyter", "jupyterlab"]
+cloud-aws = ["boto3"]
+cloud-azure = ["azure-storage-blob"]
+cloud-gcp = ["google-cloud-storage"]
+nlp = ["spacy", "nltk"]
+timeseries = ["statsmodels"]
+distributed = ["dask", "distributed", "ray"]
+gpu = []  # Reserved for CUDA packages
+
+[tool.poetry.group.dev.dependencies]
+# Testing
+pytest = "^7.4.3"
+pytest-asyncio = "^0.21.1"
+pytest-cov = "^4.1.0"
+pytest-mock = "^3.12.0"
+pytest-xdist = "^3.5.0"
+
+# Code Quality
+black = "^23.11.0"
+isort = "^5.12.0"
+flake8 = "^6.1.0"
+mypy = "^1.7.1"
+bandit = "^1.7.5"
+safety = "^2.3.5"
+pre-commit = "^3.6.0"
+
+# Performance Profiling
+py-spy = "^0.3.14"
+memory-profiler = "^0.61.0"
+line-profiler = "^4.1.1"
+
+# Documentation
+sphinx = "^7.2.6"
+sphinx-rtd-theme = "^1.3.0"
+myst-parser = "^2.0.0"
+
+# Development Tools
+notebook = "^7.0.6"
+ipykernel = "^6.26.0"
+
+[tool.poetry.group.test.dependencies]
+pytest = "^7.4.3"
+pytest-asyncio = "^0.21.1"
+pytest-cov = "^4.1.0"
+pytest-mock = "^3.12.0"
+pytest-benchmark = "^4.0.0"
+hypothesis = "^6.92.1"
+factory-boy = "^3.3.0"
+
+[tool.poetry.group.medical.dependencies]
+# Medical-specific packages
+medpy = "^0.4.0"
+radiomics = "^3.1.0"
+pymedphys = {version = "^0.39.3", optional = true}
+dicom-anonymizer = "^1.0.12"
+pydicom-seg = "^0.4.1"
+
+[tool.poetry.scripts]
+medsight = "medsight_pro.cli:main"
+medsight-server = "medsight_pro.server:run"
+medsight-worker = "medsight_pro.worker:run"
+medsight-migrate = "medsight_pro.database:migrate"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.black]
+line-length = 88
+target-version = ['py39', 'py310', 'py311']
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+  # directories
+  \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | build
+  | dist
+  | migrations
+)/
+'''
+
+[tool.isort]
+profile = "black"
+multi_line_output = 3
+line_length = 88
+known_first_party = ["medsight_pro"]
+known_third_party = ["torch", "tensorflow", "pydicom", "fastapi"]
+
+[tool.mypy]
+python_version = "3.9"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+disallow_untyped_decorators = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true
+warn_unreachable = true
+strict_equality = true
+
+[[tool.mypy.overrides]]
+module = [
+    "pydicom.*",
+    "vtk.*",
+    "itk.*",
+    "simpleitk.*",
+    "monai.*",
+    "dicomweb_client.*",
+    "pynetdicom.*",
+]
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+addopts = [
+    "--strict-markers",
+    "--strict-config",
+    "--cov=medsight_pro",
+    "--cov-report=term-missing",
+    "--cov-report=html",
+    "--cov-report=xml",
+]
+testpaths = ["tests"]
+python_files = ["test_*.py", "*_test.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "integration: marks tests as integration tests",
+    "unit: marks tests as unit tests",
+    "medical: marks tests as medical device tests",
+    "dicom: marks tests as DICOM-related tests",
+    "ai: marks tests as AI model tests",
+    "security: marks tests as security tests",
+    "performance: marks tests as performance tests",
+]
+
+[tool.coverage.run]
+source = ["medsight_pro"]
+omit = [
+    "*/tests/*",
+    "*/migrations/*",
+    "*/venv/*",
+    "*/env/*",
+    "setup.py",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "if self.debug:",
+    "if settings.DEBUG",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if 0:",
+    "if __name__ == .__main__.:",
+    "class .*\\bProtocol\\):",
+    "@(abc\\.)?abstractmethod",
+]
+
+[tool.bandit]
+exclude_dirs = ["tests", "migrations"]
+skips = ["B101", "B601"]  # Skip assert_used and shell_injection_other
+
+[tool.bandit.assert_used]
+skips = ['*_test.py', '**/test_*.py'] 

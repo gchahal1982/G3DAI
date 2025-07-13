@@ -327,7 +327,7 @@ export function SplineEditingTools({
                                             </Button>
                                         </div>
 
-                                        <ScrollArea className="h-48">
+                                        <ScrollArea className="h-96">
                                             <div className="space-y-2">
                                                 {splines.map((spline) => (
                                                     <motion.div

@@ -3,10 +3,10 @@
 import React, { useState, useEffect } from 'react';
 import { 
   ChartBarIcon, ChartPieIcon, PresentationChartLineIcon,
-  BanknotesIcon, TrendingUpIcon, TrendingDownIcon,
+  BanknotesIcon, ArrowTrendingUpIcon as TrendingUpIcon, ArrowTrendingDownIcon as TrendingDownIcon,
   UsersIcon, HeartIcon, BeakerIcon, AcademicCapIcon,
   BuildingOfficeIcon, GlobeAltIcon, ClockIcon, CalendarIcon,
-  ArrowUpIcon, ArrowDownIcon, ArrowRightIcon,
+  ArrowUpIcon, ArrowDownIcon, ArrowRightIcon, ArrowPathIcon,
   EyeIcon, DocumentTextIcon, ShareIcon, PrinterIcon,
   FunnelIcon, MagnifyingGlassIcon, AdjustmentsHorizontalIcon,
   InformationCircleIcon, ExclamationTriangleIcon,

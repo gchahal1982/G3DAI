@@ -1,0 +1,732 @@
+// MedSight Pro - Database Schema
+// Medical Imaging & AI Analysis Platform
+// HIPAA Compliant Database Schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================================
+// Medical Professional and User Management
+// ============================================================================
+
+model MedicalProfessional {
+  id                String   @id @default(cuid())
+  email             String   @unique
+  username          String   @unique
+  firstName         String
+  lastName          String
+  title             String? // Dr., MD, RN, etc.
+  specialty         String? // Radiology, Cardiology, etc.
+  licenseNumber     String   @unique
+  licenseState      String
+  licenseExpiration DateTime
+  npiNumber         String?  @unique // National Provider Identifier
+  deaNumber         String?  @unique // Drug Enforcement Administration
+  
+  // Medical facility association
+  facilityId        String?
+  facility          MedicalFacility? @relation(fields: [facilityId], references: [id])
+  
+  // Authentication and security
+  hashedPassword    String
+  salt              String
+  mfaSecret         String?
+  isActive          Boolean  @default(true)
+  lastLogin         DateTime?
+  passwordResetToken String?
+  passwordResetExpires DateTime?
+  
+  // HIPAA compliance fields
+  hipaaTrainingDate DateTime?
+  hipaaAcknowledgment Boolean @default(false)
+  privacyOfficer    Boolean  @default(false)
+  
+  // Role-based access control
+  role              MedicalRole @default(RADIOLOGIST)
+  permissions       Permission[]
+  
+  // Audit fields
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  createdBy         String?
+  lastModifiedBy    String?
+  
+  // Relations
+  auditLogs         AuditLog[]
+  sessions          UserSession[]
+  patientAccess     PatientAccess[]
+  studyReports      StudyReport[]
+  annotations       Annotation[]
+  collaborations    Collaboration[]
+  
+  @@map("medical_professionals")
+}
+
+model MedicalFacility {
+  id                String   @id @default(cuid())
+  name              String
+  type              FacilityType
+  address           String
+  city              String
+  state             String
+  zipCode           String
+  country           String   @default("US")
+  phone             String
+  email             String
+  website           String?
+  
+  // Medical facility identifiers
+  npiNumber         String?  @unique
+  taxonomyCode      String?
+  licenseNumber     String?
+  accreditation     String[] // Joint Commission, etc.
+  
+  // HIPAA compliance
+  hipaaOfficer      String?
+  securityOfficer   String?
+  privacyNotice     String?
+  
+  // Technical configuration
+  dicomAet          String?  @unique
+  pacsEndpoint      String?
+  hl7Endpoint       String?
+  
+  // Audit fields
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  // Relations
+  professionals     MedicalProfessional[]
+  patients          Patient[]
+  studies           Study[]
+  
+  @@map("medical_facilities")
+}
+
+// ============================================================================
+// Patient Management (HIPAA Compliant)
+// ============================================================================
+
+model Patient {
+  id                String   @id @default(cuid())
+  
+  // Patient identifiers (encrypted)
+  medicalRecordNumber String  @unique
+  patientId         String   @unique
+  ssn               String?  // Encrypted
+  
+  // Demographics (encrypted PHI)
+  firstName         String   // Encrypted
+  lastName          String   // Encrypted
+  middleName        String?  // Encrypted
+  dateOfBirth       DateTime // Encrypted
+  gender            Gender
+  ethnicity         String?
+  race              String?
+  
+  // Contact information (encrypted PHI)
+  address           String?  // Encrypted
+  city              String?  // Encrypted
+  state             String?  // Encrypted
+  zipCode           String?  // Encrypted
+  phone             String?  // Encrypted
+  email             String?  // Encrypted
+  
+  // Medical information
+  bloodType         String?
+  allergies         String[] // Encrypted
+  medications       String[] // Encrypted
+  medicalHistory    String?  // Encrypted
+  
+  // Facility association
+  facilityId        String
+  facility          MedicalFacility @relation(fields: [facilityId], references: [id])
+  
+  // Consent and authorization
+  consentSigned     Boolean  @default(false)
+  consentDate       DateTime?
+  hipaaAuthorization Boolean @default(false)
+  researchConsent   Boolean  @default(false)
+  
+  // Privacy and security
+  isDeceased        Boolean  @default(false)
+  deceasedDate      DateTime?
+  restrictedAccess  Boolean  @default(false)
+  vipStatus         Boolean  @default(false)
+  
+  // Audit fields
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  createdBy         String
+  lastModifiedBy    String?
+  
+  // Relations
+  studies           Study[]
+  patientAccess     PatientAccess[]
+  auditLogs         AuditLog[]
+  
+  @@map("patients")
+}
+
+model PatientAccess {
+  id                String   @id @default(cuid())
+  patientId         String
+  professionalId    String
+  accessType        AccessType
+  accessReason      String
+  accessDate        DateTime @default(now())
+  sessionDuration   Int? // in minutes
+  ipAddress         String
+  userAgent         String?
+  
+  // Relations
+  patient           Patient  @relation(fields: [patientId], references: [id])
+  professional      MedicalProfessional @relation(fields: [professionalId], references: [id])
+  
+  @@map("patient_access")
+}
+
+// ============================================================================
+// Medical Studies and DICOM Data
+// ============================================================================
+
+model Study {
+  id                String   @id @default(cuid())
+  studyInstanceUID  String   @unique
+  studyDate         DateTime
+  studyTime         String?
+  studyDescription  String?
+  modality          Modality
+  
+  // Patient association
+  patientId         String
+  patient           Patient  @relation(fields: [patientId], references: [id])
+  
+  // Facility association
+  facilityId        String
+  facility          MedicalFacility @relation(fields: [facilityId], references: [id])
+  
+  // Clinical information
+  accessionNumber   String?
+  studyId           String?
+  referringPhysician String?
+  performingPhysician String?
+  readingPhysician  String?
+  
+  // Study metadata
+  numberOfSeries    Int      @default(0)
+  numberOfImages    Int      @default(0)
+  studySize         BigInt   @default(0) // in bytes
+  
+  // Study status
+  status            StudyStatus @default(SCHEDULED)
+  priority          Priority    @default(ROUTINE)
+  
+  // DICOM storage
+  dicomPath         String?
+  pacsLocation      String?
+  archived          Boolean  @default(false)
+  archiveDate       DateTime?
+  
+  // Quality control
+  qualityScore      Float?
+  qualityRemarks    String?
+  
+  // Audit fields
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  createdBy         String
+  lastModifiedBy    String?
+  
+  // Relations
+  series            Series[]
+  reports           StudyReport[]
+  annotations       Annotation[]
+  aiAnalysis        AIAnalysis[]
+  collaborations    Collaboration[]
+  hangingProtocols  HangingProtocol[]
+  
+  @@map("studies")
+}
+
+model Series {
+  id                String   @id @default(cuid())
+  seriesInstanceUID String   @unique
+  seriesNumber      Int
+  seriesDescription String?
+  modality          Modality
+  
+  // Study association
+  studyId           String
+  study             Study    @relation(fields: [studyId], references: [id])
+  
+  // Series metadata
+  numberOfImages    Int      @default(0)
+  seriesSize        BigInt   @default(0) // in bytes
+  
+  // Imaging parameters
+  sliceThickness    Float?
+  pixelSpacing      Float[]
+  imageOrientation  Float[]
+  imagePosition     Float[]
+  
+  // Body part and anatomy
+  bodyPartExamined  String?
+  anatomicRegion    String?
+  laterality        String?
+  
+  // Acquisition parameters
+  kvp               Float?
+  mas               Float?
+  exposureTime      Float?
+  
+  // Audit fields
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  // Relations
+  images            Image[]
+  
+  @@map("series")
+}
+
+model Image {
+  id                String   @id @default(cuid())
+  sopInstanceUID    String   @unique
+  instanceNumber    Int
+  
+  // Series association
+  seriesId          String
+  series            Series   @relation(fields: [seriesId], references: [id])
+  
+  // Image metadata
+  imageType         String[]
+  photometricInterpretation String?
+  rows              Int?
+  columns           Int?
+  bitsAllocated     Int?
+  bitsStored        Int?
+  pixelRepresentation Int?
+  
+  // Image location
+  filePath          String
+  fileSize          BigInt
+  transferSyntax    String?
+  compressionType   String?
+  
+  // Image processing
+  windowCenter      Float?
+  windowWidth       Float?
+  rescaleIntercept  Float?
+  rescaleSlope      Float?
+  
+  // Audit fields
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  @@map("images")
+}
+
+// ============================================================================
+// Clinical Reporting and Analysis
+// ============================================================================
+
+model StudyReport {
+  id                String   @id @default(cuid())
+  studyId           String
+  professionalId    String
+  
+  // Report content
+  reportTitle       String
+  reportText        String   // Encrypted
+  impression        String?  // Encrypted
+  findings          String?  // Encrypted
+  recommendations   String?  // Encrypted
+  
+  // Report metadata
+  reportType        ReportType
+  reportStatus      ReportStatus @default(DRAFT)
+  priority          Priority     @default(ROUTINE)
+  
+  // Clinical codes
+  diagnosisCodes    String[] // ICD-10 codes
+  procedureCodes    String[] // CPT codes
+  
+  // Timestamps
+  reportDate        DateTime @default(now())
+  signedDate        DateTime?
+  verifiedDate      DateTime?
+  amendedDate       DateTime?
+  
+  // Digital signature
+  digitalSignature  String?
+  signatureHash     String?
+  
+  // Audit fields
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  // Relations
+  study             Study    @relation(fields: [studyId], references: [id])
+  professional      MedicalProfessional @relation(fields: [professionalId], references: [id])
+  
+  @@map("study_reports")
+}
+
+model Annotation {
+  id                String   @id @default(cuid())
+  studyId           String
+  professionalId    String
+  
+  // Annotation data
+  annotationType    AnnotationType
+  coordinates       Json     // Geometric coordinates
+  text              String?  // Encrypted
+  measurements      Json?    // Measurement data
+  
+  // Metadata
+  seriesInstanceUID String?
+  sopInstanceUID    String?
+  frameNumber       Int?
+  
+  // Audit fields
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  // Relations
+  study             Study    @relation(fields: [studyId], references: [id])
+  professional      MedicalProfessional @relation(fields: [professionalId], references: [id])
+  
+  @@map("annotations")
+}
+
+// ============================================================================
+// AI Analysis and Machine Learning
+// ============================================================================
+
+model AIAnalysis {
+  id                String   @id @default(cuid())
+  studyId           String
+  modelName         String
+  modelVersion      String
+  
+  // Analysis results
+  analysisType      AIAnalysisType
+  results           Json     // Analysis results
+  confidence        Float    // Confidence score
+  predictions       Json?    // Prediction data
+  
+  // Processing metadata
+  processedAt       DateTime @default(now())
+  processingTime    Int      // in milliseconds
+  gpuUsed           String?
+  
+  // Validation
+  validated         Boolean  @default(false)
+  validatedBy       String?
+  validatedAt       DateTime?
+  
+  // Audit fields
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  // Relations
+  study             Study    @relation(fields: [studyId], references: [id])
+  
+  @@map("ai_analysis")
+}
+
+// ============================================================================
+// Clinical Workflow and Collaboration
+// ============================================================================
+
+model HangingProtocol {
+  id                String   @id @default(cuid())
+  name              String
+  description       String?
+  modality          Modality
+  bodyPart          String?
+  studyDescription  String?
+  
+  // Protocol configuration
+  layoutConfig      Json     // Layout configuration
+  displaySettings   Json     // Display settings
+  
+  // Usage statistics
+  usageCount        Int      @default(0)
+  lastUsed          DateTime?
+  
+  // Audit fields
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  createdBy         String
+  
+  // Relations
+  studies           Study[]
+  
+  @@map("hanging_protocols")
+}
+
+model Collaboration {
+  id                String   @id @default(cuid())
+  studyId           String
+  initiatorId       String
+  
+  // Collaboration details
+  collaborationType CollaborationType
+  title             String
+  description       String?
+  status            CollaborationStatus @default(ACTIVE)
+  
+  // Participants
+  participants      String[] // Array of professional IDs
+  
+  // Session data
+  sessionId         String?
+  sessionData       Json?
+  
+  // Audit fields
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  // Relations
+  study             Study    @relation(fields: [studyId], references: [id])
+  initiator         MedicalProfessional @relation(fields: [initiatorId], references: [id])
+  
+  @@map("collaborations")
+}
+
+// ============================================================================
+// System Administration and Security
+// ============================================================================
+
+model UserSession {
+  id                String   @id @default(cuid())
+  professionalId    String
+  sessionToken      String   @unique
+  accessToken       String?
+  refreshToken      String?
+  
+  // Session metadata
+  ipAddress         String
+  userAgent         String?
+  deviceFingerprint String?
+  
+  // Session timing
+  expiresAt         DateTime
+  lastActivity      DateTime @default(now())
+  
+  // Security flags
+  isActive          Boolean  @default(true)
+  isSuspicious      Boolean  @default(false)
+  
+  // Audit fields
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  // Relations
+  professional      MedicalProfessional @relation(fields: [professionalId], references: [id])
+  
+  @@map("user_sessions")
+}
+
+model AuditLog {
+  id                String   @id @default(cuid())
+  
+  // Action details
+  action            String   // Action performed
+  resourceType      String   // Type of resource
+  resourceId        String?  // ID of affected resource
+  
+  // User information
+  professionalId    String?
+  patientId         String?
+  
+  // Request details
+  ipAddress         String
+  userAgent         String?
+  requestId         String?
+  
+  // Audit metadata
+  timestamp         DateTime @default(now())
+  outcome           AuditOutcome
+  details           Json?    // Additional details
+  
+  // HIPAA compliance
+  hipaaRelevant     Boolean  @default(false)
+  phiAccessed       Boolean  @default(false)
+  
+  // Relations
+  professional      MedicalProfessional? @relation(fields: [professionalId], references: [id])
+  patient           Patient?  @relation(fields: [patientId], references: [id])
+  
+  @@map("audit_logs")
+}
+
+model Permission {
+  id                String   @id @default(cuid())
+  name              String   @unique
+  description       String?
+  category          String
+  
+  // Permission metadata
+  isActive          Boolean  @default(true)
+  
+  // Audit fields
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  // Relations
+  professionals     MedicalProfessional[]
+  
+  @@map("permissions")
+}
+
+// ============================================================================
+// Enums
+// ============================================================================
+
+enum MedicalRole {
+  RADIOLOGIST
+  RADIOLOGY_TECH
+  CARDIOLOGIST
+  EMERGENCY_PHYSICIAN
+  SURGEON
+  NURSE
+  PHYSICIAN_ASSISTANT
+  MEDICAL_STUDENT
+  RESEARCHER
+  ADMINISTRATOR
+  SUPER_ADMIN
+}
+
+enum FacilityType {
+  HOSPITAL
+  CLINIC
+  IMAGING_CENTER
+  URGENT_CARE
+  EMERGENCY_ROOM
+  SURGERY_CENTER
+  RESEARCH_FACILITY
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+  UNKNOWN
+}
+
+enum AccessType {
+  VIEW
+  EDIT
+  DELETE
+  ADMIN
+  EMERGENCY
+}
+
+enum Modality {
+  CR    // Computed Radiography
+  CT    // Computed Tomography
+  MR    // Magnetic Resonance
+  US    // Ultrasound
+  DX    // Digital Radiography
+  MG    // Mammography
+  NM    // Nuclear Medicine
+  PT    // Positron Emission Tomography
+  RF    // Radiofluoroscopy
+  XA    // X-Ray Angiography
+  ES    // Endoscopy
+  GM    // General Microscopy
+  IO    // Intra-Oral Radiography
+  PX    // Panoramic X-Ray
+  OT    // Other
+}
+
+enum StudyStatus {
+  SCHEDULED
+  ARRIVED
+  STARTED
+  COMPLETED
+  CANCELLED
+  DISCONTINUED
+  VERIFIED
+  PRELIMINARY
+  FINAL
+}
+
+enum Priority {
+  STAT
+  URGENT
+  ROUTINE
+  LOW
+}
+
+enum ReportType {
+  PRELIMINARY
+  FINAL
+  ADDENDUM
+  CORRECTION
+}
+
+enum ReportStatus {
+  DRAFT
+  PRELIMINARY
+  FINAL
+  AMENDED
+  CORRECTED
+  CANCELLED
+}
+
+enum AnnotationType {
+  POINT
+  LINE
+  RECTANGLE
+  ELLIPSE
+  POLYGON
+  ARROW
+  TEXT
+  MEASUREMENT
+  ANGLE
+  AREA
+  VOLUME
+}
+
+enum AIAnalysisType {
+  CLASSIFICATION
+  DETECTION
+  SEGMENTATION
+  MEASUREMENT
+  QUALITY_ASSESSMENT
+  ANOMALY_DETECTION
+  PREDICTION
+}
+
+enum CollaborationType {
+  CONSULTATION
+  SECOND_OPINION
+  MULTIDISCIPLINARY_REVIEW
+  TEACHING_CASE
+  RESEARCH_COLLABORATION
+  TUMOR_BOARD
+}
+
+enum CollaborationStatus {
+  ACTIVE
+  COMPLETED
+  CANCELLED
+  PENDING
+}
+
+enum AuditOutcome {
+  SUCCESS
+  FAILURE
+  WARNING
+  INFO
+} 

@@ -12,7 +12,7 @@
  */
 
 import { MedicalDataPipeline } from '@/core/MedicalDataPipeline';
-import MedicalAuth from '@/lib/auth/medical-auth';
+import { MedicalAuthService } from '@/lib/auth/medical-auth';
 import { ComplianceAuditTrail } from '@/lib/compliance/audit-trail';
 
 // Medical Data Pipeline Data Structures
@@ -406,7 +406,7 @@ export interface TransformationMetrics {
 // Medical Data Pipeline Integration Class
 export class MedicalDataPipelineIntegration {
   private pipeline: MedicalDataPipeline;
-  private auth: MedicalAuth;
+  private auth: MedicalAuthService;
   private auditTrail: ComplianceAuditTrail;
   private pipelineCache: Map<string, DataPipeline> = new Map();
   private executionCache: Map<string, PipelineExecution> = new Map();
@@ -416,7 +416,7 @@ export class MedicalDataPipelineIntegration {
 
   constructor() {
     this.pipeline = new MedicalDataPipeline();
-    this.auth = new MedicalAuth();
+    this.auth = MedicalAuthService.getInstance();
     this.auditTrail = new ComplianceAuditTrail();
     this.initializeEventListeners();
   }
@@ -653,7 +653,7 @@ export class MedicalDataPipelineIntegration {
         this.emitEvent('pipeline_stopped', {
           type: 'pipeline_stopped',
           executionId,
-          reason,
+          // reason,
           timestamp: new Date()
         });
       }

@@ -70,7 +70,7 @@ export default function ConditionalLayout({ children }: ConditionalLayoutProps) 
         <div className="flex-1 flex flex-col min-h-full max-h-screen overflow-hidden lg:ml-64 ml-0">
           {/* Header */}
           <Header 
-            className="flex-shrink-0 lg:pl-0 pl-4" 
+            className="flex-shrink-0 lg:pl-0 pl-4"
             showSearch={true}
           />
           

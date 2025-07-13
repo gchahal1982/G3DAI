@@ -12,7 +12,7 @@
  */
 
 import { DICOMProcessor } from '@/core/DICOMProcessor';
-import { MedicalAuth } from '@/lib/auth/medical-auth';
+import { MedicalAuthService } from '@/lib/auth/medical-auth';
 import { ComplianceAuditTrail } from '@/lib/compliance/audit-trail';
 
 // DICOM Data Structures
@@ -150,14 +150,14 @@ export interface DICOMExportOptions {
 // DICOM Integration Class
 export class DICOMIntegration {
   private processor: DICOMProcessor;
-  private auth: MedicalAuth;
+  private auth: MedicalAuthService;
   private auditTrail: ComplianceAuditTrail;
   private cache: Map<string, DICOMStudy> = new Map();
   private processingQueue: Set<string> = new Set();
 
   constructor() {
     this.processor = new DICOMProcessor();
-    this.auth = new MedicalAuth();
+    this.auth = MedicalAuthService.getInstance();
     this.auditTrail = new ComplianceAuditTrail();
   }
 
@@ -481,7 +481,7 @@ export class DICOMIntegration {
     }
 
     try {
-      const validation = await this.processor.validateDICOM(studyUID, seriesUID, imageUID);
+      const validation = await this.processor.validateDICOM({ studyUID, seriesUID, imageUID });
       
       // Log validation
       await this.auditTrail.logActivity({

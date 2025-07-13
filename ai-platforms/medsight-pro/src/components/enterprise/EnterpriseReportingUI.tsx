@@ -18,7 +18,7 @@ import {
   ClipboardDocumentListIcon, ClipboardDocumentCheckIcon,
   EnvelopeIcon, PhoneIcon, MapPinIcon, HomeIcon,
   CreditCardIcon, BanknotesIcon as CurrencyIcon,
-  ScaleIcon, GavelIcon, DocumentCheckIcon, PlayIcon
+  ScaleIcon, ScaleIcon as GavelIcon, DocumentCheckIcon, PlayIcon
 } from '@heroicons/react/24/outline';
 
 interface ReportTemplate {

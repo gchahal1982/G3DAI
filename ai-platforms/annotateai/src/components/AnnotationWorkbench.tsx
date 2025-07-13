@@ -1061,166 +1061,160 @@ export const AnnotationWorkbench: React.FC<WorkbenchProps> = ({
                     </div>
                 </div>
 
-                {/* Phase 2.1 Component Panels */}
-                <AnimatePresence>
-                    {xrMode && (
-                        <motion.div
-                            initial={{ opacity: 0, x: 100 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            exit={{ opacity: 0, x: 100 }}
-                            className="fixed top-16 right-4 w-96 max-h-[calc(100vh-80px)] overflow-y-auto z-50"
-                        >
-                            <XRAnnotationInterface
-                                onSessionStart={(session) => setXRDeviceConnected(true)}
-                                onSessionEnd={() => setXRDeviceConnected(false)}
-                                onClose={() => setXRMode(false)}
-                            />
-                        </motion.div>
-                    )}
+                {/* Phase 2.1 Advanced Panels */}
+                {xrMode && (
+                    <motion.div
+                        initial={{ opacity: 0, x: 100 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: 100 }}
+                        className="fixed top-16 right-4 w-96 max-h-[calc(100vh-80px)] overflow-y-auto z-[60]"
+                    >
+                        <XRAnnotationInterface
+                            onSessionStart={(session) => setXRDeviceConnected(true)}
+                            onSessionEnd={() => setXRDeviceConnected(false)}
+                            onClose={() => setXRMode(false)}
+                        />
+                    </motion.div>
+                )}
 
-                    {show3DReconstruction && (
-                        <motion.div
-                            initial={{ opacity: 0, x: 100 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            exit={{ opacity: 0, x: 100 }}
-                            className="fixed top-16 right-4 w-96 max-h-[calc(100vh-80px)] overflow-y-auto z-50"
-                        >
-                            <ThreeDReconstructionPanel onClose={() => setShow3DReconstruction(false)} />
-                        </motion.div>
-                    )}
+                {show3DReconstruction && (
+                    <motion.div
+                        initial={{ opacity: 0, x: 100 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: 100 }}
+                        className="fixed top-16 right-4 w-80 max-h-[calc(100vh-80px)] overflow-y-auto z-[55]"
+                        style={{ transform: xrMode ? 'translateX(-320px)' : 'translateX(0)' }}
+                    >
+                        <ThreeDReconstructionPanel onClose={() => setShow3DReconstruction(false)} />
+                    </motion.div>
+                )}
 
-                    {showPhysicsSimulation && (
-                        <motion.div
-                            initial={{ opacity: 0, x: 100 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            exit={{ opacity: 0, x: 100 }}
-                            className="fixed top-16 right-4 w-96 max-h-[calc(100vh-80px)] overflow-y-auto z-50"
-                        >
-                            <PhysicsSimulationPanel
-                                projectId={projectId}
-                                sessionId={sessionId}
-                                onClose={() => setShowPhysicsSimulation(false)}
-                            />
-                        </motion.div>
-                    )}
+                {showPhysicsSimulation && (
+                    <motion.div
+                        initial={{ opacity: 0, x: 100 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: 100 }}
+                        className="fixed top-16 right-4 w-80 max-h-[calc(100vh-80px)] overflow-y-auto z-[50]"
+                        style={{ 
+                            transform: [xrMode, show3DReconstruction].filter(Boolean).length === 2 ? 'translateX(-640px)' :
+                                      [xrMode, show3DReconstruction].filter(Boolean).length === 1 ? 'translateX(-320px)' : 'translateX(0)' 
+                        }}
+                    >
+                        <PhysicsSimulationPanel
+                            projectId={projectId}
+                            sessionId={sessionId}
+                            onClose={() => setShowPhysicsSimulation(false)}
+                        />
+                    </motion.div>
+                )}
 
-                    {showAdvancedCollaboration && (
-                        <motion.div
-                            initial={{ opacity: 0, x: 100 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            exit={{ opacity: 0, x: 100 }}
-                            className="fixed top-16 right-4 w-96 max-h-[calc(100vh-80px)] overflow-y-auto z-50"
-                        >
-                            <AdvancedCollaborationDashboard 
-                                sessionId={sessionId || 'default-session'}
-                                currentUser={{
-                                    id: 'current-user',
-                                    name: 'Current User',
-                                    email: 'user@example.com',
-                                    role: UserRole.ANNOTATOR,
-                                    avatar: {
-                                        model: 'default',
-                                        position: { x: 0, y: 0, z: 0 },
-                                        rotation: { x: 0, y: 0, z: 0 },
-                                        scale: { x: 1, y: 1, z: 1 },
-                                        color: { r: 0.5, g: 0.5, b: 0.5, a: 1 },
-                                        visibility: true,
-                                        animations: []
-                                    },
-                                    presence: {
-                                        status: 'online',
-                                        lastSeen: Date.now(),
-                                        currentTool: 'select',
-                                        activeRegion: { min: { x: 0, y: 0, z: 0 }, max: { x: 1, y: 1, z: 1 } },
-                                        cursor: {
-                                            position: { x: 0, y: 0, z: 0 },
-                                            visible: true,
-                                            color: { r: 0.5, g: 0.5, b: 0.5, a: 1 },
-                                            size: 10,
-                                            shape: 'circle'
-                                        }
-                                    },
-                                    tools: {
-                                        activeTool: 'select',
-                                        settings: {},
-                                        history: [],
-                                        shortcuts: {}
-                                    },
-                                    permissions: [],
-                                    statistics: {
-                                        sessionsCount: 0,
-                                        totalTime: 0,
-                                        annotationsCreated: 0,
-                                        annotationsModified: 0,
-                                        collaborationScore: 0,
-                                        accuracy: 0
-                                    }
-                                }}
-                                onClose={() => setShowAdvancedCollaboration(false)}
-                            />
-                        </motion.div>
-                    )}
+                {showAdvancedCollaboration && (
+                    <motion.div
+                        initial={{ opacity: 0, x: 100 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: 100 }}
+                        className="fixed top-16 right-4 w-80 max-h-[calc(100vh-80px)] overflow-y-auto z-[45]"
+                        style={{ 
+                            transform: [xrMode, show3DReconstruction, showPhysicsSimulation].filter(Boolean).length === 3 ? 'translateX(-960px)' :
+                                      [xrMode, show3DReconstruction, showPhysicsSimulation].filter(Boolean).length === 2 ? 'translateX(-640px)' :
+                                      [xrMode, show3DReconstruction, showPhysicsSimulation].filter(Boolean).length === 1 ? 'translateX(-320px)' : 'translateX(0)'
+                        }}
+                    >
+                        <AdvancedCollaborationDashboard 
+                            sessionId={sessionId || 'default-session'}
+                            currentUser={{
+                                id: 'current-user',
+                                name: 'Current User',
+                                email: 'user@example.com',
+                                role: UserRole.ANNOTATOR,
+                                avatar: undefined,
+                                permissions: [],
+                                preferences: {},
+                                status: 'online'
+                            }}
+                            onUserJoined={(user) => console.log('User joined:', user)}
+                            onUserLeft={(userId) => console.log('User left:', userId)}
+                            onAnnotationShared={(annotation) => console.log('Annotation shared:', annotation)}
+                            onConflictResolved={(conflictId) => console.log('Conflict resolved:', conflictId)}
+                            onClose={() => setShowAdvancedCollaboration(false)}
+                        />
+                    </motion.div>
+                )}
 
-                    {showSplineTools && (
-                        <motion.div
-                            initial={{ opacity: 0, x: 100 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            exit={{ opacity: 0, x: 100 }}
-                            className="fixed top-16 right-4 w-96 max-h-[calc(100vh-80px)] overflow-y-auto z-50"
-                        >
-                            <SplineEditingTools onClose={() => setShowSplineTools(false)} />
-                        </motion.div>
-                    )}
+                {showSplineTools && (
+                    <motion.div
+                        initial={{ opacity: 0, x: 100 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: 100 }}
+                        className="fixed bottom-4 right-4 w-80 max-h-96 overflow-y-auto z-[40]"
+                    >
+                        <SplineEditingTools 
+                            onSplineUpdate={(spline) => console.log('Spline updated:', spline)}
+                            onSplineCreate={(spline) => console.log('Spline created:', spline)}
+                            onSplineDelete={(splineId) => console.log('Spline deleted:', splineId)}
+                            onClose={() => setShowSplineTools(false)}
+                        />
+                    </motion.div>
+                )}
 
-                    {showSpatialAnalysis && (
-                        <motion.div
-                            initial={{ opacity: 0, x: 100 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            exit={{ opacity: 0, x: 100 }}
-                            className="fixed top-16 right-4 w-96 max-h-[calc(100vh-80px)] overflow-y-auto z-50"
-                        >
-                            <SpatialAnalysisPanel onClose={() => setShowSpatialAnalysis(false)} />
-                        </motion.div>
-                    )}
+                {showSpatialAnalysis && (
+                    <motion.div
+                        initial={{ opacity: 0, x: -100 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: -100 }}
+                        className="fixed top-20 left-4 w-80 max-h-[calc(100vh-100px)] overflow-y-auto z-[70]"
+                    >
+                        <SpatialAnalysisPanel 
+                            onClose={() => setShowSpatialAnalysis(false)}
+                        />
+                    </motion.div>
+                )}
 
-                    {showMeshProcessing && (
-                        <motion.div
-                            initial={{ opacity: 0, x: 100 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            exit={{ opacity: 0, x: 100 }}
-                            className="fixed top-16 right-4 w-96 max-h-[calc(100vh-80px)] overflow-y-auto z-50"
-                        >
-                            <MeshProcessingTools
-                                projectId={projectId}
-                                onClose={() => setShowMeshProcessing(false)}
-                            />
-                        </motion.div>
-                    )}
+                {showMeshProcessing && (
+                    <motion.div
+                        initial={{ opacity: 0, x: 100 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: 100 }}
+                        className="fixed bottom-4 right-4 w-80 max-h-96 overflow-y-auto z-[30]"
+                        style={{ 
+                            transform: showSplineTools ? 'translateX(-340px)' : 'translateX(0)'
+                        }}
+                    >
+                        <MeshProcessingTools 
+                            projectId={projectId}
+                            onClose={() => setShowMeshProcessing(false)}
+                        />
+                    </motion.div>
+                )}
 
-                    {showAIAssistant && (
-                        <motion.div
-                            initial={{ opacity: 0, x: 100 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            exit={{ opacity: 0, x: 100 }}
-                            className="fixed top-16 right-4 w-96 max-h-[calc(100vh-80px)] overflow-y-auto z-50"
-                        >
-                            <AIAssistantPanel
-                                onClose={() => {
-                                    setShowAIAssistant(false);
-                                    setSelectedTool('cursor');
-                                }}
-                                onSuggestionAccept={(suggestion) => {
-                                    console.log('AI suggestion accepted:', suggestion);
-                                    // Add suggestion to annotations
-                                }}
-                                onSuggestionReject={(suggestion) => {
-                                    console.log('AI suggestion rejected:', suggestion);
-                                }}
-                                isProcessing={isAIProcessing}
-                            />
-                        </motion.div>
-                    )}
-                </AnimatePresence>
+                {showAIAssistant && (
+                    <motion.div
+                        initial={{ opacity: 0, x: 100 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: 100 }}
+                        className="fixed top-1/2 right-4 transform -translate-y-1/2 w-96 max-h-[calc(100vh-80px)] overflow-y-auto z-[65]"
+                    >
+                        <AIAssistantPanel 
+                            onClose={() => setShowAIAssistant(false)}
+                            onSuggestionAccept={(suggestion) => console.log('Suggestion accepted:', suggestion)}
+                            onSuggestionReject={(suggestion) => console.log('Suggestion rejected:', suggestion)}
+                        />
+                    </motion.div>
+                )}
+
+                {/* Panel Management Warning */}
+                {[xrMode, show3DReconstruction, showPhysicsSimulation, showAdvancedCollaboration, showSplineTools, showSpatialAnalysis, showMeshProcessing, showAIAssistant].filter(Boolean).length > 4 && (
+                    <motion.div
+                        initial={{ opacity: 0, y: -50 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="fixed top-4 left-1/2 transform -translate-x-1/2 bg-yellow-600/90 text-white px-4 py-2 rounded-lg z-[80] backdrop-blur-md"
+                    >
+                        <div className="flex items-center gap-2">
+                            <AlertTriangleIcon className="w-4 h-4" />
+                            <span className="text-sm">Multiple panels open. Close some for better performance.</span>
+                        </div>
+                    </motion.div>
+                )}
             </div>
 
             {/* Bottom status bar */}

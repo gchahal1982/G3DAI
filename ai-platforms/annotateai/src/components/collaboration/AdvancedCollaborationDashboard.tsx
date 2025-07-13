@@ -803,285 +803,236 @@ export function AdvancedCollaborationDashboard({
     
     return (
         <TooltipProvider>
-            <div className={`fixed top-20 right-4 z-40 ${className}`}>
-                <motion.div
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ duration: 0.3 }}
-                >
-                    <Card className="annotate-glass border-white/10 min-w-[350px] max-w-[450px]">
-                        <CardHeader className="pb-3">
-                            <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-3">
-                                    <div className="p-2 bg-green-500/20 rounded-lg">
-                                        <Users className="w-5 h-5 text-green-400" />
-                                    </div>
-                                    <div>
-                                        <CardTitle className="text-lg text-white">Collaboration</CardTitle>
-                                        <div className="flex items-center gap-2 mt-1">
-                                            {isConnected ? (
-                                                <Badge variant="default" className="bg-green-500/20 text-green-400">
-                                                    <Wifi className="w-3 h-3 mr-1" />
-                                                    Connected
-                                                </Badge>
-                                            ) : (
-                                                <Badge variant="destructive" className="bg-red-500/20 text-red-400">
-                                                    <WifiOff className="w-3 h-3 mr-1" />
-                                                    Disconnected
-                                                </Badge>
-                                            )}
-                                            <Badge variant="outline" className="text-xs">
-                                                {activeUsers.length} active
-                                            </Badge>
-                                        </div>
-                                    </div>
+            <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                className={`
+                    fixed inset-0 flex items-start justify-end pt-20 pr-6 z-50
+                    ${!isVisible ? 'pointer-events-none' : ''}
+                `}
+            >
+                <Card className="bg-gradient-to-br from-indigo-900/95 via-purple-900/95 to-blue-900/95 backdrop-blur-xl border-indigo-500/30 shadow-2xl w-96 max-h-[calc(100vh-100px)] overflow-hidden">
+                    <CardHeader className="pb-3 border-b border-indigo-500/30">
+                        <div className="flex items-center justify-between">
+                            <CardTitle className="flex items-center gap-3 text-white">
+                                <div className="p-2 bg-gradient-to-br from-purple-600 to-pink-600 rounded-lg">
+                                    <Users className="h-5 w-5 text-white" />
                                 </div>
-                                <div className="flex items-center gap-2">
-                                    <Tooltip>
-                                        <TooltipTrigger asChild>
-                                            <Button
-                                                variant="ghost"
-                                                size="sm"
-                                                onClick={() => setShowChatPanel(!showChatPanel)}
-                                                className="h-8 w-8 p-0"
-                                            >
-                                                <MessageSquare className="w-4 h-4" />
-                                                {unreadMessages > 0 && (
-                                                    <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full text-xs flex items-center justify-center">
-                                                        {unreadMessages}
-                                                    </span>
-                                                )}
-                                            </Button>
-                                        </TooltipTrigger>
-                                        <TooltipContent>Chat (Ctrl+Shift+C)</TooltipContent>
-                                    </Tooltip>
-                                    <Tooltip>
-                                        <TooltipTrigger asChild>
-                                            <Button
-                                                variant="ghost"
-                                                size="sm"
-                                                onClick={() => setIsExpanded(!isExpanded)}
-                                                className="h-8 w-8 p-0"
-                                            >
-                                                {isExpanded ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
-                                            </Button>
-                                        </TooltipTrigger>
-                                        <TooltipContent>{isExpanded ? 'Collapse' : 'Expand'}</TooltipContent>
-                                    </Tooltip>
-                                    
-                                    {onClose && (
-                                        <Tooltip>
-                                            <TooltipTrigger asChild>
-                                                <Button
-                                                    variant="ghost"
-                                                    size="sm"
-                                                    onClick={onClose}
-                                                    className="h-8 w-8 p-0 text-white/60 hover:text-white"
-                                                >
-                                                    <X className="w-4 h-4" />
-                                                </Button>
-                                            </TooltipTrigger>
-                                            <TooltipContent>Close</TooltipContent>
-                                        </Tooltip>
-                                    )}
+                                <div>
+                                    <h2 className="text-lg font-bold bg-gradient-to-r from-purple-300 to-pink-300 bg-clip-text text-transparent">
+                                        Advanced Collaboration
+                                    </h2>
+                                    <p className="text-sm text-purple-200/70 font-normal">Real-time collaborative workspace</p>
                                 </div>
-                            </div>
-                        </CardHeader>
-                        
-                        <CardContent className="space-y-4">
-                            {/* Quick Actions */}
-                            <div className="grid grid-cols-2 gap-2">
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => setVoiceEnabled(!voiceEnabled)}
-                                    className={`${voiceEnabled ? 'bg-green-500/20 text-green-400' : ''}`}
-                                >
-                                    {voiceEnabled ? <Mic className="w-4 h-4 mr-2" /> : <MicOff className="w-4 h-4 mr-2" />}
-                                    Voice
-                                </Button>
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => setVideoEnabled(!videoEnabled)}
-                                    className={`${videoEnabled ? 'bg-blue-500/20 text-blue-400' : ''}`}
-                                >
-                                    {videoEnabled ? <Video className="w-4 h-4 mr-2" /> : <VideoOff className="w-4 h-4 mr-2" />}
-                                    Video
-                                </Button>
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => setScreenShareEnabled(!screenShareEnabled)}
-                                    className={`${screenShareEnabled ? 'bg-purple-500/20 text-purple-400' : ''}`}
-                                >
-                                    <Share2 className="w-4 h-4 mr-2" />
-                                    Share
-                                </Button>
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => setShowChatPanel(true)}
-                                    className="bg-orange-500/20 text-orange-400"
-                                >
-                                    <MessageSquare className="w-4 h-4 mr-2" />
-                                    Chat
-                                </Button>
-                            </div>
+                            </CardTitle>
                             
-                            {/* Active Users Preview */}
-                            <div className="p-3 bg-black/20 rounded-lg">
-                                <div className="flex items-center justify-between mb-2">
-                                    <span className="text-sm font-medium text-white">Active Users</span>
-                                    <span className="text-xs text-gray-400">{activeUsers.length} online</span>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                    {activeUsers.slice(0, 5).map(user => (
-                                        <Tooltip key={user.id}>
-                                            <TooltipTrigger asChild>
-                                                <div className="relative">
-                                                    <Avatar className="h-8 w-8 border-2 border-white/20">
-                                                        <AvatarImage src={`/avatars/${user.id}.png`} />
-                                                        <AvatarFallback className="text-xs">
-                                                            {user.name.split(' ').map(n => n[0]).join('')}
-                                                        </AvatarFallback>
-                                                    </Avatar>
-                                                    <div className={`absolute -bottom-1 -right-1 w-3 h-3 rounded-full border-2 border-background ${
-                                                        user.presence.status === 'online' ? 'bg-green-500' : 'bg-yellow-500'
-                                                    }`} />
-                                                </div>
-                                            </TooltipTrigger>
-                                            <TooltipContent>
-                                                <div className="text-center">
-                                                    <div className="font-medium">{user.name}</div>
-                                                    <div className="text-xs text-gray-400">{user.presence.currentTool}</div>
-                                                </div>
-                                            </TooltipContent>
-                                        </Tooltip>
-                                    ))}
-                                    {activeUsers.length > 5 && (
-                                        <div className="h-8 w-8 rounded-full bg-gray-500/20 flex items-center justify-center">
-                                            <span className="text-xs text-gray-400">+{activeUsers.length - 5}</span>
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-                            
-                            {/* Conflicts Alert */}
-                            {activeConflicts.length > 0 && (
-                                <Alert className="bg-red-500/20 border-red-500/30">
-                                    <AlertCircle className="w-4 h-4 text-red-400" />
-                                    <AlertDescription className="text-red-100">
-                                        {activeConflicts.length} conflict{activeConflicts.length > 1 ? 's' : ''} need{activeConflicts.length === 1 ? 's' : ''} resolution
-                                    </AlertDescription>
-                                </Alert>
+                            {onClose && (
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={onClose}
+                                    className="h-8 w-8 p-0 text-purple-300 hover:text-white hover:bg-purple-500/20"
+                                >
+                                    <X className="h-4 w-4" />
+                                </Button>
                             )}
-                            
-                            {/* Expanded Content */}
-                            <AnimatePresence>
-                                {isExpanded && (
-                                    <motion.div
-                                        initial={{ opacity: 0, height: 0 }}
-                                        animate={{ opacity: 1, height: 'auto' }}
-                                        exit={{ opacity: 0, height: 0 }}
-                                        transition={{ duration: 0.3 }}
-                                    >
-                                        <Tabs value={activeTab} onValueChange={setActiveTab}>
-                                            <TabsList className="grid w-full grid-cols-3">
-                                                <TabsTrigger value="users">Users</TabsTrigger>
-                                                <TabsTrigger value="metrics">Metrics</TabsTrigger>
-                                                <TabsTrigger value="settings">Settings</TabsTrigger>
-                                            </TabsList>
-                                            
-                                            <TabsContent value="users" className="space-y-3">
-                                                <div className="flex items-center justify-between">
-                                                    <span className="text-sm font-medium text-white">Session Members</span>
-                                                    <Button
-                                                        variant="outline"
-                                                        size="sm"
-                                                        className="h-8"
-                                                    >
-                                                        <UserPlus className="w-4 h-4 mr-2" />
-                                                        Invite
-                                                    </Button>
-                                                </div>
-                                                {renderUserList}
-                                            </TabsContent>
-                                            
-                                            <TabsContent value="metrics" className="space-y-3">
-                                                {renderSessionMetrics}
-                                            </TabsContent>
-                                            
-                                            <TabsContent value="settings" className="space-y-3">
-                                                <div className="space-y-4">
-                                                    <div className="grid grid-cols-2 gap-3">
-                                                        <div className="flex items-center justify-between">
-                                                            <span className="text-sm text-white">Cursor Sync</span>
-                                                            <Switch 
-                                                                checked={cursorSyncEnabled}
-                                                                onCheckedChange={setCursorSyncEnabled}
-                                                            />
-                                                        </div>
-                                                        <div className="flex items-center justify-between">
-                                                            <span className="text-sm text-white">Presence</span>
-                                                            <Switch 
-                                                                checked={presenceEnabled}
-                                                                onCheckedChange={setPresenceEnabled}
-                                                            />
-                                                        </div>
-                                                        <div className="flex items-center justify-between">
-                                                            <span className="text-sm text-white">Auto-save</span>
-                                                            <Switch checked={true} />
-                                                        </div>
-                                                        <div className="flex items-center justify-between">
-                                                            <span className="text-sm text-white">Notifications</span>
-                                                            <Switch checked={true} />
-                                                        </div>
-                                                    </div>
-                                                    
-                                                    <Separator />
-                                                    
-                                                    <div className="space-y-2">
-                                                        <Label className="text-sm text-white">Sync Frequency</Label>
-                                                        <Slider
-                                                            value={[1]}
-                                                            onValueChange={() => {}}
-                                                            min={0.5}
-                                                            max={5}
-                                                            step={0.5}
-                                                            className="w-full"
-                                                        />
-                                                        <div className="text-xs text-gray-400">1.0 seconds</div>
-                                                    </div>
-                                                    
-                                                    <div className="space-y-2">
-                                                        <Label className="text-sm text-white">Conflict Resolution</Label>
-                                                        <Select value="merge">
-                                                            <SelectTrigger>
-                                                                <SelectValue />
-                                                            </SelectTrigger>
-                                                            <SelectContent>
-                                                                <SelectItem value="merge">Smart Merge</SelectItem>
-                                                                <SelectItem value="last_write_wins">Last Write Wins</SelectItem>
-                                                                <SelectItem value="manual">Manual Resolution</SelectItem>
-                                                            </SelectContent>
-                                                        </Select>
-                                                    </div>
-                                                </div>
-                                            </TabsContent>
-                                        </Tabs>
-                                    </motion.div>
+                        </div>
+                    </CardHeader>
+                    
+                    <CardContent className="space-y-4">
+                        {/* Quick Actions */}
+                        <div className="grid grid-cols-2 gap-2">
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setVoiceEnabled(!voiceEnabled)}
+                                className={`${voiceEnabled ? 'bg-green-500/20 text-green-400' : ''}`}
+                            >
+                                {voiceEnabled ? <Mic className="w-4 h-4 mr-2" /> : <MicOff className="w-4 h-4 mr-2" />}
+                                Voice
+                            </Button>
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setVideoEnabled(!videoEnabled)}
+                                className={`${videoEnabled ? 'bg-blue-500/20 text-blue-400' : ''}`}
+                            >
+                                {videoEnabled ? <Video className="w-4 h-4 mr-2" /> : <VideoOff className="w-4 h-4 mr-2" />}
+                                Video
+                            </Button>
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setScreenShareEnabled(!screenShareEnabled)}
+                                className={`${screenShareEnabled ? 'bg-purple-500/20 text-purple-400' : ''}`}
+                            >
+                                <Share2 className="w-4 h-4 mr-2" />
+                                Share
+                            </Button>
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setShowChatPanel(true)}
+                                className="bg-orange-500/20 text-orange-400"
+                            >
+                                <MessageSquare className="w-4 h-4 mr-2" />
+                                Chat
+                            </Button>
+                        </div>
+                        
+                        {/* Active Users Preview */}
+                        <div className="p-3 bg-black/20 rounded-lg">
+                            <div className="flex items-center justify-between mb-2">
+                                <span className="text-sm font-medium text-white">Active Users</span>
+                                <span className="text-xs text-gray-400">{activeUsers.length} online</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                {activeUsers.slice(0, 5).map(user => (
+                                    <Tooltip key={user.id}>
+                                        <TooltipTrigger asChild>
+                                            <div className="relative">
+                                                <Avatar className="h-8 w-8 border-2 border-white/20">
+                                                    <AvatarImage src={`/avatars/${user.id}.png`} />
+                                                    <AvatarFallback className="text-xs">
+                                                        {user.name.split(' ').map(n => n[0]).join('')}
+                                                    </AvatarFallback>
+                                                </Avatar>
+                                                <div className={`absolute -bottom-1 -right-1 w-3 h-3 rounded-full border-2 border-background ${
+                                                    user.presence.status === 'online' ? 'bg-green-500' : 'bg-yellow-500'
+                                                }`} />
+                                            </div>
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                            <div className="text-center">
+                                                <div className="font-medium">{user.name}</div>
+                                                <div className="text-xs text-gray-400">{user.presence.currentTool}</div>
+                                            </div>
+                                        </TooltipContent>
+                                    </Tooltip>
+                                ))}
+                                {activeUsers.length > 5 && (
+                                    <div className="h-8 w-8 rounded-full bg-gray-500/20 flex items-center justify-center">
+                                        <span className="text-xs text-gray-400">+{activeUsers.length - 5}</span>
+                                    </div>
                                 )}
-                            </AnimatePresence>
-                        </CardContent>
-                    </Card>
-                </motion.div>
+                            </div>
+                        </div>
+                        
+                        {/* Conflicts Alert */}
+                        {activeConflicts.length > 0 && (
+                            <Alert className="bg-red-500/20 border-red-500/30">
+                                <AlertCircle className="w-4 h-4 text-red-400" />
+                                <AlertDescription className="text-red-100">
+                                    {activeConflicts.length} conflict{activeConflicts.length > 1 ? 's' : ''} need{activeConflicts.length === 1 ? 's' : ''} resolution
+                                </AlertDescription>
+                            </Alert>
+                        )}
+                        
+                        {/* Expanded Content */}
+                        <AnimatePresence>
+                            {isExpanded && (
+                                <motion.div
+                                    initial={{ opacity: 0, height: 0 }}
+                                    animate={{ opacity: 1, height: 'auto' }}
+                                    exit={{ opacity: 0, height: 0 }}
+                                    transition={{ duration: 0.3 }}
+                                >
+                                    <Tabs value={activeTab} onValueChange={setActiveTab}>
+                                        <TabsList className="grid w-full grid-cols-3">
+                                            <TabsTrigger value="users">Users</TabsTrigger>
+                                            <TabsTrigger value="metrics">Metrics</TabsTrigger>
+                                            <TabsTrigger value="settings">Settings</TabsTrigger>
+                                        </TabsList>
+                                        
+                                        <TabsContent value="users" className="space-y-3">
+                                            <div className="flex items-center justify-between">
+                                                <span className="text-sm font-medium text-white">Session Members</span>
+                                                <Button
+                                                    variant="outline"
+                                                    size="sm"
+                                                    className="h-8"
+                                                >
+                                                    <UserPlus className="w-4 h-4 mr-2" />
+                                                    Invite
+                                                </Button>
+                                            </div>
+                                            {renderUserList}
+                                        </TabsContent>
+                                        
+                                        <TabsContent value="metrics" className="space-y-3">
+                                            {renderSessionMetrics}
+                                        </TabsContent>
+                                        
+                                        <TabsContent value="settings" className="space-y-3">
+                                            <div className="space-y-4">
+                                                <div className="grid grid-cols-2 gap-3">
+                                                    <div className="flex items-center justify-between">
+                                                        <span className="text-sm text-white">Cursor Sync</span>
+                                                        <Switch 
+                                                            checked={cursorSyncEnabled}
+                                                            onCheckedChange={setCursorSyncEnabled}
+                                                        />
+                                                    </div>
+                                                    <div className="flex items-center justify-between">
+                                                        <span className="text-sm text-white">Presence</span>
+                                                        <Switch 
+                                                            checked={presenceEnabled}
+                                                            onCheckedChange={setPresenceEnabled}
+                                                        />
+                                                    </div>
+                                                    <div className="flex items-center justify-between">
+                                                        <span className="text-sm text-white">Auto-save</span>
+                                                        <Switch checked={true} />
+                                                    </div>
+                                                    <div className="flex items-center justify-between">
+                                                        <span className="text-sm text-white">Notifications</span>
+                                                        <Switch checked={true} />
+                                                    </div>
+                                                </div>
+                                                
+                                                <Separator />
+                                                
+                                                <div className="space-y-2">
+                                                    <Label className="text-sm text-white">Sync Frequency</Label>
+                                                    <Slider
+                                                        value={[1]}
+                                                        onValueChange={() => {}}
+                                                        min={0.5}
+                                                        max={5}
+                                                        step={0.5}
+                                                        className="w-full"
+                                                    />
+                                                    <div className="text-xs text-gray-400">1.0 seconds</div>
+                                                </div>
+                                                
+                                                <div className="space-y-2">
+                                                    <Label className="text-sm text-white">Conflict Resolution</Label>
+                                                    <Select value="merge">
+                                                        <SelectTrigger>
+                                                            <SelectValue />
+                                                        </SelectTrigger>
+                                                        <SelectContent>
+                                                            <SelectItem value="merge">Smart Merge</SelectItem>
+                                                            <SelectItem value="last_write_wins">Last Write Wins</SelectItem>
+                                                            <SelectItem value="manual">Manual Resolution</SelectItem>
+                                                        </SelectContent>
+                                                    </Select>
+                                                </div>
+                                            </div>
+                                        </TabsContent>
+                                    </Tabs>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+                    </CardContent>
+                </Card>
                 
                 {/* Chat Panel */}
                 <AnimatePresence>
                     {renderChatPanel}
                 </AnimatePresence>
-            </div>
+            </motion.div>
         </TooltipProvider>
     );
 }

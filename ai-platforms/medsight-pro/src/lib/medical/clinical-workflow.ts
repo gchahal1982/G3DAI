@@ -12,7 +12,7 @@
  */
 
 import { ClinicalWorkflowEngine } from '@/core/ClinicalWorkflowEngine';
-import MedicalAuth from '@/lib/auth/medical-auth';
+import { MedicalAuthService } from '@/lib/auth/medical-auth';
 import { ComplianceAuditTrail } from '@/lib/compliance/audit-trail';
 
 // Clinical Workflow Data Structures
@@ -314,7 +314,7 @@ export interface NotificationRule {
 // Clinical Workflow Integration Class
 export class ClinicalWorkflowIntegration {
   private engine: ClinicalWorkflowEngine;
-  private auth: MedicalAuth;
+  private auth: MedicalAuthService;
   private auditTrail: ComplianceAuditTrail;
   private workflowCache: Map<string, ClinicalWorkflow> = new Map();
   private executionCache: Map<string, WorkflowExecution> = new Map();
@@ -323,7 +323,7 @@ export class ClinicalWorkflowIntegration {
 
   constructor() {
     this.engine = new ClinicalWorkflowEngine();
-    this.auth = new MedicalAuth();
+    this.auth = MedicalAuthService.getInstance();
     this.auditTrail = new ComplianceAuditTrail();
     this.initializeEventListeners();
   }
@@ -561,10 +561,10 @@ export class ClinicalWorkflowIntegration {
       
       const execution = await this.engine.startWorkflow(
         workflowId, 
-        executionId,
         context, 
         {
           ...options,
+          executionId,
           startedBy: user.id
         }
       );

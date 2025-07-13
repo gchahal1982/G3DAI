@@ -12,6 +12,7 @@
  */
 
 import { MedicalRenderer } from '@/core/MedicalRenderer';
+import { MedicalAuthService } from '@/lib/auth/medical-auth';
 import MedicalAuth from '@/lib/auth/medical-auth';
 import { ComplianceAuditTrail } from '@/lib/compliance/audit-trail';
 
@@ -239,7 +240,7 @@ export interface MedicalRenderingPreset {
 // Medical Renderer Integration Class
 export class MedicalRenderingIntegration {
   private renderer: MedicalRenderer;
-  private auth: MedicalAuth;
+  private auth: MedicalAuthService;
   private auditTrail: ComplianceAuditTrail;
   private sceneCache: Map<string, MedicalScene> = new Map();
   private presetCache: Map<string, MedicalRenderingPreset> = new Map();
@@ -250,7 +251,7 @@ export class MedicalRenderingIntegration {
 
   constructor() {
     this.renderer = new MedicalRenderer();
-    this.auth = new MedicalAuth();
+    this.auth = MedicalAuthService.getInstance();
     this.auditTrail = new ComplianceAuditTrail();
     this.loadDefaultMaterials();
     this.loadDefaultPresets();

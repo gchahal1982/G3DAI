@@ -925,7 +925,7 @@ export function SpatialAnalysisPanel({
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ duration: 0.3 }}
                 >
-                    <Card className="annotate-glass border-white/10 min-w-[380px] max-w-[500px]">
+                    <Card className="bg-gradient-to-br from-indigo-900/95 via-purple-900/95 to-blue-900/95 backdrop-blur-xl border-indigo-500/30 shadow-2xl min-w-[380px] max-w-[500px]">
                         <CardHeader className="pb-3">
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-3">

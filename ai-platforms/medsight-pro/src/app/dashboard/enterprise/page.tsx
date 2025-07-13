@@ -7,7 +7,7 @@ import {
   CheckCircleIcon, XCircleIcon, ExclamationTriangleIcon,
   InformationCircleIcon, Cog6ToothIcon, UserGroupIcon,
   DocumentTextIcon, HeartIcon, AcademicCapIcon, BeakerIcon,
-  ServerIcon, DatabaseIcon, LockClosedIcon, KeyIcon,
+  ServerIcon, CircleStackIcon as DatabaseIcon, LockClosedIcon, KeyIcon,
   ChartPieIcon, PresentationChartLineIcon, MapIcon,
   ClockIcon, BellIcon, ArrowTrendingUpIcon, ArrowTrendingDownIcon,
   PlayIcon, PauseIcon, StopIcon, ArrowPathIcon,

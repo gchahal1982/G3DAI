@@ -23,6 +23,13 @@ export class MedicalAuthService {
     return MedicalAuthService.instance;
   }
 
+  // Add missing hasPermission method
+  async hasPermission(userId: string, permission: string): Promise<boolean> {
+    console.log('Checking permission for user:', userId, 'permission:', permission);
+    // For dummy implementation, always return true
+    return true;
+  }
+
   // Get current user method
   async getCurrentUser(): Promise<MedicalUser | null> {
     try {

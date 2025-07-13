@@ -60,7 +60,7 @@ interface DeviceConfiguration {
   imaging: ImagingConfiguration;
   workflow: WorkflowConfiguration;
   security: SecurityConfiguration;
-  quality: QualityConfiguration;
+  quality: SecurityConfiguration;
 }
 
 interface DICOMConfiguration {

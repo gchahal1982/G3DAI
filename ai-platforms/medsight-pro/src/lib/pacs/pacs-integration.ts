@@ -625,7 +625,7 @@ class PACSIntegration {
     description?: string;
     connectionType?: 'primary' | 'secondary' | 'backup' | 'federation';
     security?: Partial<PACSSecurityConfig>;
-  }): Promise<{ success: boolean; connectionId: string; capabilities?: PACSCapabilities }> {
+  }): Promise<{ success: boolean; connectionId: string; capabilities?: PACSCapabilities; error?: string }> {
     try {
       const connectionId = this.generateConnectionId();
 
@@ -1252,7 +1252,11 @@ class PACSIntegration {
       uptime: connection.performance.uptime,
       availability: connection.status === 'connected' ? 100 : 0,
       responseTime: connection.performance.queryResponseTime,
-      throughput: connection.performance.throughput,
+      throughput: {
+        studiesPerHour: connection.performance.throughput.studies,
+        imagesPerHour: connection.performance.throughput.images,
+        dataVolumePerHour: connection.performance.throughput.dataVolume
+      },
       errorRates: {
         queryErrors: connection.performance.errorRate,
         retrieveErrors: connection.performance.errorRate,

@@ -33,7 +33,6 @@ interface PatientDataEncryption {
   encryptionKeyId: string;
   encryptedData: string;
   iv: string;
-  tag: string;
   salt: string;
   algorithm: string;
   keyDerivationParams: {
@@ -365,15 +364,14 @@ class MedicalDataSecurity {
       }
 
       // Encrypt data using AES-256-GCM
-      const encryptedResult = await this.encryptWithAESGCM(dataToEncrypt, encryptionKey, iv);
+      const encryptedData = await this.encryptWithAESGCM(dataToEncrypt, encryptionKey, iv);
 
       // Create patient data encryption record
       const patientDataEncryption: PatientDataEncryption = {
         patientId: options.patientId,
         encryptionKeyId: keyId,
-        encryptedData: this.arrayBufferToBase64(encryptedResult.ciphertext),
+        encryptedData: this.arrayBufferToBase64(encryptedData),
         iv: this.arrayBufferToBase64(iv),
-        tag: this.arrayBufferToBase64(encryptedResult.tag),
         salt: this.arrayBufferToBase64(salt),
         algorithm: this.MEDICAL_SECURITY_CONFIG.ENCRYPTION_ALGORITHM,
         keyDerivationParams: {
@@ -451,10 +449,9 @@ class MedicalDataSecurity {
       // Convert base64 to ArrayBuffer
       const encryptedData = this.base64ToArrayBuffer(options.encryptionRecord.encryptedData);
       const iv = this.base64ToArrayBuffer(options.encryptionRecord.iv);
-      const tag = this.base64ToArrayBuffer(options.encryptionRecord.tag);
 
       // Decrypt data
-      const decryptedData = await this.decryptWithAESGCM(encryptedData, encryptionKey, iv, tag);
+      const decryptedData = await this.decryptWithAESGCM(encryptedData, encryptionKey, iv);
 
       // Decompress if needed
       let finalData = decryptedData;
@@ -792,31 +789,20 @@ class MedicalDataSecurity {
     );
   }
 
-  private async encryptWithAESGCM(data: string, key: CryptoKey, iv: Uint8Array): Promise<{ ciphertext: ArrayBuffer; tag: ArrayBuffer }> {
+  private async encryptWithAESGCM(data: string, key: CryptoKey, iv: Uint8Array): Promise<ArrayBuffer> {
     const encodedData = new TextEncoder().encode(data);
-    const encryptedData = await crypto.subtle.encrypt(
+    return crypto.subtle.encrypt(
       { name: 'AES-GCM', iv: iv },
       key,
       encodedData
     );
-
-    // AES-GCM includes the tag in the result
-    const ciphertext = encryptedData.slice(0, -16);
-    const tag = encryptedData.slice(-16);
-
-    return { ciphertext, tag };
   }
 
-  private async decryptWithAESGCM(ciphertext: ArrayBuffer, key: CryptoKey, iv: Uint8Array, tag: ArrayBuffer): Promise<string> {
-    // Combine ciphertext and tag for AES-GCM
-    const combined = new Uint8Array(ciphertext.byteLength + tag.byteLength);
-    combined.set(new Uint8Array(ciphertext), 0);
-    combined.set(new Uint8Array(tag), ciphertext.byteLength);
-
+  private async decryptWithAESGCM(ciphertext: ArrayBuffer, key: CryptoKey, iv: Uint8Array): Promise<string> {
     const decryptedData = await crypto.subtle.decrypt(
       { name: 'AES-GCM', iv: iv },
       key,
-      combined
+      new Uint8Array(ciphertext)
     );
 
     return new TextDecoder().decode(decryptedData);

@@ -349,9 +349,9 @@ const MeshProcessingTools: React.FC<MeshProcessingToolsProps> = ({
                             <SelectTrigger className="bg-gradient-to-r from-indigo-800/30 to-purple-800/30 border-indigo-500/30 text-white hover:border-indigo-400/50">
                                 <SelectValue placeholder="Choose a mesh..." />
                             </SelectTrigger>
-                            <SelectContent className="bg-gradient-to-br from-indigo-900 to-purple-900 border-indigo-500/30 z-[60]">
+                            <SelectContent className="bg-gradient-to-br from-indigo-900/95 to-purple-900/95 border-indigo-500/30 z-[60] backdrop-blur-xl">
                                 {meshes.map(mesh => (
-                                    <SelectItem key={mesh.id} value={mesh.id} className="text-white hover:bg-indigo-500/20">
+                                    <SelectItem key={mesh.id} value={mesh.id} className="text-white hover:bg-indigo-500/20 focus:bg-indigo-500/20">
                                         {mesh.name} ({mesh.vertices} vertices)
                                     </SelectItem>
                                 ))}
@@ -462,218 +462,220 @@ const MeshProcessingTools: React.FC<MeshProcessingToolsProps> = ({
                     </div>
 
                     {/* Processing Operations - Improved Layout */}
-                    <Tabs defaultValue="editing" className="w-full">
-                        <TabsList className="grid w-full grid-cols-4 mb-4 bg-gradient-to-r from-indigo-800/50 to-purple-800/50 border border-indigo-500/30">
-                            <TabsTrigger 
-                                value="editing" 
-                                className="text-xs text-indigo-200 data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-500 data-[state=active]:to-purple-500 data-[state=active]:text-white"
-                            >
-                                Editing
-                            </TabsTrigger>
-                            <TabsTrigger 
-                                value="analysis" 
-                                className="text-xs text-indigo-200 data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-500 data-[state=active]:to-purple-500 data-[state=active]:text-white"
-                            >
-                                Analysis
-                            </TabsTrigger>
-                            <TabsTrigger 
-                                value="operations" 
-                                className="text-xs text-indigo-200 data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-500 data-[state=active]:to-purple-500 data-[state=active]:text-white"
-                            >
-                                Operations
-                            </TabsTrigger>
-                            <TabsTrigger 
-                                value="export" 
-                                className="text-xs text-indigo-200 data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-500 data-[state=active]:to-purple-500 data-[state=active]:text-white"
-                            >
-                                Export
-                            </TabsTrigger>
-                        </TabsList>
-                        
-                        <TabsContent value="editing" className="space-y-4">
-                            <div className="grid grid-cols-2 gap-3">
-                                <div className="space-y-2">
-                                    <label className="text-xs font-medium text-indigo-200">Optimization</label>
-                                    <div className="flex items-center gap-2">
-                                        <div className="flex-1">
-                                            <Slider
-                                                value={[optimizationLevel]}
-                                                onValueChange={([value]) => setOptimizationLevel(value)}
-                                                max={100}
-                                                step={1}
-                                                className="w-full"
-                                            />
+                    <div className="max-h-[500px] overflow-y-auto">
+                        <Tabs defaultValue="editing" className="w-full">
+                            <TabsList className="grid w-full grid-cols-4 mb-4 bg-gradient-to-r from-indigo-800/50 to-purple-800/50 border border-indigo-500/30">
+                                <TabsTrigger 
+                                    value="editing" 
+                                    className="text-xs text-indigo-200 data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-500 data-[state=active]:to-purple-500 data-[state=active]:text-white"
+                                >
+                                    Editing
+                                </TabsTrigger>
+                                <TabsTrigger 
+                                    value="analysis" 
+                                    className="text-xs text-indigo-200 data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-500 data-[state=active]:to-purple-500 data-[state=active]:text-white"
+                                >
+                                    Analysis
+                                </TabsTrigger>
+                                <TabsTrigger 
+                                    value="operations" 
+                                    className="text-xs text-indigo-200 data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-500 data-[state=active]:to-purple-500 data-[state=active]:text-white"
+                                >
+                                    Operations
+                                </TabsTrigger>
+                                <TabsTrigger 
+                                    value="export" 
+                                    className="text-xs text-indigo-200 data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-500 data-[state=active]:to-purple-500 data-[state=active]:text-white"
+                                >
+                                    Export
+                                </TabsTrigger>
+                            </TabsList>
+                            
+                            <TabsContent value="editing" className="space-y-4">
+                                <div className="grid grid-cols-2 gap-3">
+                                    <div className="space-y-2">
+                                        <label className="text-xs font-medium text-indigo-200">Optimization</label>
+                                        <div className="flex items-center gap-2">
+                                            <div className="flex-1">
+                                                <Slider
+                                                    value={[optimizationLevel]}
+                                                    onValueChange={([value]) => setOptimizationLevel(value)}
+                                                    max={100}
+                                                    step={1}
+                                                    className="w-full"
+                                                />
+                                            </div>
+                                            <Badge variant="outline" className="text-xs font-mono min-w-[3rem] text-indigo-200 border-indigo-400/50">
+                                                {optimizationLevel}%
+                                            </Badge>
                                         </div>
-                                        <Badge variant="outline" className="text-xs font-mono min-w-[3rem] text-indigo-200 border-indigo-400/50">
-                                            {optimizationLevel}%
-                                        </Badge>
+                                    </div>
+                                    
+                                    <div className="space-y-2">
+                                        <label className="text-xs font-medium text-indigo-200">Smoothing</label>
+                                        <div className="flex items-center gap-2">
+                                            <div className="flex-1">
+                                                <Slider
+                                                    value={[smoothingIterations]}
+                                                    onValueChange={(value) => setSmoothingIterations(value[0])}
+                                                    min={1}
+                                                    max={20}
+                                                    step={1}
+                                                    className="w-full"
+                                                />
+                                            </div>
+                                            <Badge variant="outline" className="text-xs font-mono min-w-[3rem] text-indigo-200 border-indigo-400/50">
+                                                {smoothingIterations}
+                                            </Badge>
+                                        </div>
                                     </div>
                                 </div>
                                 
-                                <div className="space-y-2">
-                                    <label className="text-xs font-medium text-indigo-200">Smoothing</label>
-                                    <div className="flex items-center gap-2">
-                                        <div className="flex-1">
-                                            <Slider
-                                                value={[smoothingIterations]}
-                                                onValueChange={(value) => setSmoothingIterations(value[0])}
-                                                min={1}
-                                                max={20}
-                                                step={1}
-                                                className="w-full"
-                                            />
-                                        </div>
-                                        <Badge variant="outline" className="text-xs font-mono min-w-[3rem] text-indigo-200 border-indigo-400/50">
-                                            {smoothingIterations}
-                                        </Badge>
+                                <div className="flex gap-2">
+                                    <Button
+                                        onClick={optimizeMesh}
+                                        disabled={!selectedMesh || isProcessing}
+                                        size="sm"
+                                        className="flex-1 h-8 bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 text-white shadow-lg"
+                                    >
+                                        <BeakerIcon className="w-3 h-3 mr-2" />
+                                        Optimize Mesh
+                                    </Button>
+                                    <Button
+                                        onClick={smoothMesh}
+                                        disabled={!selectedMesh || isProcessing}
+                                        size="sm"
+                                        variant="outline"
+                                        className="flex-1 h-8"
+                                    >
+                                        Smooth Mesh
+                                    </Button>
+                                </div>
+                            </TabsContent>
+                            
+                            <TabsContent value="analysis" className="space-y-4">
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="bg-black/20 rounded-lg p-3 border border-white/10">
+                                        <div className="text-xs text-white/60 mb-1">Quality Score</div>
+                                        <div className="text-lg font-bold text-green-400">94%</div>
                                     </div>
-                                </div>
-                            </div>
-                            
-                            <div className="flex gap-2">
-                                <Button
-                                    onClick={optimizeMesh}
-                                    disabled={!selectedMesh || isProcessing}
-                                    size="sm"
-                                    className="flex-1 h-8 bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 text-white shadow-lg"
-                                >
-                                    <BeakerIcon className="w-3 h-3 mr-2" />
-                                    Optimize Mesh
-                                </Button>
-                                <Button
-                                    onClick={smoothMesh}
-                                    disabled={!selectedMesh || isProcessing}
-                                    size="sm"
-                                    variant="outline"
-                                    className="flex-1 h-8"
-                                >
-                                    Smooth Mesh
-                                </Button>
-                            </div>
-                        </TabsContent>
-                        
-                        <TabsContent value="analysis" className="space-y-4">
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="bg-black/20 rounded-lg p-3 border border-white/10">
-                                    <div className="text-xs text-white/60 mb-1">Quality Score</div>
-                                    <div className="text-lg font-bold text-green-400">94%</div>
-                                </div>
-                                <div className="bg-black/20 rounded-lg p-3 border border-white/10">
-                                    <div className="text-xs text-white/60 mb-1">Topology</div>
-                                    <div className="text-lg font-bold text-blue-400">Good</div>
-                                </div>
-                            </div>
-                            
-                            <Button
-                                onClick={analyzeMesh}
-                                disabled={!selectedMesh || isProcessing}
-                                size="sm"
-                                className="w-full h-8"
-                            >
-                                <ChartBarIcon className="w-3 h-3 mr-2" />
-                                Run Full Analysis
-                            </Button>
-                        </TabsContent>
-                        
-                        <TabsContent value="operations" className="space-y-4">
-                            <div className="grid grid-cols-2 gap-3">
-                                <div className="space-y-2">
-                                    <label className="text-xs font-medium text-indigo-200">Decimation</label>
-                                    <div className="flex items-center gap-2">
-                                        <div className="flex-1">
-                                            <Slider
-                                                value={[decimationRatio * 100]}
-                                                onValueChange={([value]) => setDecimationRatio(value / 100)}
-                                                max={90}
-                                                step={5}
-                                                className="w-full"
-                                            />
-                                        </div>
-                                        <Badge variant="outline" className="text-xs font-mono min-w-[3rem] text-indigo-200 border-indigo-400/50">
-                                            {Math.round(decimationRatio * 100)}%
-                                        </Badge>
+                                    <div className="bg-black/20 rounded-lg p-3 border border-white/10">
+                                        <div className="text-xs text-white/60 mb-1">Topology</div>
+                                        <div className="text-lg font-bold text-blue-400">Good</div>
                                     </div>
                                 </div>
                                 
-                                <div className="space-y-2">
-                                    <label className="text-xs font-medium text-indigo-200">Repair Tolerance</label>
-                                    <div className="flex items-center gap-2">
-                                        <div className="flex-1">
-                                            <Slider
-                                                value={[repairTolerance * 1000]}
-                                                onValueChange={([value]) => setRepairTolerance(value / 1000)}
-                                                max={10}
-                                                step={0.1}
-                                                className="w-full"
-                                            />
+                                <Button
+                                    onClick={analyzeMesh}
+                                    disabled={!selectedMesh || isProcessing}
+                                    size="sm"
+                                    className="w-full h-8"
+                                >
+                                    <ChartBarIcon className="w-3 h-3 mr-2" />
+                                    Run Full Analysis
+                                </Button>
+                            </TabsContent>
+                            
+                            <TabsContent value="operations" className="space-y-4">
+                                <div className="grid grid-cols-2 gap-3">
+                                    <div className="space-y-2">
+                                        <label className="text-xs font-medium text-indigo-200">Decimation</label>
+                                        <div className="flex items-center gap-2">
+                                            <div className="flex-1">
+                                                <Slider
+                                                    value={[decimationRatio * 100]}
+                                                    onValueChange={([value]) => setDecimationRatio(value / 100)}
+                                                    max={90}
+                                                    step={5}
+                                                    className="w-full"
+                                                />
+                                            </div>
+                                            <Badge variant="outline" className="text-xs font-mono min-w-[3rem] text-indigo-200 border-indigo-400/50">
+                                                {Math.round(decimationRatio * 100)}%
+                                            </Badge>
                                         </div>
-                                        <Badge variant="outline" className="text-xs font-mono min-w-[3rem] text-indigo-200 border-indigo-400/50">
-                                            {repairTolerance.toFixed(3)}
-                                        </Badge>
+                                    </div>
+                                    
+                                    <div className="space-y-2">
+                                        <label className="text-xs font-medium text-indigo-200">Repair Tolerance</label>
+                                        <div className="flex items-center gap-2">
+                                            <div className="flex-1">
+                                                <Slider
+                                                    value={[repairTolerance * 1000]}
+                                                    onValueChange={([value]) => setRepairTolerance(value / 1000)}
+                                                    max={10}
+                                                    step={0.1}
+                                                    className="w-full"
+                                                />
+                                            </div>
+                                            <Badge variant="outline" className="text-xs font-mono min-w-[3rem] text-indigo-200 border-indigo-400/50">
+                                                {repairTolerance.toFixed(3)}
+                                            </Badge>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
+                                
+                                <div className="flex gap-2">
+                                    <Button
+                                        onClick={decimateMesh}
+                                        disabled={!selectedMesh || isProcessing}
+                                        size="sm"
+                                        variant="outline"
+                                        className="flex-1 h-8"
+                                    >
+                                        Decimate
+                                    </Button>
+                                    <Button
+                                        onClick={repairMesh}
+                                        disabled={!selectedMesh || isProcessing}
+                                        size="sm"
+                                        variant="outline"
+                                        className="flex-1 h-8"
+                                    >
+                                        Repair
+                                    </Button>
+                                </div>
+                            </TabsContent>
                             
-                            <div className="flex gap-2">
-                                <Button
-                                    onClick={decimateMesh}
-                                    disabled={!selectedMesh || isProcessing}
-                                    size="sm"
-                                    variant="outline"
-                                    className="flex-1 h-8"
-                                >
-                                    Decimate
-                                </Button>
-                                <Button
-                                    onClick={repairMesh}
-                                    disabled={!selectedMesh || isProcessing}
-                                    size="sm"
-                                    variant="outline"
-                                    className="flex-1 h-8"
-                                >
-                                    Repair
-                                </Button>
-                            </div>
-                        </TabsContent>
-                        
-                        <TabsContent value="export" className="space-y-4">
-                            <div className="space-y-2">
-                                <label className="text-xs font-medium text-indigo-200">Export Format</label>
-                                <Select value={exportFormat} onValueChange={setExportFormat}>
-                                    <SelectTrigger className="h-8">
-                                        <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="obj">OBJ Format</SelectItem>
-                                        <SelectItem value="stl">STL Format</SelectItem>
-                                        <SelectItem value="ply">PLY Format</SelectItem>
-                                        <SelectItem value="glb">GLB Format</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                            
-                            <div className="flex gap-2">
-                                <Button
-                                    onClick={exportMesh}
-                                    disabled={!selectedMesh}
-                                    size="sm"
-                                    className="flex-1 h-8"
-                                >
-                                    <DocumentArrowDownIcon className="w-3 h-3 mr-2" />
-                                    Export Mesh
-                                </Button>
-                                <Button
-                                    onClick={() => {/* Share mesh */}}
-                                    disabled={!selectedMesh}
-                                    size="sm"
-                                    variant="outline"
-                                    className="h-8 px-3"
-                                >
-                                    Share
-                                </Button>
-                            </div>
-                        </TabsContent>
-                    </Tabs>
+                            <TabsContent value="export" className="space-y-4">
+                                <div className="space-y-2">
+                                    <label className="text-xs font-medium text-indigo-200">Export Format</label>
+                                    <Select value={exportFormat} onValueChange={setExportFormat}>
+                                        <SelectTrigger className="h-8">
+                                            <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="obj">OBJ Format</SelectItem>
+                                            <SelectItem value="stl">STL Format</SelectItem>
+                                            <SelectItem value="ply">PLY Format</SelectItem>
+                                            <SelectItem value="glb">GLB Format</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                                
+                                <div className="flex gap-2">
+                                    <Button
+                                        onClick={exportMesh}
+                                        disabled={!selectedMesh}
+                                        size="sm"
+                                        className="flex-1 h-8"
+                                    >
+                                        <DocumentArrowDownIcon className="w-3 h-3 mr-2" />
+                                        Export Mesh
+                                    </Button>
+                                    <Button
+                                        onClick={() => {/* Share mesh */}}
+                                        disabled={!selectedMesh}
+                                        size="sm"
+                                        variant="outline"
+                                        className="h-8 px-3"
+                                    >
+                                        Share
+                                    </Button>
+                                </div>
+                            </TabsContent>
+                        </Tabs>
+                    </div>
 
                     {/* Processing Progress */}
                     <AnimatePresence>

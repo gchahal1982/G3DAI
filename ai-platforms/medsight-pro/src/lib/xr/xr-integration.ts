@@ -12,6 +12,7 @@
  */
 
 import { EventEmitter } from 'events';
+import * as React from 'react';
 
 // XR System Types
 export interface XRDevice {
