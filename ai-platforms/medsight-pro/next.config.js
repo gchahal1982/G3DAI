@@ -1,29 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Enable experimental features
-  experimental: {
-    serverComponentsExternalPackages: ['three', 'opencv-js'],
-  },
-  
   // Transpile shared packages
   transpilePackages: ['@g3dai/shared'],
-  
-  // Webpack configuration for medical imaging
-  webpack: (config) => {
-    // Handle medical imaging and 3D libraries
-    config.module.rules.push({
-      test: /\.(glsl|vs|fs|vert|frag|wasm)$/,
-      use: ['raw-loader'],
-    });
-    
-    // Handle DICOM and medical formats
-    config.module.rules.push({
-      test: /\.(dcm|dicom)$/,
-      type: 'asset/resource',
-    });
-    
-    return config;
-  },
   
   // Image optimization for medical images
   images: {
@@ -41,9 +19,6 @@ const nextConfig = {
     NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3022',
     NEXT_PUBLIC_DICOM_API_URL: process.env.NEXT_PUBLIC_DICOM_API_URL || 'http://localhost:8042',
   },
-  
-  // Build configuration
-  output: 'standalone',
   
   // Security headers for medical compliance
   async headers() {
@@ -73,4 +48,4 @@ const nextConfig = {
   },
 };
 
-module.exports = nextConfig; 
+module.exports = nextConfig;

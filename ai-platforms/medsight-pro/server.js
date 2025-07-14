@@ -9,26 +9,41 @@
  * DICOM 3.0 Compatible
  */
 
-const express = require('express');
-const next = require('next');
-const { createServer } = require('http');
-const { Server } = require('socket.io');
-const helmet = require('helmet');
-const rateLimit = require('express-rate-limit');
-const cors = require('cors');
-const compression = require('compression');
-const winston = require('winston');
-require('dotenv').config();
+import express from 'express';
+import next from 'next';
+import { createServer } from 'http';
+import { Server } from 'socket.io';
+import helmet from 'helmet';
+import rateLimit from 'express-rate-limit';
+import cors from 'cors';
+import compression from 'compression';
+import winston from 'winston';
+import dotenv from 'dotenv';
 
-// Medical compliance and security imports
-const { MedicalAuditLogger } = require('./src/core/medical-audit-logger');
-const { HIPAACompliance } = require('./src/core/hipaa-compliance');
-const { FDAValidation } = require('./src/core/fda-validation');
-const { DICOMServer } = require('./src/core/dicom-server');
+dotenv.config();
+
+// Medical compliance and security imports (mock for now)
+// TODO: Convert these to ES modules or create mock implementations
+const MedicalAuditLogger = class {
+  constructor(options) { this.options = options; }
+  log(data) { console.log('Audit Log:', data); }
+  isEnabled() { return this.options.enabled; }
+  getEventCount() { return 0; }
+};
+
+const HIPAACompliance = class {
+  constructor(options) { this.options = options; }
+  isCompliant() { return this.options.enabled; }
+};
+
+const FDAValidation = class {
+  constructor(options) { this.options = options; }
+  isValidated() { return this.options.enabled; }
+};
 
 // Environment configuration
 const isDev = process.env.NODE_ENV !== 'production';
-const port = parseInt(process.env.PORT, 10) || 3000;
+const port = parseInt(process.env.PORT, 10) || 3033;
 const hostname = process.env.HOSTNAME || 'localhost';
 
 // Initialize medical compliance modules
@@ -341,6 +356,40 @@ medsight_audit_events_total ${medicalAudit.getEventCount()}
       });
     });
     
+    // Medical dashboard API endpoint
+    server.get('/api/medical/dashboard', (req, res) => {
+      auditLog(
+        'MEDICAL_DASHBOARD_ACCESS',
+        req.user?.id || 'anonymous',
+        'N/A',
+        { ip: req.ip, userAgent: req.get('User-Agent') }
+      );
+      
+      const dashboardData = {
+        user: {
+          name: 'Dr. Development User',
+          role: 'Radiologist',
+          specialization: 'Diagnostic Imaging',
+          licenseNumber: 'MD-2024-001'
+        },
+        metrics: {
+          totalCases: 1247,
+          pendingReviews: 23,
+          completedToday: 8,
+          criticalFindings: 3,
+          aiAccuracy: 94.2,
+          averageReviewTime: '4.2 min'
+        },
+        systemStatus: {
+          dicomProcessor: 'online',
+          aiEngine: 'online',
+          database: 'connected'
+        }
+      };
+      
+      res.json(dashboardData);
+    });
+    
     // Handle all other routes with Next.js
     server.all('*', (req, res) => {
       return handle(req, res);
@@ -437,11 +486,9 @@ medsight_audit_events_total ${medicalAudit.getEventCount()}
 }
 
 // Start the medical server
-if (require.main === module) {
-  createMedicalServer().catch((error) => {
-    console.error('Failed to start server:', error);
-    process.exit(1);
-  });
-}
+createMedicalServer().catch((error) => {
+  console.error('Failed to start server:', error);
+  process.exit(1);
+});
 
-module.exports = { createMedicalServer }; 
+export { createMedicalServer }; 

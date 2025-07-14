@@ -4,6 +4,7 @@
  */
 
 import { AuthService } from '../../../../../shared/auth/AuthService';
+import { getMedSightProConfig } from '../../config/shared-config';
 
 // Medical-specific authentication requirements
 export interface MedicalCredentials {
@@ -603,7 +604,11 @@ export class MedicalAuthAdapter {
         return;
       }
 
-      await fetch('/api/medical/audit-log', {
+      // Get the correct API URL from configuration
+      const config = getMedSightProConfig();
+      const apiUrl = `${config.environment.apiUrl}/api/medical/audit-log`;
+
+      await fetch(apiUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

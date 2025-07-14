@@ -42,7 +42,7 @@ export function RecentStudies() {
       </div>
       <div className="space-y-3 max-h-96 overflow-y-auto">
         {studies.map(study => (
-          <div key={study.id} className="flex items-center p-3 rounded-lg bg-white shadow-sm border border-gray-200 hover:bg-gray-50 cursor-pointer">
+          <div key={study.id} className="flex items-center p-3 glass-card-secondary cursor-pointer">
             <div className="flex-shrink-0 w-16 h-16 rounded-md bg-gray-200 flex items-center justify-center">
               <DocumentTextIcon className="w-8 h-8 text-gray-400" />
               {/* In a real app, you'd use an actual thumbnail: <img src={study.thumbnailUrl} alt={study.description} className="w-16 h-16 rounded-md object-cover" /> */}

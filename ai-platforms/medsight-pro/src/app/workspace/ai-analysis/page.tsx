@@ -176,15 +176,15 @@ export default function AIAnalysisWorkspace({ className = '' }: AIAnalysisWorksp
   };
 
   return (
-    <div className={`min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 ${className}`}>
+    <div className={`min-h-screen bg-gray-100 ${className}`}>
       {/* Medical Header */}
-      <div className="medsight-glass p-6 mb-6">
+      <div className="glass-card p-6 mb-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-3">
-              <CpuChipIconSolid className="w-8 h-8 text-medsight-primary" />
+              <CpuChipIconSolid className="w-8 h-8 text-primary" />
               <div>
-                <h1 className="text-2xl font-bold text-medsight-primary">AI Analysis Workspace</h1>
+                <h1 className="text-2xl font-bold text-gray-800">AI Analysis Workspace</h1>
                 <p className="text-sm text-gray-600">Advanced Medical AI Analysis and Decision Support</p>
               </div>
             </div>
@@ -192,15 +192,15 @@ export default function AIAnalysisWorkspace({ className = '' }: AIAnalysisWorksp
           
           <div className="flex items-center space-x-4">
             {/* AI Status Indicator */}
-            <div className="flex items-center space-x-2 medsight-ai-glass px-3 py-2 rounded-lg">
-              <CpuChipIconSolid className={`w-5 h-5 ${aiProcessingStatus === 'processing' ? 'text-medsight-pending animate-pulse' : 'text-medsight-ai-high'}`} />
-              <span className="text-sm font-medium">
+            <div className="flex items-center space-x-2 glass-card-secondary px-3 py-2 rounded-lg">
+              <CpuChipIconSolid className={`w-5 h-5 ${aiProcessingStatus === 'processing' ? 'text-warning animate-pulse' : 'text-success'}`} />
+              <span className="text-sm font-medium text-gray-800">
                 {aiProcessingStatus === 'processing' ? 'AI Processing...' : 'AI Ready'}
               </span>
             </div>
 
             {/* Emergency Protocol */}
-            <button className="btn-medsight bg-medsight-critical/10 text-medsight-critical border-medsight-critical/30">
+            <button className="btn-medical bg-danger/10 text-danger border-danger/30 hover:bg-danger/20">
               <ExclamationTriangleIcon className="w-4 h-4 mr-2" />
               Emergency Analysis
             </button>
@@ -208,7 +208,7 @@ export default function AIAnalysisWorkspace({ className = '' }: AIAnalysisWorksp
             {/* Real-time Toggle */}
             <button 
               onClick={() => setIsRealTimeMode(!isRealTimeMode)}
-              className={`btn-medsight ${isRealTimeMode ? 'bg-medsight-ai-high/20 text-medsight-ai-high' : ''}`}
+              className={`btn-medical ${isRealTimeMode ? 'bg-primary/20 text-primary border-primary/30' : 'btn-secondary'}`}
             >
               <BoltIcon className="w-4 h-4 mr-2" />
               Real-time: {isRealTimeMode ? 'ON' : 'OFF'}
@@ -229,8 +229,8 @@ export default function AIAnalysisWorkspace({ className = '' }: AIAnalysisWorksp
               onClick={() => setActiveTab(tab.id as any)}
               className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
                 activeTab === tab.id
-                  ? 'medsight-ai-glass text-medsight-ai-high border-medsight-ai-high/30'
-                  : 'medsight-glass text-gray-600 hover:text-medsight-primary'
+                  ? 'glass-card-secondary text-primary border border-primary/30'
+                  : 'glass-card text-gray-600 hover:text-gray-800 hover:bg-white/10'
               }`}
             >
               <tab.icon className="w-4 h-4" />
@@ -244,10 +244,10 @@ export default function AIAnalysisWorkspace({ className = '' }: AIAnalysisWorksp
         {/* Main AI Analysis Panel */}
         <div className="col-span-8">
           {activeTab === 'inference' && (
-            <div className="medsight-ai-glass p-6 rounded-xl">
+            <div className="glass-card p-6 rounded-xl">
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-semibold text-medsight-primary flex items-center">
-                  <CpuChipIcon className="w-6 h-6 mr-2" />
+                <h2 className="text-xl font-semibold text-gray-800 flex items-center">
+                  <CpuChipIcon className="w-6 h-6 mr-2 text-primary" />
                   AI Inference Engine
                 </h2>
                 <div className="flex items-center space-x-2">
@@ -285,7 +285,7 @@ export default function AIAnalysisWorkspace({ className = '' }: AIAnalysisWorksp
                             setSelectedModels(selectedModels.filter(m => m !== model));
                           }
                         }}
-                        className="rounded border-gray-300 text-medsight-ai-high focus:ring-medsight-ai-high"
+                        className="rounded border-gray-300 text-primary focus:ring-primary"
                       />
                       <span className="text-sm text-gray-700">{model}</span>
                     </label>
@@ -294,7 +294,7 @@ export default function AIAnalysisWorkspace({ className = '' }: AIAnalysisWorksp
               </div>
 
               {/* Confidence Threshold */}
-              <div className="medsight-control-glass p-4 rounded-lg mb-6">
+              <div className="glass-card-secondary p-4 rounded-lg mb-6">
                 <div className="flex items-center justify-between mb-2">
                   <h3 className="font-medium text-gray-800">Confidence Threshold</h3>
                   <span className={`font-semibold ${getConfidenceColor(confidenceThreshold)}`}>
@@ -325,8 +325,8 @@ export default function AIAnalysisWorkspace({ className = '' }: AIAnalysisWorksp
                 {analysisResults.map((analysis) => (
                   <div
                     key={analysis.id}
-                    className={`medsight-glass p-4 rounded-lg cursor-pointer transition-all duration-200 ${
-                      selectedAnalysis === analysis.id ? 'ring-2 ring-medsight-ai-high' : ''
+                    className={`glass-card-secondary p-4 rounded-lg cursor-pointer transition-all duration-200 hover:bg-white/10 ${
+                      selectedAnalysis === analysis.id ? 'ring-2 ring-primary border-primary/30' : ''
                     }`}
                     onClick={() => setSelectedAnalysis(analysis.id)}
                   >
@@ -399,38 +399,38 @@ export default function AIAnalysisWorkspace({ className = '' }: AIAnalysisWorksp
 
               {/* Detection Results */}
               <div className="grid grid-cols-2 gap-4">
-                <div className="medsight-control-glass p-4 rounded-lg">
+                <div className="glass-card-secondary p-4 rounded-lg">
                   <h3 className="font-medium text-gray-800 mb-3">Object Detection</h3>
                   <div className="space-y-2">
                     <div className="flex justify-between items-center">
                       <span className="text-sm">Lung Nodules</span>
-                      <span className="text-sm font-medium text-medsight-abnormal">2 detected</span>
+                      <span className="text-sm font-medium text-danger">2 detected</span>
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-sm">Anatomical Structures</span>
-                      <span className="text-sm font-medium text-medsight-normal">Complete</span>
+                      <span className="text-sm font-medium text-success">Complete</span>
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-sm">Pathological Changes</span>
-                      <span className="text-sm font-medium text-medsight-pending">Analyzing...</span>
+                      <span className="text-sm font-medium text-warning">Analyzing...</span>
                     </div>
                   </div>
                 </div>
 
-                <div className="medsight-control-glass p-4 rounded-lg">
+                <div className="glass-card-secondary p-4 rounded-lg">
                   <h3 className="font-medium text-gray-800 mb-3">Segmentation</h3>
                   <div className="space-y-2">
                     <div className="flex justify-between items-center">
                       <span className="text-sm">Organ Segmentation</span>
-                      <span className="text-sm font-medium text-medsight-ai-high">96.8%</span>
+                      <span className="text-sm font-medium text-success">96.8%</span>
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-sm">Tissue Classification</span>
-                      <span className="text-sm font-medium text-medsight-ai-medium">87.2%</span>
+                      <span className="text-sm font-medium text-primary">87.2%</span>
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-sm">Boundary Detection</span>
-                      <span className="text-sm font-medium text-medsight-ai-high">94.1%</span>
+                      <span className="text-sm font-medium text-success">94.1%</span>
                     </div>
                   </div>
                 </div>
@@ -439,18 +439,18 @@ export default function AIAnalysisWorkspace({ className = '' }: AIAnalysisWorksp
           )}
 
           {activeTab === 'assistant' && (
-            <div className="medsight-ai-glass p-6 rounded-xl">
-              <h2 className="text-xl font-semibold text-medsight-primary flex items-center mb-6">
-                <ChatBubbleLeftEllipsisIcon className="w-6 h-6 mr-2" />
+            <div className="glass-card p-6 rounded-xl">
+              <h2 className="text-xl font-semibold text-gray-800 flex items-center mb-6">
+                <ChatBubbleLeftEllipsisIcon className="w-6 h-6 mr-2 text-primary" />
                 Medical AI Assistant
               </h2>
 
               {/* Chat Interface */}
-              <div className="medsight-viewer-glass p-6 rounded-lg mb-4 min-h-[300px]">
+              <div className="glass-card-secondary p-6 rounded-lg mb-4 min-h-[300px]">
                                  <div className="space-y-4">
                    <div className="flex items-start space-x-3">
-                     <CpuChipIconSolid className="w-8 h-8 text-medsight-ai-high mt-1" />
-                     <div className="medsight-ai-glass p-3 rounded-lg max-w-[80%]">
+                     <CpuChipIconSolid className="w-8 h-8 text-primary mt-1" />
+                     <div className="bg-white/20 backdrop-blur-sm p-3 rounded-lg max-w-[80%]">
                        <p className="text-sm text-gray-800">
                          Hello! I'm your Medical AI Assistant. I can help with clinical decision support, 
                          differential diagnosis, treatment recommendations, and medical literature review. 
@@ -460,7 +460,7 @@ export default function AIAnalysisWorkspace({ className = '' }: AIAnalysisWorksp
                    </div>
 
                   <div className="flex items-start space-x-3 justify-end">
-                    <div className="medsight-control-glass p-3 rounded-lg max-w-[80%]">
+                    <div className="bg-primary/10 backdrop-blur-sm p-3 rounded-lg max-w-[80%]">
                       <p className="text-sm text-gray-800">
                         Can you help me interpret the lung nodule findings from the recent CT scan?
                       </p>
@@ -469,8 +469,8 @@ export default function AIAnalysisWorkspace({ className = '' }: AIAnalysisWorksp
                   </div>
 
                                      <div className="flex items-start space-x-3">
-                     <CpuChipIconSolid className="w-8 h-8 text-medsight-ai-high mt-1" />
-                     <div className="medsight-ai-glass p-3 rounded-lg max-w-[80%]">
+                     <CpuChipIconSolid className="w-8 h-8 text-primary mt-1" />
+                     <div className="bg-white/20 backdrop-blur-sm p-3 rounded-lg max-w-[80%]">
                        <p className="text-sm text-gray-800 mb-2">
                          Based on the AI analysis, I found a small nodule in the right upper lobe. 
                          Here's my assessment:
@@ -486,7 +486,7 @@ export default function AIAnalysisWorkspace({ className = '' }: AIAnalysisWorksp
                         </div>
                         <div className="flex justify-between">
                           <span>Malignancy Risk:</span>
-                          <span className="font-medium text-medsight-ai-medium">Moderate (65%)</span>
+                          <span className="font-medium text-warning">Moderate (65%)</span>
                         </div>
                         <div className="flex justify-between">
                           <span>Recommendation:</span>
@@ -570,19 +570,19 @@ export default function AIAnalysisWorkspace({ className = '' }: AIAnalysisWorksp
         {/* Right Sidebar */}
         <div className="col-span-4 space-y-6">
           {/* AI Performance Metrics */}
-          <div className="medsight-glass p-6 rounded-xl">
+          <div className="glass-card p-6 rounded-xl">
             <h3 className="font-semibold text-gray-800 mb-4 flex items-center">
-              <TrophyIcon className="w-5 h-5 mr-2" />
+              <TrophyIcon className="w-5 h-5 mr-2 text-warning" />
               AI Performance
             </h3>
             <div className="space-y-3">
               <div className="flex justify-between items-center">
                 <span className="text-sm text-gray-600">Overall Accuracy</span>
-                <span className="font-semibold text-medsight-ai-high">96.8%</span>
+                <span className="font-semibold text-success">96.8%</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-sm text-gray-600">Processing Speed</span>
-                <span className="font-semibold text-medsight-ai-medium">2.3s avg</span>
+                <span className="font-semibold text-primary">2.3s avg</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-sm text-gray-600">Models Active</span>
@@ -596,17 +596,17 @@ export default function AIAnalysisWorkspace({ className = '' }: AIAnalysisWorksp
           </div>
 
           {/* Knowledge Graph */}
-          <div className="medsight-glass p-6 rounded-xl">
+          <div className="glass-card p-6 rounded-xl">
             <h3 className="font-semibold text-gray-800 mb-4 flex items-center">
-              <AcademicCapIcon className="w-5 h-5 mr-2" />
+              <AcademicCapIcon className="w-5 h-5 mr-2 text-primary" />
               Medical Knowledge
             </h3>
             <div className="space-y-3">
               {knowledgeGraph.map((item, idx) => (
-                <div key={idx} className="medsight-control-glass p-3 rounded-lg">
+                <div key={idx} className="glass-card-secondary p-3 rounded-lg">
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-sm font-medium text-gray-800">{item.topic}</span>
-                    <span className="text-xs text-medsight-ai-high">{item.relevance}%</span>
+                    <span className="text-xs text-primary">{item.relevance}%</span>
                   </div>
                   <p className="text-xs text-gray-600 mb-1">{item.summary}</p>
                   <span className="text-xs text-gray-500">{item.source}</span>
@@ -616,25 +616,25 @@ export default function AIAnalysisWorkspace({ className = '' }: AIAnalysisWorksp
           </div>
 
           {/* Quick Actions */}
-          <div className="medsight-glass p-6 rounded-xl">
+          <div className="glass-card p-6 rounded-xl">
             <h3 className="font-semibold text-gray-800 mb-4 flex items-center">
-              <BoltIcon className="w-5 h-5 mr-2" />
+              <BoltIcon className="w-5 h-5 mr-2 text-primary" />
               Quick Actions
             </h3>
             <div className="space-y-2">
-              <button className="btn-medsight w-full justify-start">
+              <button className="btn-medical w-full justify-start btn-secondary">
                 <CloudArrowUpIcon className="w-4 h-4 mr-2" />
                 Batch Analysis
               </button>
-              <button className="btn-medsight w-full justify-start">
+              <button className="btn-medical w-full justify-start btn-secondary">
                 <DocumentChartBarIcon className="w-4 h-4 mr-2" />
                 Generate Report
               </button>
-              <button className="btn-medsight w-full justify-start">
+              <button className="btn-medical w-full justify-start btn-secondary">
                 <ShareIcon className="w-4 h-4 mr-2" />
                 Share Results
               </button>
-              <button className="btn-medsight w-full justify-start">
+              <button className="btn-medical w-full justify-start btn-secondary">
                 <AdjustmentsHorizontalIcon className="w-4 h-4 mr-2" />
                 Model Settings
               </button>
@@ -642,27 +642,27 @@ export default function AIAnalysisWorkspace({ className = '' }: AIAnalysisWorksp
           </div>
 
           {/* Compliance & Security */}
-          <div className="medsight-glass p-6 rounded-xl">
+          <div className="glass-card p-6 rounded-xl">
             <h3 className="font-semibold text-gray-800 mb-4 flex items-center">
-              <ShieldCheckIcon className="w-5 h-5 mr-2" />
+              <ShieldCheckIcon className="w-5 h-5 mr-2 text-success" />
               Compliance
             </h3>
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <span className="text-sm text-gray-600">HIPAA Compliance</span>
-                <CheckCircleIconSolid className="w-4 h-4 text-medsight-normal" />
+                <CheckCircleIconSolid className="w-4 h-4 text-success" />
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-sm text-gray-600">FDA Validation</span>
-                <CheckCircleIconSolid className="w-4 h-4 text-medsight-normal" />
+                <CheckCircleIconSolid className="w-4 h-4 text-success" />
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-sm text-gray-600">Audit Trail</span>
-                <CheckCircleIconSolid className="w-4 h-4 text-medsight-normal" />
+                <CheckCircleIconSolid className="w-4 h-4 text-success" />
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-sm text-gray-600">Data Encryption</span>
-                <LockClosedIcon className="w-4 h-4 text-medsight-ai-high" />
+                <LockClosedIcon className="w-4 h-4 text-primary" />
               </div>
             </div>
           </div>
@@ -670,22 +670,22 @@ export default function AIAnalysisWorkspace({ className = '' }: AIAnalysisWorksp
       </div>
 
       {/* Medical Footer */}
-      <div className="medsight-glass p-4 mt-6">
+      <div className="glass-card p-4 mt-6">
         <div className="flex items-center justify-between text-sm text-gray-600">
           <div className="flex items-center space-x-4">
             <span className="flex items-center">
-              <HeartIcon className="w-4 h-4 mr-1 text-medsight-normal" />
+              <HeartIcon className="w-4 h-4 mr-1 text-success" />
               AI Analysis System Active
             </span>
             <span className="flex items-center">
-              <FingerPrintIcon className="w-4 h-4 mr-1 text-medsight-ai-high" />
+              <FingerPrintIcon className="w-4 h-4 mr-1 text-primary" />
               Session: {new Date().toLocaleTimeString()}
             </span>
           </div>
           <div className="flex items-center space-x-4">
             <span>MedSight Pro AI Analysis v2.4.1</span>
             <span className="flex items-center">
-              <GlobeAltIcon className="w-4 h-4 mr-1" />
+              <GlobeAltIcon className="w-4 h-4 mr-1 text-success" />
               Connected to Medical AI Cloud
             </span>
           </div>

@@ -57,7 +57,7 @@ export function ActiveCases() {
       </div>
       <div className="space-y-3 max-h-96 overflow-y-auto">
         {filteredCases.map(c => (
-          <div key={c.id} className="p-3 rounded-lg bg-white shadow-sm border border-gray-200">
+          <div key={c.id} className="glass-card-secondary p-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-3">
                 <span className={`p-1.5 rounded-full ${getStatusStyles(c.status).bg}`}>

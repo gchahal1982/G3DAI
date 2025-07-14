@@ -80,9 +80,9 @@ export interface MedSightProConfig {
 // Environment-specific configurations
 const developmentConfig: MedSightProConfig = {
   environment: {
-    apiUrl: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001',
-    authUrl: process.env.NEXT_PUBLIC_AUTH_URL || 'http://localhost:3002',
-    gatewayUrl: process.env.NEXT_PUBLIC_GATEWAY_URL || 'http://localhost:3000',
+    apiUrl: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3033',
+    authUrl: process.env.NEXT_PUBLIC_AUTH_URL || 'http://localhost:3033',
+    gatewayUrl: process.env.NEXT_PUBLIC_GATEWAY_URL || 'http://localhost:3033',
     environment: 'development',
     medicalCompliance: 'basic',
     region: 'us-east-1'

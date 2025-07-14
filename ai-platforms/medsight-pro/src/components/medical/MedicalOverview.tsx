@@ -177,156 +177,89 @@ export function MedicalOverview({ data }: MedicalOverviewProps) {
 
   return (
     <div className="space-y-6">
-      {/* Medical Performance Summary */}
-      <div className="medsight-glass p-6 rounded-xl">
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 bg-medsight-primary/10 rounded-full flex items-center justify-center">
-              <ChartBarIcon className="w-4 h-4 text-medsight-primary" />
-            </div>
-            <h2 className="text-lg font-semibold text-medsight-primary">
-              Medical Performance Overview
-            </h2>
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-3">
+          <div className="w-10 h-10 bg-gradient-primary rounded-lg flex items-center justify-center">
+            <ChartBarIcon className="w-5 h-5 text-white" />
           </div>
-          <div className="text-sm text-medsight-primary/70">
-            Updated: {new Date().toLocaleTimeString()}
+          <h2 className="text-xl font-bold text-primary">
+            Medical Performance Overview
+          </h2>
+        </div>
+        <div className="text-sm text-gray-600">
+          Updated: {new Date().toLocaleTimeString()}
+        </div>
+      </div>
+
+      {/* Key Metrics - Simple Grid */}
+      <div className="grid grid-cols-2 gap-4">
+        {/* Total Cases */}
+        <div className="medical-card-primary p-4">
+          <div className="flex items-center space-x-3">
+            <DocumentChartBarIcon className="w-6 h-6 text-primary" />
+            <div>
+              <div className="text-2xl font-bold text-primary">
+                {data.totalCases}
+              </div>
+              <div className="text-sm text-gray-600">Total Cases</div>
+            </div>
           </div>
         </div>
         
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {/* Total Cases */}
-          <div className="medsight-control-glass p-4 rounded-lg">
-            <div className="flex items-center space-x-3">
-              <DocumentChartBarIcon className="w-6 h-6 text-medsight-primary" />
-              <div>
-                <div className="text-2xl font-bold text-medsight-primary">
-                  {data.totalCases}
-                </div>
-                <div className="text-sm text-medsight-primary/70">
-                  Total Cases
-                </div>
+        {/* Pending Reviews */}
+        <div className="medical-card-warning p-4">
+          <div className="flex items-center space-x-3">
+            <ClockIcon className="w-6 h-6 text-warning" />
+            <div>
+              <div className="text-2xl font-bold text-warning">
+                {data.pendingReviews}
               </div>
+              <div className="text-sm text-gray-600">Pending Reviews</div>
             </div>
           </div>
-          
-          {/* Pending Reviews */}
-          <div className="medsight-glass p-4 rounded-lg border-medsight-pending/20 bg-medsight-pending/5">
-            <div className="flex items-center space-x-3">
-              <ClockIcon className="w-6 h-6 text-medsight-pending" />
-              <div>
-                <div className="text-2xl font-bold text-medsight-pending">
-                  {data.pendingReviews}
-                </div>
-                <div className="text-sm text-medsight-pending/70">
-                  Pending Reviews
-                </div>
+        </div>
+        
+        {/* Completed Today */}
+        <div className="medical-card-success p-4">
+          <div className="flex items-center space-x-3">
+            <CheckCircleIcon className="w-6 h-6 text-success" />
+            <div>
+              <div className="text-2xl font-bold text-success">
+                {data.completedToday}
               </div>
+              <div className="text-sm text-gray-600">Completed Today</div>
             </div>
           </div>
-          
-          {/* Completed Today */}
-          <div className="medsight-glass p-4 rounded-lg border-medsight-normal/20 bg-medsight-normal/5">
-            <div className="flex items-center space-x-3">
-              <CheckCircleIcon className="w-6 h-6 text-medsight-normal" />
-              <div>
-                <div className="text-2xl font-bold text-medsight-normal">
-                  {data.completedToday}
-                </div>
-                <div className="text-sm text-medsight-normal/70">
-                  Completed Today
-                </div>
+        </div>
+        
+        {/* Critical Findings */}
+        <div className="medical-card-danger p-4">
+          <div className="flex items-center space-x-3">
+            <ExclamationTriangleIcon className="w-6 h-6 text-danger" />
+            <div>
+              <div className="text-2xl font-bold text-danger">
+                {data.criticalFindings}
               </div>
-            </div>
-          </div>
-          
-          {/* Critical Findings */}
-          <div className="medsight-glass p-4 rounded-lg border-medsight-critical/20 bg-medsight-critical/5">
-            <div className="flex items-center space-x-3">
-              <ExclamationTriangleIcon className="w-6 h-6 text-medsight-critical" />
-              <div>
-                <div className="text-2xl font-bold text-medsight-critical">
-                  {data.criticalFindings}
-                </div>
-                <div className="text-sm text-medsight-critical/70">
-                  Critical Findings
-                </div>
-              </div>
+              <div className="text-sm text-gray-600">Critical Findings</div>
             </div>
           </div>
         </div>
       </div>
 
       {/* Quality Metrics */}
-      <div className="medsight-glass p-6 rounded-xl">
-        <div className="flex items-center space-x-3 mb-4">
-          <div className="w-8 h-8 bg-medsight-ai-high/10 rounded-full flex items-center justify-center">
-            <ShieldCheckIcon className="w-4 h-4 text-medsight-ai-high" />
-          </div>
-          <h3 className="text-lg font-semibold text-medsight-primary">
-            Quality Metrics
-          </h3>
-        </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {qualityMetrics.map((metric) => (
-            <div key={metric.id} className="medsight-control-glass p-4 rounded-lg">
-              <div className="flex items-center justify-between mb-2">
-                <div className="text-sm font-medium text-medsight-primary">
-                  {metric.name}
-                </div>
-                <div className={`text-xs px-2 py-1 rounded-full bg-${getStatusColor(metric.status)}/10 text-${getStatusColor(metric.status)}`}>
-                  {metric.status.toUpperCase()}
-                </div>
-              </div>
-              <div className="flex items-center space-x-2">
-                <div className={`text-2xl font-bold text-${getStatusColor(metric.status)}`}>
-                  {metric.value}{metric.unit}
-                </div>
-                <div className={`text-sm text-${getStatusColor(metric.status)}/70`}>
-                  {metric.trend === 'up' ? '↗' : metric.trend === 'down' ? '↘' : '→'}
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-      
-      {/* Clinical Workflow Status */}
-      <div className="medsight-glass p-6 rounded-xl">
-        <div className="flex items-center space-x-3 mb-4">
-          <div className="w-8 h-8 bg-medsight-secondary/10 rounded-full flex items-center justify-center">
-            <HeartIcon className="w-4 h-4 text-medsight-secondary" />
-          </div>
-          <h3 className="text-lg font-semibold text-medsight-primary">
-            Clinical Workflow Status
-          </h3>
-        </div>
-        
+      <div className="glass-card-secondary p-4">
+        <h3 className="text-lg font-semibold mb-3 flex items-center">
+          <ShieldCheckIcon className="w-5 h-5 mr-2 text-secondary" />
+          Quality Metrics
+        </h3>
         <div className="space-y-3">
-          {workflowStatuses.map((workflow) => (
-            <div key={workflow.id} className="medsight-control-glass p-4 rounded-lg">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-3">
-                  <div className={`text-${getStatusColor(workflow.status)}`}>
-                    {getStatusIcon(workflow.status)}
-                  </div>
-                  <div>
-                    <div className="text-sm font-medium text-medsight-primary">
-                      {workflow.name}
-                    </div>
-                    <div className="text-xs text-medsight-primary/60">
-                      {workflow.description}
-                    </div>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <div className={`text-sm font-medium text-${getStatusColor(workflow.status)}`}>
-                    {workflow.status.toUpperCase()}
-                  </div>
-                  <div className="text-xs text-medsight-primary/60">
-                    {new Date(workflow.lastUpdate).toLocaleTimeString()}
-                  </div>
-                </div>
+          {qualityMetrics.map(metric => (
+            <div key={metric.id} className="flex justify-between items-center">
+              <span className="text-sm text-gray-700">{metric.name}</span>
+              <div className={`text-right ${getStatusColor(metric.status)}`}>
+                <div className="font-bold">{metric.value}{metric.unit}</div>
+                <div className="text-xs capitalize">{metric.status}</div>
               </div>
             </div>
           ))}
@@ -334,79 +267,26 @@ export function MedicalOverview({ data }: MedicalOverviewProps) {
       </div>
 
       {/* System Health */}
-      <div className="medsight-glass p-6 rounded-xl">
-        <div className="flex items-center space-x-3 mb-4">
-          <div className="w-8 h-8 bg-medsight-accent/10 rounded-full flex items-center justify-center">
-            <ServerIcon className="w-4 h-4 text-medsight-accent" />
+      <div className="glass-card-secondary p-4">
+        <h3 className="text-lg font-semibold mb-3 flex items-center">
+          <ServerIcon className="w-5 h-5 mr-2 text-info" />
+          System Health
+        </h3>
+        <div className="grid grid-cols-3 gap-3 text-center">
+          <div>
+            <SignalIcon className="w-6 h-6 text-success mx-auto mb-1" />
+            <div className="text-xs font-semibold text-gray-700">DICOM</div>
+            <div className="text-xs text-success">Online</div>
           </div>
-          <h3 className="text-lg font-semibold text-medsight-primary">
-            System Health
-          </h3>
-        </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="medsight-control-glass p-4 rounded-lg">
-            <div className="flex items-center space-x-3">
-              <div className={`w-3 h-3 rounded-full bg-${getStatusColor(data.systemStatus.dicomServer)}`}></div>
-              <div>
-                <div className="text-sm font-medium text-medsight-primary">
-                  DICOM Server
-                </div>
-                <div className={`text-xs text-${getStatusColor(data.systemStatus.dicomServer)}`}>
-                  {data.systemStatus.dicomServer.toUpperCase()}
-                </div>
-              </div>
-            </div>
+          <div>
+            <CpuChipIcon className="w-6 h-6 text-success mx-auto mb-1" />
+            <div className="text-xs font-semibold text-gray-700">AI Engine</div>
+            <div className="text-xs text-success">Online</div>
           </div>
-          
-          <div className="medsight-control-glass p-4 rounded-lg">
-            <div className="flex items-center space-x-3">
-              <div className={`w-3 h-3 rounded-full bg-${getStatusColor(data.systemStatus.aiEngine)} ${
-                data.systemStatus.aiEngine === 'processing' ? 'animate-pulse' : ''
-              }`}></div>
-              <div>
-                <div className="text-sm font-medium text-medsight-primary">
-                  AI Engine
-                </div>
-                <div className={`text-xs text-${getStatusColor(data.systemStatus.aiEngine)}`}>
-                  {data.systemStatus.aiEngine.toUpperCase()}
-                </div>
-              </div>
-            </div>
-          </div>
-          
-          <div className="medsight-control-glass p-4 rounded-lg">
-            <div className="flex items-center space-x-3">
-              <div className={`w-3 h-3 rounded-full bg-${getStatusColor(data.systemStatus.database)}`}></div>
-              <div>
-                <div className="text-sm font-medium text-medsight-primary">
-                  Database
-                </div>
-                <div className={`text-xs text-${getStatusColor(data.systemStatus.database)}`}>
-                  {data.systemStatus.database.toUpperCase()}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Medical Professional Info */}
-      <div className="medsight-glass p-4 rounded-xl">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <UserGroupIcon className="w-5 h-5 text-medsight-primary" />
-            <div>
-              <div className="text-sm font-medium text-medsight-primary">
-                {data.userInfo.name} - {data.userInfo.role}
-              </div>
-              <div className="text-xs text-medsight-primary/60">
-                {data.userInfo.department} • License: {data.userInfo.license}
-              </div>
-            </div>
-          </div>
-          <div className="text-xs text-medsight-primary/60">
-            Last Login: {new Date(data.userInfo.lastLogin).toLocaleString()}
+          <div>
+            <BeakerIcon className="w-6 h-6 text-success mx-auto mb-1" />
+            <div className="text-xs font-semibold text-gray-700">Database</div>
+            <div className="text-xs text-success">Online</div>
           </div>
         </div>
       </div>

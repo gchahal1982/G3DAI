@@ -2,8 +2,6 @@
 # Medical Imaging & AI Analysis Platform
 # HIPAA-compliant multi-service deployment
 
-version: '3.8'
-
 networks:
   medsight-network:
     driver: bridge
@@ -135,15 +133,21 @@ services:
   # Main Application Services
   # ===========================================================================
   
-  medsight-app:
+  # Frontend Service (Next.js React App)
+  # NOTE: Frontend runs independently with hot reloading via ./start-frontend.sh
+  # For development, use: ./start-frontend.sh
+  # For production, use: docker-compose -f docker-compose.production.yml up
+
+  # Backend Service (FastAPI Python)
+  medsight-backend:
     build:
       context: .
       dockerfile: Dockerfile
-      target: production
-    container_name: medsight-app
+      target: backend
+    container_name: medsight-backend
     restart: unless-stopped
     environment:
-      NODE_ENV: production
+      PYTHONPATH: /app/src
       DATABASE_URL: postgresql://medsight_app:${DB_PASSWORD:-SecurePassword123!}@postgres:5432/medsight_prod
       REDIS_URL: redis://redis:6379
       ORTHANC_URL: http://orthanc:8042
@@ -163,7 +167,7 @@ services:
       - medical-backups:/opt/medsight/backups
       - /etc/localtime:/etc/localtime:ro
     ports:
-      - "3000:3000"
+      - "3033:8000"
     networks:
       - medsight-network
       - medical-secure
@@ -172,7 +176,7 @@ services:
       - redis
       - orthanc
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -206,7 +210,7 @@ services:
       - medsight-logs:/opt/medsight/logs
       - /etc/localtime:/etc/localtime:ro
     ports:
-      - "5000:5000"
+      - "5001:5000"
     networks:
       - medical-secure
     depends_on:
@@ -217,13 +221,13 @@ services:
       interval: 30s
       timeout: 15s
       retries: 3
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              count: 1
-              capabilities: [gpu]
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: 1
+    #           capabilities: [gpu]
     security_opt:
       - no-new-privileges:true
 
@@ -250,7 +254,6 @@ services:
     networks:
       - medsight-network
     depends_on:
-      - medsight-app
       - medsight-ai
     security_opt:
       - no-new-privileges:true
@@ -269,7 +272,7 @@ services:
       - ./docker/grafana/provisioning:/etc/grafana/provisioning
       - ./docker/grafana/dashboards:/var/lib/grafana/dashboards
     ports:
-      - "3001:3000"
+      - "3003:3000"
     networks:
       - medsight-network
     depends_on:
@@ -291,8 +294,7 @@ services:
       - /var/log:/var/log:ro
     networks:
       - medical-secure
-    depends_on:
-      - medsight-app
+    # depends_on: # No dependencies needed for audit service
     security_opt:
       - no-new-privileges:true
 
@@ -338,7 +340,6 @@ services:
     networks:
       - medsight-network
     depends_on:
-      - medsight-app
       - grafana
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost/health"]
@@ -394,9 +395,9 @@ services:
 
 # Usage Commands:
 # docker-compose up -d                    # Start all services
-# docker-compose up -d medsight-app       # Start specific service
+# ./start-frontend.sh                      # Start frontend in dev mode with hot reloading
 # docker-compose down                     # Stop all services
-# docker-compose logs -f medsight-app     # View logs
-# docker-compose exec medsight-app bash   # Access container
+# docker-compose logs -f medsight-backend # View backend logs
+# docker-compose exec medsight-backend bash # Access backend container
 # docker-compose pull                     # Update images
-# docker-compose restart medsight-app     # Restart service 
+# docker-compose restart medsight-backend # Restart backend service 

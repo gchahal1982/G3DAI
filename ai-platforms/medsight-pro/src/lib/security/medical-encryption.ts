@@ -451,7 +451,7 @@ class MedicalDataSecurity {
       const iv = this.base64ToArrayBuffer(options.encryptionRecord.iv);
 
       // Decrypt data
-      const decryptedData = await this.decryptWithAESGCM(encryptedData, encryptionKey, iv);
+      const decryptedData = await this.decryptWithAESGCM(encryptedData, encryptionKey, new Uint8Array(iv));
 
       // Decompress if needed
       let finalData = decryptedData;

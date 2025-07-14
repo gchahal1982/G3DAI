@@ -50,7 +50,8 @@ import {
   ArrowUpIcon,
   ArrowDownIcon,
   ArrowLeftIcon,
-  ArrowRightIcon
+  ArrowRightIcon,
+  FolderOpenIcon
 } from '@heroicons/react/24/outline';
 
 interface Study {
@@ -98,6 +99,71 @@ interface ViewerSettings {
 export default function MedicalImagingWorkspace() {
   const [activeStudy, setActiveStudy] = useState<Study | null>(null);
   const [studies, setStudies] = useState<Study[]>([]);
+  
+  // Load mock studies data
+  useEffect(() => {
+    const mockStudies: Study[] = [
+      {
+        id: 'PAT001',
+        patientName: 'Smith, John',
+        patientId: 'PAT001',
+        studyDate: '2024-01-15',
+        studyTime: '14:30:00',
+        modality: 'CT',
+        studyDescription: 'Chest CT with Contrast',
+        seriesCount: 3,
+        imageCount: 120,
+        studySize: '45.2 MB',
+        status: 'pending',
+        priority: 'medium',
+        aiAnalysisStatus: 'completed',
+        aiConfidence: 94.2,
+        findings: [
+          'Small nodule in right upper lobe (8.2mm)',
+          'No pleural effusion detected',
+          'Normal cardiac silhouette',
+          'Clear lung fields bilaterally'
+        ],
+        measurements: [
+          { id: 'm1', type: 'Nodule diameter', value: '8.2', unit: 'mm', confidence: 94.2 },
+          { id: 'm2', type: 'Lung volume', value: '5.2', unit: 'L', confidence: 98.1 },
+          { id: 'm3', type: 'Heart rate', value: '72', unit: 'bpm', confidence: 99.5 }
+        ]
+      },
+      {
+        id: 'PAT002',
+        patientName: 'Johnson, Sarah',
+        patientId: 'PAT002',
+        studyDate: '2024-01-15',
+        studyTime: '15:45:00',
+        modality: 'MRI',
+        studyDescription: 'Brain MRI T1/T2',
+        seriesCount: 4,
+        imageCount: 180,
+        studySize: '78.4 MB',
+        status: 'critical',
+        priority: 'urgent',
+        aiAnalysisStatus: 'completed',
+        aiConfidence: 96.8,
+        findings: [
+          'Moderate cerebral atrophy within normal limits',
+          'No acute intracranial abnormality',
+          'Ventricular system normal size',
+          'White matter changes consistent with age'
+        ],
+        measurements: [
+          { id: 'm4', type: 'Ventricular width', value: '12.5', unit: 'mm', confidence: 96.8 },
+          { id: 'm5', type: 'Brain volume', value: '1420', unit: 'cm³', confidence: 98.9 },
+          { id: 'm6', type: 'Cortical thickness', value: '2.8', unit: 'mm', confidence: 94.1 }
+        ]
+      }
+    ];
+    setStudies(mockStudies);
+    if (mockStudies.length > 0) {
+      setActiveStudy(mockStudies[0]); // Auto-select first study
+    }
+  }, []);
+  
   const [viewerSettings, setViewerSettings] = useState<ViewerSettings>({
     layout: '1x1',
     orientation: 'axial',
@@ -202,6 +268,16 @@ export default function MedicalImagingWorkspace() {
     return 'text-medsight-ai-low';
   };
 
+  const getStatusPillClass = (status: string) => {
+    switch (status) {
+      case 'pending': return 'bg-yellow-400/10 text-yellow-400';
+      case 'in_progress': return 'bg-blue-400/10 text-blue-400';
+      case 'completed': return 'bg-green-400/10 text-green-400';
+      case 'critical': return 'bg-red-400/10 text-red-400';
+      default: return 'bg-gray-400/10 text-gray-400';
+    }
+  };
+
   const handleToolChange = (tool: string) => {
     setSelectedTool(tool);
   };
@@ -248,478 +324,334 @@ export default function MedicalImagingWorkspace() {
 
   return (
     <div className="flex h-screen bg-gray-50 overflow-hidden">
-      {/* Study List Panel */}
-      <div className="w-80 medsight-glass border-r border-medsight-primary/20 flex flex-col">
-        <div className="p-4 border-b border-medsight-primary/20">
-          <h2 className="text-lg font-semibold text-medsight-primary mb-2">
-            Medical Studies
-          </h2>
+      {/* Study List Panel (Left) */}
+      <div className="w-96 bg-white/5 backdrop-blur-sm border-r border-white/10 flex flex-col">
+        <div className="p-4 border-b border-white/10 bg-white/5">
+          <h2 className="text-xl font-bold text-gray-800 mb-4">Medical Studies</h2>
           <div className="flex gap-2">
-            <button className="btn-medsight text-xs px-3 py-1">
-              <CloudArrowUpIcon className="w-4 h-4 mr-1" />
+            <button className="btn-medical btn-secondary w-full text-sm">
+              <CloudArrowUpIcon className="w-4 h-4 mr-2" />
               Import
             </button>
-            <button className="btn-medsight text-xs px-3 py-1">
-              <MagnifyingGlassIcon className="w-4 h-4 mr-1" />
+            <button className="btn-medical btn-secondary w-full text-sm">
+              <MagnifyingGlassIcon className="w-4 h-4 mr-2" />
               Search
             </button>
           </div>
         </div>
-        
         <div className="flex-1 overflow-y-auto p-4 space-y-3">
           {studies.map((study) => (
             <div
               key={study.id}
-              className={`medsight-control-glass p-3 rounded-lg cursor-pointer transition-all ${
-                activeStudy?.id === study.id 
-                  ? 'ring-2 ring-medsight-primary' 
-                  : 'hover:bg-medsight-primary/10'
+              className={`bg-white/10 backdrop-blur-sm border border-white/20 p-3.5 rounded-lg cursor-pointer transition-all duration-200 ${
+                activeStudy?.id === study.id ? 'ring-2 ring-primary border-primary/50 bg-primary/10' : 'hover:bg-white/15 hover:border-white/30'
               }`}
               onClick={() => setActiveStudy(study)}
             >
               <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-medium text-gray-900">
-                  {study.patientName}
-                </span>
-                <div className={`flex items-center gap-1 ${getStatusColor(study.status)}`}>
+                <span className="font-semibold text-gray-800">{study.patientName}</span>
+                <div className={`flex items-center gap-1.5 text-xs font-medium px-2 py-1 rounded-full ${getStatusPillClass(study.status)}`}>
                   {getStatusIcon(study.status)}
-                  <span className="text-xs font-medium">
-                    {study.status}
-                  </span>
+                  <span>{study.status.charAt(0).toUpperCase() + study.status.slice(1)}</span>
                 </div>
               </div>
-              
-              <div className="text-xs text-gray-600 space-y-1">
-                <div className="flex justify-between">
-                  <span>ID: {study.patientId}</span>
-                  <span className="font-medium text-medsight-primary">
-                    {study.modality}
-                  </span>
-                </div>
+              <div className="text-sm text-gray-600 space-y-1">
                 <div>{study.studyDescription}</div>
-                <div className="flex justify-between">
-                  <span>{study.studyDate}</span>
-                  <span>{study.studyTime}</span>
+                <div className="flex justify-between text-xs text-gray-500 pt-1">
+                  <span>ID: {study.patientId}</span>
+                  <span className="font-medium text-primary">{study.modality}</span>
                 </div>
-                <div className="flex justify-between">
-                  <span>{study.seriesCount} series</span>
-                  <span>{study.imageCount} images</span>
-                </div>
-                
-                {study.aiAnalysisStatus === 'completed' && (
-                  <div className="flex items-center justify-between mt-2 pt-2 border-t border-gray-200">
-                    <span className="text-xs">AI Analysis</span>
-                    <div className={`flex items-center gap-1 ${getAIConfidenceColor(study.aiConfidence)}`}>
-                      <SparklesIcon className="w-3 h-3" />
-                      <span className="text-xs font-medium">
-                        {study.aiConfidence}%
-                      </span>
-                    </div>
-                  </div>
-                )}
               </div>
             </div>
           ))}
         </div>
       </div>
 
-      {/* Main Viewer Area */}
+      {/* Main Viewer and AI Panel */}
       <div className="flex-1 flex flex-col">
         {/* Toolbar */}
-        <div className="medsight-control-glass border-b border-medsight-primary/20 p-3">
-          <div className="flex items-center justify-between">
+        <div className="bg-white/10 backdrop-blur-sm border-b border-white/10 p-2 flex items-center justify-between">
             <div className="flex items-center gap-3">
-              {/* Patient Info */}
               {activeStudy && (
-                <div className="flex items-center gap-4">
-                  <div className="text-sm">
-                    <span className="font-semibold text-medsight-primary">
-                      {activeStudy.patientName}
-                    </span>
-                    <span className="text-gray-600 ml-2">
-                      {activeStudy.patientId}
-                    </span>
-                  </div>
-                  <div className="text-xs text-gray-600">
-                    {activeStudy.modality} • {activeStudy.studyDate}
-                  </div>
-                </div>
+              <>
+                <div className="text-sm font-semibold text-primary">{activeStudy.patientName}</div>
+                <div className="text-xs text-gray-500">{activeStudy.patientId} • {activeStudy.modality} • {activeStudy.studyDate}</div>
+              </>
               )}
             </div>
-            
             <div className="flex items-center gap-2">
-              {/* Emergency Mode */}
-              <button
-                onClick={handleEmergencyMode}
-                className={`btn-medsight ${
-                  emergencyMode 
-                    ? 'bg-medsight-critical/20 text-medsight-critical' 
-                    : ''
-                }`}
-              >
+            <button onClick={handleEmergencyMode} className={`btn-medical text-sm ${emergencyMode ? 'bg-danger text-white' : 'btn-secondary'}`}>
                 <ExclamationTriangleIcon className="w-4 h-4 mr-1" />
                 Emergency
               </button>
-              
-              {/* Collaboration */}
-              <button
-                onClick={() => setCollaborationMode(!collaborationMode)}
-                className="btn-medsight"
-              >
+            <button onClick={() => setCollaborationMode(!collaborationMode)} className="btn-medical btn-secondary text-sm">
                 <UserGroupIcon className="w-4 h-4 mr-1" />
                 Collaborate
               </button>
-              
-              {/* Settings */}
-              <button
-                onClick={() => setShowSettings(!showSettings)}
-                className="btn-medsight"
-              >
-                <Cog6ToothIcon className="w-4 h-4" />
-              </button>
-            </div>
           </div>
         </div>
 
-        {/* Tool Palette */}
-        <div className="medsight-control-glass border-b border-medsight-primary/20 p-2">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              {/* Navigation Tools */}
-              <div className="flex items-center gap-1 mr-4">
-                <button
-                  onClick={handlePlayPause}
-                  className="btn-medsight"
-                >
-                  {isPlaying ? (
-                    <PauseIcon className="w-4 h-4" />
-                  ) : (
-                    <PlayIcon className="w-4 h-4" />
-                  )}
-                </button>
-                <button className="btn-medsight">
-                  <BackwardIcon className="w-4 h-4" />
-                </button>
-                <button className="btn-medsight">
-                  <ForwardIcon className="w-4 h-4" />
-                </button>
-              </div>
-              
-              {/* Annotation Tools */}
-              <div className="flex items-center gap-1 mr-4">
-                <button
-                  onClick={() => handleToolChange('select')}
-                  className={`btn-medsight ${selectedTool === 'select' ? 'bg-medsight-primary/20' : ''}`}
-                >
-                  <ArrowRightIcon className="w-4 h-4" />
-                </button>
-                <button
-                  onClick={() => handleToolChange('annotate')}
-                  className={`btn-medsight ${selectedTool === 'annotate' ? 'bg-medsight-primary/20' : ''}`}
-                >
-                  <PencilIcon className="w-4 h-4" />
-                </button>
-                                 <button
-                   onClick={() => handleToolChange('measure')}
-                   className={`btn-medsight ${selectedTool === 'measure' ? 'bg-medsight-primary/20' : ''}`}
-                 >
-                   <BeakerIcon className="w-4 h-4" />
-                 </button>
-              </div>
-              
-              {/* View Tools */}
-              <div className="flex items-center gap-1">
-                <button onClick={handleZoomIn} className="btn-medsight">
-                  <ArrowsPointingOutIcon className="w-4 h-4" />
-                </button>
-                <button onClick={handleZoomOut} className="btn-medsight">
-                  <ArrowsPointingInIcon className="w-4 h-4" />
-                </button>
-                <button onClick={handleResetView} className="btn-medsight">
-                  <ComputerDesktopIcon className="w-4 h-4" />
-                </button>
+        {/* Viewer Area */}
+        <div className="flex-1 flex overflow-hidden">
+          {/* Main Image Viewer */}
+          <div className="flex-1 bg-gray-900 relative overflow-hidden">
+            {/* Toolbar */}
+            <div className="absolute top-0 left-0 right-0 z-10 p-3 bg-black/70 backdrop-blur-sm border-b border-gray-600">
+              <div className="flex items-center justify-center gap-6">
+                <div className="flex items-center gap-1">
+                  <button onClick={handlePlayPause} className="btn-medical btn-secondary text-white border-gray-600 hover:bg-gray-700">
+                    {isPlaying ? <PauseIcon className="w-4 h-4" /> : <PlayIcon className="w-4 h-4" />}
+                  </button>
+                  <button className="btn-medical btn-secondary text-white border-gray-600 hover:bg-gray-700">
+                    <BackwardIcon className="w-4 h-4" />
+                  </button>
+                  <button className="btn-medical btn-secondary text-white border-gray-600 hover:bg-gray-700">
+                    <ForwardIcon className="w-4 h-4" />
+                  </button>
+                </div>
+                <div className="flex items-center gap-1">
+                  <button onClick={() => handleToolChange('select')} className={`btn-medical btn-secondary text-white border-gray-600 hover:bg-gray-700 ${selectedTool === 'select' ? 'bg-primary/30 border-primary' : ''}`}>
+                    <ArrowRightIcon className="w-4 h-4" />
+                  </button>
+                  <button onClick={() => handleToolChange('annotate')} className={`btn-medical btn-secondary text-white border-gray-600 hover:bg-gray-700 ${selectedTool === 'annotate' ? 'bg-primary/30 border-primary' : ''}`}>
+                    <PencilIcon className="w-4 h-4" />
+                  </button>
+                  <button onClick={() => handleToolChange('measure')} className={`btn-medical btn-secondary text-white border-gray-600 hover:bg-gray-700 ${selectedTool === 'measure' ? 'bg-primary/30 border-primary' : ''}`}>
+                    <BeakerIcon className="w-4 h-4" />
+                  </button>
+                </div>
+                <div className="flex items-center gap-1">
+                  <button onClick={handleZoomIn} className="btn-medical btn-secondary text-white border-gray-600 hover:bg-gray-700">
+                    <ArrowsPointingOutIcon className="w-4 h-4" />
+                  </button>
+                  <button onClick={handleZoomOut} className="btn-medical btn-secondary text-white border-gray-600 hover:bg-gray-700">
+                    <ArrowsPointingInIcon className="w-4 h-4" />
+                  </button>
+                  <button onClick={handleResetView} className="btn-medical btn-secondary text-white border-gray-600 hover:bg-gray-700">
+                    <ComputerDesktopIcon className="w-4 h-4" />
+                  </button>
+                </div>
               </div>
             </div>
-            
-            <div className="flex items-center gap-2">
-              {/* Layout Options */}
-              <select
-                value={viewerSettings.layout}
-                onChange={(e) => setViewerSettings(prev => ({
-                  ...prev,
-                  layout: e.target.value as any
-                }))}
-                className="input-medsight text-sm"
-              >
-                <option value="1x1">1×1</option>
-                <option value="2x1">2×1</option>
-                <option value="2x2">2×2</option>
-                <option value="3x3">3×3</option>
-              </select>
-              
-              {/* Window/Level */}
-              <div className="flex items-center gap-2 text-sm">
-                <span>W/L:</span>
-                <span className="font-mono text-medsight-primary">
-                  {viewerSettings.windowWidth}/{viewerSettings.windowLevel}
-                </span>
-              </div>
-              
-              {/* Zoom */}
-              <div className="flex items-center gap-2 text-sm">
-                <span>Zoom:</span>
-                <span className="font-mono text-medsight-primary">
-                  {(viewerSettings.zoom * 100).toFixed(0)}%
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
 
-        {/* Main Content Area */}
-        <div className="flex-1 flex">
-          {/* Image Viewer */}
-          <div className="flex-1 relative">
-            <div className="w-full h-full bg-black medsight-viewer-glass flex items-center justify-center">
+            {/* Main Viewer Content */}
+            <div className="h-full pt-16 flex items-center justify-center p-4">
               {activeStudy ? (
-                <div className="text-center">
-                  <div className="text-white text-lg mb-4">
-                    DICOM Viewer Area
-                  </div>
-                  <div className="text-gray-300 text-sm">
-                    {activeStudy.modality} Study: {activeStudy.studyDescription}
-                  </div>
-                  <div className="text-gray-400 text-xs mt-2">
-                    Series {currentSeries + 1} of {activeStudy.seriesCount} • 
-                    Image {currentImage + 1} of {activeStudy.imageCount}
-                  </div>
-                  
-                  {/* AI Analysis Overlay */}
-                  {viewerSettings.showAIOverlay && activeStudy.aiAnalysisStatus === 'completed' && (
-                    <div className="absolute top-4 left-4 medsight-ai-glass p-3 rounded-lg">
-                      <div className="flex items-center gap-2 mb-2">
-                        <SparklesIcon className="w-4 h-4 text-medsight-ai-high" />
-                        <span className="text-sm font-medium text-white">
-                          AI Analysis
-                        </span>
+                <div className="w-full h-full max-w-4xl max-h-[700px] relative">
+                  {/* DICOM Image Viewport */}
+                  <div className="w-full h-full bg-black rounded-lg border border-gray-600 relative overflow-hidden">
+                    {/* Mock Medical Image */}
+                    <div className="w-full h-full bg-gradient-to-br from-gray-900 via-gray-800 to-black flex items-center justify-center relative">
+                      {/* Simulated Medical Image Background */}
+                      <div className="absolute inset-0">
+                        <div className="w-full h-full bg-gradient-to-br from-gray-800/40 via-gray-700/60 to-gray-900/80"></div>
                       </div>
-                      <div className="text-xs text-gray-300 space-y-1">
-                        {activeStudy.findings.map((finding, idx) => (
-                          <div key={idx} className="flex items-start gap-2">
-                            <div className="w-2 h-2 bg-medsight-ai-high rounded-full mt-1"></div>
-                            <span>{finding}</span>
+                      
+                      {/* Medical Image Grid Pattern */}
+                      <div className="absolute inset-0 opacity-5">
+                        <div className="grid grid-cols-16 grid-rows-16 h-full w-full">
+                          {Array.from({ length: 256 }).map((_, i) => (
+                            <div key={i} className="border border-gray-500"></div>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Mock Anatomy Structure */}
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        {/* Main organ/structure */}
+                        <div className="relative">
+                          {/* Central structure (e.g., lung, brain) */}
+                          <div className="w-64 h-48 bg-gradient-to-br from-gray-600/40 to-gray-700/60 rounded-full opacity-70 relative">
+                            {/* Internal structures */}
+                            <div className="absolute top-8 left-12 w-16 h-12 bg-gray-500/30 rounded-full"></div>
+                            <div className="absolute top-12 right-16 w-12 h-8 bg-gray-600/40 rounded-full"></div>
+                            <div className="absolute bottom-8 left-1/3 w-20 h-10 bg-gray-500/35 rounded-full"></div>
+                            
+                            {/* Highlighted finding area */}
+                            <div className="absolute top-16 right-12 w-8 h-6 bg-red-500/60 rounded-full border border-red-400"></div>
                           </div>
-                        ))}
+                          
+                          {/* Surrounding tissue */}
+                          <div className="absolute -top-4 -left-8 w-80 h-56 bg-gradient-to-br from-gray-700/20 to-gray-800/30 rounded-full opacity-40"></div>
+                        </div>
+                      </div>
+
+                      {/* Enhanced Medical Info Display */}
+                      <div className="relative z-10 text-center">
+                        <div className="text-gray-300 text-sm space-y-1">
+                          <div className="font-mono text-lg text-white">{activeStudy.modality} Image</div>
+                          <div className="text-xs text-gray-400">{activeStudy.studyDescription}</div>
+                          <div className="text-xs text-gray-500 mt-2">Slice: 45/120 | WW: 400 | WL: 50</div>
+                        </div>
+                      </div>
+
+                      {/* Image Overlays */}
+                      <div className="absolute top-3 left-3 text-white text-xs font-mono space-y-1 bg-black/50 p-2 rounded">
+                        <div>Patient: {activeStudy.patientName}</div>
+                        <div>Study: {activeStudy.studyDate}</div>
+                        <div>Series: 1/3</div>
+                      </div>
+
+                      <div className="absolute top-3 right-3 text-white text-xs font-mono space-y-1 bg-black/50 p-2 rounded text-right">
+                        <div>Zoom: {Math.round(viewerSettings.zoom * 100)}%</div>
+                        <div>WW/WL: {viewerSettings.windowWidth}/{viewerSettings.windowLevel}</div>
+                        <div>{activeStudy.modality}</div>
+                      </div>
+
+                      <div className="absolute bottom-3 left-3 text-white text-xs font-mono bg-black/50 p-2 rounded">
+                        <div>Institution: MedSight Medical Center</div>
+                        <div>Manufacturer: Siemens Healthineers</div>
+                      </div>
+
+                      <div className="absolute bottom-3 right-3 text-white text-xs font-mono bg-black/50 p-2 rounded text-right">
+                        <div>Image: 45/120</div>
+                        <div>Thickness: 5.0mm</div>
+                      </div>
+
+                      {/* Crosshair */}
+                      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                        <div className="absolute w-full h-px bg-green-400 opacity-40"></div>
+                        <div className="absolute h-full w-px bg-green-400 opacity-40"></div>
+                      </div>
+
+                      {/* Measurements */}
+                      {viewerSettings.showMeasurements && (
+                        <div className="absolute top-1/4 left-1/4">
+                          <div className="relative">
+                            <div className="h-20 w-px bg-yellow-400"></div>
+                            <div className="w-16 h-px bg-yellow-400"></div>
+                            <div className="absolute -top-2 -left-2 w-2 h-2 bg-yellow-400 rounded-full"></div>
+                            <div className="absolute -bottom-2 -left-2 w-2 h-2 bg-yellow-400 rounded-full"></div>
+                            <div className="absolute -top-6 left-8 text-yellow-400 text-xs font-mono bg-black/70 px-1 rounded">
+                              8.2 mm
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* AI Overlay */}
+                      {viewerSettings.showAIOverlay && (
+                        <div className="absolute top-1/3 right-1/4">
+                          <div className="w-16 h-12 border-2 border-red-400 rounded opacity-60">
+                            <div className="w-full h-full bg-red-400/20"></div>
+                          </div>
+                          <div className="absolute -top-6 -left-4 text-red-400 text-xs font-mono bg-black/70 px-1 rounded">
+                            AI: 94% confidence
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Navigation Controls */}
+                    <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2">
+                      <div className="flex items-center gap-2 bg-black/70 px-4 py-2 rounded-full">
+                        <button className="text-white hover:text-primary">
+                          <ArrowLeftIcon className="w-4 h-4" />
+                        </button>
+                        <span className="text-white text-sm font-mono">45 / 120</span>
+                        <button className="text-white hover:text-primary">
+                          <ArrowRightIcon className="w-4 h-4" />
+                        </button>
                       </div>
                     </div>
-                  )}
-                  
-                                     {/* Measurement Overlay */}
-                   {viewerSettings.showMeasurements && activeStudy.measurements.length > 0 && (
-                     <div className="absolute top-4 right-4 medsight-control-glass p-3 rounded-lg">
-                       <div className="flex items-center gap-2 mb-2">
-                         <BeakerIcon className="w-4 h-4 text-medsight-primary" />
-                         <span className="text-sm font-medium text-gray-900">
-                           Measurements
-                         </span>
-                       </div>
-                      <div className="text-xs text-gray-600 space-y-1">
-                        {activeStudy.measurements.map((measurement) => (
-                          <div key={measurement.id} className="flex justify-between gap-3">
-                            <span>{measurement.type}:</span>
-                            <span className="font-mono">
-                              {measurement.value} {measurement.unit}
-                            </span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
+                  </div>
                 </div>
               ) : (
                 <div className="text-center text-gray-400">
                   <PhotoIcon className="w-16 h-16 mx-auto mb-4 opacity-50" />
-                  <p>Select a study to begin viewing</p>
+                  <h3 className="text-lg font-medium mb-2">No Study Selected</h3>
+                  <p className="text-sm">Select a study from the left panel to view medical images</p>
                 </div>
               )}
             </div>
           </div>
 
-          {/* Right Panel */}
-          <div className="w-80 medsight-glass border-l border-medsight-primary/20 flex flex-col">
-            {/* AI Analysis Panel */}
-            {showAIPanel && (
-              <div className="p-4 border-b border-medsight-primary/20">
-                <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-sm font-semibold text-medsight-primary">
-                    AI Analysis
-                  </h3>
-                  <button
-                    onClick={() => setShowAIPanel(false)}
-                    className="text-gray-400 hover:text-gray-600"
-                  >
-                    <ArrowRightIcon className="w-4 h-4" />
-                  </button>
+          {/* AI & Info Panel (Right) */}
+          <div className="w-96 bg-white/5 backdrop-blur-sm border-l border-white/10 flex flex-col">
+            <div className="flex-1 overflow-y-auto p-4 space-y-4">
+              {/* AI Analysis Section */}
+              <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-white/20">
+                <div className="flex items-center gap-2 mb-3">
+                  <SparklesIcon className="w-5 h-5 text-primary" />
+                  <h3 className="text-md font-semibold text-gray-800">AI Analysis</h3>
+                  <span className="text-xs bg-success/20 text-success px-2 py-1 rounded-full font-medium">
+                    {activeStudy?.aiConfidence}% confident
+                  </span>
                 </div>
-                
-                {activeStudy && (
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-600">Status:</span>
+                <div className="space-y-2">
+                  {activeStudy?.findings.map((finding, idx) => (
+                    <div key={idx} className="flex items-start gap-2">
+                      <div className="w-1.5 h-1.5 bg-primary rounded-full mt-2 flex-shrink-0"></div>
+                      <p className="text-sm text-gray-700 leading-relaxed">{finding}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Measurements Section */}
+              <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-white/20">
+                <div className="flex items-center gap-2 mb-3">
+                  <BeakerIcon className="w-5 h-5 text-warning" />
+                  <h3 className="text-md font-semibold text-gray-800">Measurements</h3>
+                </div>
+                <div className="space-y-2">
+                  {activeStudy?.measurements.map(m => (
+                    <div key={m.id} className="flex justify-between items-center py-1">
+                      <span className="text-sm text-gray-600">{m.type}:</span>
                       <div className="flex items-center gap-2">
-                        {activeStudy.aiAnalysisStatus === 'completed' ? (
-                          <CheckBadgeIcon className="w-4 h-4 text-medsight-normal" />
-                        ) : activeStudy.aiAnalysisStatus === 'processing' ? (
-                          <BoltIcon className="w-4 h-4 text-medsight-pending animate-pulse" />
-                        ) : (
-                          <ClockIcon className="w-4 h-4 text-gray-400" />
-                        )}
-                        <span className="text-sm capitalize">
-                          {activeStudy.aiAnalysisStatus}
-                        </span>
+                        <span className="font-mono text-sm font-medium text-gray-800">{m.value} {m.unit}</span>
+                        <span className="text-xs text-success">({m.confidence}%)</span>
                       </div>
                     </div>
-                    
-                    {activeStudy.aiAnalysisStatus === 'completed' && (
-                      <>
-                        <div className="flex items-center justify-between">
-                          <span className="text-sm text-gray-600">Confidence:</span>
-                          <div className={`flex items-center gap-2 ${getAIConfidenceColor(activeStudy.aiConfidence)}`}>
-                            <span className="text-sm font-medium">
-                              {activeStudy.aiConfidence}%
-                            </span>
-                          </div>
-                        </div>
-                        
-                        <div className="space-y-2">
-                          <span className="text-sm text-gray-600">Findings:</span>
-                          {activeStudy.findings.map((finding, idx) => (
-                            <div key={idx} className="medsight-ai-glass p-2 rounded text-xs">
-                              {finding}
-                            </div>
-                          ))}
-                        </div>
-                      </>
-                    )}
-                  </div>
-                )}
+                  ))}
+                </div>
               </div>
-            )}
 
-            {/* Measurements Panel */}
-            {showMeasurements && (
-              <div className="p-4 border-b border-medsight-primary/20">
-                <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-sm font-semibold text-medsight-primary">
-                    Measurements
-                  </h3>
-                  <button
-                    onClick={() => setShowMeasurements(false)}
-                    className="text-gray-400 hover:text-gray-600"
-                  >
-                    <ArrowRightIcon className="w-4 h-4" />
-                  </button>
+              {/* Study Information Section */}
+              <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-white/20">
+                <div className="flex items-center gap-2 mb-3">
+                  <InformationCircleIcon className="w-5 h-5 text-primary" />
+                  <h3 className="text-md font-semibold text-gray-800">Study Information</h3>
                 </div>
-                
-                {activeStudy && activeStudy.measurements.length > 0 ? (
-                  <div className="space-y-2">
-                    {activeStudy.measurements.map((measurement) => (
-                      <div key={measurement.id} className="medsight-control-glass p-2 rounded-lg">
-                        <div className="flex justify-between items-center">
-                          <span className="text-sm font-medium capitalize">
-                            {measurement.type}
-                          </span>
-                          <span className="text-xs text-gray-500">
-                            {measurement.confidence}%
-                          </span>
-                        </div>
-                        <div className="text-lg font-mono text-medsight-primary">
-                          {measurement.value} {measurement.unit}
-                        </div>
-                      </div>
-                    ))}
+                <div className="space-y-2">
+                  <div className="flex justify-between">
+                    <span className="text-sm text-gray-600">Patient:</span> 
+                    <span className="font-medium text-gray-800">{activeStudy?.patientName}</span>
                   </div>
-                                 ) : (
-                   <div className="text-center text-gray-400 py-4">
-                     <BeakerIcon className="w-8 h-8 mx-auto mb-2 opacity-50" />
-                     <p className="text-sm">No measurements yet</p>
-                   </div>
-                 )}
+                  <div className="flex justify-between">
+                    <span className="text-sm text-gray-600">Modality:</span> 
+                    <span className="font-medium text-gray-800">{activeStudy?.modality}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-sm text-gray-600">Date:</span> 
+                    <span className="font-medium text-gray-800">{activeStudy?.studyDate}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-sm text-gray-600">Series:</span> 
+                    <span className="font-medium text-gray-800">{activeStudy?.seriesCount}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-sm text-gray-600">Images:</span> 
+                    <span className="font-medium text-gray-800">{activeStudy?.imageCount}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-sm text-gray-600">Size:</span> 
+                    <span className="font-medium text-gray-800">{activeStudy?.studySize}</span>
+                  </div>
+                </div>
               </div>
-            )}
-
-            {/* Study Information */}
-            <div className="flex-1 p-4 overflow-y-auto">
-              <h3 className="text-sm font-semibold text-medsight-primary mb-3">
-                Study Information
-              </h3>
-              
-              {activeStudy ? (
-                <div className="space-y-3 text-sm">
-                  <div className="space-y-2">
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Patient:</span>
-                      <span className="font-medium">{activeStudy.patientName}</span>
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">ID:</span>
-                      <span className="font-mono">{activeStudy.patientId}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Modality:</span>
-                      <span className="font-medium text-medsight-primary">
-                        {activeStudy.modality}
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Date:</span>
-                      <span>{activeStudy.studyDate}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Time:</span>
-                      <span>{activeStudy.studyTime}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Series:</span>
-                      <span>{activeStudy.seriesCount}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Images:</span>
-                      <span>{activeStudy.imageCount}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Size:</span>
-                      <span>{activeStudy.studySize}</span>
-                    </div>
+            <div className="p-4 border-t border-white/10 bg-white/5">
+                <div className="flex items-center justify-center gap-4 text-sm">
+                  <div className="flex items-center gap-2 text-success">
+                    <ShieldCheckIcon className="w-4 h-4" /> 
+                    <span>HIPAA Compliant</span>
                   </div>
-                  
-                  <div className="pt-3 border-t border-gray-200">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-gray-600">Status:</span>
-                      <div className={`flex items-center gap-1 ${getStatusColor(activeStudy.status)}`}>
-                        {getStatusIcon(activeStudy.status)}
-                        <span className="capitalize">{activeStudy.status}</span>
-                      </div>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-gray-600">Priority:</span>
-                      <span className={`capitalize ${
-                        activeStudy.priority === 'urgent' ? 'text-medsight-critical' :
-                        activeStudy.priority === 'high' ? 'text-medsight-abnormal' :
-                        activeStudy.priority === 'medium' ? 'text-medsight-pending' :
-                        'text-medsight-normal'
-                      }`}>
-                        {activeStudy.priority}
-                      </span>
-                    </div>
+                  <div className="flex items-center gap-2 text-success">
+                    <CheckCircleIcon className="w-4 h-4" /> 
+                    <span>Systems Online</span>
                   </div>
                 </div>
-              ) : (
-                <div className="text-center text-gray-400 py-8">
-                  <InformationCircleIcon className="w-8 h-8 mx-auto mb-2 opacity-50" />
-                  <p className="text-sm">Select a study to view details</p>
-                </div>
-              )}
             </div>
           </div>
         </div>

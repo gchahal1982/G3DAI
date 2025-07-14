@@ -414,89 +414,87 @@ export function MedicalMetrics() {
   const needsImprovementMetrics = allMetrics.filter(m => m.status === 'needs-improvement' || m.status === 'critical').length;
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       {/* Header */}
-      <div className="medsight-glass p-4 rounded-xl">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 bg-medsight-primary/10 rounded-full flex items-center justify-center">
-              <ChartBarIcon className="w-4 h-4 text-medsight-primary" />
-            </div>
-            <div>
-              <h3 className="text-lg font-semibold text-medsight-primary">
-                Medical Performance Metrics
-              </h3>
-              <p className="text-sm text-medsight-primary/70">
-                {allMetrics.length} metrics • {excellentMetrics} excellent • {needsImprovementMetrics} need improvement
-              </p>
-            </div>
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center space-x-3">
+          <div className="w-10 h-10 bg-gradient-primary rounded-lg flex items-center justify-center">
+            <ChartBarIcon className="w-5 h-5 text-white" />
           </div>
-          
-          <div className="flex items-center space-x-2">
-            <select
-              value={selectedPeriod}
-              onChange={(e) => setSelectedPeriod(e.target.value as any)}
-              className="input-medsight text-sm min-w-24"
-            >
-              <option value="today">Today</option>
-              <option value="week">This Week</option>
-              <option value="month">This Month</option>
-              <option value="quarter">This Quarter</option>
-            </select>
-            <div className="text-sm text-medsight-primary/70">
-              Updated: {new Date().toLocaleTimeString()}
-            </div>
+          <div>
+            <h3 className="text-xl font-bold text-primary">
+              Medical Performance Metrics
+            </h3>
+            <p className="text-sm text-gray-600">
+              {allMetrics.length} metrics • {excellentMetrics} excellent • {needsImprovementMetrics} need improvement
+            </p>
           </div>
         </div>
-
-        {/* Category Filters */}
-        <div className="flex items-center space-x-2 overflow-x-auto">
-          <button
-            onClick={() => setSelectedCategory('all')}
-            className={`px-3 py-1 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${
-              selectedCategory === 'all' 
-                ? 'bg-medsight-primary text-white' 
-                : 'text-medsight-primary hover:bg-medsight-primary/10'
-            }`}
+        
+        <div className="flex items-center space-x-3">
+          <select
+            value={selectedPeriod}
+            onChange={(e) => setSelectedPeriod(e.target.value as any)}
+            className="px-3 py-2 bg-white/20 border border-white/30 rounded-lg text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary/50"
           >
-            All Metrics
-          </button>
-          {metricsData.map((category) => {
-            const IconComponent = category.icon;
-            return (
-              <button
-                key={category.id}
-                onClick={() => setSelectedCategory(category.id)}
-                className={`flex items-center space-x-1 px-3 py-1 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${
-                  selectedCategory === category.id 
-                    ? `bg-${category.color} text-white` 
-                    : `text-${category.color} hover:bg-${category.color}/10`
-                }`}
-              >
-                <IconComponent className="w-3 h-3" />
-                <span>{category.name}</span>
-              </button>
-            );
-          })}
+            <option value="today">Today</option>
+            <option value="week">This Week</option>
+            <option value="month">This Month</option>
+            <option value="quarter">This Quarter</option>
+          </select>
+          <div className="text-sm text-gray-600">
+            Updated: {new Date().toLocaleTimeString()}
+          </div>
         </div>
       </div>
 
-      {/* Metrics Grid */}
-      <div className="space-y-6">
+      {/* Category Filters */}
+      <div className="flex items-center space-x-2 overflow-x-auto mb-6">
+        <button
+          onClick={() => setSelectedCategory('all')}
+          className={`px-4 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${
+            selectedCategory === 'all' 
+              ? 'bg-primary text-white' 
+              : 'text-primary hover:bg-primary/10'
+          }`}
+        >
+          All Metrics
+        </button>
+        {metricsData.map((category) => {
+          const IconComponent = category.icon;
+          return (
+            <button
+              key={category.id}
+              onClick={() => setSelectedCategory(category.id)}
+              className={`flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${
+                selectedCategory === category.id 
+                  ? 'bg-secondary text-white' 
+                  : 'text-secondary hover:bg-secondary/10'
+              }`}
+            >
+              <IconComponent className="w-4 h-4" />
+              <span>{category.name}</span>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Metrics Grid - Full Width Horizontal Layout */}
+      <div className="space-y-8">
         {filteredCategories.map((category) => {
           const IconComponent = category.icon;
           return (
-            <div key={category.id} className="space-y-3">
-              <div className="flex items-center space-x-2">
-                <IconComponent className={`w-5 h-5 text-${category.color}`} />
-                <h4 className="text-lg font-medium text-medsight-primary">
+            <div key={category.id} className="space-y-4">
+              <div className="flex items-center space-x-3">
+                <IconComponent className="w-6 h-6 text-secondary" />
+                <h4 className="text-lg font-semibold text-primary">
                   {category.name}
                 </h4>
               </div>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {category.metrics.map((metric) => (
-                  <div key={metric.id} className="medsight-glass p-4 rounded-xl">
+                  <div key={metric.id} className="glass-card-secondary p-4 hover-lift">
                     <div className="flex items-start justify-between mb-3">
                       <div className="flex-1">
                         <div className="flex items-center space-x-2 mb-1">

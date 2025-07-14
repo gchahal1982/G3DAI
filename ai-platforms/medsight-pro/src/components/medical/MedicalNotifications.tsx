@@ -354,107 +354,85 @@ export function MedicalNotifications() {
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       {/* Header */}
-      <div className="medsight-glass p-4 rounded-xl">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 bg-medsight-accent/10 rounded-full flex items-center justify-center relative">
-              <BellIcon className="w-4 h-4 text-medsight-accent" />
-              {unreadCount > 0 && (
-                <span className="absolute -top-1 -right-1 w-5 h-5 bg-medsight-critical text-white text-xs rounded-full flex items-center justify-center">
-                  {unreadCount}
-                </span>
-              )}
-            </div>
-            <div>
-              <h3 className="text-lg font-semibold text-medsight-primary">
-                Medical Notifications
-              </h3>
-              <p className="text-sm text-medsight-primary/70">
-                {filteredNotifications.length} notifications • {unreadCount} unread
-              </p>
-            </div>
-          </div>
-          
-          <div className="flex items-center space-x-2">
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center space-x-3">
+          <div className="w-10 h-10 bg-gradient-accent rounded-lg flex items-center justify-center relative">
+            <BellIcon className="w-5 h-5 text-white" />
             {unreadCount > 0 && (
-              <button
-                onClick={markAllAsRead}
-                className="btn-medsight px-3 py-1 text-sm"
-              >
-                Mark All Read
-              </button>
+              <span className="absolute -top-1 -right-1 w-5 h-5 bg-danger text-white text-xs rounded-full flex items-center justify-center">
+                {unreadCount}
+              </span>
             )}
-            <div className="text-sm text-medsight-primary/70">
-              Updated: {new Date().toLocaleTimeString()}
-            </div>
+          </div>
+          <div>
+            <h3 className="text-xl font-bold text-primary">
+              Medical Notifications
+            </h3>
+            <p className="text-sm text-gray-600">
+              {filteredNotifications.length} notifications • {unreadCount} unread
+            </p>
           </div>
         </div>
-
-        {/* Filter Tabs */}
-        <div className="flex items-center space-x-2 overflow-x-auto">
-          <button
-            onClick={() => setFilter('all')}
-            className={`px-3 py-1 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${
-              filter === 'all' 
-                ? 'bg-medsight-primary text-white' 
-                : 'text-medsight-primary hover:bg-medsight-primary/10'
-            }`}
-          >
-            All ({notifications.length})
-          </button>
-          <button
-            onClick={() => setFilter('unread')}
-            className={`px-3 py-1 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${
-              filter === 'unread' 
-                ? 'bg-medsight-critical text-white' 
-                : 'text-medsight-critical hover:bg-medsight-critical/10'
-            }`}
-          >
-            Unread ({unreadCount})
-          </button>
-          <button
-            onClick={() => setFilter('action-required')}
-            className={`px-3 py-1 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${
-              filter === 'action-required' 
-                ? 'bg-medsight-pending text-white' 
-                : 'text-medsight-pending hover:bg-medsight-pending/10'
-            }`}
-          >
-            Action Required ({actionRequiredCount})
-          </button>
-          <button
-            onClick={() => setFilter('emergency')}
-            className={`px-3 py-1 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${
-              filter === 'emergency' 
-                ? 'bg-medsight-critical text-white' 
-                : 'text-medsight-critical hover:bg-medsight-critical/10'
-            }`}
-          >
-            Emergency
-          </button>
-          <button
-            onClick={() => setFilter('ai-analysis')}
-            className={`px-3 py-1 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${
-              filter === 'ai-analysis' 
-                ? 'bg-medsight-ai-high text-white' 
-                : 'text-medsight-ai-high hover:bg-medsight-ai-high/10'
-            }`}
-          >
-            AI Analysis
-          </button>
-          <button
-            onClick={() => setFilter('clinical')}
-            className={`px-3 py-1 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${
-              filter === 'clinical' 
-                ? 'bg-medsight-secondary text-white' 
-                : 'text-medsight-secondary hover:bg-medsight-secondary/10'
-            }`}
-          >
-            Clinical
-          </button>
+        
+        <div className="flex items-center space-x-3">
+          {unreadCount > 0 && (
+            <button
+              onClick={markAllAsRead}
+              className="btn-medical px-3 py-1 text-sm"
+            >
+              Mark All Read
+            </button>
+          )}
+          <div className="text-sm text-gray-600">
+            Updated: {new Date().toLocaleTimeString()}
+          </div>
         </div>
+      </div>
+
+      {/* Filter Tabs */}
+      <div className="flex items-center space-x-2 overflow-x-auto mb-6">
+        <button
+          onClick={() => setFilter('all')}
+          className={`px-3 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${
+            filter === 'all' 
+              ? 'bg-primary text-white' 
+              : 'text-primary hover:bg-primary/10'
+          }`}
+        >
+          All ({notifications.length})
+        </button>
+        <button
+          onClick={() => setFilter('unread')}
+          className={`px-3 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${
+            filter === 'unread' 
+              ? 'bg-danger text-white' 
+              : 'text-danger hover:bg-danger/10'
+          }`}
+        >
+          Unread ({unreadCount})
+        </button>
+        <button
+          onClick={() => setFilter('action-required')}
+          className={`px-3 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${
+            filter === 'action-required' 
+              ? 'bg-warning text-white' 
+              : 'text-warning hover:bg-warning/10'
+          }`}
+        >
+          Action Required ({actionRequiredCount})
+        </button>
+        <button
+          onClick={() => setFilter('emergency')}
+          className={`px-3 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${
+            filter === 'emergency' 
+              ? 'bg-danger text-white' 
+              : 'text-danger hover:bg-danger/10'
+          }`}
+        >
+          Emergency
+        </button>
       </div>
 
       {/* Notifications List */}
@@ -613,16 +591,16 @@ export function MedicalNotifications() {
 
             {/* Actions */}
             {notification.actions && notification.actions.length > 0 && (
-              <div className="mt-3 pt-3 border-t border-medsight-primary/20">
+              <div className="mt-3 pt-3 border-t border-white/10 flex justify-end">
                 <div className="flex items-center space-x-2">
                   {notification.actions.map((action, index) => (
                     <button
                       key={index}
                       onClick={() => handleNotificationAction(notification.id, action.action)}
-                      className={`px-3 py-1 text-sm rounded-lg transition-colors ${
+                      className={`btn-medical px-3 py-1 text-sm ${
                         action.primary
-                          ? 'bg-medsight-primary text-white hover:bg-medsight-primary/80'
-                          : 'bg-medsight-primary/10 text-medsight-primary hover:bg-medsight-primary/20'
+                          ? `bg-gradient-${getNotificationColor(notification.type)}`
+                          : 'btn-secondary'
                       }`}
                     >
                       {action.label}
