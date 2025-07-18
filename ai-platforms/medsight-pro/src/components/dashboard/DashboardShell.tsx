@@ -218,15 +218,15 @@ export function DashboardShell({ children, user, className = '' }: DashboardShel
               </button>
               
               {/* Search */}
-              <div className="ml-4 flex-1 max-w-xs">
+              <div className="ml-4 flex-1 max-w-2xl">
                 <div className="relative">
-                  <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                  <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4">
                     <MagnifyingGlassIcon className="h-5 w-5 text-gray-400" />
                   </div>
                   <input
                     type="text"
                     placeholder="Search patients, studies..."
-                    className="block w-full rounded-xl bg-white/50 backdrop-blur-sm border border-white/30 pl-10 pr-3 py-2 text-sm placeholder-gray-500 focus:border-blue-300 focus:ring-2 focus:ring-blue-200 focus:bg-white/70 transition-all"
+                    className="block w-full rounded-xl bg-white/50 backdrop-blur-sm border border-white/30 pl-12 pr-4 py-3 text-sm placeholder-gray-500 focus:border-blue-300 focus:ring-2 focus:ring-blue-200 focus:bg-white/70 transition-all shadow-sm"
                   />
                 </div>
               </div>

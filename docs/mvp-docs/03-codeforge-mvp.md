@@ -1,390 +1,713 @@
-# CodeForge - Enterprise Code Generation Platform
-## MVP Business Transformation Document
+# CodeForge – Next‑Generation AI‑Assisted Development Platform  
+**Version 3 – 18 July 2025**
 
 ---
 
 ## Executive Summary
-
-**Service**: CodeForge - Enterprise Code Generation Platform  
-**Current State**: 1,172 lines demo dashboard  
-**MVP Target**: Full G3D-powered enterprise code generation platform with next-generation capabilities  
-**Market**: Software development teams, enterprises, DevOps organizations  
-**Revenue Potential**: $40-120M annually (enhanced with full G3D integration)  
-**Investment Required**: $3.0M over 9 months (increased for G3D integration)  
-**Team Required**: 32 developers (8 additional G3D specialists)
-
----
-
-## Market Opportunity
-
-### **Target Market Size**
-- **Total Addressable Market (TAM)**: $26.5B (Software Development Tools market)
-- **Serviceable Addressable Market (SAM)**: $8.2B (AI-powered development tools)
-- **Serviceable Obtainable Market (SOM)**: $1.2B (Enhanced with G3D competitive advantages)
-
-### **Target Customers**
-1. **Enterprise Development Teams**: Fortune 500 companies ($100K-1M annually)
-2. **Software Companies**: SaaS and product companies ($25K-500K annually)
-3. **DevOps Organizations**: Platform and infrastructure teams ($50K-300K annually)
-4. **Consulting Firms**: System integrators and agencies ($30K-200K annually)
-5. **Government Agencies**: Federal and state technology departments ($75K-750K annually)
-
-### **Competitive Analysis**
-- **GitHub Copilot**: $10/month per user, code completion focus
-- **Tabnine**: $15/month per user, AI code completion
-- **Amazon CodeWhisperer**: Free tier + enterprise pricing
-- **Replit Ghostwriter**: $10/month, web-based IDE integration
-- **Our Advantage**: **Full G3D integration** + Enterprise-grade code generation + **next-generation 3D code visualization** + Advanced AI architecture
+|           | Detail |
+|-----------|--------|
+| **Service** | CodeForge — an end‑to‑end AI development workspace that couples local privacy‑first coding assistance with cloud super‑context reasoning and G3D‑powered 3‑D visualisation. |
+| **MVP Target** | A production‑ready hybrid IDE/CLI plug‑in (VS Code + NeoVim) and standalone desktop client, shipping with offline quantised models and optional secure cloud burst. |
+| **Revenue Potential** | \$40‑120 M ARR within 3 years. |
+| **Investment Required** | \$3.0 M over 9 months (32 devs inc. 8 G3D specialists). |
+| **Strategic Goal** | Become the de‑facto "AI forge" that transforms the way teams plan, write, visualise and ship code. |
 
 ---
 
-## Current Demo Analysis
+## 1 | Purpose & Vision
+CodeForge's mission is to **compress idea‑to‑deployment time from days to minutes** by fusing:
 
-### **Existing Implementation** (1,172 lines):
-```typescript
-// Current demo features:
-- Basic code generation interface
-- Simple AI-powered suggestions
-- Mock enterprise integrations
-- Basic project templates
-- Demo collaboration features
-- Placeholder analytics dashboard
-
-// G3D Integration Status:
-❌ G3D AI/ML Systems               // Not integrated
-❌ G3D Advanced Rendering          // Not integrated
-❌ G3D Code Visualization          // Not integrated
-❌ G3D GPU Compute                 // Not integrated
-❌ G3D XR Development              // Not integrated
-❌ G3D Performance Optimization    // Not integrated
-```
-
-### **Demo Limitations**:
-- No real AI models for code generation
-- Mock enterprise workflow integrations
-- Basic UI without advanced development tools
-- No security scanning or compliance features
-- Limited programming language support
-- Missing G3D's superior code visualization and AI capabilities
+* **AI Swarms** — orchestrated specialist agents for design, code, test, security & docs.  
+* **Immersive 3‑D Visualisation** — G3D renders of architecture, call‑graphs & live intent graphs.  
+* **Hybrid AI** — lightning‑fast local models for daily flow, super‑context cloud brains for deep analysis.  
+* **Enterprise‑grade Trust** — zero‑trust local inference, SOC 2 cloud, SBOM & signed artefacts.
 
 ---
 
-## MVP Feature Specification
+## 2 | Strategic Insights
+* **Developers want privacy & speed** → local LLMs are exploding in adoption.  
+* **Context windows still pinch** → burst‑to‑cloud for 70 k‑128 k tokens solves repo‑scale reasoning.  
+* **Tools ≠ UX** → first‑wave AI plug‑ins look bolted‑on; devs crave *clarity* of what the agent does.  
+* **Visual cognition beats text** → codebase comprehension jumps when structure is spatially rendered.  
+* **Open ecosystem wins** → extensible marketplaces and OSS‑friendly licences encourage viral growth.
 
-### **Phase 0: G3D Development Integration Enhancement** (Months 1-2) **🚀 NEW PRIORITY**
+---
 
-#### **0.1 G3D Code Visualization Engine** (4 weeks, 4 G3D specialists)
-```typescript
-// G3D-powered code visualization:
-src/g3d-code/
-├── G3DCodeRenderer.ts           // 3,500 lines - Advanced code visualization
-├── G3DArchitectureViz.ts        // 3,200 lines - 3D architecture visualization
-├── G3DCodeFlowViz.ts            // 2,800 lines - Code flow and dependency visualization
-├── G3DCodeMetrics.ts            // 2,500 lines - Real-time code metrics visualization
-├── G3DCollaborativeCode.ts      // 2,200 lines - Multi-user code collaboration
-├── G3DCodeMaterials.ts          // 2,000 lines - Code-specific materials and shaders
-├── G3DCodeLighting.ts           // 1,800 lines - Optimized lighting for code visualization
-└── G3DCodePerformance.ts        // 1,500 lines - Code visualization performance optimization
+## 3 | Market Opportunity
+| Scope | Value |
+|-------|-------|
+| **TAM** (Dev tools) | \$26.5 B |
+| **SAM** (AI‑powered dev) | \$8.2 B |
+| **SOM** (Hybrid + G3D niche) | \$1.2 B |
+
+### Target Customers & ACVs
+1. **Enterprise Teams** — \$100 k‑1 M / yr  
+2. **SaaS/Product Companies** — \$25 k‑500 k / yr  
+3. **DevOps & Platform Squads** — \$50 k‑300 k / yr  
+4. **Consultancies & SIs** — \$30 k‑200 k / yr  
+5. **Gov & Defence** — \$75 k‑750 k / yr
+
+## 3.1 User Personas & JTBD
+
+| Persona | Pain Point | "Job‑to‑Be‑Done" | Key Success Metric |
+|---------|------------|-----------------|--------------------|
+| **Indie Hacker** | Context‑switch fatigue, infra cost | "Ship a side‑project tonight without installing Docker." | Prototype deployed in < 4 h |
+| **Senior Backend Engineer** | Legacy refactor risk | "Confidently migrate a monolith to services without breaking prod." | < 1 % rollback rate |
+| **Team Lead / EM** | Review bottlenecks | "Keep PR queue < 24 h while mentoring juniors." | Review SLA met 95 % |
+| **Security Engineer** | Unknown code paths | "Surface Oss‑vulnerable deps & secret leaks continuously." | Zero critical CVEs at release |
+| **DevRel Advocate** | Community engagement | "Author demos & tutorials that wow in < 1 day." | GitHub stars & Discord joins |
+
+### 3.2 Core Workflow Scenarios
+
+1. **Greenfield Wizard** – "Generate a Rust microservice template with CI, tests, Terraform."  
+2. **Surgical Bug Fix** – Point AI at failing test; agent proposes patch, auto‑opens ghost‑branch PR.  
+3. **Architectural Refactor** – Visual Intent‑Graph highlights coupling; AI splits modules, updates Docs.  
+4. **Security Sweep** – Security‑Swarm agent runs SAST+SBOM, inserts fixes & compliance badges.  
+5. **XR Code Walkthrough** – VR session: lead walks new hire through 3‑D call‑graph, AI answers Q&A.
+
+---
+
+## 4 | Competitive Analysis
+
+| Competitor | Differentiator | Model Strat. | Collab | Visual‑isation | Arch/Plan | UX Mode | Extens. | Enterprise | Security | Licence |
+|------------|----------------|--------------|--------|----------------|-----------|---------|---------|------------|----------|---------|
+| **Cursor** | AI‑native editor | Cloud | Basic | Limited | Medium | Custom IDE | Mod. | Growing | Mod. | Proprietary |
+| **GitHub Copilot** | Inline completion | Cloud | Basic | None | Low | IDE plug‑in | Low | Strong via GitHub | Mod. | Proprietary |
+| **Windsurf** | "Vibe‑coding" web IDE | Cloud | Mod. | Basic | Low | Web IDE | Mod. | Strong | Mod. | Proprietary |
+| **Lovable** | NL→App builder | Cloud | Good | Low | Medium | Chat/web | Low | Growing | Mod. | Proprietary |
+| **Replit** | Browser IDE + agent | Cloud | Excellent | Low | Medium | Web IDE | Mod. | Mod. | Mod. | Proprietary |
+| **Claude Code** | CLI agentic | Hybrid | Low | None | High | CLI | High | Mod. | Strong | Proprietary |
+| **Cline** | OSS plan/act agent | Local | Mod. | None | Medium | VS Code ext | High | Low | Good | OSS |
+| **Roo** | Multi‑agent OSS | Local | Good | Med. | High | VS Code ext | High | Low | Good | OSS |
+| **Kilo Code** | Modular OSS | Local | Excellent | Med. | High | VS Code ext | Very High | Mod. | Excellent | OSS |
+| **CodeForge** | **3‑D G3D viz + AI swarms + hybrid local/cloud** | **Hybrid** | **Excellent** | **Adv. 3‑D** | **Intent‑Graph** | IDE + Desktop | **Marketplace** | **Enterprise suite** | **Zero‑trust** | **Hybrid (commercial core + open SDK)** |
+
+**Why CodeForge Wins**
+
+* **Visual Clarity** – Only platform with *real‑time 3‑D* architecture & dependency renderings.  
+* **Hybrid Speed + Power** – 50 ms local completions *and* GPT‑4‑level deep refactors.  
+* **Intent Graph** – Keeps requirements ⇆ code in sync, so agents never "hallucinate scope."  
+* **Open Extensibility** – Plugin SDK, prompt packs, model mesh; no vendor lock‑in.  
+* **Enterprise‑first Trust** – On‑prem option, signed artefacts & full audit trail.
+
+---
+
+## 5 | Unique Value Proposition  
+> *"Forge ideas into production‑ready code with the clarity of 3‑D and the power of a senior AI swarm — online or offline."*
+
+---
+
+## 6 | MVP Feature Set
+
+**Core Forge Components**
+- Desktop & VS Code plug‑ins
+- Quantised 6B local model integration
+- 3‑D mini‑map visualization
+- Ghost‑branch PR workflow
+
+**Collaboration & XR Features**
+- Intent‑Graph panel
+- AI swarm personas
+- VR/AR code walkthrough capabilities
+- Marketplace alpha
+
+**Enterprise Readiness**
+- SSO and RBAC implementation
+- SOC‑2 compliance pipeline
+- Cloud burst to 70B model
+- SBOM export functionality
+- Private VPC deployment options
+
+### 6.1 MVP Exit / Acceptance Criteria
+
+* **Local Model Performance** < 60 ms p95 for local completions on M4 Max with 7-model strategy.  
+* **Model Accuracy** ≥ 92.9% pass@1 on HumanEval (Qwen3-Coder), ≥ 90% on internal EvalPlus suite.
+* **Context System** ≤ 50ms context retrieval, ≤ 300MB RAM footprint, ≥ 70% hit rate.
+* **Storage Management** Handles 110GB+ model downloads with intelligent cleanup.
+* **Model Routing** Intelligent task classification across 7 local + 2 cloud models.
+* **Zero‑Trust** mode passes third‑party pentest (full offline operation).  
+* **3‑D Viz** renders 1 M‑LOC repo at ≥ 30 FPS on RTX 3070.  
+* **Marketplace** publishes/installs plug‑ins via signed manifest.  
+* **CI Integration** supports GitHub Actions & GitLab CI templates.
+
+---
+
+### 6.2 | Killer Workflow – Visual-Guided Refactor (VGR)
+
+|               | Detail |
+|---------------|--------|
+| **Goal** | Slash pull-request merge time by ≥ 70 % for complex refactors through an AI-assisted, 3-D visual workflow. |
+| **Primary Persona** | Senior Backend Engineer refactoring legacy modules while maintaining SLA. |
+| **Key Metric** | **Time-to-Merge (TTM)** for flagged PRs ≤ 4 h (baseline 16 h). |
+
+#### User Stories
+1. **Identify Impact**  
+   *As a developer* I can drag-and-drop a file/function in the 3-D call-graph to instantly visualise all upstream/downstream dependencies so that I know the blast radius before editing.
+
+2. **Generate Safe Patch Set**  
+   *As a developer* I can click **“Refactor with AI”** and receive a ghost-branch containing:  
+   - updated imports & file moves  
+   - auto-updated tests  
+   - migration notes in `CHANGELOG.md`.
+
+3. **Confidence Gate**  
+   *As a reviewer* I see an AI-generated diff summary with risk score, impacted tests, and green CI badge so I can approve in one pass.
+
+#### Functional Requirements
+| ID | Requirement |
+|----|-------------|
+| VGR-F-01 | Real-time G3D scene highlighting affected nodes (< 100 ms on 1 M-LOC repo). |
+| VGR-F-02 | AI swarm invokes **Planner → Transformer → Tester → Doc-Bot** sequence. |
+| VGR-F-03 | Generates *ghost-branch* PR with linked **Intent-Graph** delta. |
+| VGR-F-04 | Intelligent model routing: Qwen3-Coder for previews, Phi-4-mini for agentic tasks, cloud burst (DeepSeek R1) for complex refactors > 4k context. |
+| VGR-F-05 | Provides rollback button restoring pre-refactor state. |
+
+#### Non-Functional Requirements
+* **Latency**: Visualization update < 150 ms p95.  
+* **Accuracy**: 95 % unchanged test pass rate post-merge.  
+* **Security**: Operates fully in **Zero-Trust** mode (no outbound net).  
+
+#### Acceptance Criteria
+1. Triggering VGR on the sample 50-file legacy module finishes < 3 min incl. tests.  
+2. Reviewer approves 80 % of VGR PRs without manual code comments in pilot org.  
+3. Post-merge telemetry shows no production regression in 30-day canary window.
+
+#### Risks & Mitigations
+| Risk | Mitigation |
+|------|------------|
+| Scene overload on huge monorepos | Chunked lazy-loading + LOD culling in G3D renderer |
+| AI patch hallucination | Two-stage refine: cloud output diff-checks local draft; run unit & type checks before PR |
+
+#### Dependencies
+* **Model Infrastructure**: Phase 1.5 model download system for 7 local models (ModelLoader.ts, ModelRouter.ts).
+* **Context Engine**: Phase 1.6 Dynamic Context Persistence (FileWatcher.ts, ASTIndexer.ts, VectorDB.ts, SemanticStore.ts).
+* **Intelligent Routing**: Model Router with task classification across 9 model endpoints.
+* **G3D Rendering**: Incremental scene-graph diffing in G3D (Engine ticket G3D-1201).  
+* **AI Swarm**: Swarm orchestrator plug-in API (Core ticket CORE-412).  
+* **CI Integration**: In-repo CI templates (DevOps ticket DEV-88).
+
+### 6.3 | Go‑to‑Market Funnel – Extension ➜ Desktop ➜ CLI
+
+| Stage | Surface | Primary CTA / Goal | Key Metrics |
+|-------|---------|--------------------|-------------|
+| **Discover / Try** | VS Code & NeoVim extension (`ms-codeforge.vsix`) | Give developers a < 5 MB “taste” of AI swarm and 3‑D mini‑map without leaving their editor. | Conversion to desktop installer, weekly active installs |
+| **Adopt / Delight** | **Standalone desktop client** (Electron/Tauri) – *hero experience* | Unlock local 6‑8 GB models, 120 Hz WebGPU, XR walkthroughs, and offline mode. | Daily active users, NPS, model‑latency p95 |
+| **Automate / Integrate** | `codeforge` **CLI** (headless) | Drive CI hooks, Git aliases, and terminal‑editor workflows. | CI minutes saved, script invocations per repo |
+
+> **Launch order:** extension ships first (funnel top), desktop GA follows within 4 weeks, CLI is bundled with desktop but documented for standalone use.
+
+### 6.4 | Engineering Effort Split (MVP 9‑month budget)
+
+| Work‑stream | Effort Share | Rationale |
+|-------------|-------------|-----------|
+| Core AI coding & refactor | **45 %** | Model orchestration, swarm personas, ghost‑branch PRs |
+| 3‑D visualisation (flat) | **25 %** | G3D renderer, call‑graph & intent‑graph |
+| Collaboration & marketplace | **15 %** | CRDT presence, plug‑in SDK, in‑app store |
+| **XR / VR extras** | **10 %** | VR camera, avatar sync, Quest/Vision Pro shell |
+| Compliance & ops plumbing | **5 %** | SOC‑2 pipeline, updater, BYO‑key router guards |
+
+*XR is capped at ~10 % to keep focus on day‑to‑day developer value while still enabling wow‑factor demos.*
+
+## 7 | Technical Architecture
+
+### 7.1 High‑Level Diagram
+```
+┌─────────────────────────── LOCAL ───────────────────────────┐    ┌─────── CLOUD APIs ──────┐
+│                                                             │    │                         │
+│  ┌─────┐       ┌──────────────┐      ┌─────────────────┐    │    │  ┌─────────────────┐    │
+│  │ IDE │──────▶│ Model Router │─────▶│ 7 Local Models  │    │    │  │ Kimi K2 API     │    │
+│  └─────┘       │              │      │ • Qwen3-Coder   │◀───┼────┼─▶│ (Agentic)       │    │
+│                │ Task         │      │ • Phi-4-mini    │    │    │  └─────────────────┘    │
+│  ┌─────┐       │ Classifier   │      │ • Gemma 3       │    │    │             │           │
+│  │ CLI │──────▶│              │      │ • Llama 3.3-70B │    │    │             │           │
+│  └─────┘       │              │      │ • Starcoder2    │    │    │  ┌─────────────────┐    │
+│                │              │      │ • DeepSeek-V2   │    │    │  │ DeepSeek R1 API │    │
+│                │              │      │ • Mistral Dev   │    │    │  │ (Reasoning)     │    │
+│                └──────┬───────┘      └─────────────────┘    │    │  └─────────────────┘    │
+│                       │                        │           │    │             │           │
+│                       ▼                        ▼           │    │             │           │
+│  ┌─────────────────────────┐     ┌───────────────────────┐ │    │  ┌─────────────────┐    │
+│  │ Dynamic Context Engine  │     │    G3D Renderer      │ │    │  │ BYO-Key APIs    │    │
+│  │ • FileWatcher          │     │                       │─┼────┼─▶│ • OpenAI        │    │
+│  │ • ASTIndexer           │     │                       │ │    │  │ • Anthropic     │    │
+│  │ • VectorDB             │     │                       │ │    │  │ • Google        │    │
+│  │ • SemanticStore        │     │                       │ │    │  │ • xAI           │    │
+│  │ • ContextPlanner       │     │                       │ │    │  └─────────────────┘    │
+│  │ • Retriever            │     │                       │ │    │                         │
+│  └─────────────────────────┘     └───────────────────────┘ │    │  ┌─────────────────┐    │
+│                       ▲                        │           │    │  │ Encrypted Logs   │    │
+│                       │                        │           │    │  │ (Telemetry)     │    │
+│  ┌─────────────────────────┐                   │           │    │  └─────────────────┘    │
+│  │    Intent DB           │                   │           │    │             ▲           │
+│  │                        │                   │           │    │             │           │
+│  └─────────────────────────┘                   └───────────┼────┼─────stats───┘           │
+│                                                             │    │                         │
+└─────────────────────────────────────────────────────────────┘    │  ┌─────────────────┐    │
+                                                                   │  │ Plugin Market   │    │
+                                                                   │  │                 │    │
+                                                                   │  └─────────────────┘    │
+                                                                   │             ▲           │
+                                                                   └─────────────┼───────────┘
+                                                                                 │
+                                                                             plugins
+                                                                                 │
+                                                                    ┌─────────────┘
+                                                                    │
+                                                                 ┌─────┐
+                                                                 │ IDE │
+                                                                 └─────┘
 ```
 
-**G3D Code Visualization Enhancements**:
-- **3D Code Architecture**: Advanced visualization of code structure and dependencies
-- **Real-time Code Flow**: GPU-accelerated visualization of code execution paths
-- **Interactive Code Metrics**: 3D visualization of code quality, complexity, and performance
-- **Collaborative Code Review**: Multi-user 3D code exploration and review
-- **Advanced Code Materials**: Specialized shaders for different code elements and patterns
-- **Performance Optimization**: G3D-optimized rendering for large codebases
+### 7.2 Front‑end Stack
 
-#### **0.2 G3D AI Code Generation Integration** (6 weeks, 5 AI engineers)
-```typescript
-// G3D-enhanced AI code generation:
-src/g3d-ai-code/
-├── G3DCodeModelRunner.ts        // 4,000 lines - Advanced AI model execution
-├── G3DCodeGeneration.ts         // 3,800 lines - Sophisticated code generation
-├── G3DCodeAnalysis.ts           // 3,500 lines - Advanced code analysis
-├── G3DCodeRefactoring.ts        // 3,200 lines - AI-powered refactoring
-├── G3DCodeOptimization.ts       // 3,000 lines - Performance optimization
-├── G3DCodeSecurity.ts           // 2,800 lines - Security analysis and fixes
-├── G3DCodeTesting.ts            // 2,500 lines - Automated test generation
-└── G3DCodeDocumentation.ts      // 2,200 lines - Intelligent documentation generation
+* **React 18 + TypeScript**
+* **Monaco (G3D‑enhanced)** editor
+* **WebGPU** G3D renderer
+* **Redux Toolkit + Zustand** state
+* **WebRTC + Liveblocks** for multi‑user + XR sessions
+
+### 7.3 Back‑end Stack
+
+* Node.js (REST) + **FastAPI** (AI micro‑services)
+* PostgreSQL (metadata) & **DuckDB** (telemetry)
+* **Git‑FS** storage with delta packing
+* Docker + **Kubernetes** (Helm)
+
+### 7.4 **Local & Hybrid AI Model Strategy**
+
+**🎯 Core Model Selection (July 2025)**
+
+We use **7 local model families + 2 cloud APIs** optimized for different scenarios:
+
+**💻 Local Models (Downloaded & Run Locally):**
+
+1. **Qwen3-Coder** (PRIMARY LOCAL) - Default coding assistant
+   - Primary workhorse for code completion, generation, and refactoring
+   - 4 size variants: 4B (ultra-light), 8B (balanced), 14B (premium), 32B (workstation)
+   - Ships with installer, runs offline - 92.9% HumanEval performance
+
+2. **Phi-4-mini** (LOCAL AGENTIC) - Local agentic workflows
+   - 3.8B parameters optimized for function calling and tool use
+   - Primary local model for autonomous coding tasks
+   - Lightweight alternative to cloud agentic APIs
+
+3. **Gemma 3** (LOCAL MULTIMODAL) - Advanced capabilities
+   - 3 variants: 4B, 12B, 27B parameters
+   - 12B variant includes multimodal capabilities for visual tasks
+   - Strong reasoning performance with Google's training
+
+4. **Mistral Devstral Small** (LOCAL CONTEXT) - Extended context
+   - 24B parameters with 256K context windows
+   - Strong on real-world coding benchmarks (87.5% HumanEval)
+   - Apache 2.0 license for commercial use
+
+5. **Llama 3.3-70B** (LOCAL POWER) - Heavy local reasoning
+   - 70B parameters for workstation users with 48GB+ VRAM
+   - Meta's latest coding model with superior reasoning
+   - Alternative to cloud burst for privacy-critical scenarios
+
+6. **Starcoder2-15B** (LOCAL POLYGLOT) - Multi-language specialist
+   - 15B parameters supporting 600+ programming languages
+   - Optimized for polyglot programming and code translation
+   - Excellent for diverse tech stacks
+
+7. **DeepSeek-Coder V2 Lite** (LOCAL EFFICIENT) - Fast inference
+   - 16B parameters with MoE (Mixture of Experts) architecture
+   - Optimized for fast inference with high efficiency
+   - Alternative coding model with competitive performance
+
+**☁️ Cloud APIs (CodeForge Managed):**
+
+8. **Kimi K2** (CLOUD AGENTIC) - Advanced agentic workflows
+   - 1T parameter MoE model (32B active) optimized for tool use
+   - 53.7% LiveCodeBench, 65.8% SWE-bench performance
+   - Cost-effective at $0.60/$2.50 per M tokens
+
+9. **DeepSeek R1** (CLOUD REASONING) - Complex reasoning
+   - 671B parameter model with advanced reasoning capabilities
+   - Full codebase understanding and large refactors
+   - Cloud burst when context >4k tokens or complexity high
+
+**🎯 Summary - Complete Model Matrix:**
+
+| Model | Purpose | Deployment | Size | Why We Chose It |
+|-------|---------|------------|------|-----------------|
+| **Qwen3-Coder** | Primary coding | Local (auto-install) | 4B/8B/14B/32B | Best HumanEval scores, 4 size options |
+| **Phi-4-mini** | Local agentic | Local (optional) | 3.8B | Function calling, lightweight agentic |
+| **Gemma 3** | Multimodal tasks | Local (optional) | 4B/12B/27B | Google's multimodal capabilities |
+| **Mistral Devstral** | Long context | Local (optional) | 24B | 256K context, strong benchmarks |
+| **Llama 3.3-70B** | Heavy reasoning | Local (optional) | 70B | Meta's latest, workstation power |
+| **Starcoder2** | Polyglot coding | Local (optional) | 15B | 600+ languages, code translation |
+| **DeepSeek-Coder V2** | Fast inference | Local (optional) | 16B MoE | Efficient MoE architecture |
+| **Kimi K2** | Cloud agentic | Cloud API | 1T (32B active) | Superior autonomous workflows |
+| **DeepSeek R1** | Cloud reasoning | Cloud API | 671B | Advanced reasoning capabilities |
+
+**🔑 BYO-Key APIs (User Provides Keys):**
+- **OpenAI**: GPT-4.1, o3-mini for premium completions
+- **Anthropic**: Claude 4 Opus/Sonnet for best reasoning  
+- **Google**: Gemini 2.5 Pro with 2M context window
+- **xAI**: Grok 4 for real-time information
+- **Meta**: Llama 4 70B via cloud providers
+- **Custom**: Any OpenAI-compatible API endpoint
+
+**Orchestration Logic**
+
+1. ***Code completion*** → Qwen3-Coder (local, size based on hardware) for suggestions < 60 ms.
+2. ***Local agentic tasks*** → Phi-4-mini (local) for function calling and autonomous workflows.
+3. ***Cloud agentic tasks*** → Kimi K2 (cloud API) for complex multi-step workflows.
+4. ***Complex reasoning*** → DeepSeek R1 (cloud) when context >4k tokens or architectural decisions.
+5. ***Multimodal tasks*** → Gemma 3-12B (local) or cloud APIs for visual/diagram processing.
+6. ***Polyglot programming*** → Starcoder2-15B (local) for 600+ language support.
+7. ***Long context (256K)*** → Mistral Devstral (local) or Gemini 2.5 Pro (cloud).
+8. ***Heavy local reasoning*** → Llama 3.3-70B (local, workstation only) for privacy-critical scenarios.
+9. ***Fast inference*** → DeepSeek-Coder V2 Lite (local) for efficient MoE processing.
+
+---
+
+### 7.4.1 Model Download & Installation Strategy
+
+**📦 What Gets Downloaded and When?**
+
+| Model | When | How | Storage | Use Case |
+|-------|------|-----|---------|----------|
+| **Qwen3-Coder 14B** | During install | Automatic (required) | 7.8 GB | Default coding assistant |
+| **Qwen3-Coder 8B** | On-demand | Settings → Models → Install | 4.5 GB | Lower-spec machines |
+| **Qwen3-Coder 4B** | On-demand | Settings → Models → Install | 2.2 GB | Ultra-light laptops |
+| **Qwen3-Coder 32B** | On-demand | Settings → Models → Install | 18 GB | Workstation performance |
+| **Phi-4-mini** | Auto-install | Bundled with installer | 2.8 GB | Local agentic workflows |
+| **Gemma 3-4B** | On-demand | Settings → Models → Install | 3.2 GB | Lightweight multimodal |
+| **Gemma 3-12B** | On-demand | Settings → Models → Install | 8.1 GB | Advanced multimodal |
+| **Gemma 3-27B** | On-demand | Settings → Models → Install | 16.5 GB | High-end multimodal |
+| **Mistral Devstral Small** | On-demand | Settings → Models → Install | 14.2 GB | Long context (256K) |
+| **Llama 3.3-70B** | On-demand | Settings → Models → Install | 35 GB | Heavy local reasoning |
+| **Starcoder2-15B** | On-demand | Settings → Models → Install | 8.7 GB | Polyglot programming |
+| **DeepSeek-Coder V2 Lite** | On-demand | Settings → Models → Install | 9.6 GB | Fast MoE inference |
+| **Kimi K2** | Never | Cloud API only | 0 GB | Cloud agentic workflows |
+| **DeepSeek R1** | Never | Cloud API only | 0 GB | Complex reasoning |
+
+**🔄 Download Process:**
+- Models fetched from **Hugging Face** using `llama.cpp` compatible GGUF format
+- **Chunked downloads** with resume capability (no restart on connection loss)
+- **SHA-256 verification** ensures model integrity
+- **Background downloads** - keep coding while models fetch
+- **Delta updates** - only download changed layers on model updates
+
+**💾 Typical Storage Requirements:**
+
+| User Profile | Models | Total Disk | GPU VRAM | Use Case |
+|--------------|---------|------------|----------|----------|
+| **Minimal** | Qwen3-4B + Phi-4-mini | 5 GB | 4 GB | Ultra-light setup |
+| **Standard** | Qwen3-14B + Phi-4-mini | 10.6 GB | 8 GB | Default recommended setup |
+| **Power User** | Qwen3-14B + Phi-4-mini + Gemma-12B + Starcoder2 | 27.2 GB | 16 GB | Multi-task capabilities |
+| **Enthusiast** | Qwen3-32B + Multiple variants | 60 GB | 24 GB | High-performance local |
+| **Workstation** | Llama-70B + Full suite | 110+ GB | 48+ GB | Maximum local capabilities |
+| **Corporate** | Qwen3-4B + Cloud APIs | 5 GB | 4 GB | Light local + cloud burst |
+
+**🚀 Model Selection by Hardware:**
+
+| Your GPU | Recommended Setup | Experience |
+|----------|-------------------|------------|
+| **RTX 3060 (12GB)** | Qwen3-14B + Phi-4-mini | Smooth completions + local agentic |
+| **RTX 3090 (24GB)** | Qwen3-14B + Phi-4-mini + Gemma-12B + Starcoder2 | Multi-model capabilities |
+| **RTX 4070 (12GB)** | Qwen3-14B + Phi-4-mini + Mistral Devstral | Balanced performance |
+| **RTX 4090 (24GB)** | Qwen3-32B + Multiple models | High-end local inference |
+| **H100 (80GB)** | Llama-70B + Full suite | Maximum local power |
+| **M2/M3 Mac (16GB)** | Qwen3-8B + Phi-4-mini + Cloud | Optimized for Apple Silicon |
+| **Laptop (8GB)** | Qwen3-4B + Cloud APIs | Ultra-light local assist |
+
+**📊 When Each Model Gets Used:**
+
 ```
-
-**G3D AI Code Capabilities**:
-- **Advanced Code Generation**: Multi-model AI ensemble for superior code generation
-- **GPU-Accelerated Analysis**: Hardware-accelerated code analysis and pattern recognition
-- **Real-time Code Optimization**: AI-powered performance and security optimization
-- **Intelligent Refactoring**: Advanced code restructuring with G3D acceleration
-- **Automated Testing**: AI-generated comprehensive test suites
-- **Smart Documentation**: Context-aware documentation generation
-
-#### **0.3 G3D Development XR Integration** (5 weeks, 3 XR specialists)
-```typescript
-// G3D development XR capabilities:
-src/g3d-dev-xr/
-├── G3DCodeVR.ts                 // 2,800 lines - VR code development environment
-├── G3DCodeAR.ts                 // 2,500 lines - AR code overlay and debugging
-├── G3DHolographicCode.ts        // 2,200 lines - Holographic code projection
-├── G3DCollaborativeDevXR.ts     // 2,500 lines - Multi-user XR development
-├── G3DCodeHaptics.ts            // 2,000 lines - Haptic feedback for coding
-├── G3DArchitectureXR.ts         // 2,300 lines - XR architecture exploration
-└── G3DCodeTraining.ts           // 2,000 lines - XR-based coding education
-```
-
-**G3D Development XR Features**:
-- **Immersive Code Development**: VR/AR coding environments for complex projects
-- **3D Architecture Exploration**: XR-based exploration of software architecture
-- **Collaborative Development**: Multi-user XR pair programming and code review
-- **Haptic Code Feedback**: Tactile feedback for code quality and errors
-- **Architectural Visualization**: 3D exploration of software systems
-- **XR Code Training**: Immersive coding education and onboarding
-
-#### **0.4 G3D Development Performance & Security** (3 weeks, 2 performance engineers)
-```typescript
-// G3D development optimization:
-src/g3d-dev-performance/
-├── G3DCodeGPUOptimizer.ts       // 2,500 lines - GPU-accelerated code processing
-├── G3DCodeMemoryManager.ts      // 2,000 lines - Optimized memory management
-├── G3DCodeSecurity.ts           // 2,200 lines - Advanced security scanning
-├── G3DCodeAudit.ts              // 1,800 lines - Comprehensive audit logging
-├── G3DCodeCache.ts              // 1,600 lines - Intelligent code caching
-└── G3DCodeMonitoring.ts         // 1,500 lines - Real-time performance monitoring
-```
-
-### **Phase 1: Enhanced AI Code Generation Engine** (Months 3-4)
-
-#### **1.1 G3D-Enhanced Code Generation Models** (8 weeks, 6 AI engineers)
-```typescript
-// Enhanced AI models with G3D:
-src/ai/models/
-├── G3DCodeGenerationModel.ts    // 4,500 lines - Advanced code generation
-├── G3DCodeCompletionModel.ts    // 4,000 lines - Intelligent code completion
-├── G3DCodeRefactoringModel.ts   // 3,500 lines - Advanced refactoring AI
-├── G3DCodeOptimizationModel.ts  // 3,200 lines - Performance optimization AI
-├── G3DCodeSecurityModel.ts      // 3,000 lines - Security analysis AI
-├── G3DCodeTestingModel.ts       // 2,800 lines - Test generation AI
-├── G3DCodeDocumentationModel.ts // 2,500 lines - Documentation AI
-├── G3DCodeReviewModel.ts        // 2,200 lines - Automated code review
-└── G3DCodeEnsemble.ts           // 3,000 lines - Multi-model ensemble system
-```
-
-#### **1.2 G3D-Enhanced Development Tools** (6 weeks, 4 frontend developers)
-```typescript
-// Enhanced development tools with G3D:
-src/tools/
-├── G3DCodeEditor.tsx            // 4,000 lines - Advanced code editor with 3D features
-├── G3DProjectExplorer.tsx       // 3,500 lines - 3D project structure visualization
-├── G3DCodeDebugger.tsx          // 3,200 lines - Advanced debugging with visualization
-├── G3DCodeProfiler.tsx          // 2,800 lines - Performance profiling tools
-├── G3DCodeCollaboration.tsx     // 2,500 lines - Real-time collaborative editing
-├── G3DCodeAnalytics.tsx         // 2,200 lines - Advanced code analytics dashboard
-└── G3DCodeTemplates.tsx         // 2,000 lines - Intelligent project templates
-```
-
-### **Phase 2: Enhanced Enterprise Integration** (Months 5-6)
-
-#### **2.1 G3D-Enhanced Enterprise Workflow** (8 weeks, 6 backend developers)
-```typescript
-// Enhanced enterprise workflow with G3D:
-ai-platforms/codeforge/src/
-├── controllers/
-│   ├── G3DProjectController.ts  // 3,000 lines - Enhanced project management
-│   ├── G3DTeamController.ts     // 2,500 lines - Advanced team management
-│   ├── G3DWorkflowController.ts // 2,800 lines - Enhanced workflow automation
-│   ├── G3DSecurityController.ts // 2,200 lines - Advanced security management
-│   └── G3DAnalyticsController.ts // 2,000 lines - Enhanced analytics
-├── services/
-│   ├── G3DCodeService.ts        // 4,000 lines - Advanced code processing
-│   ├── G3DCollaborationService.ts // 3,500 lines - Enhanced collaboration
-│   ├── G3DSecurityService.ts    // 3,200 lines - Advanced security scanning
-│   ├── G3DAnalyticsService.ts   // 2,800 lines - Enhanced analytics
-│   └── G3DIntegrationService.ts // 2,500 lines - Enterprise integrations
-└── integrations/
-    ├── G3DGitHubIntegration.ts  // 3,500 lines - Enhanced GitHub integration
-    ├── G3DJiraIntegration.ts    // 3,200 lines - Advanced Jira integration
-    ├── G3DSlackIntegration.ts   // 2,800 lines - Enhanced Slack integration
-    ├── G3DJenkinsIntegration.ts // 2,500 lines - Advanced CI/CD integration
-    └── G3DAzureDevOpsIntegration.ts // 2,200 lines - Enhanced Azure DevOps
-```
-
-### **Phase 3: Enterprise Features & Security** (Months 7-9)
-
-#### **3.1 G3D-Enhanced Security & Compliance** (8 weeks, 4 security engineers)
-```typescript
-// Enhanced security with G3D:
-src/security/
-├── G3DCodeSecurity.ts           // 3,500 lines - Advanced code security scanning
-├── G3DComplianceManager.ts      // 3,000 lines - Compliance management
-├── G3DAccessControl.ts          // 2,500 lines - Enhanced access control
-├── G3DAuditLogging.ts           // 2,200 lines - Comprehensive audit logging
-├── G3DSecurityAnalytics.ts      // 2,000 lines - Security analytics
-├── G3DVulnerabilityScanning.ts  // 1,800 lines - Automated vulnerability scanning
-├── G3DSecurityTraining.ts       // 1,500 lines - Security training modules
-└── G3DIncidentResponse.ts       // 1,800 lines - Security incident response
+Input → Task Classification → Model Selection
+├─ Code completion → Qwen3-Coder (local, size based on hardware)
+├─ Local agentic task → Phi-4-mini (local function calling)
+├─ Cloud agentic task → Kimi K2 (cloud API)
+├─ Complex reasoning → DeepSeek R1 (cloud, >4K tokens)
+├─ Multimodal task → Gemma 3-12B (local) or cloud APIs
+├─ Polyglot programming → Starcoder2-15B (local)
+├─ Long context (256K) → Mistral Devstral (local) or Gemini 2.5 Pro (cloud)
+├─ Heavy reasoning (privacy) → Llama 3.3-70B (local, workstation)
+└─ Fast MoE inference → DeepSeek-Coder V2 Lite (local)
 ```
 
 ---
 
-## Enhanced Technical Architecture
+## 7.5 | Instrumentation & Experimentation
 
-### **Frontend Stack** (G3D-Enhanced):
-- **Framework**: React 18 with TypeScript
-- **Code Visualization**: **G3D Native Code Rendering** with 3D architecture visualization
-- **Code Editor**: **G3D-Enhanced Monaco Editor** with advanced features
-- **UI Components**: G3D Glassmorphism Development UI Library
-- **State Management**: Redux Toolkit with G3D development optimization
-- **Real-time**: WebRTC + **G3D XR Collaboration** for collaborative development
-- **Performance**: G3D hardware acceleration and development workflow optimization
-
-### **Backend Stack** (G3D-Enhanced):
-- **Runtime**: Node.js with Express.js + Python FastAPI for AI
-- **AI/ML**: **G3D Development AI Systems** + specialized code generation models
-- **GPU Compute**: **G3D Code Processing GPU Compute Shaders**
-- **Code Analysis**: **G3D Advanced Code Analysis Libraries**
-- **Database**: PostgreSQL for metadata, MongoDB for code artifacts
-- **Code Storage**: Git-based storage with **G3D optimization**
-- **Message Queue**: Redis for code processing workflows
-- **Container**: Docker with Kubernetes for auto-scaling
-
-### **G3D Development Integration Infrastructure**:
-- **Code Rendering**: G3D WebGL/WebGPU renderer optimized for code visualization
-- **AI/ML**: G3D ModelRunner with code generation optimization and GPU acceleration
-- **3D Code Processing**: G3D advanced geometry libraries for code structure visualization
-- **XR Development**: G3D VR/AR support for immersive development environments
-- **Performance**: G3D optimization engine with development workflow tuning
-- **Security**: G3D-enhanced security scanning and compliance monitoring
-
-### **Enhanced Development Infrastructure**:
-- **Code Generation**: Multi-model AI ensemble with G3D acceleration
-- **Security Scanning**: Real-time vulnerability detection with G3D analytics
-- **Performance Optimization**: AI-powered code optimization with G3D acceleration
-- **Collaboration**: Advanced multi-user development with G3D XR support
-- **Analytics**: Comprehensive development analytics with G3D visualization
+* **Event Schema** — PageView, SuggestionAccepted, CloudBurst, VizFrameRate.  
+* **Privacy** — Events anonymised w/ differential privacy; opt‑out toggle.  
+* **A/B Harness** — Flag‑based rollouts (e.g., new prompt strategy) via OpenFeature SDK.  
+* **North‑Star Metric** — "Time‑to‑Merge" from first code edit to PR merge.
 
 ---
 
-## Enhanced Business Model
+## 7.6 | Model Evaluation
 
-### **Enhanced Pricing Strategy** (with G3D advantages):
+| Benchmark | Metric | Target | Cadence |
+|-----------|--------|--------|---------|
+| **HumanEval+ 164** | pass@1 | ≥ 80 % local / ≥ 90 % cloud | Nightly |
+| **SWE‑bench** | solved % | ≥ 35 % cloud | Weekly |
+| **CS‑Eval (CompSci Q‑A)** | accuracy | ≥ 75 % local | Monthly |
 
-#### **Developer Plan - $39/month per user** (increased value)
-- G3D-accelerated AI code generation (10,000 requests/month)
-- Advanced 3D code visualization
-- Basic collaboration features
-- Standard integrations (GitHub, GitLab)
-- Email support + G3D performance optimization
-
-#### **Team Plan - $99/month per user** (premium features)
-- Unlimited G3D AI code generation
-- Full G3D 3D visualization and XR capabilities
-- Advanced collaboration with G3D features
-- Enterprise integrations with G3D optimization
-- Security scanning and compliance
-- Priority support
-
-#### **Enterprise Plan - $299/month per user** (enterprise-grade)
-- Complete G3D AI suite + custom model training
-- Full G3D 3D and XR development capabilities
-- Advanced security and compliance features
-- On-premise deployment with G3D optimization
-- Advanced analytics + G3D visualization
-- Dedicated customer success manager
-- Custom integrations
-
-#### **G3D Enterprise - Starting $100,000/year** (next-generation)
-- Custom G3D AI model development for specific domains
-- Full G3D integration and development workflow optimization
-- Advanced XR and immersive development capabilities
-- Professional services and training
-- SLA guarantees with G3D performance optimization (99.99% uptime)
-- Custom development and consulting services
-
-### **Enhanced Revenue Projections**:
-
-**Year 1** (with G3D advantages):
-- Month 9: 500 developers, $150K MRR
-- Month 12: 2,000 developers, $600K MRR
-- Total Year 1: $4M ARR
-
-**Year 2**:
-- 8,000 developers across all tiers
-- 100 enterprise customers
-- G3D competitive advantages driving premium pricing
-- Total Year 2: $20M ARR
-
-**Year 3**:
-- 20,000+ developers
-- 300+ enterprise customers
-- International expansion with G3D technology leadership
-- **Total Year 3: $120M ARR** (enhanced with G3D capabilities)
+Open‑source leaderboard scripts will run inside GitHub Actions, posting badged results to README.
 
 ---
 
-## Enhanced Success Metrics
+## 7.7 | Compliance Matrix
 
-### **G3D-Enhanced Development KPIs**:
-- **Code Generation Speed**: **10x faster** development with G3D AI assistance
-- **Code Quality**: **95%+ accuracy** in generated code (enhanced with G3D AI)
-- **3D Visualization Performance**: **Real-time** rendering of large codebases
-- **Developer Satisfaction**: **4.9/5 satisfaction score** (enhanced UX with G3D)
-- **Development Efficiency**: **60% reduction** in development time
-- **Code Review Speed**: **80% faster** code reviews with G3D visualization
-
-### **Enhanced Business KPIs**:
-- **Customer Acquisition Cost (CAC)**: <$500 per developer (efficient acquisition)
-- **Customer Lifetime Value (LTV)**: >$15,000 (enhanced value proposition)
-- **LTV/CAC Ratio**: >30:1 (superior economics with G3D advantages)
-- **Monthly Churn Rate**: <2% (superior product stickiness)
-- **Net Revenue Retention**: >150% (G3D competitive advantages)
-- **Gross Margin**: >92% (G3D efficiency gains)
-
-### **G3D Technical KPIs**:
-- **System Uptime**: 99.99% availability (G3D reliability)
-- **Code Generation Performance**: **<2 seconds** for complex code generation
-- **AI Model Accuracy**: **98%+ accuracy** in code suggestions
-- **3D Visualization Speed**: **<1 second** for large codebase visualization
-- **Memory Efficiency**: **85% reduction** in memory usage with G3D optimization
-- **GPU Utilization**: **95%+ efficiency** across all operations
-
-### **Enhanced Development KPIs**:
-- **Integration Success**: **<1 day** average integration time
-- **Security Scan Speed**: **<30 seconds** for comprehensive security analysis
-- **Collaboration Efficiency**: **70% improvement** in team productivity
-- **Code Optimization**: **40% performance improvement** in generated code
-- **XR Development Adoption**: **25%+ developers** using XR features
+| Domain | Requirement | Design Measure |
+|--------|-------------|----------------|
+| **EU AI Act** | Risk management, transparency | Model cards + audit log export |
+| **SOC 2 Type II** | Security, Availability | Change‑control + disaster‑recovery runbooks |
+| **FedRAMP Low** | Gov pilot | AWS GovCloud template, FIPS TLS |
 
 ---
 
-## Enhanced Implementation Timeline
+## 7.8 | Threat Model Highlights
 
-### **Month 1-2: G3D Development Integration Foundation** 🚀
-- G3D code visualization engine implementation
-- G3D AI code generation systems integration
-- G3D development XR capabilities development
-- G3D development performance and security optimization
-- Team training on G3D development technologies
+| Category | Example Threat | Mitigation |
+|----------|----------------|------------|
+| **Spoofing** | Malicious plug‑in masquerades | Signed marketplace, key pinning |
+| **Tampering** | Model weight injection | SHA‑256 integrity + secure boot |
+| **Repudiation** | Dev denies code change | Immutable ghost‑branch history |
+| **Information Disclosure** | Cloud logging leak | Per‑tenant KMS keys |
+| **DoS** | Prompt bombs | Rate & token‑limiters per org |
+| **Elevation** | Priv‑escalation in agent shell | Seccomp jailed subprocess |
 
-### **Month 3-4: Enhanced Core Development**
-- G3D-enhanced AI code generation models
-- Advanced development tools with G3D features
-- Enhanced code visualization with G3D rendering
-- Alpha testing with G3D development features
+---
 
-### **Month 5-6: Advanced Enterprise Integration**
-- G3D-enhanced enterprise workflow system
-- Advanced collaboration features with G3D XR
-- GPU-accelerated code processing pipelines
-- Beta testing with enterprise customers
+## 7.9 | Open‑Source Strategy
 
-### **Month 7-9: Enterprise & Security Launch**
-- G3D-enhanced security and compliance implementation
-- Enterprise integrations with G3D optimization
-- Advanced analytics with G3D visualization
-- Market launch with G3D competitive advantages
+* **Core Closed‑Source Modules** — Swarm orchestrator, 3‑D renderer shaders.  
+* **Apache‑2.0 SDK** — Plug‑in API, model mesh adapters.  
+* **Dual‑Licensing** — GPL fusion detection via FOSSology; SPDX manifests auto‑generated.
 
-### **Month 10-12: Scale & Market Leadership**
-- Customer acquisition leveraging G3D development superiority
-- Advanced feature development with G3D capabilities
-- International market expansion
-- Strategic partnerships emphasizing G3D technology
+---
 
-**This comprehensive G3D-enhanced MVP transforms CodeForge from a standard code generation platform into a next-generation, AI-powered, GPU-accelerated development platform capable of generating $40-120M annually with significant competitive advantages through full G3D integration and advanced development visualization capabilities.**
+## 7.10 | Marketplace Governance
+
+1. **Submission Review** — Static scan, signature, automated tests (≤ 2 h SLA).  
+2. **Revenue Split** — 80 % creator / 20 % CodeForge; payouts via Stripe Connect.  
+3. **Takedown Process** — 24‑hour security/DMCA response window.  
+4. **Quality Ranking** — TrustScore combines install volume + crash telemetry.
+
+---
+
+## 7.11 | Performance & Scalability Targets
+
+* **Local Memory Footprint** ≤ 1.2× repo size.  
+* **Cloud Inference TPS** — 20 req/s per A100 with batching.  
+* **Horizontal Scale** — K8s HPA on GPU utilisation > 60 %.  
+* **SLOs** — 99.5 % ≤ 500 ms P90 /suggest API.
+
+---
+
+## 7.12 | Accessibility / Internationalisation
+
+* 3‑D colour palettes WCAG AA contrast.  
+* Screen‑reader‑friendly diff views (ARIA live regions).  
+* Prompt packs localised (EN, ZH, ES, PT, HI) using ICU message format.
+
+---
+
+## 7.13 | Developer Environment
+
+* **One‑Command Dev** — `make dev` spins Docker compose (Postgres, Minio, Superset).  
+* **Git Hooks** — Pre‑commit Black & ESLint; pre‑push model eval smoke.  
+* **Seed Scripts** — Demo repo + synthetic bug tickets for sandbox demos.
+
+---
+
+## 7.5 | Dynamic Context Persistence System 🆕
+
+**🎯 Goal:** Persistent, real-time code context so local LLMs never "forget" the project.
+
+### Memory Foundation (Phase 1.6)
+
+| Component | Purpose | Performance Target |
+|-----------|---------|-------------------|
+| **FileWatcher.ts** | Cross-platform FS watchers with debounced events | < 10ms event processing |
+| **ASTIndexer.ts** | Incremental Tree-sitter diff parser → symbol & embedding queue | < 200ms incremental updates |
+| **VectorDB.ts** | Local Qdrant/Faiss wrapper for K-NN search | < 50ms vector retrieval |
+| **SemanticStore.ts** | Multi-tier store (hot in-mem, warm SQLite, cold Parquet) | < 100ms semantic queries |
+
+### Context Engine GA (Phase 2.0)
+
+| Component | Purpose | Integration |
+|-----------|---------|-------------|
+| **ContextPlanner.ts** | Classify IDE/CLI events → intent labels | Hooks into editor events |
+| **Retriever.ts** | Hybrid relevance ranker (BM25 + cosine + recency) | Assembles context for LLM calls |
+| **PromptAssembler.ts** | Builds final prompt with compression & safety margin | Injects into model requests |
+| **MemoryPanel.tsx** | Shows "live context" chunks, tokens, pin/unpin UI | Real-time context visualization |
+| **MemorySettings.tsx** | Disk quota, expiry, privacy toggles | User control over memory system |
+
+### Memory Feedback Loop (Phase 3)
+
+**RelevanceLearner.ts** - Online learning from user feedback:
+- 👍/👎 buttons update chunk relevance scores
+- Merge success metrics improve context selection
+- Multi-armed bandit optimization of ranking weights
+
+### Performance Specifications
+
+| Metric | Target | Measurement |
+|--------|--------|-------------|
+| **Context Retrieval Latency** | ≤ 50ms p95 | Planner + Retriever + Assembler pipeline |
+| **Extra RAM Footprint** | ≤ 300MB | At 100k LOC indexed with hot cache |
+| **Disk Overhead** | ≤ 1% | Cold + warm tiers vs raw repo size |
+| **Context Hit Rate** | ≥ 70% | Relevant context chunks retrieved |
+| **LLM Suggestion Validity** | +15pp | Improvement vs baseline without context |
+
+### Key Innovation Benefits
+
+1. **Never Loses Context** - Local LLMs maintain project awareness across sessions
+2. **Intelligent Relevance** - ML-powered ranking learns from developer feedback  
+3. **Privacy-First** - All context processing happens locally
+4. **Real-Time Updates** - Sub-250ms incremental indexing on file saves
+5. **Multi-Tier Storage** - Hot/warm/cold optimization for large codebases
+
+---
+
+## 8 | Strategic Model‑Vendor Integration Plan
+
+> Goal: deliver "best‑available" intelligence on Day 1 while protecting CodeForge from single‑vendor lock‑in or sudden price spikes.
+
+### 1. Multi‑Vendor Abstraction ("Model Mesh")
+
+| Adapter | Primary Strength | Typical Use‑Case | Current SLA* |
+|---------|------------------|------------------|--------------|
+| **OpenAI (GPT‑4.1/o3)** | Highest raw accuracy & advanced reasoning | Complex refactors, doc generation | 99.9 % / 40 k TPM |
+| **Anthropic Claude 4 Sonnet/Haiku** | Very long context (200 k) & safety, thinking variants | Large repo Q&A, policy checks | 99.9 % / 40 k TPM |
+| **Google Gemini 2.5 Pro** | Multimodal + 1M context + inline execution | Architecture sketches, UML auto‑draw | 99.95 % / 60 k TPM |
+| **xAI Grok 4** | Fast reasoning, 256k context, OS‑friendly terms | Exploratory brainstorming, bug hunts | 99.8 % / 30 k TPM |
+| **DeepSeek R1 671B (self‑host)** | SOTA open code model with reasoning | Privacy‑critical cloud burst | N/A (self‑ops) |
+
+\*SLAs based on vendor documentation July 2025.
+
+An internal **LLM Router** ranks adapters by *Cost × Latency × Quality* for each request class ("completion", "analysis", "vision", etc.), with user/org policy overrides.
+
+### 2. BYO‑Key & Bring‑Your‑Own‑Model
+
+* **Pro & Enterprise users** can plug their own OpenAI / Claude / Gemini keys.  
+* **On‑Prem option** allows customers to swap in a private or fine‑tuned model behind our gRPC shim (e.g., IBM‑Watson‑Code, local Qwen‑72B).
+
+#### 8.2.1 Commercial Guard‑Rails for BYO & On‑Prem
+
+| Lever | What it does | Revenue / Margin Impact |
+|-------|--------------|-------------------------|
+| **Token ceilings** | Dev/Team tiers include daily cloud tokens; overages trigger pay‑as‑you‑go blocks or BYO prompt. | Protects gross margin on high‑usage accounts |
+| **Smart‑Router+ analytics add‑on** | \$10‑20/seat for cost‑optimisation dashboards, cache hit‑rates, vendor SLA alerts. | New ARR line, upsell path |
+| **Premium swarm personas** | Security‑Sweep & SBOM signer run only on CodeForge‑hardened models. | Ensures some paid tokens even for BYO orgs |
+| **Runtime licence for on‑prem GPUs** | \$5 k/GPU/year for DeepSeek R1‑671B container key. | Captures value from self‑hosted clusters |
+| **Support SLAs** | 9×5 email (included), 24×7 pager (Enterprise Plus). | Service revenue & enterprise confidence |
+
+These guard‑rails let us embrace BYO without capping upside, while keeping COGS predictable.
+
+### 3. Negotiation & Partnership Tracks
+
+| Vendor | Current Status | Q3‑2025 Objectives |
+|--------|----------------|--------------------|
+| **OpenAI** | Tier‑1 Build Partner; 3 M free tokens/mo | Secure *pilot‑partner* pricing; GPT-4.1/o3 optimization |
+| **Anthropic** | Dev‑Program seat | Access Claude 4 Sonnet/Opus fine‑tune, volume discount >= 100 M tokens/month |
+| **Google** | Cloud credits via AI Startup Program | Gemini 2.5 Pro integration for advanced reasoning tier |
+| **xAI** | In discussion | GPU co‑location deal for Grok‑Edge inferencing |
+| **AWS Bedrock** | On‑hold | Evaluate when CodeWhisperer‑Next public |
+
+### 4. Data Governance & Compliance
+
+* **No vendor retains customer code** → `X-Data-Policy: opt-out-training` header where supported.  
+* **Double‑encryption in transit** — mTLS to vendor endpoint plus payload encryption for highly‑regulated clients.  
+* **Regional routing** — EU traffic pinned to EU model endpoints (GDPR / EU‑AI‑Act).  
+
+### 5. Cost & Fail‑over Logic
+
+1. **Primary** route to cheapest model meeting *Quality ≥ Target* (e.g., Claude Haiku for large‑context doc chat).  
+2. **Fallback A** — next provider in ranking if latency > 1 s or HTTP 5xx.  
+3. **Fallback B** — self‑hosted DeepSeek R1 (auto‑scale GPU pods) when external vendors down.  
+4. **Budget Guardrails** — org‑level token ceilings + Slack‑alert when 80 % reached.
+
+### 6. API Surface (Developer Facing)
+
+```yaml
+POST /forge/ai/invoke
+{
+  "task": "code.review",
+  "modelPref": ["local", "openai:gpt-4.1", "anthropic:claude-4-sonnet"],
+  "temperature": 0.2,
+  "sourceFiles": ["*.ts", "!tests/**"]
+}
+```
+
+*Router returns `modelUsed` and `costUSD` for transparency.*
+
+---
+
+## 9 | Business Model & Pricing
+
+| Plan               | Price           | Target        | Key Limits                     |
+| ------------------ | --------------- | ------------- | ------------------------------ |
+| **Developer**      | \$39/mo         | Indies        | 15 k cloud tokens/day          |
+| **Team**           | \$99/mo         | 3‑50 dev orgs | Unlimited cloud; XR collab     |
+| **Enterprise**     | \$299/mo        | 50‑5 000 devs | Private VPC, audit, SSO        |
+| **G3D Enterprise** | from \$100 k/yr | Fortune‑500   | On‑prem cluster, custom models |
+
+Marketplace revenue split 80/20 (creator/CodeForge).
+
+---
+
+## 10 | KPIs
+
+### Core Performance Metrics
+* **< 60 ms** local inference latency (95p)
+* **< 2 s** cloud task latency (95p)
+* **95 %+** HumanEval pass@1 on cloud tier
+* **92.9 %+** HumanEval pass@1 on local Qwen3-Coder
+
+### Context & Memory Performance 🆕
+* **≤ 50 ms** context retrieval latency (95p)
+* **≤ 300 MB** extra RAM footprint (100k LOC)
+* **≤ 1 %** disk overhead vs repo size
+* **≥ 70 %** context hit rate
+* **+15 pp** LLM suggestion validity improvement
+
+### Business Metrics
+* **4.9 / 5** developer NPS
+* **< 2 %** monthly churn
+* **> 92 %** gross margin
+* **99.99 %** uptime
+
+---
+
+## 11 | Risks & Mitigations
+
+| Risk               | Impact | Mitigation                                            |
+| ------------------ | ------ | ----------------------------------------------------- |
+| Model supply drift | Medium | Maintain model mesh; hot‑swap OSS weights             |
+| GPU cost spikes    | High   | Local‑first default; MoE sparsity; batch distillation |
+| Data breach        | High   | Client‑side encryption; zero‑telemetry mode           |
+| UX complexity      | Medium | Progressive‑reveal UI; user studies & A/B tests       |
+| OSS licence clash  | Low    | Vet third‑party models; SPDX tracking                 |
+
+---
+
+## 12 | Next Steps
+
+### Immediate Actions (Phase 1 Completion)
+1. **Complete Model Infrastructure** - Finish Phase 1.5 model download system for 7 local models.
+2. **Implement Context Engine** - Deploy Phase 1.6 Dynamic Context Persistence (4 core services).
+3. **Model Integration Testing** - Benchmark all 7 local models + 2 cloud APIs on target hardware.
+4. **Storage Optimization** - Implement intelligent model management for 110GB+ downloads.
+
+### Foundation Setup (Phases 1.6-2.0)
+5. **Context System GA** - Deploy Phase 2.0 Context Engine with MemoryPanel and MemorySettings.
+6. **Performance Validation** - Achieve ≤50ms context retrieval and ≤300MB RAM targets.
+7. **Model Router Optimization** - Fine-tune intelligent routing across 9 model endpoints.
+
+### Strategic Initiatives 
+8. **Design Partner Program** - Secure 2 Fortune-500 enterprise pilots for context system.
+9. **UX Research** - Run workshops for 3D visual metaphors & 7-model selection UX.
+10. **Marketplace Foundation** - Establish plugin SDK and early extension author program.
+
+---
+
+*Prepared by Product Strategy – CodeForge, July 2025*

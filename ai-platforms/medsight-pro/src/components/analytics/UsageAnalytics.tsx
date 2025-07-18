@@ -17,7 +17,9 @@ export default function UsageAnalytics({ className = '' }: UsageAnalyticsProps) 
       change: '+12%',
       trend: 'up',
       icon: Users,
-      color: 'text-medsight-primary'
+      color: 'text-primary',
+      bgColor: 'bg-primary/10',
+      borderColor: 'border-primary/20'
     },
     {
       metric: 'Avg Session Duration',
@@ -25,7 +27,9 @@ export default function UsageAnalytics({ className = '' }: UsageAnalyticsProps) 
       change: '+8%',
       trend: 'up',
       icon: Clock,
-      color: 'text-medsight-secondary'
+      color: 'text-success',
+      bgColor: 'bg-success/10',
+      borderColor: 'border-success/20'
     },
     {
       metric: 'Page Views',
@@ -33,7 +37,9 @@ export default function UsageAnalytics({ className = '' }: UsageAnalyticsProps) 
       change: '+15%',
       trend: 'up',
       icon: Eye,
-      color: 'text-medsight-ai-high'
+      color: 'text-warning',
+      bgColor: 'bg-warning/10',
+      borderColor: 'border-warning/20'
     },
     {
       metric: 'Feature Engagement',
@@ -41,7 +47,9 @@ export default function UsageAnalytics({ className = '' }: UsageAnalyticsProps) 
       change: '+5%',
       trend: 'up',
       icon: Activity,
-      color: 'text-medsight-pending'
+      color: 'text-danger',
+      bgColor: 'bg-danger/10',
+      borderColor: 'border-danger/20'
     }
   ];
 

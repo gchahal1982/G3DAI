@@ -143,53 +143,65 @@ export default function MedicalAnalytics({ className = '' }: MedicalAnalyticsPro
   };
 
   return (
-    <div className={`medsight-glass rounded-xl p-6 border border-medsight-primary/20 ${className}`}>
+    <div className={`glass-card rounded-xl p-6 border border-primary/20 ${className}`}>
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center space-x-3">
-          <div className="medsight-ai-glass p-2 rounded-lg">
-            <Activity className="w-5 h-5 text-medsight-primary" />
+          <div className="bg-primary/10 p-3 rounded-lg border border-primary/20">
+            <Activity className="w-6 h-6 text-primary" />
           </div>
           <div>
-            <h3 className="text-lg font-semibold text-medsight-primary">Medical Analytics</h3>
-            <p className="text-sm text-slate-600">Clinical data insights and outcomes</p>
+            <h3 className="text-lg font-semibold text-gray-800">Medical Analytics</h3>
+            <p className="text-sm text-gray-600">Clinical data insights and outcomes</p>
           </div>
         </div>
-        <div className="flex items-center space-x-2">
-          <div className="w-2 h-2 bg-medsight-ai-high rounded-full animate-pulse"></div>
-          <span className="text-sm text-medsight-ai-high font-medium">Live Data</span>
+        <div className="flex items-center space-x-2 bg-success/10 px-3 py-1 rounded-full border border-success/20">
+          <div className="w-2 h-2 bg-success rounded-full animate-pulse"></div>
+          <span className="text-sm text-success font-medium">Live Data</span>
         </div>
       </div>
 
       {/* Medical Metrics */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        {medicalMetrics.map((metric, index) => (
-          <div key={index} className="medsight-control-glass rounded-lg p-4">
-            <div className="flex items-center justify-between mb-2">
-              <metric.icon className={`w-4 h-4 ${metric.color}`} />
-              <span className={`text-xs ${metric.trend === 'up' ? 'text-medsight-secondary' : 'text-medsight-secondary'}`}>
-                {metric.change}
-              </span>
+        {medicalMetrics.map((metric, index) => {
+          const colors = [
+            'bg-success/10 border-success/20',
+            'bg-primary/10 border-primary/20', 
+            'bg-warning/10 border-warning/20',
+            'bg-danger/10 border-danger/20'
+          ];
+          const iconColors = ['text-success', 'text-primary', 'text-warning', 'text-danger'];
+          
+          return (
+            <div key={index} className={`glass-card-secondary rounded-lg p-4 border ${colors[index % 4]}`}>
+              <div className="flex items-center justify-between mb-2">
+                <div className={`p-2 rounded-lg bg-white/50`}>
+                  <metric.icon className={`w-5 h-5 ${iconColors[index % 4]}`} />
+                </div>
+                <span className={`text-xs font-medium ${metric.trend === 'up' ? 'text-success' : 'text-danger'}`}>
+                  {metric.change}
+                </span>
+              </div>
+              <div className="flex items-center space-x-2 mb-1">
+                <p className={`text-lg font-bold ${iconColors[index % 4]}`}>{metric.value}</p>
+                {getTrendIcon(metric.trend)}
+              </div>
+              <p className="text-xs text-gray-700 mb-1 font-medium">{metric.category}</p>
+              <p className="text-xs text-gray-600">Target: {metric.target}</p>
             </div>
-            <div className="flex items-center space-x-2 mb-1">
-              <p className={`text-lg font-bold ${metric.color}`}>{metric.value}</p>
-              {getTrendIcon(metric.trend)}
-            </div>
-            <p className="text-xs text-slate-600 mb-1">{metric.category}</p>
-            <p className="text-xs text-slate-500">Target: {metric.target}</p>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       {/* Medical Specialties */}
       <div className="mb-6">
-        <h4 className="text-sm font-medium text-slate-700 mb-3">Performance by Medical Specialty</h4>
-        <div className="medsight-control-glass rounded-lg p-4">
+        <h4 className="text-sm font-medium text-gray-800 mb-3">Performance by Medical Specialty</h4>
+        <div className="glass-card-secondary rounded-lg p-4 border border-primary/10">
           <div className="space-y-4">
             {medicalSpecialties.map((specialty, index) => (
-              <div key={index} className="flex items-center justify-between">
+              <div key={index} className="flex items-center justify-between p-3 rounded-lg bg-white/30 border border-white/20">
                 <div className="flex items-center space-x-3">
-                  <div className={`w-3 h-3 rounded-full ${specialty.color}`}></div>
-                  <span className="text-sm font-medium text-slate-800">{specialty.specialty}</span>
+                  <div className={`w-4 h-4 rounded-full ${specialty.color} shadow-sm`}></div>
+                  <span className="text-sm font-semibold text-gray-800">{specialty.specialty}</span>
                 </div>
                 <div className="flex items-center space-x-6">
                   <div className="text-center">

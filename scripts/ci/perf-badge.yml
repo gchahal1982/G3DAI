@@ -1,0 +1,672 @@
+# CodeForge Performance Badge CI
+# Automated performance validation and badge generation system
+# Integrates with GitHub Actions for continuous performance monitoring
+
+name: Performance Validation & Badge Generation
+
+on:
+  push:
+    branches: [main, develop, release/*]
+  pull_request:
+    branches: [main, develop]
+  schedule:
+    # Run performance tests daily at 2 AM UTC
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+    inputs:
+      test_type:
+        description: 'Type of performance test to run'
+        required: true
+        default: 'all'
+        type: choice
+        options:
+          - all
+          - latency
+          - throughput
+          - memory
+          - 3d_rendering
+      benchmark_repo:
+        description: 'Repository to benchmark against'
+        required: false
+        default: 'codeforge/demo-repo'
+        type: string
+
+env:
+  PERFORMANCE_THRESHOLDS_FILE: '.github/performance-thresholds.json'
+  BENCHMARK_DATA_DIR: '.github/benchmark-data'
+  SHIELDS_IO_ENDPOINT: 'https://img.shields.io/endpoint'
+  
+jobs:
+  setup-environment:
+    name: Setup Performance Testing Environment
+    runs-on: ubuntu-latest
+    outputs:
+      test-matrix: ${{ steps.generate-matrix.outputs.matrix }}
+      baseline-commit: ${{ steps.baseline.outputs.commit }}
+      benchmark-repo: ${{ steps.config.outputs.benchmark-repo }}
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 100  # Get enough history for baseline comparison
+          
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.11.0'
+          cache: 'npm'
+          
+      - name: Install dependencies
+        run: |
+          npm ci
+          npm install -g @playwright/test
+          
+      - name: Generate test matrix
+        id: generate-matrix
+        run: |
+          # Generate dynamic test matrix based on input or default
+          if [ "${{ github.event.inputs.test_type }}" = "all" ] || [ -z "${{ github.event.inputs.test_type }}" ]; then
+            matrix='{"include":[
+              {"test":"latency","platform":"ubuntu-latest","node":"20.11.0"},
+              {"test":"latency","platform":"windows-latest","node":"20.11.0"},
+              {"test":"latency","platform":"macos-latest","node":"20.11.0"},
+              {"test":"throughput","platform":"ubuntu-latest","node":"20.11.0"},
+              {"test":"memory","platform":"ubuntu-latest","node":"20.11.0"},
+              {"test":"3d_rendering","platform":"ubuntu-latest","node":"20.11.0"}
+            ]}'
+          else
+            matrix='{"include":[
+              {"test":"${{ github.event.inputs.test_type }}","platform":"ubuntu-latest","node":"20.11.0"}
+            ]}'
+          fi
+          echo "matrix=$matrix" >> $GITHUB_OUTPUT
+          
+      - name: Determine baseline commit
+        id: baseline
+        run: |
+          # Find the baseline commit for comparison
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            baseline="${{ github.event.pull_request.base.sha }}"
+          else
+            # Use the previous successful performance test commit
+            baseline=$(git log --format="%H" --grep="ci: performance tests passed" -n 1 HEAD~1)
+            if [ -z "$baseline" ]; then
+              baseline=$(git rev-parse HEAD~10)  # Fallback to 10 commits ago
+            fi
+          fi
+          echo "commit=$baseline" >> $GITHUB_OUTPUT
+          echo "Using baseline commit: $baseline"
+          
+      - name: Configure benchmark repository
+        id: config
+        run: |
+          benchmark_repo="${{ github.event.inputs.benchmark_repo }}"
+          if [ -z "$benchmark_repo" ]; then
+            benchmark_repo="codeforge/demo-repo"
+          fi
+          echo "benchmark-repo=$benchmark_repo" >> $GITHUB_OUTPUT
+
+  performance-tests:
+    name: Run Performance Tests - ${{ matrix.test }} on ${{ matrix.platform }}
+    runs-on: ${{ matrix.platform }}
+    needs: setup-environment
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.setup-environment.outputs.test-matrix) }}
+      
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: 'npm'
+          
+      - name: Install dependencies
+        run: |
+          npm ci
+          npm run build
+          
+      - name: Setup benchmark repository
+        run: |
+          cd /tmp
+          git clone https://github.com/${{ needs.setup-environment.outputs.benchmark-repo }}.git benchmark-repo
+          cd benchmark-repo
+          # Ensure consistent test conditions
+          git checkout main
+          npm install || echo "No package.json found"
+          
+      - name: Install platform-specific dependencies
+        run: |
+          if [ "${{ matrix.platform }}" = "ubuntu-latest" ]; then
+            sudo apt-get update
+            sudo apt-get install -y libnss3-dev libatk-bridge2.0-dev libxss1 libasound2
+            # Install GPU simulation tools for 3D rendering tests
+            if [ "${{ matrix.test }}" = "3d_rendering" ]; then
+              sudo apt-get install -y xvfb mesa-utils
+            fi
+          fi
+        shell: bash
+        
+      - name: Run Latency Tests
+        if: matrix.test == 'latency'
+        run: |
+          echo "Running latency performance tests..."
+          
+          # Create test results directory
+          mkdir -p test-results/latency
+          
+          # Test 1: Keystroke to completion latency
+          npm run test:performance:latency:keystroke 2>&1 | tee test-results/latency/keystroke.log
+          
+          # Test 2: First token latency
+          npm run test:performance:latency:first-token 2>&1 | tee test-results/latency/first-token.log
+          
+          # Test 3: Context retrieval latency
+          npm run test:performance:latency:context 2>&1 | tee test-results/latency/context.log
+          
+          # Test 4: Model inference latency
+          npm run test:performance:latency:inference 2>&1 | tee test-results/latency/inference.log
+          
+          # Generate latency summary
+          node scripts/ci/generate-latency-report.js test-results/latency > test-results/latency-summary.json
+          
+      - name: Run Throughput Tests
+        if: matrix.test == 'throughput'
+        run: |
+          echo "Running throughput performance tests..."
+          
+          mkdir -p test-results/throughput
+          
+          # Test concurrent completions
+          npm run test:performance:throughput:concurrent 2>&1 | tee test-results/throughput/concurrent.log
+          
+          # Test batch processing
+          npm run test:performance:throughput:batch 2>&1 | tee test-results/throughput/batch.log
+          
+          # Test sustained load
+          npm run test:performance:throughput:sustained 2>&1 | tee test-results/throughput/sustained.log
+          
+          node scripts/ci/generate-throughput-report.js test-results/throughput > test-results/throughput-summary.json
+          
+      - name: Run Memory Tests
+        if: matrix.test == 'memory'
+        run: |
+          echo "Running memory performance tests..."
+          
+          mkdir -p test-results/memory
+          
+          # Test memory usage patterns
+          npm run test:performance:memory:baseline 2>&1 | tee test-results/memory/baseline.log
+          npm run test:performance:memory:peak 2>&1 | tee test-results/memory/peak.log
+          npm run test:performance:memory:gc 2>&1 | tee test-results/memory/gc.log
+          
+          node scripts/ci/generate-memory-report.js test-results/memory > test-results/memory-summary.json
+          
+      - name: Run 3D Rendering Tests
+        if: matrix.test == '3d_rendering'
+        run: |
+          echo "Running 3D rendering performance tests..."
+          
+          mkdir -p test-results/3d-rendering
+          
+          # Setup virtual display for headless testing
+          if [ "${{ matrix.platform }}" = "ubuntu-latest" ]; then
+            export DISPLAY=:99
+            Xvfb :99 -screen 0 1920x1080x24 &
+            sleep 3
+          fi
+          
+          # Test 3D performance
+          npm run test:performance:3d:fps 2>&1 | tee test-results/3d-rendering/fps.log
+          npm run test:performance:3d:memory 2>&1 | tee test-results/3d-rendering/memory.log
+          npm run test:performance:3d:large-repo 2>&1 | tee test-results/3d-rendering/large-repo.log
+          
+          node scripts/ci/generate-3d-report.js test-results/3d-rendering > test-results/3d-summary.json
+          
+      - name: Compare with baseline
+        run: |
+          echo "Comparing performance with baseline..."
+          
+          # Download baseline data if available
+          baseline_commit="${{ needs.setup-environment.outputs.baseline-commit }}"
+          mkdir -p baseline-data
+          
+          # Try to download baseline data from artifacts or cache
+          curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            "https://api.github.com/repos/${{ github.repository }}/actions/artifacts" \
+            | jq -r ".artifacts[] | select(.name == \"performance-data-${baseline_commit}\") | .archive_download_url" \
+            | head -1 | xargs -I {} curl -L -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" {} -o baseline.zip || true
+          
+          if [ -f baseline.zip ]; then
+            unzip -q baseline.zip -d baseline-data/ || true
+          fi
+          
+          # Generate comparison report
+          node scripts/ci/compare-performance.js test-results baseline-data ${{ matrix.test }} > performance-comparison.json
+          
+      - name: Check performance regressions
+        run: |
+          echo "Checking for performance regressions..."
+          
+          # Load thresholds
+          if [ -f "${{ env.PERFORMANCE_THRESHOLDS_FILE }}" ]; then
+            thresholds=$(cat "${{ env.PERFORMANCE_THRESHOLDS_FILE }}")
+          else
+            # Default thresholds
+            thresholds='{
+              "latency": {
+                "keystroke_to_completion_p95": 60,
+                "first_token_p95": 100,
+                "context_retrieval_p95": 50
+              },
+              "throughput": {
+                "completions_per_second": 10,
+                "batch_throughput": 100
+              },
+              "memory": {
+                "peak_memory_mb": 1024,
+                "memory_growth_rate": 0.1
+              },
+              "3d_rendering": {
+                "fps_minimum": 30,
+                "memory_usage_mb": 512
+              }
+            }'
+          fi
+          
+          # Check thresholds
+          node scripts/ci/check-thresholds.js "$thresholds" test-results performance-comparison.json ${{ matrix.test }} > threshold-results.json
+          
+          # Set output for badge generation
+          if [ -f threshold-results.json ]; then
+            passed=$(jq -r '.passed' threshold-results.json)
+            score=$(jq -r '.score' threshold-results.json)
+            echo "PERFORMANCE_PASSED=$passed" >> $GITHUB_ENV
+            echo "PERFORMANCE_SCORE=$score" >> $GITHUB_ENV
+          fi
+          
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: performance-results-${{ matrix.test }}-${{ matrix.platform }}
+          path: |
+            test-results/
+            performance-comparison.json
+            threshold-results.json
+          retention-days: 30
+          
+      - name: Upload benchmark data
+        uses: actions/upload-artifact@v4
+        if: github.ref == 'refs/heads/main'
+        with:
+          name: performance-data-${{ github.sha }}
+          path: test-results/
+          retention-days: 90
+
+  generate-badges:
+    name: Generate Performance Badges
+    runs-on: ubuntu-latest
+    needs: [setup-environment, performance-tests]
+    if: always() && github.ref == 'refs/heads/main'
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        
+      - name: Download all test results
+        uses: actions/download-artifact@v4
+        with:
+          pattern: performance-results-*
+          path: all-results
+          merge-multiple: true
+          
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.11.0'
+          
+      - name: Aggregate performance results
+        run: |
+          echo "Aggregating performance results..."
+          mkdir -p badges
+          
+          # Aggregate all test results
+          node scripts/ci/aggregate-results.js all-results > aggregated-results.json
+          
+          # Generate badge data
+          node scripts/ci/generate-badge-data.js aggregated-results.json > badge-data.json
+          
+      - name: Generate Latency Badge
+        run: |
+          latency_p95=$(jq -r '.latency.keystroke_to_completion_p95 // "unknown"' badge-data.json)
+          
+          if [ "$latency_p95" != "unknown" ] && [ $(echo "$latency_p95 <= 60" | bc -l) -eq 1 ]; then
+            color="brightgreen"
+            status="passing"
+          elif [ "$latency_p95" != "unknown" ] && [ $(echo "$latency_p95 <= 100" | bc -l) -eq 1 ]; then
+            color="yellow"
+            status="warning"
+          else
+            color="red"
+            status="failing"
+          fi
+          
+          # Create badge JSON
+          cat > badges/latency.json << EOF
+          {
+            "schemaVersion": 1,
+            "label": "Completion Latency",
+            "message": "${latency_p95}ms (P95)",
+            "color": "$color",
+            "cacheSeconds": 300
+          }
+          EOF
+          
+      - name: Generate Throughput Badge
+        run: |
+          throughput=$(jq -r '.throughput.completions_per_second // "unknown"' badge-data.json)
+          
+          if [ "$throughput" != "unknown" ] && [ $(echo "$throughput >= 10" | bc -l) -eq 1 ]; then
+            color="brightgreen"
+          elif [ "$throughput" != "unknown" ] && [ $(echo "$throughput >= 5" | bc -l) -eq 1 ]; then
+            color="yellow"
+          else
+            color="red"
+          fi
+          
+          cat > badges/throughput.json << EOF
+          {
+            "schemaVersion": 1,
+            "label": "Throughput",
+            "message": "${throughput} req/s",
+            "color": "$color",
+            "cacheSeconds": 300
+          }
+          EOF
+          
+      - name: Generate Memory Badge
+        run: |
+          memory_mb=$(jq -r '.memory.peak_memory_mb // "unknown"' badge-data.json)
+          
+          if [ "$memory_mb" != "unknown" ] && [ $(echo "$memory_mb <= 512" | bc -l) -eq 1 ]; then
+            color="brightgreen"
+          elif [ "$memory_mb" != "unknown" ] && [ $(echo "$memory_mb <= 1024" | bc -l) -eq 1 ]; then
+            color="yellow"
+          else
+            color="red"
+          fi
+          
+          cat > badges/memory.json << EOF
+          {
+            "schemaVersion": 1,
+            "label": "Memory Usage",
+            "message": "${memory_mb}MB peak",
+            "color": "$color",
+            "cacheSeconds": 300
+          }
+          EOF
+          
+      - name: Generate 3D Rendering Badge
+        run: |
+          fps=$(jq -r '.rendering.fps_minimum // "unknown"' badge-data.json)
+          
+          if [ "$fps" != "unknown" ] && [ $(echo "$fps >= 30" | bc -l) -eq 1 ]; then
+            color="brightgreen"
+          elif [ "$fps" != "unknown" ] && [ $(echo "$fps >= 20" | bc -l) -eq 1 ]; then
+            color="yellow"
+          else
+            color="red"
+          fi
+          
+          cat > badges/3d-rendering.json << EOF
+          {
+            "schemaVersion": 1,
+            "label": "3D Rendering",
+            "message": "${fps} FPS",
+            "color": "$color",
+            "cacheSeconds": 300
+          }
+          EOF
+          
+      - name: Generate Overall Performance Badge
+        run: |
+          # Calculate overall performance score
+          overall_score=$(jq -r '.overall.score // 0' badge-data.json)
+          
+          if [ $(echo "$overall_score >= 90" | bc -l) -eq 1 ]; then
+            color="brightgreen"
+            grade="A"
+          elif [ $(echo "$overall_score >= 80" | bc -l) -eq 1 ]; then
+            color="green"
+            grade="B"
+          elif [ $(echo "$overall_score >= 70" | bc -l) -eq 1 ]; then
+            color="yellow"
+            grade="C"
+          elif [ $(echo "$overall_score >= 60" | bc -l) -eq 1 ]; then
+            color="orange"
+            grade="D"
+          else
+            color="red"
+            grade="F"
+          fi
+          
+          cat > badges/performance.json << EOF
+          {
+            "schemaVersion": 1,
+            "label": "Performance",
+            "message": "Grade $grade (${overall_score}%)",
+            "color": "$color",
+            "cacheSeconds": 300
+          }
+          EOF
+          
+      - name: Deploy badges to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: badges
+          destination_dir: performance-badges
+          keep_files: false
+          
+      - name: Update README badges
+        run: |
+          echo "Updating README with latest badge URLs..."
+          
+          # Update badge URLs in README
+          base_url="https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/performance-badges"
+          
+          sed -i "s|https://img.shields.io/endpoint?url=.*performance\.json|https://img.shields.io/endpoint?url=${base_url}/performance.json|g" README.md
+          sed -i "s|https://img.shields.io/endpoint?url=.*latency\.json|https://img.shields.io/endpoint?url=${base_url}/latency.json|g" README.md
+          sed -i "s|https://img.shields.io/endpoint?url=.*throughput\.json|https://img.shields.io/endpoint?url=${base_url}/throughput.json|g" README.md
+          sed -i "s|https://img.shields.io/endpoint?url=.*memory\.json|https://img.shields.io/endpoint?url=${base_url}/memory.json|g" README.md
+          sed -i "s|https://img.shields.io/endpoint?url=.*3d-rendering\.json|https://img.shields.io/endpoint?url=${base_url}/3d-rendering.json|g" README.md
+          
+      - name: Commit badge updates
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          
+          if [ -n "$(git diff --name-only)" ]; then
+            git add README.md
+            git commit -m "ci: update performance badges [skip ci]"
+            git push
+          else
+            echo "No badge updates needed"
+          fi
+
+  performance-regression-check:
+    name: Performance Regression Gate
+    runs-on: ubuntu-latest
+    needs: [setup-environment, performance-tests]
+    if: github.event_name == 'pull_request'
+    
+    steps:
+      - name: Download test results
+        uses: actions/download-artifact@v4
+        with:
+          pattern: performance-results-*
+          path: pr-results
+          merge-multiple: true
+          
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.11.0'
+          
+      - name: Check for regressions
+        run: |
+          echo "Checking for performance regressions in PR..."
+          
+          # Aggregate results
+          node scripts/ci/aggregate-results.js pr-results > pr-aggregated.json
+          
+          # Check regression thresholds
+          regression_threshold=20  # 20% regression threshold
+          critical_regression=false
+          
+          # Check each metric
+          for metric in "latency.keystroke_to_completion_p95" "throughput.completions_per_second" "memory.peak_memory_mb"; do
+            current=$(jq -r ".$metric // 0" pr-aggregated.json)
+            baseline=$(jq -r ".$metric // 0" baseline-data/aggregated.json 2>/dev/null || echo "0")
+            
+            if [ "$baseline" != "0" ] && [ "$current" != "0" ]; then
+              change_percent=$(echo "scale=2; (($current - $baseline) / $baseline) * 100" | bc -l)
+              
+              if [ $(echo "$change_percent > $regression_threshold" | bc -l) -eq 1 ]; then
+                echo "❌ Performance regression detected in $metric: $change_percent% increase"
+                critical_regression=true
+              else
+                echo "✅ $metric: $change_percent% change (within threshold)"
+              fi
+            fi
+          done
+          
+          # Set output for PR status
+          if [ "$critical_regression" = "true" ]; then
+            echo "REGRESSION_DETECTED=true" >> $GITHUB_ENV
+          else
+            echo "REGRESSION_DETECTED=false" >> $GITHUB_ENV
+          fi
+          
+      - name: Comment on PR
+        uses: actions/github-script@v7
+        if: always()
+        with:
+          script: |
+            const fs = require('fs');
+            
+            try {
+              const results = JSON.parse(fs.readFileSync('pr-aggregated.json', 'utf8'));
+              const regressionDetected = process.env.REGRESSION_DETECTED === 'true';
+              
+              let comment = '## 🚀 Performance Test Results\n\n';
+              
+              if (regressionDetected) {
+                comment += '⚠️ **Performance regression detected!**\n\n';
+              } else {
+                comment += '✅ **No significant performance regressions detected**\n\n';
+              }
+              
+              comment += '| Metric | Value | Status |\n';
+              comment += '|--------|-------|--------|\n';
+              
+              if (results.latency?.keystroke_to_completion_p95) {
+                const status = results.latency.keystroke_to_completion_p95 <= 60 ? '✅' : '⚠️';
+                comment += `| Completion Latency (P95) | ${results.latency.keystroke_to_completion_p95}ms | ${status} |\n`;
+              }
+              
+              if (results.throughput?.completions_per_second) {
+                const status = results.throughput.completions_per_second >= 10 ? '✅' : '⚠️';
+                comment += `| Throughput | ${results.throughput.completions_per_second} req/s | ${status} |\n`;
+              }
+              
+              if (results.memory?.peak_memory_mb) {
+                const status = results.memory.peak_memory_mb <= 1024 ? '✅' : '⚠️';
+                comment += `| Memory Usage | ${results.memory.peak_memory_mb}MB | ${status} |\n`;
+              }
+              
+              comment += '\n---\n*Performance tests run automatically on every PR*';
+              
+              // Post comment
+              await github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: comment
+              });
+            } catch (error) {
+              console.error('Error posting PR comment:', error);
+            }
+            
+      - name: Fail if critical regression
+        run: |
+          if [ "$REGRESSION_DETECTED" = "true" ]; then
+            echo "❌ Critical performance regression detected. Please review and optimize before merging."
+            exit 1
+          else
+            echo "✅ Performance validation passed"
+          fi
+
+  cleanup:
+    name: Cleanup Old Artifacts
+    runs-on: ubuntu-latest
+    needs: [generate-badges]
+    if: always() && github.ref == 'refs/heads/main'
+    
+    steps:
+      - name: Cleanup old performance artifacts
+        uses: actions/github-script@v7
+        with:
+          script: |
+            // Keep only the last 10 performance data artifacts
+            const artifacts = await github.rest.actions.listArtifactsForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              per_page: 100
+            });
+            
+            const performanceArtifacts = artifacts.data.artifacts
+              .filter(artifact => artifact.name.startsWith('performance-data-'))
+              .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+            
+            // Delete artifacts older than the 10 most recent
+            const artifactsToDelete = performanceArtifacts.slice(10);
+            
+            for (const artifact of artifactsToDelete) {
+              try {
+                await github.rest.actions.deleteArtifact({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  artifact_id: artifact.id
+                });
+                console.log(`Deleted artifact: ${artifact.name}`);
+              } catch (error) {
+                console.error(`Failed to delete artifact ${artifact.name}:`, error);
+              }
+            }
+            
+            console.log(`Cleaned up ${artifactsToDelete.length} old performance artifacts`);
+
+# Performance Test Commands (to be added to package.json)
+# These commands should be implemented in the codeforge repository:
+#
+# "scripts": {
+#   "test:performance:latency:keystroke": "node tests/performance/latency/keystroke-test.js",
+#   "test:performance:latency:first-token": "node tests/performance/latency/first-token-test.js",
+#   "test:performance:latency:context": "node tests/performance/latency/context-test.js",
+#   "test:performance:latency:inference": "node tests/performance/latency/inference-test.js",
+#   "test:performance:throughput:concurrent": "node tests/performance/throughput/concurrent-test.js",
+#   "test:performance:throughput:batch": "node tests/performance/throughput/batch-test.js",
+#   "test:performance:throughput:sustained": "node tests/performance/throughput/sustained-test.js",
+#   "test:performance:memory:baseline": "node tests/performance/memory/baseline-test.js",
+#   "test:performance:memory:peak": "node tests/performance/memory/peak-test.js",
+#   "test:performance:memory:gc": "node tests/performance/memory/gc-test.js",
+#   "test:performance:3d:fps": "node tests/performance/3d/fps-test.js",
+#   "test:performance:3d:memory": "node tests/performance/3d/memory-test.js",
+#   "test:performance:3d:large-repo": "node tests/performance/3d/large-repo-test.js"
+# } 

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   PlayIcon, 
   PauseIcon, 
@@ -100,7 +100,7 @@ export default function MedicalImagingWorkspace() {
   const [activeStudy, setActiveStudy] = useState<Study | null>(null);
   const [studies, setStudies] = useState<Study[]>([]);
   
-  // Load mock studies data
+  // Load mock studies data - SINGLE useEffect
   useEffect(() => {
     const mockStudies: Study[] = [
       {
@@ -111,23 +111,21 @@ export default function MedicalImagingWorkspace() {
         studyTime: '14:30:00',
         modality: 'CT',
         studyDescription: 'Chest CT with Contrast',
-        seriesCount: 3,
-        imageCount: 120,
-        studySize: '45.2 MB',
+        seriesCount: 4,
+        imageCount: 256,
+        studySize: '145.2 MB',
         status: 'pending',
         priority: 'medium',
         aiAnalysisStatus: 'completed',
-        aiConfidence: 94.2,
+        aiConfidence: 92,
         findings: [
-          'Small nodule in right upper lobe (8.2mm)',
-          'No pleural effusion detected',
-          'Normal cardiac silhouette',
-          'Clear lung fields bilaterally'
+          'Nodule in right upper lobe (8mm)',
+          'Mediastinal lymph nodes within normal limits',
+          'No pleural effusion'
         ],
         measurements: [
-          { id: 'm1', type: 'Nodule diameter', value: '8.2', unit: 'mm', confidence: 94.2 },
-          { id: 'm2', type: 'Lung volume', value: '5.2', unit: 'L', confidence: 98.1 },
-          { id: 'm3', type: 'Heart rate', value: '72', unit: 'bpm', confidence: 99.5 }
+          { id: 'm1', type: 'length', value: '8.2', unit: 'mm', confidence: 95 },
+          { id: 'm2', type: 'area', value: '52.4', unit: 'mm²', confidence: 88 }
         ]
       },
       {
@@ -138,23 +136,23 @@ export default function MedicalImagingWorkspace() {
         studyTime: '15:45:00',
         modality: 'MRI',
         studyDescription: 'Brain MRI T1/T2',
-        seriesCount: 4,
-        imageCount: 180,
-        studySize: '78.4 MB',
+        seriesCount: 6,
+        imageCount: 384,
+        studySize: '298.7 MB',
         status: 'critical',
         priority: 'urgent',
         aiAnalysisStatus: 'completed',
-        aiConfidence: 96.8,
+        aiConfidence: 96,
         findings: [
-          'Moderate cerebral atrophy within normal limits',
-          'No acute intracranial abnormality',
-          'Ventricular system normal size',
-          'White matter changes consistent with age'
+          'Moderate ventricular dilatation observed',
+          'White matter hyperintensities consistent with age',
+          'No acute hemorrhage detected',
+          'Normal brain parenchyma enhancement'
         ],
         measurements: [
-          { id: 'm4', type: 'Ventricular width', value: '12.5', unit: 'mm', confidence: 96.8 },
-          { id: 'm5', type: 'Brain volume', value: '1420', unit: 'cm³', confidence: 98.9 },
-          { id: 'm6', type: 'Cortical thickness', value: '2.8', unit: 'mm', confidence: 94.1 }
+          { id: 'm3', type: 'ventricular width', value: '12.5', unit: 'mm', confidence: 97 },
+          { id: 'm4', type: 'cortical thickness', value: '2.8', unit: 'mm', confidence: 93 },
+          { id: 'm5', type: 'lesion diameter', value: '4.2', unit: 'mm', confidence: 89 }
         ]
       }
     ];
@@ -190,57 +188,7 @@ export default function MedicalImagingWorkspace() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [collaborationMode, setCollaborationMode] = useState(false);
   const [emergencyMode, setEmergencyMode] = useState(false);
-
-  // Mock data for demonstration
-  useEffect(() => {
-    const mockStudies: Study[] = [
-      {
-        id: 'STU001',
-        patientName: 'Smith, John',
-        patientId: 'PAT001',
-        studyDate: '2024-01-15',
-        studyTime: '14:30:00',
-        modality: 'CT',
-        studyDescription: 'Chest CT with Contrast',
-        seriesCount: 4,
-        imageCount: 256,
-        studySize: '145.2 MB',
-        status: 'pending',
-        priority: 'high',
-        aiAnalysisStatus: 'completed',
-        aiConfidence: 92,
-        findings: [
-          'Nodule in right upper lobe (8mm)',
-          'Mediastinal lymph nodes within normal limits',
-          'No pleural effusion'
-        ],
-        measurements: [
-          { id: 'M001', type: 'length', value: '8.2', unit: 'mm', confidence: 95 },
-          { id: 'M002', type: 'area', value: '52.4', unit: 'mm²', confidence: 88 }
-        ]
-      },
-      {
-        id: 'STU002',
-        patientName: 'Johnson, Sarah',
-        patientId: 'PAT002',
-        studyDate: '2024-01-15',
-        studyTime: '15:45:00',
-        modality: 'MRI',
-        studyDescription: 'Brain MRI T1/T2',
-        seriesCount: 6,
-        imageCount: 384,
-        studySize: '298.7 MB',
-        status: 'critical',
-        priority: 'urgent',
-        aiAnalysisStatus: 'processing',
-        aiConfidence: 0,
-        findings: [],
-        measurements: []
-      }
-    ];
-    setStudies(mockStudies);
-    setActiveStudy(mockStudies[0]);
-  }, []);
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -280,24 +228,66 @@ export default function MedicalImagingWorkspace() {
 
   const handleToolChange = (tool: string) => {
     setSelectedTool(tool);
+    console.log(`Tool changed to: ${tool}`);
+    
+    // Real functionality would:
+    // - Change cursor based on tool
+    // - Enable/disable mouse interactions
+    // - Show tool-specific UI overlays
+    
+    if (tool === 'measure') {
+      console.log('Measurement tool activated - click and drag to measure');
+    } else if (tool === 'annotate') {
+      console.log('Annotation tool activated - click to add notes');
+    }
   };
 
   const handlePlayPause = () => {
     setIsPlaying(!isPlaying);
+    
+    if (!isPlaying) {
+      // Start cine loop through images
+      console.log('Starting cine loop...');
+      const interval = setInterval(() => {
+        setCurrentImage(prev => {
+          const nextImage = (prev + 1) % (activeStudy?.imageCount || 120);
+          console.log(`Playing image ${nextImage + 1}/${activeStudy?.imageCount || 120}`);
+          return nextImage;
+        });
+      }, 1000 / (viewerSettings.cineSpeed || 5)); // Speed control
+      
+      // Store interval to clear later
+      (window as any).cineInterval = interval;
+    } else {
+      // Stop cine loop
+      console.log('Stopping cine loop...');
+      if ((window as any).cineInterval) {
+        clearInterval((window as any).cineInterval);
+      }
+    }
   };
 
   const handleZoomIn = () => {
+    const newZoom = Math.min(viewerSettings.zoom * 1.2, 10);
     setViewerSettings(prev => ({
       ...prev,
-      zoom: Math.min(prev.zoom * 1.2, 10)
+      zoom: newZoom
     }));
+    console.log(`Zooming in to ${Math.round(newZoom * 100)}%`);
+    
+    // Real functionality would:
+    // - Apply CSS transform to image
+    // - Maintain zoom center point
+    // - Update scroll bars if needed
   };
 
   const handleZoomOut = () => {
+    const newZoom = Math.max(viewerSettings.zoom / 1.2, 0.1);
     setViewerSettings(prev => ({
       ...prev,
-      zoom: Math.max(prev.zoom / 1.2, 0.1)
+      zoom: newZoom
     }));
+    console.log(`Zooming out to ${Math.round(newZoom * 100)}%`);
   };
 
   const handleResetView = () => {
@@ -307,7 +297,119 @@ export default function MedicalImagingWorkspace() {
       pan: { x: 0, y: 0 },
       rotation: 0
     }));
+    console.log('View reset to original state');
+    
+    // Real functionality would:
+    // - Reset image transforms
+    // - Clear any pan offsets
+    // - Reset rotation
+    // - Center image in viewport
   };
+
+  const handleNextImage = () => {
+    const maxImages = activeStudy?.imageCount || 120;
+    setCurrentImage(prev => {
+      const next = Math.min(prev + 1, maxImages - 1);
+      console.log(`Next image: ${next + 1}/${maxImages}`);
+      return next;
+    });
+  };
+
+  const handlePrevImage = () => {
+    setCurrentImage(prev => {
+      const previous = Math.max(prev - 1, 0);
+      console.log(`Previous image: ${previous + 1}/${activeStudy?.imageCount || 120}`);
+      return previous;
+    });
+  };
+
+  const handleWindowLevel = (level: number, width: number) => {
+    setViewerSettings(prev => ({
+      ...prev,
+      windowLevel: level,
+      windowWidth: width
+    }));
+    console.log(`Window Level: ${level}, Window Width: ${width}`);
+    
+    // Real functionality would:
+    // - Adjust image brightness/contrast
+    // - Apply DICOM windowing algorithms
+    // - Update pixel intensity display
+  };
+
+  const handleFullscreen = async () => {
+    try {
+      if (!isFullscreen) {
+        // Enter fullscreen
+        const viewerElement = document.querySelector('.medical-viewer-container');
+        if (viewerElement && viewerElement.requestFullscreen) {
+          await viewerElement.requestFullscreen();
+          setIsFullscreen(true);
+          console.log('Entered fullscreen mode');
+        } else if ((viewerElement as any)?.webkitRequestFullscreen) {
+          // Safari support
+          await (viewerElement as any).webkitRequestFullscreen();
+          setIsFullscreen(true);
+        } else if ((viewerElement as any)?.msRequestFullscreen) {
+          // IE/Edge support
+          await (viewerElement as any).msRequestFullscreen();
+          setIsFullscreen(true);
+        }
+      } else {
+        // Exit fullscreen
+        if (document.exitFullscreen) {
+          await document.exitFullscreen();
+        } else if ((document as any).webkitExitFullscreen) {
+          await (document as any).webkitExitFullscreen();
+        } else if ((document as any).msExitFullscreen) {
+          await (document as any).msExitFullscreen();
+        }
+        setIsFullscreen(false);
+        console.log('Exited fullscreen mode');
+      }
+    } catch (error) {
+      console.error('Fullscreen error:', error);
+    }
+  };
+
+  // Listen for fullscreen changes
+  React.useEffect(() => {
+    const handleFullscreenChange = () => {
+      const isCurrentlyFullscreen = Boolean(
+        document.fullscreenElement ||
+        (document as any).webkitFullscreenElement ||
+        (document as any).msFullscreenElement
+      );
+      setIsFullscreen(isCurrentlyFullscreen);
+    };
+
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+    document.addEventListener('msfullscreenchange', handleFullscreenChange);
+
+         return () => {
+       document.removeEventListener('fullscreenchange', handleFullscreenChange);
+       document.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
+       document.removeEventListener('msfullscreenchange', handleFullscreenChange);
+     };
+   }, []);
+
+   // Keyboard shortcut for fullscreen (F key)
+   React.useEffect(() => {
+     const handleKeyPress = (event: KeyboardEvent) => {
+       if (event.key === 'f' || event.key === 'F') {
+         event.preventDefault();
+         handleFullscreen();
+       }
+       // ESC key to exit fullscreen
+       if (event.key === 'Escape' && isFullscreen) {
+         handleFullscreen();
+       }
+     };
+
+     document.addEventListener('keydown', handleKeyPress);
+     return () => document.removeEventListener('keydown', handleKeyPress);
+   }, [isFullscreen]);
 
   const handleEmergencyMode = () => {
     setEmergencyMode(!emergencyMode);
@@ -394,48 +496,61 @@ export default function MedicalImagingWorkspace() {
         {/* Viewer Area */}
         <div className="flex-1 flex overflow-hidden">
           {/* Main Image Viewer */}
-          <div className="flex-1 bg-gray-900 relative overflow-hidden">
+          <div className={`medical-viewer-container flex-1 bg-gray-900 relative overflow-hidden ${isFullscreen ? 'fullscreen-viewer' : ''}`}>
             {/* Toolbar */}
-            <div className="absolute top-0 left-0 right-0 z-10 p-3 bg-black/70 backdrop-blur-sm border-b border-gray-600">
-              <div className="flex items-center justify-center gap-6">
-                <div className="flex items-center gap-1">
-                  <button onClick={handlePlayPause} className="btn-medical btn-secondary text-white border-gray-600 hover:bg-gray-700">
-                    {isPlaying ? <PauseIcon className="w-4 h-4" /> : <PlayIcon className="w-4 h-4" />}
-                  </button>
-                  <button className="btn-medical btn-secondary text-white border-gray-600 hover:bg-gray-700">
-                    <BackwardIcon className="w-4 h-4" />
-                  </button>
-                  <button className="btn-medical btn-secondary text-white border-gray-600 hover:bg-gray-700">
-                    <ForwardIcon className="w-4 h-4" />
-                  </button>
-                </div>
-                <div className="flex items-center gap-1">
-                  <button onClick={() => handleToolChange('select')} className={`btn-medical btn-secondary text-white border-gray-600 hover:bg-gray-700 ${selectedTool === 'select' ? 'bg-primary/30 border-primary' : ''}`}>
-                    <ArrowRightIcon className="w-4 h-4" />
-                  </button>
-                  <button onClick={() => handleToolChange('annotate')} className={`btn-medical btn-secondary text-white border-gray-600 hover:bg-gray-700 ${selectedTool === 'annotate' ? 'bg-primary/30 border-primary' : ''}`}>
-                    <PencilIcon className="w-4 h-4" />
-                  </button>
-                  <button onClick={() => handleToolChange('measure')} className={`btn-medical btn-secondary text-white border-gray-600 hover:bg-gray-700 ${selectedTool === 'measure' ? 'bg-primary/30 border-primary' : ''}`}>
-                    <BeakerIcon className="w-4 h-4" />
-                  </button>
-                </div>
-                <div className="flex items-center gap-1">
-                  <button onClick={handleZoomIn} className="btn-medical btn-secondary text-white border-gray-600 hover:bg-gray-700">
-                    <ArrowsPointingOutIcon className="w-4 h-4" />
-                  </button>
-                  <button onClick={handleZoomOut} className="btn-medical btn-secondary text-white border-gray-600 hover:bg-gray-700">
-                    <ArrowsPointingInIcon className="w-4 h-4" />
-                  </button>
-                  <button onClick={handleResetView} className="btn-medical btn-secondary text-white border-gray-600 hover:bg-gray-700">
-                    <ComputerDesktopIcon className="w-4 h-4" />
-                  </button>
-                </div>
+            <div className="absolute top-0 left-0 right-0 z-10 py-6 px-4 bg-white border-b-2 border-gray-300 shadow-lg">
+              <div className="flex items-center justify-center gap-8 flex-wrap">
+                                  <div className="flex items-center gap-2">
+                    <button onClick={handlePlayPause} className="px-3 py-2 bg-gray-100 border border-gray-400 rounded-lg text-gray-900 hover:bg-gray-200 transition-colors" title={isPlaying ? "Pause cine loop" : "Start cine loop"}>
+                      {isPlaying ? <PauseIcon className="w-5 h-5" /> : <PlayIcon className="w-5 h-5" />}
+                    </button>
+                    <button onClick={handlePrevImage} className="px-3 py-2 bg-gray-100 border border-gray-400 rounded-lg text-gray-900 hover:bg-gray-200 transition-colors" title="Previous image">
+                      <BackwardIcon className="w-5 h-5" />
+                    </button>
+                    <button onClick={handleNextImage} className="px-3 py-2 bg-gray-100 border border-gray-400 rounded-lg text-gray-900 hover:bg-gray-200 transition-colors" title="Next image">
+                      <ForwardIcon className="w-5 h-5" />
+                    </button>
+                  </div>
+                                  <div className="flex items-center gap-2">
+                    <button onClick={() => handleToolChange('select')} className={`px-3 py-2 border rounded-lg text-gray-900 transition-colors ${selectedTool === 'select' ? 'bg-blue-200 border-blue-400' : 'bg-gray-100 border-gray-400 hover:bg-gray-200'}`} title="Select/Pan tool">
+                      <ArrowRightIcon className="w-5 h-5" />
+                    </button>
+                    <button onClick={() => handleToolChange('annotate')} className={`px-3 py-2 border rounded-lg text-gray-900 transition-colors ${selectedTool === 'annotate' ? 'bg-blue-200 border-blue-400' : 'bg-gray-100 border-gray-400 hover:bg-gray-200'}`} title="Annotation tool">
+                      <PencilIcon className="w-5 h-5" />
+                    </button>
+                    <button onClick={() => handleToolChange('measure')} className={`px-3 py-2 border rounded-lg text-gray-900 transition-colors ${selectedTool === 'measure' ? 'bg-blue-200 border-blue-400' : 'bg-gray-100 border-gray-400 hover:bg-gray-200'}`} title="Measurement tool">
+                      <BeakerIcon className="w-5 h-5" />
+                    </button>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button onClick={handleZoomIn} className="px-3 py-2 bg-gray-100 border border-gray-400 rounded-lg text-gray-900 hover:bg-gray-200 transition-colors" title={`Zoom in (${Math.round(viewerSettings.zoom * 100)}%)`}>
+                      <ArrowsPointingOutIcon className="w-5 h-5" />
+                    </button>
+                    <button onClick={handleZoomOut} className="px-3 py-2 bg-gray-100 border border-gray-400 rounded-lg text-gray-900 hover:bg-gray-200 transition-colors" title={`Zoom out (${Math.round(viewerSettings.zoom * 100)}%)`}>
+                      <ArrowsPointingInIcon className="w-5 h-5" />
+                    </button>
+                    <button onClick={handleFullscreen} className={`px-3 py-2 border border-gray-400 rounded-lg text-gray-900 hover:bg-gray-200 transition-colors ${isFullscreen ? 'bg-blue-200 border-blue-400' : 'bg-gray-100'}`} title={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}>
+                      <ComputerDesktopIcon className="w-5 h-5" />
+                    </button>
+                  </div>
+                  
+                  {/* Image Navigation Controls */}
+                  <div className="flex items-center gap-2 bg-gray-50 px-3 py-2 rounded-lg border border-gray-300">
+                    <button onClick={handlePrevImage} className="text-gray-900 hover:text-blue-600 p-1">
+                      <ArrowLeftIcon className="w-5 h-5" />
+                    </button>
+                    <span className="text-gray-900 text-sm font-mono font-bold px-2">
+                      {currentImage + 1} / {activeStudy?.imageCount || 120}
+                    </span>
+                    <button onClick={handleNextImage} className="text-gray-900 hover:text-blue-600 p-1">
+                      <ArrowRightIcon className="w-5 h-5" />
+                    </button>
+                  </div>
               </div>
             </div>
 
             {/* Main Viewer Content */}
-            <div className="h-full pt-16 flex items-center justify-center p-4">
+            <div className="h-full pt-24 flex items-center justify-center p-4">
               {activeStudy ? (
                 <div className="w-full h-full max-w-4xl max-h-[700px] relative">
                   {/* DICOM Image Viewport */}
@@ -542,19 +657,10 @@ export default function MedicalImagingWorkspace() {
                       )}
                     </div>
 
-                    {/* Navigation Controls */}
-                    <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2">
-                      <div className="flex items-center gap-2 bg-black/70 px-4 py-2 rounded-full">
-                        <button className="text-white hover:text-primary">
-                          <ArrowLeftIcon className="w-4 h-4" />
-                        </button>
-                        <span className="text-white text-sm font-mono">45 / 120</span>
-                        <button className="text-white hover:text-primary">
-                          <ArrowRightIcon className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </div>
+
                   </div>
+                  
+
                 </div>
               ) : (
                 <div className="text-center text-gray-400">

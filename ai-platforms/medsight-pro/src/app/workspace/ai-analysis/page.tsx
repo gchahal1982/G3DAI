@@ -385,12 +385,14 @@ export default function AIAnalysisWorkspace({ className = '' }: AIAnalysisWorksp
               </h2>
               
               {/* Vision Analysis Panel */}
-              <div className="medsight-viewer-glass p-6 rounded-lg mb-6">
-                <div className="text-center text-white">
-                  <EyeIcon className="w-16 h-16 mx-auto mb-4 opacity-50" />
-                  <h3 className="text-lg font-medium mb-2">Medical Image Analysis</h3>
-                  <p className="text-sm opacity-75 mb-4">Upload or select medical images for AI-powered analysis</p>
-                  <button className="btn-medsight bg-white/20 text-white border-white/30">
+              <div className="glass-card-secondary p-6 rounded-lg mb-6 border border-primary/20">
+                <div className="text-center">
+                  <div className="w-16 h-16 mx-auto mb-4 bg-primary/10 rounded-full flex items-center justify-center">
+                    <EyeIcon className="w-8 h-8 text-primary" />
+                  </div>
+                  <h3 className="text-lg font-medium mb-2 text-gray-800">Medical Image Analysis</h3>
+                  <p className="text-sm text-gray-600 mb-4">Upload or select medical images for AI-powered analysis</p>
+                  <button className="btn-medical btn-primary">
                     <CloudArrowUpIcon className="w-4 h-4 mr-2" />
                     Upload Images
                   </button>
@@ -556,11 +558,27 @@ export default function AIAnalysisWorkspace({ className = '' }: AIAnalysisWorksp
               </div>
 
               {/* Analytics Chart Placeholder */}
-              <div className="medsight-viewer-glass p-8 rounded-lg mt-6">
-                <div className="text-center text-white">
-                  <ChartBarIcon className="w-16 h-16 mx-auto mb-4 opacity-50" />
-                  <h3 className="text-lg font-medium mb-2">Predictive Analytics Dashboard</h3>
-                  <p className="text-sm opacity-75">Advanced medical outcome prediction and trend analysis</p>
+              <div className="glass-card-secondary p-8 rounded-lg mt-6 border border-success/20">
+                <div className="text-center">
+                  <div className="w-16 h-16 mx-auto mb-4 bg-success/10 rounded-full flex items-center justify-center">
+                    <ChartBarIcon className="w-8 h-8 text-success" />
+                  </div>
+                  <h3 className="text-lg font-medium mb-2 text-gray-800">Predictive Analytics Dashboard</h3>
+                  <p className="text-sm text-gray-600">Advanced medical outcome prediction and trend analysis</p>
+                  <div className="mt-4 grid grid-cols-3 gap-4">
+                    <div className="bg-warning/10 p-3 rounded-lg">
+                      <div className="text-lg font-semibold text-warning">87.3%</div>
+                      <div className="text-xs text-gray-600">Treatment Response</div>
+                    </div>
+                    <div className="bg-danger/10 p-3 rounded-lg">
+                      <div className="text-lg font-semibold text-danger">12.5%</div>
+                      <div className="text-xs text-gray-600">Disease Progression</div>
+                    </div>
+                    <div className="bg-success/10 p-3 rounded-lg">
+                      <div className="text-lg font-semibold text-success">8.2%</div>
+                      <div className="text-xs text-gray-600">Readmission Risk</div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
