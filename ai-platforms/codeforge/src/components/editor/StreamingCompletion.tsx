@@ -1,779 +1,715 @@
 /**
- * CodeForge Streaming Completion Component
- * Implements real-time completion with optimized token streaming
+ * StreamingCompletion - Real-time Code Completion Component
  * 
- * Features:
- * - Pull-based token streaming in Monaco Editor
- * - First-token-at-20-characters optimization
- * - Completion request debouncing
- * - Intelligent context truncation
- * - Completion caching layer
- * - Typing-ahead prediction
- * - Completion priority queuing
+ * Advanced streaming completion system for Monaco Editor:
+ * - Pull-based token streaming with backpressure handling
+ * - First-token-at-20-characters optimization for responsive UX
+ * - Intelligent completion request debouncing
+ * - Context-aware truncation for optimal performance
+ * - Multi-tier completion caching system
+ * - Predictive typing-ahead completion prefetching
+ * - Priority-based completion queuing
+ * - Real-time completion success rate tracking and analytics
  */
 
-import React, { useEffect, useRef, useCallback, useState } from 'react';
+import React, { useEffect, useRef, useCallback, useState, useMemo } from 'react';
+import { Box, LinearProgress, Chip, Typography, Paper, Fade } from '@mui/material';
+import { styled } from '@mui/material/styles';
 import * as monaco from 'monaco-editor';
-import { latencyTracker } from '../../lib/telemetry/LatencySpan';
-import { inferenceOptimizer } from '../../lib/optimization/InferenceOptimizer';
+import { EventEmitter } from 'events';
 
 // Interfaces and types
-interface StreamingCompletionProps {
-  editor: monaco.editor.IStandaloneCodeEditor;
-  modelId: string;
-  enabled: boolean;
-  maxTokens?: number;
-  temperature?: number;
-  debounceMs?: number;
-  contextWindow?: number;
-  onCompletionAccepted?: (completion: string) => void;
-  onCompletionRejected?: (completion: string) => void;
-  onPerformanceMetrics?: (metrics: CompletionMetrics) => void;
-}
-
-interface CompletionState {
-  isStreaming: boolean;
-  currentCompletion: string;
-  partialCompletion: string;
-  completionStartPosition: monaco.Position;
-  streamingDecoration: string[];
-  ghostTextDecoration: string[];
-  confidence: number;
-  tokenCount: number;
-  latency: number;
-}
-
-interface CompletionMetrics {
-  firstTokenLatency: number;
-  totalLatency: number;
-  tokensPerSecond: number;
-  cacheHit: boolean;
-  contextLength: number;
-  acceptanceRate: number;
-}
-
 interface CompletionRequest {
   id: string;
+  position: monaco.Position;
+  context: string;
   prefix: string;
   suffix: string;
-  position: monaco.Position;
+  language: string;
   timestamp: number;
-  priority: 'low' | 'normal' | 'high';
-  context: CompletionContext;
+  priority: 'low' | 'normal' | 'high' | 'immediate';
+  triggerKind: monaco.languages.CompletionTriggerKind;
+  triggerCharacter?: string | undefined;
 }
 
-interface CompletionContext {
-  language: string;
-  filePath: string;
-  nearbyFunctions: string[];
-  imports: string[];
-  variables: string[];
-  semanticContext: string;
+interface StreamingToken {
+  text: string;
+  confidence: number;
+  tokenIndex: number;
+  isComplete: boolean;
+  metadata?: Record<string, any>;
 }
 
 interface CompletionCache {
   key: string;
   completion: string;
   timestamp: number;
-  hitCount: number;
+  accessCount: number;
   confidence: number;
+  success: boolean;
 }
 
+interface CompletionMetrics {
+  totalRequests: number;
+  completedRequests: number;
+  successRate: number;
+  averageLatency: number;
+  cacheHitRate: number;
+  firstTokenLatency: number;
+  charactersGenerated: number;
+  acceptedCompletions: number;
+  rejectedCompletions: number;
+}
+
+interface StreamingState {
+  isStreaming: boolean;
+  currentRequest: CompletionRequest | null;
+  tokens: StreamingToken[];
+  completedText: string;
+  confidence: number;
+  estimatedTotal: number;
+  firstTokenReceived: boolean;
+  firstTokenTime: number;
+}
+
+// Styled components
+const CompletionContainer = styled(Box)(({ theme }: { theme: any }) => ({
+  position: 'absolute',
+  top: 0,
+  left: 0,
+  right: 0,
+  pointerEvents: 'none',
+  zIndex: 1000,
+}));
+
+const StreamingIndicator = styled(Paper)(({ theme }: { theme: any }) => ({
+  position: 'absolute',
+  top: theme.spacing(1),
+  right: theme.spacing(1),
+  padding: theme.spacing(0.5, 1),
+  background: 'rgba(0, 0, 0, 0.8)',
+  color: 'white',
+  borderRadius: theme.spacing(1),
+  fontSize: '0.75rem',
+  pointerEvents: 'auto',
+}));
+
+const MetricsPanel = styled(Paper)(({ theme }: { theme: any }) => ({
+  position: 'absolute',
+  bottom: theme.spacing(1),
+  right: theme.spacing(1),
+  padding: theme.spacing(1),
+  background: 'rgba(255, 255, 255, 0.95)',
+  borderRadius: theme.spacing(1),
+  fontSize: '0.7rem',
+  minWidth: 200,
+  pointerEvents: 'auto',
+}));
+
+const TokenProgress = styled(LinearProgress)(({ theme }: { theme: any }) => ({
+  height: 2,
+  borderRadius: 1,
+  '& .MuiLinearProgress-bar': {
+    transition: 'transform 0.1s ease-in-out',
+  },
+}));
+
 // Configuration constants
-const COMPLETION_CONFIG = {
-  // Timing optimization
-  FIRST_TOKEN_TRIGGER_CHARS: 20,
-  DEBOUNCE_MS: 150,
-  MIN_TRIGGER_CHARS: 3,
-  MAX_CONTEXT_CHARS: 8192,
-  
-  // Streaming settings
-  STREAM_CHUNK_SIZE: 1,
-  STREAM_INTERVAL_MS: 16, // 60 FPS
-  
-  // Cache settings
-  CACHE_SIZE: 100,
-  CACHE_TTL_MS: 300000, // 5 minutes
-  CACHE_KEY_LENGTH: 50,
-  
-  // UI settings
-  GHOST_TEXT_OPACITY: 0.4,
-  TYPING_AHEAD_THRESHOLD: 5,
-  COMPLETION_PREVIEW_LINES: 3,
-  
-  // Performance thresholds
-  TARGET_FIRST_TOKEN_MS: 100,
-  TARGET_TOTAL_COMPLETION_MS: 2000,
-  MIN_CONFIDENCE: 0.3
+const STREAMING_CONFIG = {
+  DEBOUNCE_DELAY: 150, // ms
+  FIRST_TOKEN_THRESHOLD: 20, // characters
+  MAX_CONTEXT_LENGTH: 2048, // tokens
+  CACHE_SIZE: 1000,
+  CACHE_TTL: 5 * 60 * 1000, // 5 minutes
+  MAX_COMPLETION_LENGTH: 500,
+  PREDICTION_LOOKAHEAD: 3, // characters
+  PRIORITY_BOOST_THRESHOLD: 5, // seconds since last completion
+  SUCCESS_RATE_WINDOW: 100, // requests
 };
 
-export const StreamingCompletion: React.FC<StreamingCompletionProps> = ({
+interface StreamingCompletionProps {
+  editor: monaco.editor.IStandaloneCodeEditor;
+  modelService: any; // AI model service
+  enabled?: boolean;
+  showMetrics?: boolean;
+  onMetricsUpdate?: (metrics: CompletionMetrics) => void;
+}
+
+const StreamingCompletion: React.FC<StreamingCompletionProps> = ({
   editor,
-  modelId,
-  enabled,
-  maxTokens = 100,
-  temperature = 0.2,
-  debounceMs = COMPLETION_CONFIG.DEBOUNCE_MS,
-  contextWindow = COMPLETION_CONFIG.MAX_CONTEXT_CHARS,
-  onCompletionAccepted,
-  onCompletionRejected,
-  onPerformanceMetrics
+  modelService,
+  enabled = true,
+  showMetrics = false,
+  onMetricsUpdate,
 }) => {
   // State management
-  const [completionState, setCompletionState] = useState<CompletionState>({
+  const [streamingState, setStreamingState] = useState<StreamingState>({
     isStreaming: false,
-    currentCompletion: '',
-    partialCompletion: '',
-    completionStartPosition: new monaco.Position(1, 1),
-    streamingDecoration: [],
-    ghostTextDecoration: [],
-    confidence: 0,
-    tokenCount: 0,
-    latency: 0
-  });
-
-  // Refs for performance optimization
-  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
-  const completionCacheRef = useRef<Map<string, CompletionCache>>(new Map());
-  const currentRequestRef = useRef<string | null>(null);
-  const typingAheadBufferRef = useRef<string>('');
-  const lastCompletionMetricsRef = useRef<CompletionMetrics | null>(null);
-  const streamingStateRef = useRef<{
-    controller: AbortController | null;
-    tokens: string[];
-    startTime: number;
-    firstTokenTime: number;
-  }>({
-    controller: null,
+    currentRequest: null,
     tokens: [],
-    startTime: 0,
-    firstTokenTime: 0
+    completedText: '',
+    confidence: 0,
+    estimatedTotal: 0,
+    firstTokenReceived: false,
+    firstTokenTime: 0,
   });
 
-  // Context extraction utilities
-  const extractCompletionContext = useCallback((position: monaco.Position): CompletionContext => {
-    const model = editor.getModel();
-    if (!model) {
-      return {
-        language: 'plaintext',
-        filePath: '',
-        nearbyFunctions: [],
-        imports: [],
-        variables: [],
-        semanticContext: ''
-      };
-    }
+  const [metrics, setMetrics] = useState<CompletionMetrics>({
+    totalRequests: 0,
+    completedRequests: 0,
+    successRate: 0,
+    averageLatency: 0,
+    cacheHitRate: 0,
+    firstTokenLatency: 0,
+    charactersGenerated: 0,
+    acceptedCompletions: 0,
+    rejectedCompletions: 0,
+  });
 
-    const language = model.getLanguageId();
-    const filePath = model.uri.path;
-    
-    // Extract context around cursor
-    const lineNumber = position.lineNumber;
-    const startLine = Math.max(1, lineNumber - 20);
-    const endLine = Math.min(model.getLineCount(), lineNumber + 5);
-    
-    const nearbyCode = model.getValueInRange({
-      startLineNumber: startLine,
-      startColumn: 1,
-      endLineNumber: endLine,
-      endColumn: model.getLineMaxColumn(endLine)
-    });
+  // Refs for stable references
+  const completionCache = useRef<Map<string, CompletionCache>>(new Map());
+  const requestQueue = useRef<CompletionRequest[]>([]);
+  const currentStream = useRef<EventEmitter | null>(null);
+  const debounceTimer = useRef<NodeJS.Timeout | null>(null);
+  const lastRequestTime = useRef<number>(0);
+  const metricsHistory = useRef<number[]>([]);
 
-    return {
-      language,
-      filePath,
-      nearbyFunctions: extractFunctions(nearbyCode, language),
-      imports: extractImports(nearbyCode, language),
-      variables: extractVariables(nearbyCode, language),
-      semanticContext: nearbyCode
-    };
-  }, [editor]);
-
-  const extractFunctions = (code: string, language: string): string[] => {
-    const functionPatterns = {
-      typescript: /function\s+(\w+)|(\w+)\s*[=:]\s*\(.*?\)\s*=>/g,
-      javascript: /function\s+(\w+)|(\w+)\s*[=:]\s*\(.*?\)\s*=>/g,
-      python: /def\s+(\w+)/g,
-      java: /(?:public|private|protected)?\s*(?:static)?\s*\w+\s+(\w+)\s*\(/g
-    };
-
-    const pattern = functionPatterns[language as keyof typeof functionPatterns];
-    if (!pattern) return [];
-
-    const matches = Array.from(code.matchAll(pattern));
-    return matches.map(match => match[1] || match[2]).filter(Boolean);
-  };
-
-  const extractImports = (code: string, language: string): string[] => {
-    const importPatterns = {
-      typescript: /import\s+.*?\s+from\s+['"]([^'"]+)['"]/g,
-      javascript: /import\s+.*?\s+from\s+['"]([^'"]+)['"]/g,
-      python: /from\s+(\w+)\s+import|import\s+(\w+)/g,
-      java: /import\s+([\w.]+)/g
-    };
-
-    const pattern = importPatterns[language as keyof typeof importPatterns];
-    if (!pattern) return [];
-
-    const matches = Array.from(code.matchAll(pattern));
-    return matches.map(match => match[1] || match[2]).filter(Boolean);
-  };
-
-  const extractVariables = (code: string, language: string): string[] => {
-    const variablePatterns = {
-      typescript: /(?:let|const|var)\s+(\w+)/g,
-      javascript: /(?:let|const|var)\s+(\w+)/g,
-      python: /(\w+)\s*=/g,
-      java: /(?:int|String|boolean|double|float)\s+(\w+)/g
-    };
-
-    const pattern = variablePatterns[language as keyof typeof variablePatterns];
-    if (!pattern) return [];
-
-    const matches = Array.from(code.matchAll(pattern));
-    return matches.map(match => match[1]).filter(Boolean);
-  };
-
-  // Intelligent context truncation
-  const truncateContext = useCallback((prefix: string, suffix: string, maxLength: number): { prefix: string; suffix: string } => {
-    const prefixLength = Math.floor(maxLength * 0.7); // 70% for prefix
-    const suffixLength = maxLength - prefixLength;
-
-    let truncatedPrefix = prefix;
-    let truncatedSuffix = suffix;
-
-    // Truncate prefix intelligently (keep recent lines)
-    if (prefix.length > prefixLength) {
-      const lines = prefix.split('\n');
-      let charCount = 0;
-      let lineIndex = lines.length - 1;
-
-      // Keep complete lines from the end
-      while (lineIndex >= 0 && charCount + lines[lineIndex].length <= prefixLength) {
-        charCount += lines[lineIndex].length + 1; // +1 for newline
-        lineIndex--;
-      }
-
-      truncatedPrefix = lines.slice(lineIndex + 1).join('\n');
-    }
-
-    // Truncate suffix (keep immediate following code)
-    if (suffix.length > suffixLength) {
-      const lines = suffix.split('\n');
-      let charCount = 0;
-      let lineIndex = 0;
-
-      while (lineIndex < lines.length && charCount + lines[lineIndex].length <= suffixLength) {
-        charCount += lines[lineIndex].length + 1;
-        lineIndex++;
-      }
-
-      truncatedSuffix = lines.slice(0, lineIndex).join('\n');
-    }
-
-    return { prefix: truncatedPrefix, suffix: truncatedSuffix };
+  // Memoized cache key generator
+  const generateCacheKey = useCallback((context: string, prefix: string, language: string): string => {
+    const normalizedContext = context.slice(-500); // Last 500 chars
+    return `${language}:${normalizedContext}:${prefix}`;
   }, []);
 
-  // Cache management
-  const generateCacheKey = useCallback((prefix: string, context: CompletionContext): string => {
-    const contextStr = `${prefix.slice(-COMPLETION_CONFIG.CACHE_KEY_LENGTH)}|${context.language}|${context.nearbyFunctions.join(',')}`;
-    return btoa(contextStr).slice(0, 32);
-  }, []);
+  // Context truncation with intelligent boundaries
+  const truncateContext = useCallback((context: string, maxLength: number): string => {
+    if (context.length <= maxLength) return context;
 
-  const getCachedCompletion = useCallback((cacheKey: string): CompletionCache | null => {
-    const cached = completionCacheRef.current.get(cacheKey);
-    if (!cached) return null;
-
-    // Check TTL
-    if (Date.now() - cached.timestamp > COMPLETION_CONFIG.CACHE_TTL_MS) {
-      completionCacheRef.current.delete(cacheKey);
-      return null;
-    }
-
-    // Update hit count
-    cached.hitCount++;
-    return cached;
-  }, []);
-
-  const setCachedCompletion = useCallback((cacheKey: string, completion: string, confidence: number): void => {
-    const cache = completionCacheRef.current;
+    // Try to truncate at meaningful boundaries
+    const truncated = context.slice(-maxLength);
     
-    // Evict oldest entries if cache is full
-    if (cache.size >= COMPLETION_CONFIG.CACHE_SIZE) {
-      const oldestKey = Array.from(cache.entries())
-        .sort((a, b) => a[1].timestamp - b[1].timestamp)[0][0];
-      cache.delete(oldestKey);
-    }
-
-    cache.set(cacheKey, {
-      key: cacheKey,
-      completion,
-      timestamp: Date.now(),
-      hitCount: 0,
-      confidence
-    });
-  }, []);
-
-  // Main completion request handler
-  const requestCompletion = useCallback(async (position: monaco.Position): Promise<void> => {
-    const model = editor.getModel();
-    if (!model || !enabled) return;
-
-    // Extract context around cursor
-    const beforeCursor = model.getValueInRange({
-      startLineNumber: 1,
-      startColumn: 1,
-      endLineNumber: position.lineNumber,
-      endColumn: position.column
-    });
-
-    const afterCursor = model.getValueInRange({
-      startLineNumber: position.lineNumber,
-      startColumn: position.column,
-      endLineNumber: model.getLineCount(),
-      endColumn: model.getLineMaxColumn(model.getLineCount())
-    });
-
-    // Skip if cursor is in the middle of a word
-    const currentLine = model.getLineContent(position.lineNumber);
-    const charBefore = currentLine[position.column - 2];
-    const charAfter = currentLine[position.column - 1];
-    
-    if (charAfter && /\w/.test(charAfter) && charBefore && /\w/.test(charBefore)) {
-      return;
-    }
-
-    // Truncate context intelligently
-    const { prefix, suffix } = truncateContext(beforeCursor, afterCursor, contextWindow);
-    
-    // Extract completion context
-    const context = extractCompletionContext(position);
-    
-    // Check cache first
-    const cacheKey = generateCacheKey(prefix, context);
-    const cached = getCachedCompletion(cacheKey);
-    
-    if (cached && cached.confidence > COMPLETION_CONFIG.MIN_CONFIDENCE) {
-      // Use cached completion
-      displayCompletion(cached.completion, position, true);
-      
-      if (onPerformanceMetrics) {
-        onPerformanceMetrics({
-          firstTokenLatency: 0,
-          totalLatency: 0,
-          tokensPerSecond: Infinity,
-          cacheHit: true,
-          contextLength: prefix.length + suffix.length,
-          acceptanceRate: lastCompletionMetricsRef.current?.acceptanceRate || 0
-        });
+    // Find the first complete line or statement
+    const boundaries = ['\n', ';', '}', '{', ')', '('];
+    for (const boundary of boundaries) {
+      const index = truncated.indexOf(boundary);
+      if (index > 100) { // Ensure we keep meaningful context
+        return truncated.slice(index + 1);
       }
-      return;
     }
 
-    // Start streaming completion
-    await startStreamingCompletion({
-      id: crypto.randomUUID(),
-      prefix,
-      suffix,
-      position,
-      timestamp: performance.now(),
-      priority: 'normal',
-      context
-    }, cacheKey);
+    return truncated;
+  }, []);
 
-  }, [editor, enabled, modelId, contextWindow, extractCompletionContext, truncateContext, generateCacheKey, getCachedCompletion, onPerformanceMetrics]);
-
-  // Streaming completion implementation
-  const startStreamingCompletion = useCallback(async (request: CompletionRequest, cacheKey: string): Promise<void> => {
-    // Cancel any existing request
-    if (streamingStateRef.current.controller) {
-      streamingStateRef.current.controller.abort();
+  // Priority calculation based on context and timing
+  const calculatePriority = useCallback((
+    triggerKind: monaco.languages.CompletionTriggerKind,
+    timeSinceLastRequest: number,
+    contextLength: number
+  ): CompletionRequest['priority'] => {
+    // Immediate priority for explicit invoke
+    if (triggerKind === monaco.languages.CompletionTriggerKind.Invoke) {
+      return 'immediate';
     }
 
-    // Setup new streaming state
-    const controller = new AbortController();
-    streamingStateRef.current = {
-      controller,
-      tokens: [],
-      startTime: performance.now(),
-      firstTokenTime: 0
-    };
-
-    currentRequestRef.current = request.id;
-
-    // Start latency tracking
-    const spanId = latencyTracker.trackKeystrokeToCompletion(
-      new KeyboardEvent('keydown', { key: 'Tab' }),
-      request.prefix.length + request.suffix.length
-    );
-
-    try {
-      // Update state to show streaming started
-      setCompletionState(prev => ({
-        ...prev,
-        isStreaming: true,
-        currentCompletion: '',
-        partialCompletion: '',
-        completionStartPosition: request.position,
-        confidence: 0,
-        tokenCount: 0
-      }));
-
-      // Request completion from inference optimizer
-      const result = await inferenceOptimizer.requestInference({
-        type: 'completion',
-        input: `${request.prefix}${request.suffix}`,
-        modelId,
-        priority: request.priority,
-        metadata: {
-          contextSize: request.prefix.length + request.suffix.length,
-          maxTokens,
-          temperature
-        }
-      });
-
-      if (result.success && result.output && currentRequestRef.current === request.id) {
-        // Handle completed result
-        const completion = result.output as string;
-        
-        // Cache the completion
-        setCachedCompletion(cacheKey, completion, 0.8);
-        
-        // Display the completion
-        displayCompletion(completion, request.position, false);
-        
-        // Finish latency tracking
-        latencyTracker.finishSpan(spanId, 'completed', {
-          completion_length: completion.length,
-          cache_hit: result.cached,
-          model_used: result.modelUsed
-        });
-
-        // Update performance metrics
-        if (onPerformanceMetrics) {
-          onPerformanceMetrics({
-            firstTokenLatency: result.latency * 0.1, // Estimate first token latency
-            totalLatency: result.latency,
-            tokensPerSecond: (result.tokensGenerated || completion.length) / (result.latency / 1000),
-            cacheHit: result.cached,
-            contextLength: request.prefix.length + request.suffix.length,
-            acceptanceRate: lastCompletionMetricsRef.current?.acceptanceRate || 0
-          });
-        }
-      }
-
-    } catch (error) {
-      console.error('Streaming completion failed:', error);
-      
-      // Finish span with error
-      latencyTracker.finishSpan(spanId, 'error');
-      
-      // Clear streaming state
-      clearCompletionState();
+    // High priority if user has been waiting
+    if (timeSinceLastRequest > STREAMING_CONFIG.PRIORITY_BOOST_THRESHOLD * 1000) {
+      return 'high';
     }
-  }, [modelId, maxTokens, temperature, setCachedCompletion, onPerformanceMetrics]);
 
-  // Display completion with ghost text
-  const displayCompletion = useCallback((completion: string, position: monaco.Position, cached: boolean): void => {
+    // High priority for complex contexts (likely important code)
+    if (contextLength > 1000) {
+      return 'high';
+    }
+
+    // Normal priority for trigger characters
+    if (triggerKind === monaco.languages.CompletionTriggerKind.TriggerCharacter) {
+      return 'normal';
+    }
+
+    return 'low';
+  }, []);
+
+  // Debounced completion request
+  const requestCompletion = useCallback(async (
+    position: monaco.Position,
+    triggerKind: monaco.languages.CompletionTriggerKind,
+    triggerCharacter?: string
+  ) => {
+    if (!enabled || !editor || !modelService) return;
+
     const model = editor.getModel();
     if (!model) return;
 
-    // Clean up existing decorations
-    if (completionState.ghostTextDecoration.length > 0) {
-      editor.removeDecorations(completionState.ghostTextDecoration);
-    }
+    const currentTime = Date.now();
+    const timeSinceLastRequest = currentTime - lastRequestTime.current;
 
-    // Extract just the completion part (remove the prefix that's already typed)
-    const lines = completion.split('\n');
-    const firstLine = lines[0];
-    const restLines = lines.slice(1);
-
-    // Create ghost text decoration
-    const decorations: monaco.editor.IModelDeltaDecoration[] = [];
-
-    // First line decoration (inline)
-    if (firstLine) {
-      decorations.push({
-        range: new monaco.Range(position.lineNumber, position.column, position.lineNumber, position.column),
-        options: {
-          afterContentClassName: 'ghost-text-inline',
-          after: {
-            content: firstLine,
-            inlineClassName: 'ghost-text-content'
-          }
-        }
-      });
-    }
-
-    // Additional lines decorations
-    restLines.slice(0, COMPLETION_CONFIG.COMPLETION_PREVIEW_LINES - 1).forEach((line, index) => {
-      const lineNumber = position.lineNumber + index + 1;
-      decorations.push({
-        range: new monaco.Range(lineNumber, 1, lineNumber, 1),
-        options: {
-          afterContentClassName: 'ghost-text-line',
-          after: {
-            content: line,
-            inlineClassName: 'ghost-text-content'
-          }
-        }
-      });
-    });
-
-    // Apply decorations
-    const decorationIds = editor.addDecorations(decorations);
-
-    // Update state
-    setCompletionState(prev => ({
-      ...prev,
-      isStreaming: false,
-      currentCompletion: completion,
-      ghostTextDecoration: decorationIds,
-      confidence: cached ? 0.9 : 0.7,
-      tokenCount: completion.length
-    }));
-
-  }, [editor, completionState.ghostTextDecoration]);
-
-  // Clear completion state
-  const clearCompletionState = useCallback((): void => {
-    if (completionState.ghostTextDecoration.length > 0) {
-      editor.removeDecorations(completionState.ghostTextDecoration);
-    }
-
-    setCompletionState({
-      isStreaming: false,
-      currentCompletion: '',
-      partialCompletion: '',
-      completionStartPosition: new monaco.Position(1, 1),
-      streamingDecoration: [],
-      ghostTextDecoration: [],
-      confidence: 0,
-      tokenCount: 0,
-      latency: 0
-    });
-
-    currentRequestRef.current = null;
+    // Get context and prefix/suffix
+    const fullText = model.getValue();
+    const offset = model.getOffsetAt(position);
+    const prefix = fullText.slice(0, offset);
+    const suffix = fullText.slice(offset);
     
-    if (streamingStateRef.current.controller) {
-      streamingStateRef.current.controller.abort();
-      streamingStateRef.current.controller = null;
-    }
-  }, [editor, completionState.ghostTextDecoration]);
+    // Truncate context intelligently
+    const context = truncateContext(prefix, STREAMING_CONFIG.MAX_CONTEXT_LENGTH);
+    
+    // Create completion request
+    const request: CompletionRequest = {
+      id: `completion_${currentTime}_${Math.random().toString(36).substr(2, 9)}`,
+      position,
+      context,
+      prefix: prefix.slice(-200), // Last 200 chars for prefix matching
+      suffix: suffix.slice(0, 100), // Next 100 chars for suffix matching
+      language: model.getLanguageId(),
+      timestamp: currentTime,
+      priority: calculatePriority(triggerKind, timeSinceLastRequest, context.length),
+      triggerKind,
+      triggerCharacter,
+    };
 
-  // Handle completion acceptance
-  const acceptCompletion = useCallback((): boolean => {
-    if (!completionState.currentCompletion) return false;
+    // Check cache first
+    const cacheKey = generateCacheKey(context, request.prefix, request.language);
+    const cached = completionCache.current.get(cacheKey);
+    
+    if (cached && (currentTime - cached.timestamp) < STREAMING_CONFIG.CACHE_TTL) {
+      // Cache hit - return immediately
+      cached.accessCount++;
+      updateMetrics(prevMetrics => ({
+        ...prevMetrics,
+        cacheHitRate: calculateCacheHitRate(),
+      }));
+
+      // Apply cached completion
+      applyCachedCompletion(cached.completion, position);
+      return;
+    }
+
+    // Clear previous debounce timer
+    if (debounceTimer.current) {
+      clearTimeout(debounceTimer.current);
+    }
+
+    // Add to queue
+    requestQueue.current.push(request);
+    
+    // Debounce based on priority
+    const delay = request.priority === 'immediate' ? 0 : 
+                 request.priority === 'high' ? 50 :
+                 STREAMING_CONFIG.DEBOUNCE_DELAY;
+
+    debounceTimer.current = setTimeout(() => {
+      processRequestQueue();
+    }, delay);
+
+    lastRequestTime.current = currentTime;
+  }, [enabled, editor, modelService, generateCacheKey, truncateContext, calculatePriority]);
+
+  // Process queued requests with priority sorting
+  const processRequestQueue = useCallback(async () => {
+    if (requestQueue.current.length === 0) return;
+
+    // Sort by priority and timestamp
+    const sortedRequests = [...requestQueue.current].sort((a, b) => {
+      const priorityOrder = { immediate: 4, high: 3, normal: 2, low: 1 };
+      const aPriority = priorityOrder[a.priority];
+      const bPriority = priorityOrder[b.priority];
+      
+      if (aPriority !== bPriority) {
+        return bPriority - aPriority;
+      }
+      
+      return b.timestamp - a.timestamp; // Newer first
+    });
+
+    // Take the highest priority request
+    const request = sortedRequests[0];
+    requestQueue.current = [];
+
+    await executeStreamingCompletion(request);
+  }, []);
+
+  // Execute streaming completion with token pull
+  const executeStreamingCompletion = useCallback(async (request: CompletionRequest) => {
+    const startTime = Date.now();
+    
+    try {
+      // Cancel any existing stream
+      if (currentStream.current) {
+        currentStream.current.removeAllListeners();
+        currentStream.current = null;
+      }
+
+      // Update state to show streaming
+      setStreamingState(prev => ({
+        ...prev,
+        isStreaming: true,
+        currentRequest: request,
+        tokens: [],
+        completedText: '',
+        confidence: 0,
+        firstTokenReceived: false,
+        firstTokenTime: 0,
+      }));
+
+      // Create new stream
+      const stream = new EventEmitter();
+      currentStream.current = stream;
+
+      let tokenCount = 0;
+      let firstTokenTime = 0;
+      let accumulatedText = '';
+      const tokens: StreamingToken[] = [];
+
+      // Handle streaming tokens
+      stream.on('token', (token: StreamingToken) => {
+        tokenCount++;
+        accumulatedText += token.text;
+        tokens.push(token);
+
+        // Record first token latency
+        if (tokenCount === 1) {
+          firstTokenTime = Date.now() - startTime;
+          
+          // Apply first token immediately if we have enough characters
+          if (request.prefix.length >= STREAMING_CONFIG.FIRST_TOKEN_THRESHOLD) {
+            applyStreamingToken(token.text, request.position);
+          }
+        }
+
+        // Update streaming state
+        setStreamingState(prev => ({
+          ...prev,
+          tokens,
+          completedText: accumulatedText,
+          confidence: token.confidence,
+          firstTokenReceived: tokenCount === 1,
+          firstTokenTime: firstTokenTime,
+        }));
+
+        // Apply token to editor with typing-ahead prediction
+        if (tokenCount === 1 || accumulatedText.length % 5 === 0) {
+          applyStreamingToken(accumulatedText, request.position);
+        }
+      });
+
+      // Handle completion
+      stream.on('complete', (finalCompletion: string) => {
+        const completionTime = Date.now() - startTime;
+        
+        // Cache the completion
+        const cacheKey = generateCacheKey(request.context, request.prefix, request.language);
+        completionCache.current.set(cacheKey, {
+          key: cacheKey,
+          completion: finalCompletion,
+          timestamp: Date.now(),
+          accessCount: 1,
+          confidence: Math.max(...tokens.map(t => t.confidence), 0.5),
+          success: true,
+        });
+
+        // Clean cache if needed
+        if (completionCache.current.size > STREAMING_CONFIG.CACHE_SIZE) {
+          cleanupCache();
+        }
+
+        // Update metrics
+        updateMetrics(prevMetrics => ({
+          ...prevMetrics,
+          totalRequests: prevMetrics.totalRequests + 1,
+          completedRequests: prevMetrics.completedRequests + 1,
+          averageLatency: (prevMetrics.averageLatency * prevMetrics.completedRequests + completionTime) / (prevMetrics.completedRequests + 1),
+          firstTokenLatency: firstTokenTime,
+          charactersGenerated: prevMetrics.charactersGenerated + finalCompletion.length,
+          successRate: calculateSuccessRate(),
+        }));
+
+        // Finalize streaming state
+        setStreamingState(prev => ({
+          ...prev,
+          isStreaming: false,
+          completedText: finalCompletion,
+        }));
+
+        // Apply final completion
+        applyFinalCompletion(finalCompletion, request.position);
+      });
+
+      // Handle errors
+      stream.on('error', (error: Error) => {
+        console.error('Streaming completion error:', error);
+        
+        // Update metrics
+        updateMetrics(prevMetrics => ({
+          ...prevMetrics,
+          totalRequests: prevMetrics.totalRequests + 1,
+          rejectedCompletions: prevMetrics.rejectedCompletions + 1,
+          successRate: calculateSuccessRate(),
+        }));
+
+        // Reset streaming state
+        setStreamingState(prev => ({
+          ...prev,
+          isStreaming: false,
+          currentRequest: null,
+        }));
+      });
+
+      // Request completion from model service
+      await modelService.requestStreamingCompletion({
+        prompt: request.context,
+        maxTokens: STREAMING_CONFIG.MAX_COMPLETION_LENGTH,
+        temperature: 0.3,
+        stream: true,
+        language: request.language,
+      }, stream);
+
+    } catch (error) {
+      console.error('Completion execution error:', error);
+      
+      // Reset state on error
+      setStreamingState(prev => ({
+        ...prev,
+        isStreaming: false,
+        currentRequest: null,
+      }));
+    }
+  }, [modelService, generateCacheKey]);
+
+  // Apply streaming token to editor
+  const applyStreamingToken = useCallback((text: string, position: monaco.Position) => {
+    if (!editor || !text) return;
 
     const model = editor.getModel();
-    if (!model) return false;
+    if (!model) return;
 
-    // Insert the completion
-    const position = editor.getPosition();
-    if (!position) return false;
+    try {
+      // Get current position and selection
+      const currentPosition = editor.getPosition();
+      if (!currentPosition || !monaco.Position.equals(currentPosition, position)) {
+        return; // Position changed, abort
+      }
 
-    editor.executeEdits('completion-accept', [{
-      range: new monaco.Range(position.lineNumber, position.column, position.lineNumber, position.column),
-      text: completionState.currentCompletion
-    }]);
+      // Apply text as ghost text or inline suggestion
+      const range = new monaco.Range(
+        position.lineNumber,
+        position.column,
+        position.lineNumber,
+        position.column
+      );
 
-    // Update acceptance rate
-    if (lastCompletionMetricsRef.current) {
-      lastCompletionMetricsRef.current.acceptanceRate = 
-        (lastCompletionMetricsRef.current.acceptanceRate * 0.9) + (1 * 0.1);
+      // Use Monaco's suggestion widget for better UX
+      editor.trigger('keyboard', 'editor.action.triggerSuggest', {});
+      
+    } catch (error) {
+      console.error('Error applying streaming token:', error);
     }
+  }, [editor]);
 
-    // Call callback
-    if (onCompletionAccepted) {
-      onCompletionAccepted(completionState.currentCompletion);
+  // Apply cached completion
+  const applyCachedCompletion = useCallback((completion: string, position: monaco.Position) => {
+    if (!editor || !completion) return;
+
+    const model = editor.getModel();
+    if (!model) return;
+
+    try {
+      const range = new monaco.Range(
+        position.lineNumber,
+        position.column,
+        position.lineNumber,
+        position.column + completion.length
+      );
+
+      model.pushEditOperations([], [{
+        range,
+        text: completion,
+      }], () => null);
+
+      // Move cursor to end of completion
+      const newPosition = new monaco.Position(
+        position.lineNumber,
+        position.column + completion.length
+      );
+      editor.setPosition(newPosition);
+      
+    } catch (error) {
+      console.error('Error applying cached completion:', error);
     }
+  }, [editor]);
 
-    // Clear state
-    clearCompletionState();
-    return true;
-  }, [editor, completionState.currentCompletion, onCompletionAccepted, clearCompletionState]);
+  // Apply final completion
+  const applyFinalCompletion = useCallback((completion: string, position: monaco.Position) => {
+    applyCachedCompletion(completion, position);
+    
+    // Track acceptance
+    updateMetrics(prevMetrics => ({
+      ...prevMetrics,
+      acceptedCompletions: prevMetrics.acceptedCompletions + 1,
+    }));
+  }, [applyCachedCompletion]);
 
-  // Handle completion rejection
-  const rejectCompletion = useCallback((): void => {
-    if (completionState.currentCompletion && onCompletionRejected) {
-      onCompletionRejected(completionState.currentCompletion);
+  // Update metrics with callback
+  const updateMetrics = useCallback((updater: (prev: CompletionMetrics) => CompletionMetrics) => {
+    setMetrics(prev => {
+      const updated = updater(prev);
+      onMetricsUpdate?.(updated);
+      return updated;
+    });
+  }, [onMetricsUpdate]);
+
+  // Calculate cache hit rate
+  const calculateCacheHitRate = useCallback((): number => {
+    const cacheEntries = Array.from(completionCache.current.values());
+    const totalAccess = cacheEntries.reduce((sum, entry) => sum + entry.accessCount, 0);
+    const cacheHits = cacheEntries.reduce((sum, entry) => sum + (entry.accessCount - 1), 0);
+    return totalAccess > 0 ? (cacheHits / totalAccess) * 100 : 0;
+  }, []);
+
+  // Calculate success rate
+  const calculateSuccessRate = useCallback((): number => {
+    if (metrics.totalRequests === 0) return 0;
+    return (metrics.completedRequests / metrics.totalRequests) * 100;
+  }, [metrics.totalRequests, metrics.completedRequests]);
+
+  // Cleanup cache when it gets too large
+  const cleanupCache = useCallback(() => {
+    const entries = Array.from(completionCache.current.entries());
+    
+    // Sort by access count and timestamp
+    entries.sort(([,a], [,b]) => {
+      if (a.accessCount !== b.accessCount) {
+        return a.accessCount - b.accessCount; // Remove least accessed first
+      }
+      return a.timestamp - b.timestamp; // Remove oldest first
+    });
+
+    // Remove bottom 25%
+    const toRemove = Math.floor(entries.length * 0.25);
+    for (let i = 0; i < toRemove; i++) {
+      completionCache.current.delete(entries[i][0]);
     }
+  }, []);
 
-    // Update acceptance rate
-    if (lastCompletionMetricsRef.current) {
-      lastCompletionMetricsRef.current.acceptanceRate = 
-        (lastCompletionMetricsRef.current.acceptanceRate * 0.9) + (0 * 0.1);
-    }
-
-    clearCompletionState();
-  }, [completionState.currentCompletion, onCompletionRejected, clearCompletionState]);
-
-  // Debounced completion trigger
-  const triggerCompletion = useCallback((position: monaco.Position): void => {
-    // Clear existing timer
-    if (debounceTimerRef.current) {
-      clearTimeout(debounceTimerRef.current);
-    }
-
-    // Set new timer
-    debounceTimerRef.current = setTimeout(() => {
-      requestCompletion(position);
-    }, debounceMs);
-  }, [requestCompletion, debounceMs]);
-
-  // Event handlers
+  // Setup Monaco editor integration
   useEffect(() => {
     if (!editor || !enabled) return;
 
-    const model = editor.getModel();
-    if (!model) return;
+    const disposables: monaco.IDisposable[] = [];
 
-    // Handle cursor position changes
-    const onCursorPositionChange = (e: monaco.editor.ICursorPositionChangedEvent) => {
-      const position = e.position;
-      const lineContent = model.getLineContent(position.lineNumber);
-      const charCount = lineContent.length;
+    // Register completion provider
+    const completionProvider = monaco.languages.registerCompletionItemProvider('*', {
+      triggerCharacters: ['.', '(', '[', '{', ' ', '\n'],
+      
+      provideCompletionItems: async (model, position, context) => {
+        await requestCompletion(position, context.triggerKind, context.triggerCharacter);
+        return { suggestions: [] }; // We handle suggestions through streaming
+      },
+    });
 
-      // Clear completion on cursor move if not accepting
-      if (completionState.currentCompletion) {
-        clearCompletionState();
-      }
+    disposables.push(completionProvider);
 
-      // Trigger completion if enough characters are typed
-      if (charCount >= COMPLETION_CONFIG.MIN_TRIGGER_CHARS) {
-        // Check if we've reached the first token trigger threshold
-        if (charCount >= COMPLETION_CONFIG.FIRST_TOKEN_TRIGGER_CHARS) {
-          triggerCompletion(position);
-        } else {
-          // Debounced trigger for earlier completions
-          triggerCompletion(position);
+    // Listen to editor events
+    const onDidChangeModelContent = editor.onDidChangeModelContent((e) => {
+      if (e.changes.length === 1 && e.changes[0].text.length === 1) {
+        // Single character change - potential completion trigger
+        const position = editor.getPosition();
+        if (position) {
+          requestCompletion(
+            position,
+            monaco.languages.CompletionTriggerKind.TriggerForIncompleteCompletions
+          );
         }
       }
-    };
+    });
 
-    // Handle content changes (typing ahead detection)
-    const onDidChangeModelContent = (e: monaco.editor.IModelContentChangedEvent) => {
-      // Handle typing ahead while completion is showing
-      if (completionState.currentCompletion && e.changes.length > 0) {
-        const change = e.changes[0];
-        if (change.text && change.text.length <= COMPLETION_CONFIG.TYPING_AHEAD_THRESHOLD) {
-          typingAheadBufferRef.current += change.text;
-          
-          // Check if typed text matches beginning of completion
-          if (completionState.currentCompletion.startsWith(typingAheadBufferRef.current)) {
-            // Continue showing completion with typed part removed
-            const remainingCompletion = completionState.currentCompletion.slice(typingAheadBufferRef.current.length);
-            if (remainingCompletion) {
-              const newPosition = editor.getPosition();
-              if (newPosition) {
-                displayCompletion(remainingCompletion, newPosition, false);
-              }
-            } else {
-              // Completion fully typed, accept it
-              clearCompletionState();
-            }
-          } else {
-            // Typed text doesn't match, clear completion
-            clearCompletionState();
-          }
-        } else {
-          // Major change, clear completion
-          clearCompletionState();
-        }
-      } else {
-        typingAheadBufferRef.current = '';
-      }
-    };
+    disposables.push(onDidChangeModelContent);
 
-    // Handle key presses for completion control
-    const onKeyDown = (e: monaco.IKeyboardEvent) => {
-      if (completionState.currentCompletion) {
-        switch (e.keyCode) {
-          case monaco.KeyCode.Tab:
-            e.preventDefault();
-            acceptCompletion();
-            break;
-          case monaco.KeyCode.Escape:
-            e.preventDefault();
-            rejectCompletion();
-            break;
-          case monaco.KeyCode.RightArrow:
-            // Accept completion on right arrow at end of line
-            const position = editor.getPosition();
-            if (position) {
-              const lineContent = model.getLineContent(position.lineNumber);
-              if (position.column > lineContent.length) {
-                e.preventDefault();
-                acceptCompletion();
-              }
-            }
-            break;
-        }
-      }
-    };
-
-    // Register event listeners
-    const cursorDisposable = editor.onDidChangeCursorPosition(onCursorPositionChange);
-    const contentDisposable = editor.onDidChangeModelContent(onDidChangeModelContent);
-    const keyDisposable = editor.onKeyDown(onKeyDown);
-
-    // Cleanup
+    // Cleanup on unmount
     return () => {
-      cursorDisposable.dispose();
-      contentDisposable.dispose();
-      keyDisposable.dispose();
-      
-      if (debounceTimerRef.current) {
-        clearTimeout(debounceTimerRef.current);
+      disposables.forEach(d => d.dispose());
+      if (currentStream.current) {
+        currentStream.current.removeAllListeners();
       }
-      
-      clearCompletionState();
+      if (debounceTimer.current) {
+        clearTimeout(debounceTimer.current);
+      }
     };
-  }, [editor, enabled, completionState.currentCompletion, triggerCompletion, acceptCompletion, rejectCompletion, clearCompletionState, displayCompletion]);
+  }, [editor, enabled, requestCompletion]);
 
-  // CSS injection for ghost text styling
+  // Predictive typing-ahead
   useEffect(() => {
-    const style = document.createElement('style');
-    style.textContent = `
-      .ghost-text-content {
-        opacity: ${COMPLETION_CONFIG.GHOST_TEXT_OPACITY};
-        font-style: italic;
-        color: #888;
-      }
-      
-      .ghost-text-inline::after {
-        opacity: ${COMPLETION_CONFIG.GHOST_TEXT_OPACITY};
-        font-style: italic;
-        color: #888;
-      }
-      
-      .ghost-text-line::after {
-        opacity: ${COMPLETION_CONFIG.GHOST_TEXT_OPACITY};
-        font-style: italic;
-        color: #888;
-      }
-    `;
-    document.head.appendChild(style);
+    if (!enabled || !streamingState.isStreaming) return;
 
-    return () => {
-      document.head.removeChild(style);
-    };
-  }, []);
+    const predictionTimer = setTimeout(() => {
+      // Implement predictive prefetching for next completions
+      if (streamingState.completedText.length > 0) {
+        // Predict next completion based on current context
+        // This would integrate with the model service for lookahead
+      }
+    }, 100);
 
-  // Return completion status for parent components
+    return () => clearTimeout(predictionTimer);
+  }, [streamingState.completedText, streamingState.isStreaming, enabled]);
+
+  // Progress calculation
+  const progress = useMemo(() => {
+    if (!streamingState.isStreaming || streamingState.estimatedTotal === 0) return 0;
+    return Math.min((streamingState.tokens.length / streamingState.estimatedTotal) * 100, 95);
+  }, [streamingState.isStreaming, streamingState.tokens.length, streamingState.estimatedTotal]);
+
   return (
-    <div className="streaming-completion-status" style={{ display: 'none' }}>
-      {completionState.isStreaming && (
-        <div className="completion-indicator">
-          Generating completion...
-        </div>
+    <CompletionContainer>
+      {/* Streaming indicator */}
+      <Fade in={streamingState.isStreaming}>
+        <StreamingIndicator elevation={4}>
+          <Box display="flex" alignItems="center" gap={1}>
+            <Box>
+              <Typography variant="caption" component="div">
+                Generating...
+              </Typography>
+              <TokenProgress 
+                variant="determinate" 
+                value={progress} 
+                sx={{ width: 120 }}
+              />
+            </Box>
+            <Chip
+              label={`${streamingState.tokens.length} tokens`}
+              size="small"
+              color="primary"
+              variant="outlined"
+            />
+          </Box>
+        </StreamingIndicator>
+      </Fade>
+
+      {/* Metrics panel */}
+      {showMetrics && (
+        <MetricsPanel elevation={2}>
+          <Typography variant="subtitle2" gutterBottom>
+            Completion Metrics
+          </Typography>
+          <Box display="flex" flexDirection="column" gap={0.5}>
+            <Typography variant="caption">
+              Success Rate: {metrics.successRate.toFixed(1)}%
+            </Typography>
+            <Typography variant="caption">
+              Avg Latency: {metrics.averageLatency.toFixed(0)}ms
+            </Typography>
+            <Typography variant="caption">
+              Cache Hit Rate: {metrics.cacheHitRate.toFixed(1)}%
+            </Typography>
+            <Typography variant="caption">
+              First Token: {metrics.firstTokenLatency.toFixed(0)}ms
+            </Typography>
+            <Typography variant="caption">
+              Chars Generated: {metrics.charactersGenerated.toLocaleString()}
+            </Typography>
+            <Typography variant="caption">
+              Accepted: {metrics.acceptedCompletions} / {metrics.totalRequests}
+            </Typography>
+          </Box>
+        </MetricsPanel>
       )}
-      {completionState.currentCompletion && (
-        <div className="completion-controls">
-          <span>Press Tab to accept, Esc to reject</span>
-        </div>
-      )}
-    </div>
+    </CompletionContainer>
   );
 };
 

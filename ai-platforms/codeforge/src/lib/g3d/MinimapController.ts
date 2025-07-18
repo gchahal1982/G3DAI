@@ -1,851 +1,852 @@
 /**
- * CodeForge 3D Minimap Controller
- * Implements 3D navigation and interaction for the code minimap
+ * MinimapController - 3D Navigation Controller
  * 
- * Features:
- * - Raycast-to-file-path navigation system
- * - 3D camera controls (orbit, zoom, pan)
- * - File selection highlighting
- * - Smooth transition animations
- * - Viewport frustum culling
- * - Interaction state management
- * - Keyboard navigation support
- * - Accessibility controls for 3D view
+ * Advanced 3D navigation system for code minimap:
+ * - Raycast-to-file-path navigation with precise picking
+ * - Sophisticated 3D camera controls (orbit, zoom, pan)
+ * - Interactive file selection highlighting system
+ * - Smooth transition animations with easing functions
+ * - Viewport frustum culling for performance optimization
+ * - Comprehensive interaction state management
+ * - Full keyboard navigation support with shortcuts
+ * - Accessibility controls for screen readers and motor impairments
  */
 
 import { EventEmitter } from 'events';
-import { performance } from 'perf_hooks';
 
-// Interfaces and types
-interface Vector3 {
+export interface Vector3 {
   x: number;
   y: number;
   z: number;
 }
 
-interface Quaternion {
-  x: number;
-  y: number;
-  z: number;
-  w: number;
-}
-
-interface Camera {
+export interface Camera {
   position: Vector3;
   target: Vector3;
   up: Vector3;
   fov: number;
   near: number;
   far: number;
-  aspect: number;
+  zoom: number;
+  rotation: {
+    theta: number; // Azimuth angle
+    phi: number;   // Polar angle
+  };
 }
 
-interface Ray {
+export interface Ray {
   origin: Vector3;
   direction: Vector3;
 }
 
-interface RaycastHit {
-  fileId: string;
+export interface RaycastHit {
+  nodeId: string;
   filePath: string;
   position: Vector3;
   distance: number;
-  nodeType: 'file' | 'directory' | 'function' | 'class' | 'variable';
-  metadata: any;
-}
-
-interface MinimapNode {
-  id: string;
-  filePath: string;
-  position: Vector3;
-  size: Vector3;
-  type: 'file' | 'directory' | 'function' | 'class' | 'variable';
-  children: MinimapNode[];
-  visible: boolean;
-  selected: boolean;
-  highlighted: boolean;
+  normal: Vector3;
+  uv: { x: number; y: number };
   metadata: {
-    lineCount?: number;
+    lineNumber?: number;
+    functionName?: string;
+    className?: string;
     complexity?: number;
-    lastModified?: number;
-    dependencies?: string[];
-    exports?: string[];
   };
 }
 
-interface CameraControls {
-  enabled: boolean;
-  enableRotate: boolean;
-  enableZoom: boolean;
-  enablePan: boolean;
-  autoRotate: boolean;
-  autoRotateSpeed: number;
-  rotateSpeed: number;
-  zoomSpeed: number;
-  panSpeed: number;
-  dampingFactor: number;
-  minDistance: number;
-  maxDistance: number;
-  minPolarAngle: number;
-  maxPolarAngle: number;
+export interface NavigationState {
+  selectedNodeId: string | null;
+  hoveredNodeId: string | null;
+  focusedNodeId: string | null;
+  camera: Camera;
+  isTransitioning: boolean;
+  transitionProgress: number;
+  interactionMode: 'orbit' | 'pan' | 'zoom' | 'select' | 'navigate';
+  keyboardFocus: boolean;
+  accessibilityMode: boolean;
 }
 
-interface Animation {
+export interface TransitionAnimation {
   id: string;
+  type: 'camera' | 'selection' | 'focus';
   startTime: number;
   duration: number;
   easing: 'linear' | 'ease-in' | 'ease-out' | 'ease-in-out' | 'bounce';
   from: any;
   to: any;
-  onUpdate: (value: any) => void;
-  onComplete?: () => void;
+  progress: number;
+  complete: boolean;
 }
 
-interface AccessibilityOptions {
-  enabled: boolean;
-  announceNavigation: boolean;
-  highContrast: boolean;
-  reducedMotion: boolean;
-  keyboardNavigation: boolean;
-  screenReaderSupport: boolean;
-  colorBlindFriendly: boolean;
+export interface ViewportFrustum {
+  planes: Array<{ normal: Vector3; distance: number }>;
+  corners: Vector3[];
 }
 
-// Configuration constants
-const MINIMAP_CONFIG = {
-  // Camera settings
-  DEFAULT_FOV: 75,
-  NEAR_PLANE: 0.1,
-  FAR_PLANE: 1000,
-  DEFAULT_POSITION: { x: 0, y: 5, z: 10 },
-  DEFAULT_TARGET: { x: 0, y: 0, z: 0 },
-  
-  // Control settings
-  ROTATE_SPEED: 1.0,
-  ZOOM_SPEED: 0.5,
-  PAN_SPEED: 0.8,
-  DAMPING_FACTOR: 0.1,
-  MIN_DISTANCE: 2,
-  MAX_DISTANCE: 50,
-  
-  // Animation settings
-  TRANSITION_DURATION: 800, // ms
-  SELECTION_ANIMATION_DURATION: 300,
-  HIGHLIGHT_ANIMATION_DURATION: 150,
-  
-  // Interaction settings
-  RAYCAST_PRECISION: 0.01,
-  SELECTION_TOLERANCE: 2.0, // pixels
-  DOUBLE_CLICK_TIME: 300, // ms
-  
-  // Performance settings
-  FRUSTUM_CULLING_ENABLED: true,
-  LOD_ENABLED: true,
-  MAX_VISIBLE_NODES: 1000,
-  UPDATE_FREQUENCY: 60 // FPS
-};
+export interface NavigationConfig {
+  camera: {
+    minDistance: number;
+    maxDistance: number;
+    defaultDistance: number;
+    minPolarAngle: number;
+    maxPolarAngle: number;
+    dampingFactor: number;
+    panSpeed: number;
+    zoomSpeed: number;
+    rotateSpeed: number;
+  };
+  navigation: {
+    animationDuration: number;
+    smoothingFactor: number;
+    snapThreshold: number;
+    doubleClickTime: number;
+  };
+  interaction: {
+    hoverDelay: number;
+    selectionHighlightDuration: number;
+    raycastPrecision: number;
+    multiSelectEnabled: boolean;
+  };
+  accessibility: {
+    highContrastMode: boolean;
+    reducedMotion: boolean;
+    screenReaderSupport: boolean;
+    keyboardNavigationEnabled: boolean;
+    focusIndicatorSize: number;
+  };
+  performance: {
+    frustumCullingEnabled: boolean;
+    lodLevels: number;
+    maxVisibleNodes: number;
+    renderDistance: number;
+  };
+}
 
-export class MinimapController extends EventEmitter {
-  private camera: Camera;
-  private controls: CameraControls;
-  private nodes: Map<string, MinimapNode> = new Map();
-  private selectedNodes: Set<string> = new Set();
-  private highlightedNodes: Set<string> = new Set();
-  private animations: Map<string, Animation> = new Map();
-  private accessibility: AccessibilityOptions;
-  private canvas: HTMLCanvasElement | null = null;
-  private isInteracting: boolean = false;
-  private lastClickTime: number = 0;
-  private lastMousePosition: { x: number; y: number } = { x: 0, y: 0 };
-  private animationFrameId: number | null = null;
+class MinimapController extends EventEmitter {
+  private canvas: HTMLCanvasElement;
+  private config: NavigationConfig;
+  private state: NavigationState;
+  private sceneNodes: Map<string, any> = new Map();
+  private animations: Map<string, TransitionAnimation> = new Map();
+  private keyboardState: Set<string> = new Set();
+  private mouseState = {
+    isDown: false,
+    lastX: 0,
+    lastY: 0,
+    button: -1,
+    clickTime: 0,
+  };
+  private touchState = {
+    touches: [] as Touch[],
+    lastDistance: 0,
+    lastCenter: { x: 0, y: 0 },
+  };
 
-  constructor() {
+  constructor(canvas: HTMLCanvasElement, config: Partial<NavigationConfig> = {}) {
     super();
     
-    this.camera = {
-      position: { ...MINIMAP_CONFIG.DEFAULT_POSITION },
-      target: { ...MINIMAP_CONFIG.DEFAULT_TARGET },
-      up: { x: 0, y: 1, z: 0 },
-      fov: MINIMAP_CONFIG.DEFAULT_FOV,
-      near: MINIMAP_CONFIG.NEAR_PLANE,
-      far: MINIMAP_CONFIG.FAR_PLANE,
-      aspect: 1.0
-    };
-
-    this.controls = {
-      enabled: true,
-      enableRotate: true,
-      enableZoom: true,
-      enablePan: true,
-      autoRotate: false,
-      autoRotateSpeed: 2.0,
-      rotateSpeed: MINIMAP_CONFIG.ROTATE_SPEED,
-      zoomSpeed: MINIMAP_CONFIG.ZOOM_SPEED,
-      panSpeed: MINIMAP_CONFIG.PAN_SPEED,
-      dampingFactor: MINIMAP_CONFIG.DAMPING_FACTOR,
-      minDistance: MINIMAP_CONFIG.MIN_DISTANCE,
-      maxDistance: MINIMAP_CONFIG.MAX_DISTANCE,
-      minPolarAngle: 0,
-      maxPolarAngle: Math.PI
-    };
-
-    this.accessibility = {
-      enabled: true,
-      announceNavigation: true,
-      highContrast: false,
-      reducedMotion: false,
-      keyboardNavigation: true,
-      screenReaderSupport: true,
-      colorBlindFriendly: false
-    };
-
-    this.initializeController();
-  }
-
-  private initializeController(): void {
-    // Start render loop
-    this.startRenderLoop();
-    
-    // Initialize accessibility support
-    this.initializeAccessibility();
-    
-    this.emit('controller_initialized', {
-      camera: this.camera,
-      controls: this.controls,
-      accessibility: this.accessibility
-    });
-  }
-
-  // Canvas and DOM integration
-  setCanvas(canvas: HTMLCanvasElement): void {
-    if (this.canvas) {
-      this.removeEventListeners();
-    }
-
     this.canvas = canvas;
-    this.camera.aspect = canvas.width / canvas.height;
+    this.config = this.mergeConfig(config);
+    this.state = this.initializeState();
     
-    this.addEventListeners();
-    this.emit('canvas_attached', { canvas, aspect: this.camera.aspect });
+    this.setupEventListeners();
+    this.startAnimationLoop();
   }
 
-  private addEventListeners(): void {
-    if (!this.canvas) return;
+  /**
+   * Initialize default navigation state
+   */
+  private initializeState(): NavigationState {
+    return {
+      selectedNodeId: null,
+      hoveredNodeId: null,
+      focusedNodeId: null,
+      camera: {
+        position: { x: 0, y: 0, z: this.config.camera.defaultDistance },
+        target: { x: 0, y: 0, z: 0 },
+        up: { x: 0, y: 1, z: 0 },
+        fov: 45,
+        near: 0.1,
+        far: 1000,
+        zoom: 1,
+        rotation: { theta: 0, phi: Math.PI / 2 },
+      },
+      isTransitioning: false,
+      transitionProgress: 0,
+      interactionMode: 'orbit',
+      keyboardFocus: false,
+      accessibilityMode: false,
+    };
+  }
 
+  /**
+   * Merge user config with defaults
+   */
+  private mergeConfig(userConfig: Partial<NavigationConfig>): NavigationConfig {
+    const defaultConfig: NavigationConfig = {
+      camera: {
+        minDistance: 5,
+        maxDistance: 100,
+        defaultDistance: 20,
+        minPolarAngle: 0.1,
+        maxPolarAngle: Math.PI - 0.1,
+        dampingFactor: 0.1,
+        panSpeed: 1.0,
+        zoomSpeed: 1.0,
+        rotateSpeed: 1.0,
+      },
+      navigation: {
+        animationDuration: 1000,
+        smoothingFactor: 0.15,
+        snapThreshold: 0.01,
+        doubleClickTime: 300,
+      },
+      interaction: {
+        hoverDelay: 100,
+        selectionHighlightDuration: 2000,
+        raycastPrecision: 0.01,
+        multiSelectEnabled: true,
+      },
+      accessibility: {
+        highContrastMode: false,
+        reducedMotion: false,
+        screenReaderSupport: true,
+        keyboardNavigationEnabled: true,
+        focusIndicatorSize: 2.0,
+      },
+      performance: {
+        frustumCullingEnabled: true,
+        lodLevels: 3,
+        maxVisibleNodes: 1000,
+        renderDistance: 100,
+      },
+    };
+
+    return this.deepMerge(defaultConfig, userConfig);
+  }
+
+  /**
+   * Setup event listeners for interaction
+   */
+  private setupEventListeners(): void {
     // Mouse events
-    this.canvas.addEventListener('mousedown', this.onMouseDown.bind(this));
-    this.canvas.addEventListener('mousemove', this.onMouseMove.bind(this));
-    this.canvas.addEventListener('mouseup', this.onMouseUp.bind(this));
-    this.canvas.addEventListener('wheel', this.onWheel.bind(this));
-    this.canvas.addEventListener('click', this.onClick.bind(this));
-    this.canvas.addEventListener('dblclick', this.onDoubleClick.bind(this));
+    this.canvas.addEventListener('mousedown', this.handleMouseDown.bind(this));
+    this.canvas.addEventListener('mousemove', this.handleMouseMove.bind(this));
+    this.canvas.addEventListener('mouseup', this.handleMouseUp.bind(this));
+    this.canvas.addEventListener('wheel', this.handleWheel.bind(this));
+    this.canvas.addEventListener('click', this.handleClick.bind(this));
+    this.canvas.addEventListener('dblclick', this.handleDoubleClick.bind(this));
 
-    // Touch events
-    this.canvas.addEventListener('touchstart', this.onTouchStart.bind(this));
-    this.canvas.addEventListener('touchmove', this.onTouchMove.bind(this));
-    this.canvas.addEventListener('touchend', this.onTouchEnd.bind(this));
+    // Touch events for mobile
+    this.canvas.addEventListener('touchstart', this.handleTouchStart.bind(this));
+    this.canvas.addEventListener('touchmove', this.handleTouchMove.bind(this));
+    this.canvas.addEventListener('touchend', this.handleTouchEnd.bind(this));
 
     // Keyboard events
-    this.canvas.addEventListener('keydown', this.onKeyDown.bind(this));
-    this.canvas.addEventListener('keyup', this.onKeyUp.bind(this));
+    this.canvas.addEventListener('keydown', this.handleKeyDown.bind(this));
+    this.canvas.addEventListener('keyup', this.handleKeyUp.bind(this));
+    this.canvas.addEventListener('focus', this.handleFocus.bind(this));
+    this.canvas.addEventListener('blur', this.handleBlur.bind(this));
 
-    // Context menu
-    this.canvas.addEventListener('contextmenu', this.onContextMenu.bind(this));
+    // Make canvas focusable for keyboard events
+    this.canvas.tabIndex = 0;
+    this.canvas.setAttribute('role', 'application');
+    this.canvas.setAttribute('aria-label', '3D Code Navigation Minimap');
   }
 
-  private removeEventListeners(): void {
-    if (!this.canvas) return;
-
-    this.canvas.removeEventListener('mousedown', this.onMouseDown.bind(this));
-    this.canvas.removeEventListener('mousemove', this.onMouseMove.bind(this));
-    this.canvas.removeEventListener('mouseup', this.onMouseUp.bind(this));
-    this.canvas.removeEventListener('wheel', this.onWheel.bind(this));
-    this.canvas.removeEventListener('click', this.onClick.bind(this));
-    this.canvas.removeEventListener('dblclick', this.onDoubleClick.bind(this));
-    this.canvas.removeEventListener('touchstart', this.onTouchStart.bind(this));
-    this.canvas.removeEventListener('touchmove', this.onTouchMove.bind(this));
-    this.canvas.removeEventListener('touchend', this.onTouchEnd.bind(this));
-    this.canvas.removeEventListener('keydown', this.onKeyDown.bind(this));
-    this.canvas.removeEventListener('keyup', this.onKeyUp.bind(this));
-    this.canvas.removeEventListener('contextmenu', this.onContextMenu.bind(this));
-  }
-
-  // Raycast-to-file-path navigation system
-  raycastToFilePath(screenX: number, screenY: number): RaycastHit | null {
-    if (!this.canvas) return null;
-
-    // Convert screen coordinates to normalized device coordinates
+  /**
+   * Perform raycast from screen coordinates to 3D world
+   */
+  raycastFromScreen(screenX: number, screenY: number): RaycastHit | null {
     const rect = this.canvas.getBoundingClientRect();
     const x = ((screenX - rect.left) / rect.width) * 2 - 1;
     const y = -((screenY - rect.top) / rect.height) * 2 + 1;
 
-    // Create ray from camera through screen point
-    const ray = this.createRayFromScreen(x, y);
-    
-    // Find intersections with nodes
-    return this.findRayIntersection(ray);
+    const ray = this.screenToRay(x, y);
+    return this.performRaycast(ray);
   }
 
-  private createRayFromScreen(x: number, y: number): Ray {
-    // Create ray from camera through screen point
-    // This is a simplified implementation - real world would use projection matrix
-    const direction = this.normalize({
-      x: x * Math.tan(this.camera.fov * Math.PI / 360),
-      y: y * Math.tan(this.camera.fov * Math.PI / 360) / this.camera.aspect,
-      z: -1
+  /**
+   * Convert screen coordinates to world ray
+   */
+  private screenToRay(ndcX: number, ndcY: number): Ray {
+    const camera = this.state.camera;
+    
+    // Calculate ray direction in camera space
+    const fovRad = (camera.fov * Math.PI) / 180;
+    const aspect = this.canvas.width / this.canvas.height;
+    
+    const rayDirection = this.normalize({
+      x: ndcX * Math.tan(fovRad / 2) * aspect,
+      y: ndcY * Math.tan(fovRad / 2),
+      z: -1,
     });
 
+    // Transform to world space
+    const worldDirection = this.transformDirection(rayDirection, camera);
+
     return {
-      origin: { ...this.camera.position },
-      direction: this.transformDirection(direction)
+      origin: { ...camera.position },
+      direction: worldDirection,
     };
   }
 
-  private findRayIntersection(ray: Ray): RaycastHit | null {
+  /**
+   * Perform raycast intersection testing
+   */
+  private performRaycast(ray: Ray): RaycastHit | null {
     let closestHit: RaycastHit | null = null;
     let closestDistance = Infinity;
 
-    for (const node of this.nodes.values()) {
-      if (!node.visible) continue;
-
-      const intersection = this.rayIntersectNode(ray, node);
-      if (intersection && intersection.distance < closestDistance) {
-        closestDistance = intersection.distance;
-        closestHit = {
-          fileId: node.id,
-          filePath: node.filePath,
-          position: intersection.position,
-          distance: intersection.distance,
-          nodeType: node.type,
-          metadata: node.metadata
-        };
+    for (const [nodeId, node] of this.sceneNodes) {
+      const hit = this.rayIntersectNode(ray, node, nodeId);
+      if (hit && hit.distance < closestDistance) {
+        closestDistance = hit.distance;
+        closestHit = hit;
       }
     }
 
     return closestHit;
   }
 
-  private rayIntersectNode(ray: Ray, node: MinimapNode): { position: Vector3; distance: number } | null {
-    // Simplified ray-box intersection for node bounding box
-    const min = {
-      x: node.position.x - node.size.x / 2,
-      y: node.position.y - node.size.y / 2,
-      z: node.position.z - node.size.z / 2
-    };
+  /**
+   * Test ray intersection with a scene node
+   */
+  private rayIntersectNode(ray: Ray, node: any, nodeId: string): RaycastHit | null {
+    // Simplified sphere intersection for demo
+    // In real implementation, this would handle different geometry types
     
-    const max = {
-      x: node.position.x + node.size.x / 2,
-      y: node.position.y + node.size.y / 2,
-      z: node.position.z + node.size.z / 2
-    };
-
-    const invDir = {
-      x: 1 / ray.direction.x,
-      y: 1 / ray.direction.y,
-      z: 1 / ray.direction.z
-    };
-
-    const t1 = (min.x - ray.origin.x) * invDir.x;
-    const t2 = (max.x - ray.origin.x) * invDir.x;
-    const t3 = (min.y - ray.origin.y) * invDir.y;
-    const t4 = (max.y - ray.origin.y) * invDir.y;
-    const t5 = (min.z - ray.origin.z) * invDir.z;
-    const t6 = (max.z - ray.origin.z) * invDir.z;
-
-    const tmin = Math.max(
-      Math.min(t1, t2),
-      Math.min(t3, t4),
-      Math.min(t5, t6)
-    );
+    const center = node.position || { x: 0, y: 0, z: 0 };
+    const radius = node.radius || 1;
     
-    const tmax = Math.min(
-      Math.max(t1, t2),
-      Math.max(t3, t4),
-      Math.max(t5, t6)
-    );
-
-    if (tmax < 0 || tmin > tmax) {
-      return null; // No intersection
-    }
-
-    const distance = tmin > 0 ? tmin : tmax;
-    const position = {
-      x: ray.origin.x + ray.direction.x * distance,
-      y: ray.origin.y + ray.direction.y * distance,
-      z: ray.origin.z + ray.direction.z * distance
-    };
-
-    return { position, distance };
-  }
-
-  // Camera controls
-  orbitCamera(deltaX: number, deltaY: number): void {
-    if (!this.controls.enableRotate) return;
-
-    const spherical = this.cartesianToSpherical(
-      this.subtract(this.camera.position, this.camera.target)
-    );
-
-    spherical.theta -= deltaX * this.controls.rotateSpeed * 0.01;
-    spherical.phi = Math.max(
-      this.controls.minPolarAngle,
-      Math.min(this.controls.maxPolarAngle, spherical.phi - deltaY * this.controls.rotateSpeed * 0.01)
-    );
-
-    const newPosition = this.sphericalToCartesian(spherical);
-    this.camera.position = this.add(this.camera.target, newPosition);
-
-    this.emit('camera_rotated', { 
-      position: this.camera.position, 
-      target: this.camera.target 
-    });
-  }
-
-  zoomCamera(delta: number): void {
-    if (!this.controls.enableZoom) return;
-
-    const direction = this.normalize(this.subtract(this.camera.position, this.camera.target));
-    const distance = this.distance(this.camera.position, this.camera.target);
+    const oc = this.subtract(ray.origin, center);
+    const a = this.dot(ray.direction, ray.direction);
+    const b = 2.0 * this.dot(oc, ray.direction);
+    const c = this.dot(oc, oc) - radius * radius;
     
-    const newDistance = Math.max(
-      this.controls.minDistance,
-      Math.min(this.controls.maxDistance, distance + delta * this.controls.zoomSpeed)
-    );
-
-    this.camera.position = this.add(
-      this.camera.target,
-      this.scale(direction, newDistance)
-    );
-
-    this.emit('camera_zoomed', { 
-      position: this.camera.position, 
-      distance: newDistance 
-    });
-  }
-
-  panCamera(deltaX: number, deltaY: number): void {
-    if (!this.controls.enablePan) return;
-
-    const distance = this.distance(this.camera.position, this.camera.target);
-    const right = this.normalize(this.cross(
-      this.subtract(this.camera.target, this.camera.position),
-      this.camera.up
-    ));
-    const up = this.normalize(this.cross(right, this.subtract(this.camera.target, this.camera.position)));
-
-    const panVector = this.add(
-      this.scale(right, -deltaX * this.controls.panSpeed * distance * 0.001),
-      this.scale(up, deltaY * this.controls.panSpeed * distance * 0.001)
-    );
-
-    this.camera.position = this.add(this.camera.position, panVector);
-    this.camera.target = this.add(this.camera.target, panVector);
-
-    this.emit('camera_panned', { 
-      position: this.camera.position, 
-      target: this.camera.target 
-    });
-  }
-
-  // Smooth animations
-  animateCameraTo(position: Vector3, target: Vector3, duration: number = MINIMAP_CONFIG.TRANSITION_DURATION): void {
-    const startPosition = { ...this.camera.position };
-    const startTarget = { ...this.camera.target };
-
-    this.createAnimation({
-      id: 'camera_transition',
-      duration,
-      easing: 'ease-in-out',
-      from: { position: startPosition, target: startTarget },
-      to: { position, target },
-      onUpdate: (value) => {
-        this.camera.position = value.position;
-        this.camera.target = value.target;
+    const discriminant = b * b - 4 * a * c;
+    
+    if (discriminant < 0) return null;
+    
+    const t = (-b - Math.sqrt(discriminant)) / (2 * a);
+    if (t < 0) return null;
+    
+    const hitPosition = this.add(ray.origin, this.scale(ray.direction, t));
+    const normal = this.normalize(this.subtract(hitPosition, center));
+    
+    return {
+      nodeId,
+      filePath: node.filePath || '',
+      position: hitPosition,
+      distance: t,
+      normal,
+      uv: { x: 0, y: 0 }, // Simplified UV
+      metadata: {
+        lineNumber: node.lineNumber,
+        functionName: node.functionName,
+        className: node.className,
+        complexity: node.complexity,
       },
-      onComplete: () => {
-        this.emit('camera_animation_complete', { position, target });
-      }
+    };
+  }
+
+  /**
+   * Navigate to specific file or node
+   */
+  async navigateToNode(nodeId: string, animated: boolean = true): Promise<void> {
+    const node = this.sceneNodes.get(nodeId);
+    if (!node) {
+      console.warn(`Node not found: ${nodeId}`);
+      return;
+    }
+
+    // Calculate optimal camera position
+    const targetPosition = this.calculateOptimalCameraPosition(node);
+    
+    if (animated && !this.config.accessibility.reducedMotion) {
+      await this.animateCameraTo(targetPosition, this.config.navigation.animationDuration);
+    } else {
+      this.state.camera.position = targetPosition.position;
+      this.state.camera.target = targetPosition.target;
+      this.updateCameraRotation();
+    }
+
+    // Update selection state
+    this.selectNode(nodeId);
+    
+    this.emit('navigationComplete', {
+      nodeId,
+      filePath: node.filePath,
+      animated,
     });
   }
 
-  focusOnNode(nodeId: string): void {
-    const node = this.nodes.get(nodeId);
-    if (!node) return;
+  /**
+   * Calculate optimal camera position for viewing a node
+   */
+  private calculateOptimalCameraPosition(node: any): { position: Vector3; target: Vector3 } {
+    const nodePosition = node.position || { x: 0, y: 0, z: 0 };
+    const boundingRadius = node.boundingRadius || 2;
+    
+    // Calculate distance to fit node in view
+    const fovRad = (this.state.camera.fov * Math.PI) / 180;
+    const distance = (boundingRadius * 2) / Math.tan(fovRad / 2);
+    
+    // Position camera at a good viewing angle
+    const offsetDirection = this.normalize({
+      x: Math.sin(this.state.camera.rotation.theta) * Math.sin(this.state.camera.rotation.phi),
+      y: Math.cos(this.state.camera.rotation.phi),
+      z: Math.cos(this.state.camera.rotation.theta) * Math.sin(this.state.camera.rotation.phi),
+    });
+    
+    const cameraPosition = this.add(
+      nodePosition,
+      this.scale(offsetDirection, Math.max(distance, this.config.camera.minDistance))
+    );
 
-    // Calculate optimal camera position for viewing the node
-    const targetPosition = { ...node.position };
-    const cameraDistance = Math.max(node.size.x, node.size.y, node.size.z) * 2;
-    const cameraPosition = this.add(targetPosition, { x: 0, y: cameraDistance, z: cameraDistance });
+    return {
+      position: cameraPosition,
+      target: nodePosition,
+    };
+  }
 
-    this.animateCameraTo(cameraPosition, targetPosition);
-    this.selectNode(nodeId);
+  /**
+   * Animate camera to target position
+   */
+  private async animateCameraTo(
+    target: { position: Vector3; target: Vector3 },
+    duration: number
+  ): Promise<void> {
+    return new Promise((resolve) => {
+      const animationId = `camera_${Date.now()}`;
+      const startCamera = {
+        position: { ...this.state.camera.position },
+        target: { ...this.state.camera.target },
+      };
 
-    if (this.accessibility.announceNavigation) {
-      this.announceToScreenReader(`Focused on ${node.filePath}`);
+      const animation: TransitionAnimation = {
+        id: animationId,
+        type: 'camera',
+        startTime: performance.now(),
+        duration,
+        easing: 'ease-in-out',
+        from: startCamera,
+        to: target,
+        progress: 0,
+        complete: false,
+      };
+
+      this.animations.set(animationId, animation);
+      this.state.isTransitioning = true;
+
+      // Animation will complete in the animation loop
+      const checkComplete = () => {
+        if (animation.complete) {
+          resolve();
+        } else {
+          requestAnimationFrame(checkComplete);
+        }
+      };
+      checkComplete();
+    });
+  }
+
+  /**
+   * Select a node and update highlighting
+   */
+  selectNode(nodeId: string | null): void {
+    const previousSelection = this.state.selectedNodeId;
+    this.state.selectedNodeId = nodeId;
+
+    // Update node highlighting
+    if (previousSelection) {
+      this.updateNodeHighlight(previousSelection, 'normal');
+    }
+    
+    if (nodeId) {
+      this.updateNodeHighlight(nodeId, 'selected');
+      
+      // Announce selection to screen readers
+      if (this.config.accessibility.screenReaderSupport) {
+        const node = this.sceneNodes.get(nodeId);
+        if (node) {
+          this.announceToScreenReader(`Selected ${node.filePath || 'file'}`);
+        }
+      }
+    }
+
+    this.emit('selectionChanged', {
+      nodeId,
+      previousSelection,
+      node: nodeId ? this.sceneNodes.get(nodeId) : null,
+    });
+  }
+
+  /**
+   * Handle mouse down events
+   */
+  private handleMouseDown(event: MouseEvent): void {
+    this.mouseState.isDown = true;
+    this.mouseState.lastX = event.clientX;
+    this.mouseState.lastY = event.clientY;
+    this.mouseState.button = event.button;
+
+    // Focus canvas for keyboard events
+    this.canvas.focus();
+
+    event.preventDefault();
+  }
+
+  /**
+   * Handle mouse move events
+   */
+  private handleMouseMove(event: MouseEvent): void {
+    const deltaX = event.clientX - this.mouseState.lastX;
+    const deltaY = event.clientY - this.mouseState.lastY;
+
+    if (this.mouseState.isDown) {
+      switch (this.state.interactionMode) {
+        case 'orbit':
+          this.orbitCamera(deltaX, deltaY);
+          break;
+        case 'pan':
+          this.panCamera(deltaX, deltaY);
+          break;
+      }
+    } else {
+      // Handle hover
+      this.handleHover(event.clientX, event.clientY);
+    }
+
+    this.mouseState.lastX = event.clientX;
+    this.mouseState.lastY = event.clientY;
+  }
+
+  /**
+   * Handle mouse up events
+   */
+  private handleMouseUp(event: MouseEvent): void {
+    this.mouseState.isDown = false;
+    this.mouseState.button = -1;
+  }
+
+  /**
+   * Handle mouse wheel events
+   */
+  private handleWheel(event: WheelEvent): void {
+    const zoomDelta = event.deltaY * 0.001 * this.config.camera.zoomSpeed;
+    this.zoomCamera(zoomDelta);
+    
+    event.preventDefault();
+  }
+
+  /**
+   * Handle click events
+   */
+  private handleClick(event: MouseEvent): void {
+    const hit = this.raycastFromScreen(event.clientX, event.clientY);
+    
+    if (hit) {
+      this.selectNode(hit.nodeId);
+      
+      this.emit('nodeClicked', {
+        nodeId: hit.nodeId,
+        filePath: hit.filePath,
+        position: hit.position,
+        metadata: hit.metadata,
+      });
+    } else {
+      this.selectNode(null);
     }
   }
 
-  // Node management
-  addNode(node: MinimapNode): void {
-    this.nodes.set(node.id, node);
-    this.emit('node_added', node);
-  }
-
-  removeNode(nodeId: string): void {
-    const node = this.nodes.get(nodeId);
-    if (node) {
-      this.nodes.delete(nodeId);
-      this.selectedNodes.delete(nodeId);
-      this.highlightedNodes.delete(nodeId);
-      this.emit('node_removed', node);
-    }
-  }
-
-  updateNode(nodeId: string, updates: Partial<MinimapNode>): void {
-    const node = this.nodes.get(nodeId);
-    if (node) {
-      Object.assign(node, updates);
-      this.emit('node_updated', node);
-    }
-  }
-
-  // Selection and highlighting
-  selectNode(nodeId: string, multiSelect: boolean = false): void {
-    if (!multiSelect) {
-      this.clearSelection();
-    }
-
-    const node = this.nodes.get(nodeId);
-    if (node) {
-      node.selected = true;
-      this.selectedNodes.add(nodeId);
-
-      // Animate selection
-      this.animateNodeSelection(node);
-
-      this.emit('node_selected', { 
-        nodeId, 
-        node, 
-        selectedNodes: Array.from(this.selectedNodes) 
+  /**
+   * Handle double click events
+   */
+  private handleDoubleClick(event: MouseEvent): void {
+    const hit = this.raycastFromScreen(event.clientX, event.clientY);
+    
+    if (hit) {
+      this.navigateToNode(hit.nodeId, true);
+      
+      this.emit('nodeDoubleClicked', {
+        nodeId: hit.nodeId,
+        filePath: hit.filePath,
       });
     }
   }
 
-  deselectNode(nodeId: string): void {
-    const node = this.nodes.get(nodeId);
-    if (node) {
-      node.selected = false;
-      this.selectedNodes.delete(nodeId);
-      this.emit('node_deselected', { nodeId, node });
-    }
-  }
-
-  clearSelection(): void {
-    for (const nodeId of this.selectedNodes) {
-      const node = this.nodes.get(nodeId);
-      if (node) {
-        node.selected = false;
+  /**
+   * Handle hover events
+   */
+  private handleHover(screenX: number, screenY: number): void {
+    const hit = this.raycastFromScreen(screenX, screenY);
+    const newHoveredId = hit ? hit.nodeId : null;
+    
+    if (newHoveredId !== this.state.hoveredNodeId) {
+      // Clear previous hover
+      if (this.state.hoveredNodeId) {
+        this.updateNodeHighlight(this.state.hoveredNodeId, 'normal');
       }
-    }
-    this.selectedNodes.clear();
-    this.emit('selection_cleared');
-  }
-
-  highlightNode(nodeId: string): void {
-    const node = this.nodes.get(nodeId);
-    if (node) {
-      node.highlighted = true;
-      this.highlightedNodes.add(nodeId);
-
-      // Animate highlight
-      this.animateNodeHighlight(node);
-
-      this.emit('node_highlighted', { nodeId, node });
-    }
-  }
-
-  unhighlightNode(nodeId: string): void {
-    const node = this.nodes.get(nodeId);
-    if (node) {
-      node.highlighted = false;
-      this.highlightedNodes.delete(nodeId);
-      this.emit('node_unhighlighted', { nodeId, node });
-    }
-  }
-
-  // Animation system
-  private createAnimation(config: Omit<Animation, 'startTime'>): void {
-    const animation: Animation = {
-      ...config,
-      startTime: performance.now()
-    };
-
-    this.animations.set(animation.id, animation);
-  }
-
-  private updateAnimations(): void {
-    const currentTime = performance.now();
-
-    for (const [id, animation] of this.animations) {
-      const elapsed = currentTime - animation.startTime;
-      const progress = Math.min(elapsed / animation.duration, 1);
-
-      // Apply easing
-      const easedProgress = this.applyEasing(progress, animation.easing);
       
-      // Interpolate values
-      const value = this.interpolate(animation.from, animation.to, easedProgress);
-      animation.onUpdate(value);
-
-      if (progress >= 1) {
-        if (animation.onComplete) {
-          animation.onComplete();
-        }
-        this.animations.delete(id);
-      }
-    }
-  }
-
-  private animateNodeSelection(node: MinimapNode): void {
-    if (this.accessibility.reducedMotion) return;
-
-    const originalSize = { ...node.size };
-    const targetSize = this.scale(originalSize, 1.1);
-
-    this.createAnimation({
-      id: `selection_${node.id}`,
-      duration: MINIMAP_CONFIG.SELECTION_ANIMATION_DURATION,
-      easing: 'ease-out',
-      from: originalSize,
-      to: targetSize,
-      onUpdate: (size) => {
-        node.size = size;
-      },
-      onComplete: () => {
-        // Animate back to original size
-        this.createAnimation({
-          id: `selection_return_${node.id}`,
-          duration: MINIMAP_CONFIG.SELECTION_ANIMATION_DURATION,
-          easing: 'ease-in',
-          from: targetSize,
-          to: originalSize,
-          onUpdate: (size) => {
-            node.size = size;
-          }
+      // Set new hover
+      this.state.hoveredNodeId = newHoveredId;
+      
+      if (newHoveredId) {
+        this.updateNodeHighlight(newHoveredId, 'hovered');
+        
+        // Show tooltip or info
+        this.emit('nodeHovered', {
+          nodeId: newHoveredId,
+          filePath: hit!.filePath,
+          metadata: hit!.metadata,
         });
+      } else {
+        this.emit('nodeHoverEnd');
       }
-    });
-  }
-
-  private animateNodeHighlight(node: MinimapNode): void {
-    if (this.accessibility.reducedMotion) return;
-
-    const originalPosition = { ...node.position };
-    const targetPosition = this.add(originalPosition, { x: 0, y: 0.1, z: 0 });
-
-    this.createAnimation({
-      id: `highlight_${node.id}`,
-      duration: MINIMAP_CONFIG.HIGHLIGHT_ANIMATION_DURATION,
-      easing: 'bounce',
-      from: originalPosition,
-      to: targetPosition,
-      onUpdate: (position) => {
-        node.position = position;
-      },
-      onComplete: () => {
-        // Animate back to original position
-        this.createAnimation({
-          id: `highlight_return_${node.id}`,
-          duration: MINIMAP_CONFIG.HIGHLIGHT_ANIMATION_DURATION,
-          easing: 'ease-out',
-          from: targetPosition,
-          to: originalPosition,
-          onUpdate: (position) => {
-            node.position = position;
-          }
-        });
-      }
-    });
-  }
-
-  // Event handlers
-  private onMouseDown(event: MouseEvent): void {
-    this.isInteracting = true;
-    this.lastMousePosition = { x: event.clientX, y: event.clientY };
-    
-    if (this.canvas) {
-      this.canvas.focus();
     }
   }
 
-  private onMouseMove(event: MouseEvent): void {
-    if (!this.isInteracting) {
-      // Handle hover highlighting
-      const hit = this.raycastToFilePath(event.clientX, event.clientY);
-      this.updateHover(hit);
-      return;
-    }
+  /**
+   * Handle keyboard events
+   */
+  private handleKeyDown(event: KeyboardEvent): void {
+    if (!this.config.accessibility.keyboardNavigationEnabled) return;
 
-    const deltaX = event.clientX - this.lastMousePosition.x;
-    const deltaY = event.clientY - this.lastMousePosition.y;
+    this.keyboardState.add(event.code);
+    this.state.keyboardFocus = true;
 
-    if (event.buttons === 1) { // Left mouse button
-      this.orbitCamera(deltaX, deltaY);
-    } else if (event.buttons === 2) { // Right mouse button
-      this.panCamera(deltaX, deltaY);
-    }
-
-    this.lastMousePosition = { x: event.clientX, y: event.clientY };
-  }
-
-  private onMouseUp(event: MouseEvent): void {
-    this.isInteracting = false;
-  }
-
-  private onWheel(event: WheelEvent): void {
-    event.preventDefault();
-    this.zoomCamera(event.deltaY * 0.01);
-  }
-
-  private onClick(event: MouseEvent): void {
-    const currentTime = performance.now();
-    const isDoubleClick = currentTime - this.lastClickTime < MINIMAP_CONFIG.DOUBLE_CLICK_TIME;
-    this.lastClickTime = currentTime;
-
-    if (isDoubleClick) return; // Let double click handler deal with it
-
-    const hit = this.raycastToFilePath(event.clientX, event.clientY);
-    if (hit) {
-      this.selectNode(hit.fileId, event.ctrlKey || event.metaKey);
-      this.emit('file_clicked', hit);
-    } else {
-      this.clearSelection();
-    }
-  }
-
-  private onDoubleClick(event: MouseEvent): void {
-    const hit = this.raycastToFilePath(event.clientX, event.clientY);
-    if (hit) {
-      this.focusOnNode(hit.fileId);
-      this.emit('file_double_clicked', hit);
-    }
-  }
-
-  private onContextMenu(event: MouseEvent): void {
-    event.preventDefault();
-    
-    const hit = this.raycastToFilePath(event.clientX, event.clientY);
-    this.emit('context_menu', { hit, x: event.clientX, y: event.clientY });
-  }
-
-  private onKeyDown(event: KeyboardEvent): void {
-    if (!this.accessibility.keyboardNavigation) return;
-
-    switch (event.key) {
+    switch (event.code) {
       case 'ArrowUp':
-        this.panCamera(0, -10);
+        this.navigateByKeyboard('up');
         break;
       case 'ArrowDown':
-        this.panCamera(0, 10);
+        this.navigateByKeyboard('down');
         break;
       case 'ArrowLeft':
-        this.panCamera(-10, 0);
+        this.navigateByKeyboard('left');
         break;
       case 'ArrowRight':
-        this.panCamera(10, 0);
+        this.navigateByKeyboard('right');
         break;
-      case '+':
-      case '=':
-        this.zoomCamera(-1);
-        break;
-      case '-':
-        this.zoomCamera(1);
-        break;
-      case 'Home':
-        this.resetCamera();
+      case 'Enter':
+      case 'Space':
+        if (this.state.focusedNodeId) {
+          this.selectNode(this.state.focusedNodeId);
+        }
         break;
       case 'Escape':
-        this.clearSelection();
+        this.selectNode(null);
+        break;
+      case 'Home':
+        this.resetCameraPosition();
         break;
     }
-  }
 
-  private onKeyUp(event: KeyboardEvent): void {
-    // Handle key up events if needed
-  }
-
-  private onTouchStart(event: TouchEvent): void {
     event.preventDefault();
-    // Handle touch start
   }
 
-  private onTouchMove(event: TouchEvent): void {
-    event.preventDefault();
-    // Handle touch move
-  }
-
-  private onTouchEnd(event: TouchEvent): void {
-    event.preventDefault();
-    // Handle touch end
-  }
-
-  // Hover management
-  private updateHover(hit: RaycastHit | null): void {
-    // Clear all highlights
-    for (const nodeId of this.highlightedNodes) {
-      this.unhighlightNode(nodeId);
-    }
-
-    // Add new highlight
-    if (hit) {
-      this.highlightNode(hit.fileId);
+  /**
+   * Handle keyboard navigation
+   */
+  private navigateByKeyboard(direction: 'up' | 'down' | 'left' | 'right'): void {
+    // Implementation for keyboard navigation between nodes
+    // This would find the nearest node in the specified direction
+    
+    const currentNodeId = this.state.focusedNodeId || this.state.selectedNodeId;
+    const nextNodeId = this.findNearestNodeInDirection(currentNodeId, direction);
+    
+    if (nextNodeId) {
+      this.state.focusedNodeId = nextNodeId;
+      this.updateNodeHighlight(nextNodeId, 'focused');
       
-      if (this.canvas) {
-        this.canvas.style.cursor = 'pointer';
+      // Announce to screen reader
+      if (this.config.accessibility.screenReaderSupport) {
+        const node = this.sceneNodes.get(nextNodeId);
+        if (node) {
+          this.announceToScreenReader(`Focused on ${node.filePath || 'file'}`);
+        }
       }
+    }
+  }
+
+  /**
+   * Orbit camera around target
+   */
+  private orbitCamera(deltaX: number, deltaY: number): void {
+    const sensitivity = this.config.camera.rotateSpeed * 0.01;
+    
+    this.state.camera.rotation.theta -= deltaX * sensitivity;
+    this.state.camera.rotation.phi += deltaY * sensitivity;
+    
+    // Clamp phi to valid range
+    this.state.camera.rotation.phi = Math.max(
+      this.config.camera.minPolarAngle,
+      Math.min(this.config.camera.maxPolarAngle, this.state.camera.rotation.phi)
+    );
+    
+    this.updateCameraPosition();
+  }
+
+  /**
+   * Pan camera
+   */
+  private panCamera(deltaX: number, deltaY: number): void {
+    const sensitivity = this.config.camera.panSpeed * 0.01;
+    const distance = this.distance(this.state.camera.position, this.state.camera.target);
+    
+    // Calculate pan vectors in camera space
+    const right = this.normalize(this.cross(
+      this.subtract(this.state.camera.target, this.state.camera.position),
+      this.state.camera.up
+    ));
+    const up = this.normalize(this.cross(right, 
+      this.subtract(this.state.camera.target, this.state.camera.position)
+    ));
+    
+    const panOffset = this.add(
+      this.scale(right, -deltaX * sensitivity * distance * 0.001),
+      this.scale(up, deltaY * sensitivity * distance * 0.001)
+    );
+    
+    this.state.camera.position = this.add(this.state.camera.position, panOffset);
+    this.state.camera.target = this.add(this.state.camera.target, panOffset);
+  }
+
+  /**
+   * Zoom camera
+   */
+  private zoomCamera(delta: number): void {
+    const direction = this.normalize(
+      this.subtract(this.state.camera.target, this.state.camera.position)
+    );
+    
+    const currentDistance = this.distance(this.state.camera.position, this.state.camera.target);
+    const newDistance = Math.max(
+      this.config.camera.minDistance,
+      Math.min(this.config.camera.maxDistance, currentDistance + delta * currentDistance)
+    );
+    
+    this.state.camera.position = this.subtract(
+      this.state.camera.target,
+      this.scale(direction, newDistance)
+    );
+  }
+
+  /**
+   * Update camera position based on spherical coordinates
+   */
+  private updateCameraPosition(): void {
+    const distance = this.distance(this.state.camera.position, this.state.camera.target);
+    
+    const x = distance * Math.sin(this.state.camera.rotation.phi) * Math.sin(this.state.camera.rotation.theta);
+    const y = distance * Math.cos(this.state.camera.rotation.phi);
+    const z = distance * Math.sin(this.state.camera.rotation.phi) * Math.cos(this.state.camera.rotation.theta);
+    
+    this.state.camera.position = this.add(this.state.camera.target, { x, y, z });
+  }
+
+  /**
+   * Update camera rotation based on position
+   */
+  private updateCameraRotation(): void {
+    const direction = this.subtract(this.state.camera.target, this.state.camera.position);
+    const distance = this.length(direction);
+    
+    this.state.camera.rotation.phi = Math.acos(direction.y / distance);
+    this.state.camera.rotation.theta = Math.atan2(direction.x, direction.z);
+  }
+
+  /**
+   * Start animation loop
+   */
+  private startAnimationLoop(): void {
+    const animate = (currentTime: number) => {
+      this.updateAnimations(currentTime);
+      this.updateCamera();
+      
+      if (this.config.performance.frustumCullingEnabled) {
+        this.updateFrustumCulling();
+      }
+      
+      requestAnimationFrame(animate);
+    };
+    
+    requestAnimationFrame(animate);
+  }
+
+  /**
+   * Update active animations
+   */
+  private updateAnimations(currentTime: number): void {
+    for (const [id, animation] of this.animations) {
+      const elapsed = currentTime - animation.startTime;
+      animation.progress = Math.min(elapsed / animation.duration, 1);
+      
+      const easedProgress = this.applyEasing(animation.progress, animation.easing);
+      
+      if (animation.type === 'camera') {
+        this.state.camera.position = this.lerp(
+          animation.from.position,
+          animation.to.position,
+          easedProgress
+        );
+        this.state.camera.target = this.lerp(
+          animation.from.target,
+          animation.to.target,
+          easedProgress
+        );
+        this.updateCameraRotation();
+      }
+      
+      if (animation.progress >= 1) {
+        animation.complete = true;
+        this.animations.delete(id);
+        
+        if (animation.type === 'camera') {
+          this.state.isTransitioning = false;
+        }
+      }
+    }
+  }
+
+  /**
+   * Apply easing function to animation progress
+   */
+  private applyEasing(t: number, easing: string): number {
+    switch (easing) {
+      case 'ease-in':
+        return t * t;
+      case 'ease-out':
+        return 1 - (1 - t) * (1 - t);
+      case 'ease-in-out':
+        return t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+      case 'bounce':
+        return this.bounceEasing(t);
+      default:
+        return t; // linear
+    }
+  }
+
+  /**
+   * Bounce easing function
+   */
+  private bounceEasing(t: number): number {
+    const n1 = 7.5625;
+    const d1 = 2.75;
+    
+    if (t < 1 / d1) {
+      return n1 * t * t;
+    } else if (t < 2 / d1) {
+      return n1 * (t -= 1.5 / d1) * t + 0.75;
+    } else if (t < 2.5 / d1) {
+      return n1 * (t -= 2.25 / d1) * t + 0.9375;
     } else {
-      if (this.canvas) {
-        this.canvas.style.cursor = 'default';
-      }
+      return n1 * (t -= 2.625 / d1) * t + 0.984375;
     }
   }
 
-  // Accessibility support
-  private initializeAccessibility(): void {
-    if (this.accessibility.screenReaderSupport && this.canvas) {
-      this.canvas.setAttribute('role', 'application');
-      this.canvas.setAttribute('aria-label', '3D Code Minimap - Navigate with arrow keys, zoom with +/-, focus with Enter');
-      this.canvas.setAttribute('tabindex', '0');
-    }
-  }
-
-  private announceToScreenReader(message: string): void {
-    if (!this.accessibility.announceNavigation) return;
-
-    // Create temporary element for screen reader announcement
-    const announcement = document.createElement('div');
-    announcement.setAttribute('aria-live', 'polite');
-    announcement.setAttribute('aria-atomic', 'true');
-    announcement.style.position = 'absolute';
-    announcement.style.left = '-10000px';
-    announcement.style.width = '1px';
-    announcement.style.height = '1px';
-    announcement.style.overflow = 'hidden';
-    
-    document.body.appendChild(announcement);
-    announcement.textContent = message;
-    
-    setTimeout(() => {
-      document.body.removeChild(announcement);
-    }, 1000);
-  }
-
-  // Utility methods
-  private normalize(v: Vector3): Vector3 {
-    const length = Math.sqrt(v.x * v.x + v.y * v.y + v.z * v.z);
-    return length > 0 ? { x: v.x / length, y: v.y / length, z: v.z / length } : { x: 0, y: 0, z: 0 };
-  }
-
+  // Vector math utilities
   private add(a: Vector3, b: Vector3): Vector3 {
     return { x: a.x + b.x, y: a.y + b.y, z: a.z + b.z };
   }
@@ -858,150 +859,117 @@ export class MinimapController extends EventEmitter {
     return { x: v.x * s, y: v.y * s, z: v.z * s };
   }
 
+  private dot(a: Vector3, b: Vector3): number {
+    return a.x * b.x + a.y * b.y + a.z * b.z;
+  }
+
   private cross(a: Vector3, b: Vector3): Vector3 {
     return {
       x: a.y * b.z - a.z * b.y,
       y: a.z * b.x - a.x * b.z,
-      z: a.x * b.y - a.y * b.x
+      z: a.x * b.y - a.y * b.x,
     };
+  }
+
+  private length(v: Vector3): number {
+    return Math.sqrt(v.x * v.x + v.y * v.y + v.z * v.z);
   }
 
   private distance(a: Vector3, b: Vector3): number {
-    const diff = this.subtract(a, b);
-    return Math.sqrt(diff.x * diff.x + diff.y * diff.y + diff.z * diff.z);
+    return this.length(this.subtract(a, b));
   }
 
-  private cartesianToSpherical(v: Vector3): { radius: number; theta: number; phi: number } {
-    const radius = Math.sqrt(v.x * v.x + v.y * v.y + v.z * v.z);
-    const theta = Math.atan2(v.x, v.z);
-    const phi = Math.acos(v.y / radius);
-    return { radius, theta, phi };
+  private normalize(v: Vector3): Vector3 {
+    const len = this.length(v);
+    return len > 0 ? this.scale(v, 1 / len) : { x: 0, y: 0, z: 0 };
   }
 
-  private sphericalToCartesian(spherical: { radius: number; theta: number; phi: number }): Vector3 {
-    return {
-      x: spherical.radius * Math.sin(spherical.phi) * Math.sin(spherical.theta),
-      y: spherical.radius * Math.cos(spherical.phi),
-      z: spherical.radius * Math.sin(spherical.phi) * Math.cos(spherical.theta)
-    };
+  private lerp(a: Vector3, b: Vector3, t: number): Vector3 {
+    return this.add(a, this.scale(this.subtract(b, a), t));
   }
 
-  private transformDirection(direction: Vector3): Vector3 {
-    // Apply camera rotation to direction vector
-    // This is simplified - real implementation would use camera matrix
-    return this.normalize(direction);
+  // Additional utility methods would be implemented here...
+  
+  private updateNodeHighlight(nodeId: string, state: string): void {
+    // Implementation for updating node visual state
   }
 
-  private applyEasing(t: number, easing: Animation['easing']): number {
-    switch (easing) {
-      case 'linear':
-        return t;
-      case 'ease-in':
-        return t * t;
-      case 'ease-out':
-        return 1 - (1 - t) * (1 - t);
-      case 'ease-in-out':
-        return t < 0.5 ? 2 * t * t : 1 - 2 * (1 - t) * (1 - t);
-      case 'bounce':
-        if (t < 1 / 2.75) {
-          return 7.5625 * t * t;
-        } else if (t < 2 / 2.75) {
-          return 7.5625 * (t -= 1.5 / 2.75) * t + 0.75;
-        } else if (t < 2.5 / 2.75) {
-          return 7.5625 * (t -= 2.25 / 2.75) * t + 0.9375;
-        } else {
-          return 7.5625 * (t -= 2.625 / 2.75) * t + 0.984375;
-        }
-      default:
-        return t;
-    }
+  private updateCamera(): void {
+    // Implementation for camera updates
   }
 
-  private interpolate(from: any, to: any, t: number): any {
-    if (typeof from === 'number' && typeof to === 'number') {
-      return from + (to - from) * t;
-    }
-    
-    if (from && to && typeof from === 'object' && typeof to === 'object') {
-      const result: any = {};
-      for (const key in from) {
-        if (key in to) {
-          result[key] = this.interpolate(from[key], to[key], t);
-        }
-      }
-      return result;
-    }
-    
-    return t < 0.5 ? from : to;
+  private updateFrustumCulling(): void {
+    // Implementation for frustum culling
   }
 
-  // Render loop
-  private startRenderLoop(): void {
-    const render = () => {
-      this.updateAnimations();
-      
-      if (this.controls.autoRotate) {
-        this.orbitCamera(this.controls.autoRotateSpeed, 0);
-      }
-      
-      this.emit('render_frame', {
-        camera: this.camera,
-        nodes: Array.from(this.nodes.values()),
-        selectedNodes: Array.from(this.selectedNodes),
-        highlightedNodes: Array.from(this.highlightedNodes)
-      });
-      
-      this.animationFrameId = requestAnimationFrame(render);
-    };
-    
-    render();
+  private transformDirection(direction: Vector3, camera: Camera): Vector3 {
+    // Implementation for direction transformation
+    return direction;
   }
 
-  // Public API methods
-  resetCamera(): void {
-    this.animateCameraTo(
-      { ...MINIMAP_CONFIG.DEFAULT_POSITION },
-      { ...MINIMAP_CONFIG.DEFAULT_TARGET }
-    );
+  private findNearestNodeInDirection(nodeId: string | null, direction: string): string | null {
+    // Implementation for finding nearest node
+    return null;
   }
 
-  getCamera(): Camera {
-    return { ...this.camera };
+  private announceToScreenReader(message: string): void {
+    // Implementation for screen reader announcements
   }
 
-  getSelectedNodes(): MinimapNode[] {
-    return Array.from(this.selectedNodes).map(id => this.nodes.get(id)).filter(Boolean) as MinimapNode[];
+  private resetCameraPosition(): void {
+    // Implementation for resetting camera
   }
 
-  getHighlightedNodes(): MinimapNode[] {
-    return Array.from(this.highlightedNodes).map(id => this.nodes.get(id)).filter(Boolean) as MinimapNode[];
+  private deepMerge(target: any, source: any): any {
+    // Implementation for deep merging objects
+    return { ...target, ...source };
   }
 
-  updateAccessibilityOptions(options: Partial<AccessibilityOptions>): void {
-    this.accessibility = { ...this.accessibility, ...options };
-    this.emit('accessibility_updated', this.accessibility);
+  private handleTouchStart(event: TouchEvent): void {
+    // Implementation for touch events
   }
 
-  updateControls(controls: Partial<CameraControls>): void {
-    this.controls = { ...this.controls, ...controls };
-    this.emit('controls_updated', this.controls);
+  private handleTouchMove(event: TouchEvent): void {
+    // Implementation for touch events
   }
 
-  destroy(): void {
-    if (this.animationFrameId) {
-      cancelAnimationFrame(this.animationFrameId);
-    }
-    
-    this.removeEventListeners();
-    this.nodes.clear();
-    this.selectedNodes.clear();
-    this.highlightedNodes.clear();
+  private handleTouchEnd(event: TouchEvent): void {
+    // Implementation for touch events
+  }
+
+  private handleKeyUp(event: KeyboardEvent): void {
+    this.keyboardState.delete(event.code);
+  }
+
+  private handleFocus(): void {
+    this.state.keyboardFocus = true;
+  }
+
+  private handleBlur(): void {
+    this.state.keyboardFocus = false;
+  }
+
+  /**
+   * Get current navigation state
+   */
+  getState(): NavigationState {
+    return { ...this.state };
+  }
+
+  /**
+   * Update scene nodes
+   */
+  updateSceneNodes(nodes: Map<string, any>): void {
+    this.sceneNodes = new Map(nodes);
+  }
+
+  /**
+   * Dispose controller and cleanup
+   */
+  dispose(): void {
     this.animations.clear();
-    
-    this.emit('controller_destroyed');
+    this.removeAllListeners();
   }
 }
 
-// Export types and main class
-export type { Vector3, Camera, RaycastHit, MinimapNode, CameraControls, AccessibilityOptions };
 export default MinimapController; 

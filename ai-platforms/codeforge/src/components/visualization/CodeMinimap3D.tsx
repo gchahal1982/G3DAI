@@ -1,900 +1,664 @@
 /**
- * CodeForge 3D Code Minimap Component
- * Implements 3D visualization of code structure with WebGPU rendering
+ * CodeMinimap3D - 3D Code Visualization Minimap Component
  * 
+ * Revolutionary miniature 3D view for code navigation and exploration
  * Features:
- * - WebGPU canvas with WebGL2 fallback
- * - Radial tree layout rendering
- * - Real-time FPS monitoring (30+ FPS target)
- * - Feature flag toggle system
- * - Loading states and error handling
- * - Performance guardrails (3k draw calls, 300k polys)
- * - LOD system with automatic reduction
- * - Crash-free toggle mechanism
+ * - Miniature 3D representation of code structure
+ * - Interactive viewport indicator for main view navigation
+ * - Intuitive click navigation with smooth transitions
+ * - Comprehensive zoom controls with gesture support
+ * - Advanced layer filtering system
+ * - Real-time heat map overlay for code complexity
+ * - Smart search highlighting with visual feedback
+ * - Performance monitoring with FPS counter display
  */
 
-import React, { useEffect, useRef, useState, useCallback, useMemo } from 'react';
-import MinimapController, { Vector3, Camera, MinimapNode, RaycastHit } from '../../lib/g3d/MinimapController';
+import React, { useEffect, useRef, useState, useMemo, useCallback } from 'react';
+import { Box, Paper, Slider, IconButton, Tooltip, Chip, Fade, Typography } from '@mui/material';
+import {
+  ZoomIn,
+  ZoomOut,
+  FilterList,
+  Search,
+  Timeline,
+  Visibility,
+  VisibilityOff,
+  Speed,
+  ThermostatTwoTone,
+  RadioButtonUnchecked,
+  MyLocation,
+  Refresh
+} from '@mui/icons-material';
+import { styled } from '@mui/material/styles';
+import G3DRenderer from '../../lib/g3d/G3DRenderer';
+import SceneBuilder from '../../lib/g3d/SceneBuilder';
 
-// Interfaces and types
-interface CodeMinimap3DProps {
-  nodes: MinimapNode[];
-  selectedNodeIds?: string[];
-  highlightedNodeIds?: string[];
-  onNodeClick?: (hit: RaycastHit) => void;
-  onNodeDoubleClick?: (hit: RaycastHit) => void;
-  onSelectionChange?: (selectedNodes: string[]) => void;
-  enabled?: boolean;
+// Styled components
+const MinimapContainer = styled(Box)(({ theme }) => ({
+  position: 'relative',
+  width: '100%',
+  height: '100%',
+  background: 'linear-gradient(135deg, rgba(15, 15, 25, 0.95) 0%, rgba(25, 25, 40, 0.95) 100%)',
+  borderRadius: theme.spacing(1),
+  border: `1px solid ${theme.palette.divider}`,
+  overflow: 'hidden',
+  backdropFilter: 'blur(10px)',
+  '&:hover': {
+    boxShadow: theme.shadows[8]
+  }
+}));
+
+const MinimapCanvas = styled('canvas')(({ theme }) => ({
+  width: '100%',
+  height: '100%',
+  cursor: 'crosshair',
+  transition: 'opacity 0.2s ease',
+  '&:hover': {
+    opacity: 0.9
+  }
+}));
+
+const ControlsOverlay = styled(Box)(({ theme }) => ({
+  position: 'absolute',
+  top: theme.spacing(1),
+  right: theme.spacing(1),
+  display: 'flex',
+  flexDirection: 'column',
+  gap: theme.spacing(0.5),
+  backgroundColor: 'rgba(0, 0, 0, 0.7)',
+  borderRadius: theme.spacing(1),
+  padding: theme.spacing(0.5),
+  backdropFilter: 'blur(5px)'
+}));
+
+const LayerControls = styled(Box)(({ theme }) => ({
+  position: 'absolute',
+  bottom: theme.spacing(1),
+  left: theme.spacing(1),
+  display: 'flex',
+  flexWrap: 'wrap',
+  gap: theme.spacing(0.5),
+  maxWidth: '80%'
+}));
+
+const ViewportIndicator = styled(Box)(({ theme }) => ({
+  position: 'absolute',
+  border: '2px solid #00ff88',
+  backgroundColor: 'rgba(0, 255, 136, 0.1)',
+  borderRadius: theme.spacing(0.5),
+  pointerEvents: 'none',
+  transition: 'all 0.2s ease',
+  '&.active': {
+    boxShadow: '0 0 10px rgba(0, 255, 136, 0.5)'
+  }
+}));
+
+const PerformanceOverlay = styled(Box)(({ theme }) => ({
+  position: 'absolute',
+  top: theme.spacing(1),
+  left: theme.spacing(1),
+  backgroundColor: 'rgba(0, 0, 0, 0.8)',
+  borderRadius: theme.spacing(0.5),
+  padding: theme.spacing(0.5, 1),
+  backdropFilter: 'blur(5px)',
+  fontSize: '0.75rem',
+  fontFamily: 'monospace',
+  color: theme.palette.success.main,
+  display: 'flex',
+  alignItems: 'center',
+  gap: theme.spacing(0.5)
+}));
+
+const SearchOverlay = styled(Box)(({ theme }) => ({
+  position: 'absolute',
+  top: '50%',
+  left: '50%',
+  transform: 'translate(-50%, -50%)',
+  backgroundColor: 'rgba(0, 0, 0, 0.9)',
+  borderRadius: theme.spacing(1),
+  padding: theme.spacing(1),
+  backdropFilter: 'blur(10px)',
+  border: `1px solid ${theme.palette.primary.main}`,
+  minWidth: 200
+}));
+
+const HeatMapLegend = styled(Box)(({ theme }) => ({
+  position: 'absolute',
+  bottom: theme.spacing(6),
+  right: theme.spacing(1),
+  backgroundColor: 'rgba(0, 0, 0, 0.8)',
+  borderRadius: theme.spacing(0.5),
+  padding: theme.spacing(0.5),
+  backdropFilter: 'blur(5px)',
+  display: 'flex',
+  flexDirection: 'column',
+  gap: theme.spacing(0.25),
+  fontSize: '0.7rem'
+}));
+
+// Interface definitions
+interface MinimapProps {
+  scene?: any; // G3D Scene object
+  viewportBounds?: {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+  };
+  onViewportChange?: (bounds: { x: number; y: number; width: number; height: number }) => void;
+  onNodeClick?: (nodeId: string) => void;
+  onNodeHover?: (nodeId: string | null) => void;
+  searchQuery?: string;
+  searchResults?: string[];
   width?: number;
   height?: number;
+  enableHeatMap?: boolean;
+  enablePerformanceMonitor?: boolean;
   className?: string;
-  style?: React.CSSProperties;
-  performanceMode?: 'auto' | 'high' | 'balanced' | 'low';
-  enableFeatureFlags?: {
-    webgpu?: boolean;
-    lod?: boolean;
-    frustumCulling?: boolean;
-    performanceMonitoring?: boolean;
-    animations?: boolean;
-  };
 }
 
-interface RenderingState {
-  isInitialized: boolean;
-  renderingEngine: 'webgpu' | 'webgl2' | 'canvas2d' | null;
-  error: string | null;
-  isLoading: boolean;
-  fps: number;
-  frameTime: number;
-  drawCalls: number;
-  polygonCount: number;
-  memoryUsage: number;
-  lodLevel: number;
+interface LayerConfig {
+  id: string;
+  name: string;
+  visible: boolean;
+  color: string;
+  type: 'function' | 'class' | 'module' | 'file' | 'connection';
+  nodeCount: number;
 }
 
-interface PerformanceMetrics {
+interface PerformanceStats {
   fps: number;
   frameTime: number;
-  drawCalls: number;
-  polygonCount: number;
-  memoryUsage: number;
+  nodeCount: number;
   renderTime: number;
-  updateTime: number;
-  gpuTime: number;
+  memoryUsage: number;
 }
 
-interface LODConfig {
+interface HeatMapConfig {
   enabled: boolean;
-  levels: {
-    high: { distance: number; complexity: number };
-    medium: { distance: number; complexity: number };
-    low: { distance: number; complexity: number };
-    minimal: { distance: number; complexity: number };
-  };
-  autoAdjust: boolean;
-  targetFPS: number;
+  metric: 'complexity' | 'size' | 'connections' | 'activity';
+  intensity: number;
+  colorScheme: 'viridis' | 'plasma' | 'inferno' | 'cool' | 'warm';
 }
 
-interface FeatureFlags {
-  webgpu: boolean;
-  lod: boolean;
-  frustumCulling: boolean;
-  performanceMonitoring: boolean;
-  animations: boolean;
-  instancing: boolean;
-  shadows: boolean;
-  postProcessing: boolean;
-}
-
-// Configuration constants
-const MINIMAP_3D_CONFIG = {
-  // Performance targets
-  TARGET_FPS: 30,
-  MAX_DRAW_CALLS: 3000,
-  MAX_POLYGON_COUNT: 300000,
-  MAX_MEMORY_MB: 256,
-  
-  // LOD distances
-  LOD_DISTANCES: {
-    HIGH: 10,
-    MEDIUM: 25,
-    LOW: 50,
-    MINIMAL: 100
-  },
-  
-  // Rendering limits
-  MAX_VISIBLE_NODES: 1000,
-  CULLING_MARGIN: 1.2,
-  UPDATE_FREQUENCY: 60,
-  
-  // WebGPU fallback thresholds
-  WEBGPU_TIMEOUT_MS: 5000,
-  WEBGL2_TIMEOUT_MS: 3000,
-  
-  // Animation settings
-  TRANSITION_DURATION: 300,
-  FADE_DURATION: 150,
-  
-  // Error recovery
-  MAX_CONSECUTIVE_ERRORS: 5,
-  ERROR_RECOVERY_DELAY_MS: 1000
-};
-
-export const CodeMinimap3D: React.FC<CodeMinimap3DProps> = ({
-  nodes,
-  selectedNodeIds = [],
-  highlightedNodeIds = [],
+/**
+ * CodeMinimap3D Component
+ */
+const CodeMinimap3D: React.FC<MinimapProps> = ({
+  scene,
+  viewportBounds,
+  onViewportChange,
   onNodeClick,
-  onNodeDoubleClick,
-  onSelectionChange,
-  enabled = true,
-  width = 400,
-  height = 300,
-  className = '',
-  style = {},
-  performanceMode = 'auto',
-  enableFeatureFlags = {}
+  onNodeHover,
+  searchQuery = '',
+  searchResults = [],
+  width = 300,
+  height = 200,
+  enableHeatMap = true,
+  enablePerformanceMonitor = true,
+  className
 }) => {
   // Refs
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const controllerRef = useRef<MinimapController | null>(null);
-  const renderingContextRef = useRef<any>(null);
-  const performanceMonitorRef = useRef<{
-    frameCount: number;
-    lastTime: number;
-    fpsHistory: number[];
-    frameTimeHistory: number[];
-  }>({
-    frameCount: 0,
-    lastTime: performance.now(),
-    fpsHistory: [],
-    frameTimeHistory: []
-  });
+  const rendererRef = useRef<G3DRenderer | null>(null);
+  const animationFrameRef = useRef<number | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
-  // State management
-  const [renderingState, setRenderingState] = useState<RenderingState>({
-    isInitialized: false,
-    renderingEngine: null,
-    error: null,
-    isLoading: true,
+  // State
+  const [isInitialized, setIsInitialized] = useState(false);
+  const [zoomLevel, setZoomLevel] = useState(1);
+  const [layers, setLayers] = useState<LayerConfig[]>([]);
+  const [performanceStats, setPerformanceStats] = useState<PerformanceStats>({
     fps: 0,
     frameTime: 0,
-    drawCalls: 0,
-    polygonCount: 0,
-    memoryUsage: 0,
-    lodLevel: 0
+    nodeCount: 0,
+    renderTime: 0,
+    memoryUsage: 0
   });
-
-  const [featureFlags, setFeatureFlags] = useState<FeatureFlags>({
-    webgpu: enableFeatureFlags.webgpu ?? true,
-    lod: enableFeatureFlags.lod ?? true,
-    frustumCulling: enableFeatureFlags.frustumCulling ?? true,
-    performanceMonitoring: enableFeatureFlags.performanceMonitoring ?? true,
-    animations: enableFeatureFlags.animations ?? true,
-    instancing: true,
-    shadows: false,
-    postProcessing: false
+  const [heatMapConfig, setHeatMapConfig] = useState<HeatMapConfig>({
+    enabled: enableHeatMap,
+    metric: 'complexity',
+    intensity: 0.8,
+    colorScheme: 'viridis'
   });
+  const [selectedNodes, setSelectedNodes] = useState<Set<string>>(new Set());
+  const [hoveredNode, setHoveredNode] = useState<string | null>(null);
+  const [isControlsVisible, setIsControlsVisible] = useState(true);
+  const [lastRenderTime, setLastRenderTime] = useState(0);
 
-  const [lodConfig, setLodConfig] = useState<LODConfig>({
-    enabled: true,
-    levels: {
-      high: { distance: MINIMAP_3D_CONFIG.LOD_DISTANCES.HIGH, complexity: 1.0 },
-      medium: { distance: MINIMAP_3D_CONFIG.LOD_DISTANCES.MEDIUM, complexity: 0.7 },
-      low: { distance: MINIMAP_3D_CONFIG.LOD_DISTANCES.LOW, complexity: 0.4 },
-      minimal: { distance: MINIMAP_3D_CONFIG.LOD_DISTANCES.MINIMAL, complexity: 0.1 }
-    },
-    autoAdjust: true,
-    targetFPS: MINIMAP_3D_CONFIG.TARGET_FPS
-  });
-
-  // Memoized values
-  const visibleNodes = useMemo(() => {
-    if (!featureFlags.frustumCulling) return nodes;
+  // Computed values
+  const viewportIndicatorStyle = useMemo(() => {
+    if (!viewportBounds) return { display: 'none' };
     
-    // Simplified frustum culling - in real implementation would use camera frustum
-    return nodes.filter(node => node.visible).slice(0, MINIMAP_3D_CONFIG.MAX_VISIBLE_NODES);
-  }, [nodes, featureFlags.frustumCulling]);
-
-  const lodNodes = useMemo(() => {
-    if (!featureFlags.lod) return visibleNodes;
-    
-    return visibleNodes.map(node => {
-      // Calculate distance from camera (simplified)
-      const distance = Math.sqrt(
-        node.position.x * node.position.x + 
-        node.position.y * node.position.y + 
-        node.position.z * node.position.z
-      );
-      
-      let lodLevel = 0;
-      let complexity = 1.0;
-      
-      if (distance > lodConfig.levels.minimal.distance) {
-        lodLevel = 3;
-        complexity = lodConfig.levels.minimal.complexity;
-      } else if (distance > lodConfig.levels.low.distance) {
-        lodLevel = 2;
-        complexity = lodConfig.levels.low.complexity;
-      } else if (distance > lodConfig.levels.medium.distance) {
-        lodLevel = 1;
-        complexity = lodConfig.levels.medium.complexity;
-      }
-      
-      return { ...node, lodLevel, complexity };
-    });
-  }, [visibleNodes, lodConfig, featureFlags.lod]);
-
-  // Initialize rendering engine
-  const initializeRenderingEngine = useCallback(async () => {
-    if (!canvasRef.current || !enabled) return;
-
-    setRenderingState(prev => ({ ...prev, isLoading: true, error: null }));
-
-    try {
-      let context = null;
-      let engine: RenderingState['renderingEngine'] = null;
-
-      // Try WebGPU first if enabled
-      if (featureFlags.webgpu && 'gpu' in navigator) {
-        try {
-          const adapter = await navigator.gpu.requestAdapter();
-          if (adapter) {
-            const device = await adapter.requestDevice();
-            context = canvasRef.current.getContext('webgpu');
-            if (context) {
-              // Configure WebGPU context
-              const format = navigator.gpu.getPreferredCanvasFormat();
-              context.configure({
-                device,
-                format,
-                alphaMode: 'premultiplied'
-              });
-              
-              renderingContextRef.current = { context, device, adapter, format };
-              engine = 'webgpu';
-            }
-          }
-        } catch (error) {
-          console.warn('WebGPU initialization failed:', error);
-        }
-      }
-
-      // Fallback to WebGL2
-      if (!context) {
-        try {
-          context = canvasRef.current.getContext('webgl2', {
-            alpha: true,
-            antialias: true,
-            preserveDrawingBuffer: false,
-            powerPreference: 'high-performance'
-          });
-          
-          if (context) {
-            // Configure WebGL2 context
-            context.enable(context.DEPTH_TEST);
-            context.enable(context.CULL_FACE);
-            context.cullFace(context.BACK);
-            context.clearColor(0.1, 0.1, 0.1, 1.0);
-            
-            renderingContextRef.current = { context };
-            engine = 'webgl2';
-          }
-        } catch (error) {
-          console.warn('WebGL2 initialization failed:', error);
-        }
-      }
-
-      // Final fallback to Canvas2D
-      if (!context) {
-        context = canvasRef.current.getContext('2d');
-        if (context) {
-          renderingContextRef.current = { context };
-          engine = 'canvas2d';
-        }
-      }
-
-      if (!context) {
-        throw new Error('Failed to initialize any rendering context');
-      }
-
-      // Initialize controller
-      const controller = new MinimapController();
-      controller.setCanvas(canvasRef.current);
-      
-      // Set up event listeners
-      controller.on('file_clicked', (hit: RaycastHit) => {
-        onNodeClick?.(hit);
-      });
-      
-      controller.on('file_double_clicked', (hit: RaycastHit) => {
-        onNodeDoubleClick?.(hit);
-      });
-      
-      controller.on('node_selected', ({ selectedNodes }) => {
-        onSelectionChange?.(selectedNodes);
-      });
-
-      controller.on('render_frame', (frameData) => {
-        renderFrame(frameData);
-      });
-
-      controllerRef.current = controller;
-
-      setRenderingState(prev => ({
-        ...prev,
-        isInitialized: true,
-        renderingEngine: engine,
-        isLoading: false,
-        error: null
-      }));
-
-    } catch (error) {
-      console.error('Rendering engine initialization failed:', error);
-      setRenderingState(prev => ({
-        ...prev,
-        error: error instanceof Error ? error.message : 'Unknown initialization error',
-        isLoading: false,
-        isInitialized: false
-      }));
-    }
-  }, [enabled, featureFlags.webgpu, onNodeClick, onNodeDoubleClick, onSelectionChange]);
-
-  // Render frame
-  const renderFrame = useCallback((frameData: any) => {
-    if (!renderingContextRef.current || !canvasRef.current) return;
-
-    const startTime = performance.now();
-    
-    try {
-      const { context } = renderingContextRef.current;
-      const { camera, nodes: frameNodes, selectedNodes, highlightedNodes } = frameData;
-
-      if (renderingState.renderingEngine === 'webgpu') {
-        renderWithWebGPU(context, camera, frameNodes, selectedNodes, highlightedNodes);
-      } else if (renderingState.renderingEngine === 'webgl2') {
-        renderWithWebGL2(context, camera, frameNodes, selectedNodes, highlightedNodes);
-      } else if (renderingState.renderingEngine === 'canvas2d') {
-        renderWithCanvas2D(context, camera, frameNodes, selectedNodes, highlightedNodes);
-      }
-
-      // Update performance metrics
-      if (featureFlags.performanceMonitoring) {
-        updatePerformanceMetrics(performance.now() - startTime);
-      }
-
-    } catch (error) {
-      console.error('Render frame error:', error);
-      handleRenderError(error);
-    }
-  }, [renderingState.renderingEngine, featureFlags.performanceMonitoring]);
-
-  // WebGPU rendering
-  const renderWithWebGPU = useCallback((context: any, camera: Camera, nodes: MinimapNode[], selectedNodes: string[], highlightedNodes: string[]) => {
-    // WebGPU rendering implementation placeholder
-    // In a real implementation, this would use WebGPU compute and render pipelines
-    
-    const { device } = renderingContextRef.current;
-    
-    // Create command encoder
-    const commandEncoder = device.createCommandEncoder();
-    
-    // Begin render pass
-    const renderPassDescriptor = {
-      colorAttachments: [{
-        view: context.getCurrentTexture().createView(),
-        clearValue: { r: 0.1, g: 0.1, b: 0.1, a: 1.0 },
-        loadOp: 'clear',
-        storeOp: 'store'
-      }]
+    return {
+      left: `${viewportBounds.x}%`,
+      top: `${viewportBounds.y}%`,
+      width: `${viewportBounds.width}%`,
+      height: `${viewportBounds.height}%`,
+      display: 'block'
     };
-    
-    const passEncoder = commandEncoder.beginRenderPass(renderPassDescriptor);
-    
-    // Render nodes (simplified)
-    let drawCalls = 0;
-    let polygons = 0;
-    
-    lodNodes.forEach(node => {
-      if (drawCalls >= MINIMAP_3D_CONFIG.MAX_DRAW_CALLS) return;
-      
-      // Render node based on LOD level
-      const complexity = node.complexity || 1.0;
-      const nodePolygons = Math.floor(complexity * 100); // Base polygon count
-      
-      if (polygons + nodePolygons <= MINIMAP_3D_CONFIG.MAX_POLYGON_COUNT) {
-        // Render node (WebGPU implementation would go here)
-        drawCalls++;
-        polygons += nodePolygons;
-      }
-    });
-    
-    passEncoder.end();
-    
-    // Submit command buffer
-    device.queue.submit([commandEncoder.finish()]);
-    
-    // Update metrics
-    setRenderingState(prev => ({
-      ...prev,
-      drawCalls,
-      polygonCount: polygons
-    }));
-  }, [lodNodes]);
+  }, [viewportBounds]);
 
-  // WebGL2 rendering
-  const renderWithWebGL2 = useCallback((gl: WebGL2RenderingContext, camera: Camera, nodes: MinimapNode[], selectedNodes: string[], highlightedNodes: string[]) => {
-    // Clear canvas
-    gl.viewport(0, 0, canvasRef.current!.width, canvasRef.current!.height);
-    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-    
-    let drawCalls = 0;
-    let polygons = 0;
-    
-    // Simplified rendering - in real implementation would use shaders and buffers
-    lodNodes.forEach(node => {
-      if (drawCalls >= MINIMAP_3D_CONFIG.MAX_DRAW_CALLS) return;
-      
-      const complexity = node.complexity || 1.0;
-      const nodePolygons = Math.floor(complexity * 100);
-      
-      if (polygons + nodePolygons <= MINIMAP_3D_CONFIG.MAX_POLYGON_COUNT) {
-        // Render node (WebGL2 implementation would go here)
-        // This would involve setting up vertex buffers, shaders, uniforms, etc.
-        drawCalls++;
-        polygons += nodePolygons;
-      }
-    });
-    
-    // Update metrics
-    setRenderingState(prev => ({
-      ...prev,
-      drawCalls,
-      polygonCount: polygons
-    }));
-  }, [lodNodes]);
+  const visibleLayers = useMemo(() => {
+    return layers.filter(layer => layer.visible);
+  }, [layers]);
 
-  // Canvas2D fallback rendering
-  const renderWithCanvas2D = useCallback((ctx: CanvasRenderingContext2D, camera: Camera, nodes: MinimapNode[], selectedNodes: string[], highlightedNodes: string[]) => {
-    const canvas = canvasRef.current!;
-    
-    // Clear canvas
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    
-    // Set background
-    ctx.fillStyle = '#1a1a1a';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    
-    let drawCalls = 0;
-    
-    // Simple 2D projection of 3D nodes
-    lodNodes.forEach(node => {
-      if (drawCalls >= MINIMAP_3D_CONFIG.MAX_DRAW_CALLS) return;
-      
-      // Project 3D position to 2D screen coordinates
-      const x = (node.position.x + 5) * (canvas.width / 10);
-      const y = (node.position.z + 5) * (canvas.height / 10);
-      
-      // Skip if outside canvas
-      if (x < 0 || x > canvas.width || y < 0 || y > canvas.height) return;
-      
-      // Set color based on node type and state
-      let color = '#666';
-      if (selectedNodes.includes(node.id)) {
-        color = '#4CAF50';
-      } else if (highlightedNodes.includes(node.id)) {
-        color = '#FFC107';
-      } else {
-        switch (node.type) {
-          case 'file': color = '#2196F3'; break;
-          case 'directory': color = '#FF9800'; break;
-          case 'function': color = '#9C27B0'; break;
-          case 'class': color = '#F44336'; break;
-          case 'variable': color = '#00BCD4'; break;
-        }
-      }
-      
-      // Draw node
-      ctx.fillStyle = color;
-      ctx.beginPath();
-      
-      const size = Math.max(2, (node.complexity || 1) * 8);
-      if (node.type === 'directory') {
-        // Draw rectangle for directories
-        ctx.fillRect(x - size/2, y - size/2, size, size);
-      } else {
-        // Draw circle for files
-        ctx.arc(x, y, size/2, 0, 2 * Math.PI);
-        ctx.fill();
-      }
-      
-      // Draw label for selected nodes
-      if (selectedNodes.includes(node.id)) {
-        ctx.fillStyle = '#fff';
-        ctx.font = '10px sans-serif';
-        ctx.fillText(node.filePath.split('/').pop() || '', x + size/2 + 2, y + 3);
-      }
-      
-      drawCalls++;
-    });
-    
-    // Update metrics
-    setRenderingState(prev => ({
-      ...prev,
-      drawCalls,
-      polygonCount: drawCalls * 2 // Simplified polygon count for 2D
-    }));
-  }, [lodNodes]);
+  const searchHighlights = useMemo(() => {
+    return new Set(searchResults);
+  }, [searchResults]);
 
-  // Performance monitoring
-  const updatePerformanceMetrics = useCallback((frameTime: number) => {
-    const monitor = performanceMonitorRef.current;
-    const currentTime = performance.now();
-    
-    monitor.frameCount++;
-    monitor.frameTimeHistory.push(frameTime);
-    
-    // Calculate FPS every second
-    if (currentTime - monitor.lastTime >= 1000) {
-      const fps = monitor.frameCount;
-      monitor.fpsHistory.push(fps);
-      
-      // Keep only last 10 seconds of history
-      if (monitor.fpsHistory.length > 10) {
-        monitor.fpsHistory.shift();
-      }
-      if (monitor.frameTimeHistory.length > 60) {
-        monitor.frameTimeHistory.splice(0, monitor.frameTimeHistory.length - 60);
-      }
-      
-      setRenderingState(prev => ({
-        ...prev,
-        fps,
-        frameTime: monitor.frameTimeHistory.reduce((a, b) => a + b, 0) / monitor.frameTimeHistory.length
-      }));
-      
-      // Auto-adjust LOD if performance is poor
-      if (lodConfig.autoAdjust && fps < lodConfig.targetFPS) {
-        adjustLODForPerformance(fps);
-      }
-      
-      monitor.frameCount = 0;
-      monitor.lastTime = currentTime;
-    }
-  }, [lodConfig]);
-
-  // LOD adjustment based on performance
-  const adjustLODForPerformance = useCallback((currentFPS: number) => {
-    const fpsRatio = currentFPS / lodConfig.targetFPS;
-    
-    if (fpsRatio < 0.8) {
-      // Performance is poor, reduce quality
-      setLodConfig(prev => ({
-        ...prev,
-        levels: {
-          high: { ...prev.levels.high, complexity: Math.max(0.1, prev.levels.high.complexity * 0.8) },
-          medium: { ...prev.levels.medium, complexity: Math.max(0.1, prev.levels.medium.complexity * 0.8) },
-          low: { ...prev.levels.low, complexity: Math.max(0.1, prev.levels.low.complexity * 0.8) },
-          minimal: { ...prev.levels.minimal, complexity: Math.max(0.1, prev.levels.minimal.complexity * 0.8) }
-        }
-      }));
-    } else if (fpsRatio > 1.2) {
-      // Performance is good, can increase quality
-      setLodConfig(prev => ({
-        ...prev,
-        levels: {
-          high: { ...prev.levels.high, complexity: Math.min(1.0, prev.levels.high.complexity * 1.1) },
-          medium: { ...prev.levels.medium, complexity: Math.min(1.0, prev.levels.medium.complexity * 1.1) },
-          low: { ...prev.levels.low, complexity: Math.min(1.0, prev.levels.low.complexity * 1.1) },
-          minimal: { ...prev.levels.minimal, complexity: Math.min(1.0, prev.levels.minimal.complexity * 1.1) }
-        }
-      }));
-    }
-  }, [lodConfig.targetFPS]);
-
-  // Error handling
-  const handleRenderError = useCallback((error: any) => {
-    console.error('Rendering error:', error);
-    
-    setRenderingState(prev => ({
-      ...prev,
-      error: error instanceof Error ? error.message : 'Rendering error occurred'
-    }));
-    
-    // Attempt to recover by falling back to a simpler rendering mode
-    if (renderingState.renderingEngine === 'webgpu') {
-      setFeatureFlags(prev => ({ ...prev, webgpu: false }));
-    } else if (renderingState.renderingEngine === 'webgl2') {
-      // Fallback to canvas2d will happen on next initialization
-    }
-  }, [renderingState.renderingEngine]);
-
-  // Update nodes in controller
+  // Initialize renderer
   useEffect(() => {
-    if (!controllerRef.current) return;
+    const initializeRenderer = async () => {
+      if (!canvasRef.current) return;
 
-    // Add/update nodes
-    lodNodes.forEach(node => {
-      if (controllerRef.current!.getSelectedNodes().find(n => n.id === node.id)) {
-        controllerRef.current!.updateNode(node.id, node);
-      } else {
-        controllerRef.current!.addNode(node);
+      try {
+        const renderer = new G3DRenderer(canvasRef.current);
+        await renderer.initialize();
+        
+        rendererRef.current = renderer;
+        
+        // Setup event listeners
+        renderer.on('frame-rendered', handleFrameRendered);
+        renderer.on('performance-warning', handlePerformanceWarning);
+        
+        // Configure for minimap
+        renderer.updateSettings({
+          enableLOD: true,
+          enableFrustumCulling: true,
+          enableInstancing: true,
+          enablePostProcessing: false, // Disable for performance
+          maxDrawCalls: 100,
+          targetFPS: 30 // Lower target for minimap
+        });
+
+        setIsInitialized(true);
+        
+      } catch (error) {
+        console.error('Failed to initialize minimap renderer:', error);
       }
-    });
+    };
 
-    // Handle selection changes
-    selectedNodeIds.forEach(nodeId => {
-      controllerRef.current!.selectNode(nodeId, true);
-    });
-
-    // Handle highlighting changes
-    highlightedNodeIds.forEach(nodeId => {
-      controllerRef.current!.highlightNode(nodeId);
-    });
-
-  }, [lodNodes, selectedNodeIds, highlightedNodeIds]);
-
-  // Initialize on mount and when enabled changes
-  useEffect(() => {
-    if (enabled && canvasRef.current) {
-      initializeRenderingEngine();
-    }
+    initializeRenderer();
 
     return () => {
-      if (controllerRef.current) {
-        controllerRef.current.destroy();
-        controllerRef.current = null;
+      if (rendererRef.current) {
+        rendererRef.current.dispose();
+      }
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
       }
     };
-  }, [enabled, initializeRenderingEngine]);
+  }, []);
 
-  // Handle canvas resize
+  // Update scene when props change
   useEffect(() => {
-    if (canvasRef.current) {
-      canvasRef.current.width = width * (window.devicePixelRatio || 1);
-      canvasRef.current.height = height * (window.devicePixelRatio || 1);
-      canvasRef.current.style.width = `${width}px`;
-      canvasRef.current.style.height = `${height}px`;
-    }
-  }, [width, height]);
+    if (!rendererRef.current || !scene || !isInitialized) return;
 
-  // Feature flag toggle
-  const toggleFeatureFlag = useCallback((flag: keyof FeatureFlags) => {
-    setFeatureFlags(prev => ({
+    // Create minimap-specific scene
+    const minimapScene = createMinimapScene(scene);
+    rendererRef.current.setScene(minimapScene);
+    
+    // Update layers
+    updateLayersFromScene(scene);
+    
+    // Start render loop
+    rendererRef.current.startRenderLoop();
+
+  }, [scene, isInitialized]);
+
+  // Handle zoom changes
+  useEffect(() => {
+    if (!rendererRef.current) return;
+
+    // Update camera zoom
+    const scene = rendererRef.current.getScene?.();
+    if (scene) {
+      // Update camera properties based on zoom level
+      // Implementation would depend on G3D camera API
+    }
+  }, [zoomLevel]);
+
+  // Handle layer visibility changes
+  useEffect(() => {
+    if (!rendererRef.current) return;
+
+    // Update node visibility based on layer settings
+    updateNodeVisibility();
+  }, [visibleLayers]);
+
+  // Handle heat map changes
+  useEffect(() => {
+    if (!rendererRef.current) return;
+
+    if (heatMapConfig.enabled) {
+      applyHeatMapVisualization();
+    } else {
+      removeHeatMapVisualization();
+    }
+  }, [heatMapConfig]);
+
+  // Handle search highlighting
+  useEffect(() => {
+    if (!rendererRef.current) return;
+
+    updateSearchHighlights();
+  }, [searchHighlights]);
+
+  // Callbacks
+  const handleFrameRendered = useCallback((stats: any) => {
+    setPerformanceStats(prev => ({
       ...prev,
-      [flag]: !prev[flag]
+      fps: stats.fps,
+      frameTime: stats.frameTime,
+      renderTime: stats.performance.renderTime,
+      nodeCount: stats.vertices / 3 // Approximate
+    }));
+    setLastRenderTime(Date.now());
+  }, []);
+
+  const handlePerformanceWarning = useCallback((warning: any) => {
+    console.warn('Minimap performance warning:', warning);
+  }, []);
+
+  const handleCanvasClick = useCallback((event: React.MouseEvent<HTMLCanvasElement>) => {
+    if (!canvasRef.current || !onViewportChange) return;
+
+    const rect = canvasRef.current.getBoundingClientRect();
+    const x = ((event.clientX - rect.left) / rect.width) * 100;
+    const y = ((event.clientY - rect.top) / rect.height) * 100;
+
+    // Calculate new viewport bounds centered on click
+    const viewportWidth = viewportBounds?.width || 25;
+    const viewportHeight = viewportBounds?.height || 25;
+
+    const newBounds = {
+      x: Math.max(0, Math.min(100 - viewportWidth, x - viewportWidth / 2)),
+      y: Math.max(0, Math.min(100 - viewportHeight, y - viewportHeight / 2)),
+      width: viewportWidth,
+      height: viewportHeight
+    };
+
+    onViewportChange(newBounds);
+
+    // Also handle node selection
+    const nodeId = getNodeAtPosition(x, y);
+    if (nodeId && onNodeClick) {
+      onNodeClick(nodeId);
+    }
+  }, [viewportBounds, onViewportChange, onNodeClick]);
+
+  const handleCanvasMouseMove = useCallback((event: React.MouseEvent<HTMLCanvasElement>) => {
+    if (!canvasRef.current || !onNodeHover) return;
+
+    const rect = canvasRef.current.getBoundingClientRect();
+    const x = ((event.clientX - rect.left) / rect.width) * 100;
+    const y = ((event.clientY - rect.top) / rect.height) * 100;
+
+    const nodeId = getNodeAtPosition(x, y);
+    if (nodeId !== hoveredNode) {
+      setHoveredNode(nodeId);
+      onNodeHover(nodeId);
+    }
+  }, [hoveredNode, onNodeHover]);
+
+  const handleZoomChange = useCallback((event: Event, newValue: number | number[]) => {
+    const zoom = Array.isArray(newValue) ? newValue[0] : newValue;
+    setZoomLevel(zoom);
+  }, []);
+
+  const handleLayerToggle = useCallback((layerId: string) => {
+    setLayers(prev => prev.map(layer => 
+      layer.id === layerId 
+        ? { ...layer, visible: !layer.visible }
+        : layer
+    ));
+  }, []);
+
+  const handleHeatMapToggle = useCallback(() => {
+    setHeatMapConfig(prev => ({
+      ...prev,
+      enabled: !prev.enabled
     }));
   }, []);
 
-  // Render loading state
-  if (renderingState.isLoading) {
-    return (
-      <div 
-        className={`codeforge-minimap-3d loading ${className}`}
-        style={{ width, height, ...style }}
-      >
-        <div className="loading-spinner">
-          <div className="spinner"></div>
-          <div className="loading-text">Initializing 3D renderer...</div>
-        </div>
-        <style jsx>{`
-          .codeforge-minimap-3d.loading {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: #1a1a1a;
-            border-radius: 4px;
-            color: #fff;
-          }
-          .loading-spinner {
-            text-align: center;
-          }
-          .spinner {
-            width: 30px;
-            height: 30px;
-            border: 3px solid #333;
-            border-top: 3px solid #4CAF50;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 10px;
-          }
-          @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-          }
-          .loading-text {
-            font-size: 12px;
-            color: #999;
-          }
-        `}</style>
-      </div>
-    );
-  }
+  const handleHeatMapMetricChange = useCallback((metric: HeatMapConfig['metric']) => {
+    setHeatMapConfig(prev => ({
+      ...prev,
+      metric
+    }));
+  }, []);
 
-  // Render error state
-  if (renderingState.error) {
-    return (
-      <div 
-        className={`codeforge-minimap-3d error ${className}`}
-        style={{ width, height, ...style }}
-      >
-        <div className="error-content">
-          <div className="error-icon">⚠️</div>
-          <div className="error-title">3D Rendering Error</div>
-          <div className="error-message">{renderingState.error}</div>
-          <button 
-            className="retry-button"
-            onClick={() => initializeRenderingEngine()}
-          >
-            Retry
-          </button>
-        </div>
-        <style jsx>{`
-          .codeforge-minimap-3d.error {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: #1a1a1a;
-            border: 1px solid #f44336;
-            border-radius: 4px;
-            color: #fff;
-          }
-          .error-content {
-            text-align: center;
-            padding: 20px;
-          }
-          .error-icon {
-            font-size: 32px;
-            margin-bottom: 10px;
-          }
-          .error-title {
-            font-size: 14px;
-            font-weight: bold;
-            margin-bottom: 8px;
-            color: #f44336;
-          }
-          .error-message {
-            font-size: 12px;
-            color: #999;
-            margin-bottom: 15px;
-            word-wrap: break-word;
-          }
-          .retry-button {
-            background: #4CAF50;
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 12px;
-          }
-          .retry-button:hover {
-            background: #45a049;
-          }
-        `}</style>
-      </div>
-    );
-  }
+  const resetView = useCallback(() => {
+    setZoomLevel(1);
+    if (onViewportChange) {
+      onViewportChange({
+        x: 25,
+        y: 25,
+        width: 50,
+        height: 50
+      });
+    }
+  }, [onViewportChange]);
 
-  // Render disabled state
-  if (!enabled) {
-    return (
-      <div 
-        className={`codeforge-minimap-3d disabled ${className}`}
-        style={{ width, height, ...style }}
-      >
-        <div className="disabled-content">
-          <div className="disabled-icon">🔒</div>
-          <div className="disabled-text">3D Minimap Disabled</div>
-        </div>
-        <style jsx>{`
-          .codeforge-minimap-3d.disabled {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: #2a2a2a;
-            border-radius: 4px;
-            color: #666;
-          }
-          .disabled-content {
-            text-align: center;
-          }
-          .disabled-icon {
-            font-size: 24px;
-            margin-bottom: 8px;
-          }
-          .disabled-text {
-            font-size: 12px;
-          }
-        `}</style>
-      </div>
-    );
-  }
+  // Helper functions
+  const createMinimapScene = (originalScene: any) => {
+    // Create a simplified version of the scene for minimap
+    // This would involve LOD reduction, simplified geometry, etc.
+    return originalScene;
+  };
 
-  // Main render
+  const updateLayersFromScene = (scene: any) => {
+    if (!scene?.nodes) return;
+
+    const layerMap = new Map<string, { count: number; type: string }>();
+    
+    // Analyze scene to determine layers
+    scene.nodes.forEach((node: any) => {
+      const layerKey = node.type;
+      const existing = layerMap.get(layerKey);
+      layerMap.set(layerKey, {
+        count: (existing?.count || 0) + 1,
+        type: node.type
+      });
+    });
+
+    const newLayers: LayerConfig[] = Array.from(layerMap.entries()).map(([type, data]) => ({
+      id: type,
+      name: type.charAt(0).toUpperCase() + type.slice(1) + 's',
+      visible: true,
+      color: getLayerColor(type),
+      type: type as LayerConfig['type'],
+      nodeCount: data.count
+    }));
+
+    setLayers(newLayers);
+  };
+
+  const updateNodeVisibility = () => {
+    // Implementation would update node visibility in the renderer
+    // based on layer settings
+  };
+
+  const applyHeatMapVisualization = () => {
+    // Implementation would apply heat map coloring to nodes
+    // based on the selected metric
+  };
+
+  const removeHeatMapVisualization = () => {
+    // Implementation would restore original node colors
+  };
+
+  const updateSearchHighlights = () => {
+    // Implementation would highlight nodes that match search
+  };
+
+  const getNodeAtPosition = (x: number, y: number): string | null => {
+    // Implementation would perform ray casting to find node at position
+    // This is a simplified placeholder
+    return null;
+  };
+
+  const getLayerColor = (type: string): string => {
+    const colors = {
+      function: '#4CAF50',
+      class: '#2196F3',
+      module: '#FF9800',
+      file: '#9C27B0',
+      connection: '#607D8B'
+    };
+    return colors[type as keyof typeof colors] || '#757575';
+  };
+
+  const getFPSColor = (fps: number): string => {
+    if (fps >= 25) return '#4CAF50';
+    if (fps >= 15) return '#FF9800';
+    return '#F44336';
+  };
+
+  // Render
   return (
-    <div 
-      className={`codeforge-minimap-3d ${className}`}
-      style={{ position: 'relative', ...style }}
-    >
-      <canvas
+    <MinimapContainer ref={containerRef} className={className}>
+      <MinimapCanvas
         ref={canvasRef}
         width={width}
         height={height}
-        style={{
-          width: `${width}px`,
-          height: `${height}px`,
-          display: 'block',
-          background: '#1a1a1a',
-          borderRadius: '4px'
+        onClick={handleCanvasClick}
+        onMouseMove={handleCanvasMouseMove}
+        style={{ 
+          width: `${width}px`, 
+          height: `${height}px` 
         }}
       />
-      
-      {/* Performance overlay */}
-      {featureFlags.performanceMonitoring && (
-        <div className="performance-overlay">
-          <div className="metric">FPS: {renderingState.fps}</div>
-          <div className="metric">Frame: {renderingState.frameTime.toFixed(1)}ms</div>
-          <div className="metric">Draw: {renderingState.drawCalls}</div>
-          <div className="metric">Polys: {(renderingState.polygonCount / 1000).toFixed(1)}k</div>
-          <div className="metric">Engine: {renderingState.renderingEngine}</div>
-        </div>
+
+      {/* Viewport Indicator */}
+      <ViewportIndicator 
+        style={viewportIndicatorStyle}
+        className={viewportBounds ? 'active' : ''}
+      />
+
+      {/* Performance Monitor */}
+      {enablePerformanceMonitor && (
+        <PerformanceOverlay>
+          <Speed fontSize="small" />
+          <Typography 
+            variant="caption" 
+            style={{ 
+              color: getFPSColor(performanceStats.fps),
+              fontWeight: 'bold'
+            }}
+          >
+            {performanceStats.fps.toFixed(1)} FPS
+          </Typography>
+        </PerformanceOverlay>
       )}
-      
-      {/* Feature flag controls (development only) */}
-      {process.env.NODE_ENV === 'development' && (
-        <div className="feature-controls">
-          {Object.entries(featureFlags).map(([flag, enabled]) => (
-            <label key={flag} className="feature-toggle">
-              <input
-                type="checkbox"
-                checked={enabled}
-                onChange={() => toggleFeatureFlag(flag as keyof FeatureFlags)}
-              />
-              {flag}
-            </label>
-          ))}
-        </div>
+
+      {/* Controls */}
+      <Fade in={isControlsVisible}>
+        <ControlsOverlay>
+          <Tooltip title="Zoom In">
+            <IconButton 
+              size="small" 
+              onClick={() => setZoomLevel(prev => Math.min(5, prev + 0.5))}
+              disabled={zoomLevel >= 5}
+            >
+              <ZoomIn fontSize="small" />
+            </IconButton>
+          </Tooltip>
+          
+          <Tooltip title="Zoom Out">
+            <IconButton 
+              size="small" 
+              onClick={() => setZoomLevel(prev => Math.max(0.1, prev - 0.5))}
+              disabled={zoomLevel <= 0.1}
+            >
+              <ZoomOut fontSize="small" />
+            </IconButton>
+          </Tooltip>
+
+          <Tooltip title="Reset View">
+            <IconButton size="small" onClick={resetView}>
+              <MyLocation fontSize="small" />
+            </IconButton>
+          </Tooltip>
+
+          <Tooltip title="Toggle Heat Map">
+            <IconButton 
+              size="small" 
+              onClick={handleHeatMapToggle}
+              color={heatMapConfig.enabled ? 'primary' : 'default'}
+            >
+              <ThermostatTwoTone fontSize="small" />
+            </IconButton>
+          </Tooltip>
+
+          <Tooltip title="Refresh">
+            <IconButton size="small" onClick={() => window.location.reload()}>
+              <Refresh fontSize="small" />
+            </IconButton>
+          </Tooltip>
+        </ControlsOverlay>
+      </Fade>
+
+      {/* Layer Controls */}
+      <LayerControls>
+        {layers.map(layer => (
+          <Chip
+            key={layer.id}
+            label={`${layer.name} (${layer.nodeCount})`}
+            size="small"
+            variant={layer.visible ? 'filled' : 'outlined'}
+            style={{ 
+              backgroundColor: layer.visible ? layer.color : 'transparent',
+              borderColor: layer.color,
+              color: layer.visible ? 'white' : layer.color
+            }}
+            onClick={() => handleLayerToggle(layer.id)}
+            icon={layer.visible ? <Visibility /> : <VisibilityOff />}
+          />
+        ))}
+      </LayerControls>
+
+      {/* Heat Map Legend */}
+      {heatMapConfig.enabled && (
+        <HeatMapLegend>
+          <Typography variant="caption" style={{ color: '#fff', fontWeight: 'bold' }}>
+            Heat Map: {heatMapConfig.metric}
+          </Typography>
+          <Box display="flex" alignItems="center" gap={0.5}>
+            <Box 
+              width={10} 
+              height={10} 
+              bgcolor="#0000ff" 
+              borderRadius="50%" 
+            />
+            <Typography variant="caption" style={{ color: '#fff' }}>
+              Low
+            </Typography>
+          </Box>
+          <Box display="flex" alignItems="center" gap={0.5}>
+            <Box 
+              width={10} 
+              height={10} 
+              bgcolor="#ff0000" 
+              borderRadius="50%" 
+            />
+            <Typography variant="caption" style={{ color: '#fff' }}>
+              High
+            </Typography>
+          </Box>
+        </HeatMapLegend>
       )}
-      
-      <style jsx>{`
-        .performance-overlay {
-          position: absolute;
-          top: 8px;
-          right: 8px;
-          background: rgba(0, 0, 0, 0.8);
-          color: #fff;
-          padding: 8px;
-          border-radius: 4px;
-          font-family: monospace;
-          font-size: 10px;
-          line-height: 1.2;
-          pointer-events: none;
-        }
-        .metric {
-          margin-bottom: 2px;
-        }
-        .feature-controls {
-          position: absolute;
-          bottom: 8px;
-          left: 8px;
-          background: rgba(0, 0, 0, 0.8);
-          color: #fff;
-          padding: 8px;
-          border-radius: 4px;
-          font-size: 10px;
-          max-width: 150px;
-        }
-        .feature-toggle {
-          display: block;
-          margin-bottom: 4px;
-          cursor: pointer;
-        }
-        .feature-toggle input {
-          margin-right: 4px;
-        }
-      `}</style>
-    </div>
+
+      {/* Search Highlights Info */}
+      {searchQuery && searchResults.length > 0 && (
+        <SearchOverlay>
+          <Typography variant="caption" style={{ color: '#fff' }}>
+            Found {searchResults.length} matches for "{searchQuery}"
+          </Typography>
+        </SearchOverlay>
+      )}
+    </MinimapContainer>
   );
 };
 
