@@ -1,0 +1,72 @@
+gurbakshchahal@MacBook-Pro-10 aura % npx tsc --noEmit
+src/components/analytics/AnalyticsDashboard.tsx:973:15 - error TS2657: JSX expressions must have one parent element.
+
+ 973               <Box key={test.id} sx={{ mb: 3, p: 2, border: '1px solid #e0e0e0', borderRadius: 1 }}>
+                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 974                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ ... 
+1006                   </Typography>
+     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+1007                 </Box>
+     ~~~~~~~~~~~~~~~~~~~~~~
+
+src/components/analytics/AnalyticsDashboard.tsx:982:18 - error TS17008: JSX element 'Grid' has no corresponding closing tag.
+
+982                 <Grid container spacing={2}>
+                     ~~~~
+
+src/components/analytics/AnalyticsDashboard.tsx:1008:15 - error TS1005: ')' expected.
+
+1008               </Box>
+                   ~~
+
+src/components/analytics/AnalyticsDashboard.tsx:1008:17 - error TS17002: Expected corresponding JSX closing tag for 'CardContent'.
+
+1008               </Box>
+                     ~~~
+
+src/components/analytics/AnalyticsDashboard.tsx:1009:15 - error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+
+1009             ))}
+                   ~
+
+src/components/analytics/AnalyticsDashboard.tsx:1010:13 - error TS17002: Expected corresponding JSX closing tag for 'Card'.
+
+1010           </CardContent>
+                 ~~~~~~~~~~~
+
+src/components/analytics/AnalyticsDashboard.tsx:1011:11 - error TS17002: Expected corresponding JSX closing tag for 'Box'.
+
+1011         </Card>
+               ~~~~
+
+src/components/analytics/AnalyticsDashboard.tsx:1012:9 - error TS17002: Expected corresponding JSX closing tag for 'Grid'.
+
+1012       </Box>
+             ~~~
+
+src/components/analytics/AnalyticsDashboard.tsx:1013:5 - error TS1005: ')' expected.
+
+1013     </Box>
+         ~~
+
+src/components/analytics/AnalyticsDashboard.tsx:1014:3 - error TS1109: Expression expected.
+
+1014   );
+       ~
+
+src/components/analytics/AnalyticsDashboard.tsx:1064:11 - error TS17002: Expected corresponding JSX closing tag for 'Grid'.
+
+1064         </Box>
+               ~~~
+
+src/components/analytics/AnalyticsDashboard.tsx:1227:1 - error TS1128: Declaration or statement expected.
+
+1227 };
+     ~
+
+
+Found 12 errors in the same file, starting at: src/components/analytics/AnalyticsDashboard.tsx:973
+
+gurbakshchahal@MacBook-Pro-10 aura % 

@@ -1,4 +1,4 @@
-// CodeForge Website JavaScript
+// aura Website JavaScript
 (function() {
     'use strict';
 
@@ -337,7 +337,7 @@
         performanceChart = new Chart(ctx, {
             type: 'bar',
             data: {
-                labels: ['CodeForge', 'GitHub Copilot', 'Tabnine', 'Kite', 'IntelliCode'],
+                labels: ['aura', 'GitHub Copilot', 'Tabnine', 'Kite', 'IntelliCode'],
                 datasets: [{
                     label: 'Accuracy (%)',
                     data: [88, 64, 52, 43, 38],
@@ -569,7 +569,7 @@
     }
 
     function copyVSCodeCommand() {
-        const command = 'code --install-extension codeforge.codeforge';
+        const command = 'code --install-extension aura.aura';
         
         if (navigator.clipboard) {
             navigator.clipboard.writeText(command).then(() => {

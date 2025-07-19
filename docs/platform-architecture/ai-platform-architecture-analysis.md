@@ -31,7 +31,7 @@ ai-platforms/
 ├── dataforge/          # Placeholder
 ├── secureai/           # Placeholder
 ├── automl/             # Placeholder
-├── codeforge/          # Placeholder
+├── aura/          # Placeholder
 ├── chatbuilder/        # Placeholder
 ├── videoai/            # Placeholder
 ├── healthai/           # Placeholder

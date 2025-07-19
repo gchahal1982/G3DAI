@@ -1,0 +1,94 @@
+{
+  "name": "aura-3d",
+  "displayName": "Aura 3D Visualization",
+  "description": "Revolutionary 3D code visualization with VR/AR support",
+  "version": "0.1.0",
+  "engines": {
+    "vscode": "^1.74.0"
+  },
+  "categories": [
+    "Visualization"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "configuration": {
+      "title": "Aura 3D",
+      "properties": {
+        "aura.3d.renderer": {
+          "type": "string",
+          "default": "webgpu",
+          "enum": [
+            "webgpu",
+            "webgl"
+          ],
+          "description": "3D rendering backend"
+        },
+        "aura.3d.maxNodes": {
+          "type": "number",
+          "default": 10000,
+          "description": "Maximum nodes to render in 3D view"
+        },
+        "aura.3d.enableVR": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable VR/AR features"
+        }
+      }
+    },
+    "commands": [
+      {
+        "command": "aura.show3DView",
+        "title": "Aura: Show 3D View",
+        "icon": "$(globe)"
+      },
+      {
+        "command": "aura.enterVRMode",
+        "title": "Aura: Enter VR Mode",
+        "icon": "$(device-camera-video)"
+      },
+      {
+        "command": "aura.export3DModel",
+        "title": "Aura: Export 3D Model"
+      }
+    ],
+    "views": {
+      "explorer": [
+        {
+          "id": "aura.3dView",
+          "name": "3D Code Visualization",
+          "when": "true"
+        }
+      ]
+    },
+    "viewsWelcome": [
+      {
+        "view": "aura.3dView",
+        "contents": "Click to open 3D code visualization.\n[Show 3D View](command:aura.show3DView)"
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile && npm run lint",
+    "lint": "eslint src --ext ts",
+    "test": "node ./out/test/runTest.js"
+  },
+  "devDependencies": {
+    "@types/node": "^18.x",
+    "@types/react": "^18.2.0",
+    "@types/vscode": "^1.74.0",
+    "@typescript-eslint/eslint-plugin": "^5.45.0",
+    "@typescript-eslint/parser": "^5.45.0",
+    "@webgpu/types": "^0.1.64",
+    "eslint": "^8.28.0",
+    "typescript": "^4.9.4"
+  },
+  "dependencies": {
+    "babylonjs": "^6.0.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "three": "^0.158.0"
+  }
+}

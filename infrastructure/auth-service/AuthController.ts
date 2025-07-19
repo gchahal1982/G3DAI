@@ -188,13 +188,13 @@ export class AuthController {
                     'creative:read', 'creative:write', 'data:read', 'data:write'
                 ] : ['chat:read', 'translate:read'],
                 serviceAccess: isNewOrganization ? {
-                    visionPro: true, codeForge: true, creativeStudio: true,
+                    visionPro: true, aura: true, creativeStudio: true,
                     dataForge: true, secureAI: true, autoML: true,
                     chatBuilder: true, videoAI: true, financeAI: true,
                     healthAI: true, voiceAI: true, translateAI: true,
                     documind: true, mesh3d: true, edgeAI: true, legalAI: true
                 } : {
-                    visionPro: false, codeForge: false, creativeStudio: false,
+                    visionPro: false, aura: false, creativeStudio: false,
                     dataForge: false, secureAI: false, autoML: false,
                     chatBuilder: true, videoAI: false, financeAI: false,
                     healthAI: false, voiceAI: false, translateAI: true,

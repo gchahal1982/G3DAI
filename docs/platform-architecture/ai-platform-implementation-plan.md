@@ -63,7 +63,7 @@ This plan outlines the practical next steps for advancing the **27 existing AI p
 **Status**: Directory structure exists with minimal implementation
 
 18. **AutoML** - Automated machine learning platform
-19. **CodeForge** - AI-powered code generation
+19. **aura** - AI-powered code generation
 20. **ChatBuilder** - Conversational AI platform builder
 21. **VideoAI** - Video analysis and processing
 22. **HealthAI** - Personal health intelligence
@@ -240,10 +240,10 @@ interface AutoMLPlatform {
 }
 ```
 
-**CodeForge Development**:
+**aura Development**:
 ```typescript
 // AI-powered code generation
-interface CodeForgePlatform {
+interface auraPlatform {
   capabilities: [
     'Multi-language code generation',
     'Code review and optimization',
@@ -428,7 +428,7 @@ jobs:
 
 **Weeks 17-24: Tier 4 Platform Foundation**
 - AutoML: Automated machine learning workflows
-- CodeForge: AI-powered development tools
+- aura: AI-powered development tools
 - ChatBuilder: Conversational AI platform
 - FinanceAI: Financial analysis and trading tools
 

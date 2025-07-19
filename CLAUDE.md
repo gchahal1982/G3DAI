@@ -45,7 +45,7 @@ npm run test:coverage     # Jest with coverage
 ## Architecture Overview
 
 ### Repository Structure
-- **ai-platforms/**: 24+ specialized AI platforms (annotateai, medsight-pro, codeforge, etc.)
+- **ai-platforms/**: 24+ specialized AI platforms (annotateai, medsight-pro, aura, etc.)
 - **shared/**: Common UI components, auth services, API gateway
 - **backend/**: Core services (auth, database, billing, monitoring)
 - **src/**: Low-level utilities and shared services

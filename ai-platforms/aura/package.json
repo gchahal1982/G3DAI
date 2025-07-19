@@ -1,0 +1,184 @@
+{
+  "name": "@g3d/aura",
+  "version": "1.0.0",
+  "description": "Aura - Revolutionary AI-powered development platform with 3D visualization",
+  "private": true,
+  "author": "G3D Team",
+  "license": "MIT",
+  "main": "dist-electron/main.js",
+  "scripts": {
+    "dev": "vite dev --port 3002",
+    "dev:electron": "concurrently \"npm run dev\" \"wait-on http://localhost:3002 && electron .\"",
+    "build": "vite build && electron-builder",
+    "build:web": "vite build",
+    "build:electron": "tsc -p electron && vite build && electron-builder",
+    "electron": "electron .",
+    "electron:dev": "tsc -p electron && electron .",
+    "preview": "vite preview",
+    "type-check": "tsc --noEmit",
+    "lint": "eslint src --ext .ts,.tsx --fix",
+    "format": "prettier --write src/**/*.{ts,tsx,js,jsx,json,md}",
+    "clean": "rimraf dist build dist-electron node_modules/.cache",
+    "health-check": "node scripts/health-check.js"
+  },
+  "dependencies": {
+    "@apollo/server": "^5.0.0",
+    "@as-integrations/express5": "^1.1.2",
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
+    "@heroicons/react": "^2.1.5",
+    "@kubernetes/client-node": "^1.3.0",
+    "@monaco-editor/react": "^4.7.0",
+    "@mui/icons-material": "^7.2.0",
+    "@mui/lab": "^7.0.0-beta.14",
+    "@mui/material": "^7.2.0",
+    "@tanstack/react-query": "^5.61.3",
+    "@types/pg": "^8.15.4",
+    "@types/socket.io": "^3.0.1",
+    "@types/three": "^0.178.1",
+    "axios": "^1.10.0",
+    "bcryptjs": "^3.0.2",
+    "bull": "^4.16.5",
+    "bullmq": "^5.56.4",
+    "chokidar": "^4.0.3",
+    "clsx": "^2.1.1",
+    "compression": "^1.8.1",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.0",
+    "express": "^5.1.0",
+    "express-validator": "^7.2.1",
+    "framer-motion": "^11.15.0",
+    "graphql": "^16.11.0",
+    "helmet": "^8.1.0",
+    "http-proxy-middleware": "^3.0.5",
+    "inquirer": "^12.7.0",
+    "ioredis": "^5.6.1",
+    "jsonwebtoken": "^9.0.2",
+    "kubernetes-client": "^9.0.0",
+    "lucide-react": "^0.468.0",
+    "monaco-editor": "^0.52.2",
+    "mongoose": "^8.16.4",
+    "morgan": "^1.10.1",
+    "node-fetch": "^3.3.2",
+    "pg": "^8.16.3",
+    "prom-client": "^15.1.3",
+    "rate-limit": "^0.1.1",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-zoom-pan-pinch": "^3.7.0",
+    "redis": "^5.6.0",
+    "sharp": "^0.34.3",
+    "socket.io": "^4.8.1",
+    "tailwind-merge": "^2.5.5",
+    "three": "^0.178.0",
+    "uuid": "^11.1.0",
+    "winston": "^3.17.0",
+    "ws": "^8.18.3",
+    "y-indexeddb": "^9.0.12",
+    "y-websocket": "^3.0.0",
+    "yjs": "^13.6.27",
+    "zustand": "^5.0.2"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/chokidar": "^1.7.5",
+    "@types/compression": "^1.8.1",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^4.17.23",
+    "@types/helmet": "^0.0.48",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/morgan": "^1.9.10",
+    "@types/node": "^20.19.6",
+    "@types/react": "^18.3.23",
+    "@types/react-dom": "^18.3.7",
+    "@types/sharp": "^0.31.1",
+    "@types/uuid": "^10.0.0",
+    "@types/vscode": "^1.102.0",
+    "@types/webxr": "^0.5.22",
+    "@types/winston": "^2.4.4",
+    "@types/ws": "^8.18.1",
+    "@typescript-eslint/eslint-plugin": "^8.20.0",
+    "@typescript-eslint/parser": "^8.20.0",
+    "@vitejs/plugin-react": "^4.3.4",
+    "@webgpu/types": "^0.1.64",
+    "autoprefixer": "^10.4.20",
+    "concurrently": "^9.1.0",
+    "electron": "^33.2.1",
+    "electron-builder": "^25.1.8",
+    "eslint": "^9.18.0",
+    "eslint-plugin-react": "^7.37.2",
+    "eslint-plugin-react-hooks": "^5.0.0",
+    "postcss": "^8.4.47",
+    "prettier": "^3.4.2",
+    "rimraf": "^6.0.1",
+    "tailwindcss": "^3.4.17",
+    "typescript": "^5.8.3",
+    "vite": "^6.0.7",
+    "wait-on": "^8.0.1"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/g3d/g3dai.git",
+    "directory": "ai-platforms/aura"
+  },
+  "keywords": [
+    "ai",
+    "coding",
+    "development",
+    "3d-visualization",
+    "typescript",
+    "react"
+  ],
+  "build": {
+    "appId": "com.g3d.aura",
+    "productName": "Aura",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "dist-electron/**/*",
+      "package.json"
+    ],
+    "mac": {
+      "category": "public.app-category.developer-tools",
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        }
+      ]
+    },
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ]
+    },
+    "linux": {
+      "target": [
+        {
+          "target": "AppImage",
+          "arch": [
+            "x64"
+          ]
+        }
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    }
+  }
+}

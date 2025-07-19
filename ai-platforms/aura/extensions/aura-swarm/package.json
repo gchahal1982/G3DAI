@@ -1,0 +1,99 @@
+{
+  "name": "aura-swarm",
+  "displayName": "Aura AI Swarm",
+  "description": "Orchestrated AI agents for architecture, coding, testing, and more",
+  "version": "0.1.0",
+  "engines": {
+    "vscode": "^1.74.0"
+  },
+  "categories": [
+    "Other"
+  ],
+
+  "main": "./out/extension.js",
+  "contributes": {
+    "configuration": {
+      "title": "Aura AI Swarm",
+      "properties": {
+        "aura.swarm.maxConcurrentAgents": {
+          "type": "number",
+          "default": 3,
+          "description": "Maximum number of agents to run concurrently"
+        },
+        "aura.swarm.autoApprove": {
+          "type": "boolean",
+          "default": false,
+          "description": "Automatically approve low-risk agent actions"
+        }
+      }
+    },
+    "commands": [
+      {
+        "command": "aura.swarm.startTask",
+        "title": "Aura Swarm: Start Task",
+        "icon": "$(robot)"
+      },
+      {
+        "command": "aura.swarm.stopAll",
+        "title": "Aura Swarm: Stop All Agents"
+      },
+      {
+        "command": "aura.swarm.showPlanner",
+        "title": "Aura Swarm: Show Planner Agent"
+      },
+      {
+        "command": "aura.swarm.showCoder",
+        "title": "Aura Swarm: Show Coder Agent"
+      },
+      {
+        "command": "aura.swarm.showTester",
+        "title": "Aura Swarm: Show Tester Agent"
+      }
+    ],
+    "views": {
+      "explorer": [
+        {
+          "id": "aura.swarmView",
+          "name": "AI Swarm",
+          "when": "true"
+        }
+      ]
+    },
+    "taskDefinitions": [
+      {
+        "type": "aura-swarm",
+        "required": ["task"],
+        "properties": {
+          "task": {
+            "type": "string",
+            "description": "The task for the swarm to execute"
+          },
+          "agents": {
+            "type": "array",
+            "description": "List of agents to use for this task"
+          }
+        }
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile && npm run lint",
+    "lint": "eslint src --ext ts",
+    "test": "node ./out/test/runTest.js"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.74.0",
+    "@types/node": "^18.x",
+    "@typescript-eslint/eslint-plugin": "^5.45.0",
+    "@typescript-eslint/parser": "^5.45.0",
+    "eslint": "^8.28.0",
+    "typescript": "^4.9.4"
+  },
+  "dependencies": {
+    "uuid": "^9.0.0",
+    "p-queue": "^7.4.0"
+  }
+}

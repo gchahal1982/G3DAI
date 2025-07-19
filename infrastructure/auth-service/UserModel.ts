@@ -252,7 +252,7 @@ const UserSchema = new Schema<IUser>({
         },
         default: () => {
             const services = [
-                'vision-pro', 'codeforge', 'creative-studio', 'dataforge', 'secureai', 'automl',
+                'vision-pro', 'aura', 'creative-studio', 'dataforge', 'secureai', 'automl',
                 'chatbuilder', 'videoai', 'healthai', 'financeai', 'voiceai', 'translateai',
                 'documind', 'mesh3d', 'edgeai', 'legalai'
             ];

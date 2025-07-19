@@ -79,7 +79,7 @@ describe('Accessibility Validation Tests', () => {
     });
 
     mockScreenReaderSimulator.readElement.mockReturnValue({
-      text: 'CodeForge - AI-powered code editor',
+      text: 'aura - AI-powered code editor',
       role: 'main',
       ariaLabel: 'Code editor interface',
       describedBy: 'editor-help'
@@ -140,7 +140,7 @@ describe('Accessibility Validation Tests', () => {
     test('should validate heading hierarchy and semantic structure', () => {
       const pageStructure = {
         headings: [
-          { level: 1, text: 'CodeForge - AI Development Platform', unique: true },
+          { level: 1, text: 'aura - AI Development Platform', unique: true },
           { level: 2, text: 'Project Explorer', parent: 1 },
           { level: 3, text: 'Recent Files', parent: 2 },
           { level: 3, text: 'Project Tree', parent: 2 },

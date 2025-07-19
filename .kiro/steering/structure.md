@@ -42,7 +42,7 @@ ai-platforms/[platform-name]/
 ### Platform Tiers
 - **Tier 1** (Production): `annotateai/`, `medsight-pro/`, `bioai/`
 - **Tier 2** (MVP): `neuroai/`, `mesh3d/`, `renderai/`, etc.
-- **Tier 3-4** (Prototype/Planned): `automl/`, `codeforge/`, etc.
+- **Tier 3-4** (Prototype/Planned): `automl/`, `aura/`, etc.
 
 ## Shared Infrastructure (`shared/`)
 

@@ -27,12 +27,10 @@
     }
   },
   "include": [
+    "src/**/*.ts",
     "shared/**/*.ts",
-    "shared/**/*.tsx",
     "infrastructure/**/*.ts",
-    "infrastructure/**/*.tsx",
-    "core/**/*.ts",
-    "core/**/*.tsx"
+    "core/**/*.ts"
   ],
   "exclude": [
     "node_modules",
@@ -40,6 +38,9 @@
     "**/dist/**",
     "**/build/**",
     "**/.next/**",
-    "ai-platforms/**/*"
+    "ai-platforms/**/*",
+    "**/*.tsx",
+    "**/webviews/**/*",
+    "**/marketplace/**/*"
   ]
 }

@@ -33,7 +33,7 @@ const mockCompetitiveAnalysis = {
   identifyGaps: jest.fn()
 };
 
-// MVP accuracy targets for CodeForge certification
+// MVP accuracy targets for aura certification
 const accuracyTargets = {
   evalPlus: {
     overall: { target: 90.0, minimum: 88.0 },
@@ -94,7 +94,7 @@ describe('Model Accuracy Validation Tests', () => {
     });
 
     mockCompetitiveAnalysis.benchmarkAgainstCompetitors.mockReturnValue({
-      codeforgeRank: 2,
+      auraRank: 2,
       competitorScores: {
         'github-copilot': 89.2,
         'amazon-codewhisperer': 86.7,
@@ -549,13 +549,13 @@ describe('Model Accuracy Validation Tests', () => {
         competitors: ['github-copilot', 'amazon-codewhisperer', 'tabnine', 'codeium']
       });
 
-      expect(competitorComparison.codeforgeRank).toBeLessThanOrEqual(3); // Top 3 position
+      expect(competitorComparison.auraRank).toBeLessThanOrEqual(3); // Top 3 position
       expect(competitorComparison.marketPosition).toBe('strong');
       
       // Should outperform most competitors
-      const codeforgeScore = 92.8; // Our HumanEval score
+      const auraScore = 92.8; // Our HumanEval score
       const competitorScores = Object.values(competitorComparison.competitorScores);
-      const betterThanCount = competitorScores.filter(score => codeforgeScore > score).length;
+      const betterThanCount = competitorScores.filter(score => auraScore > score).length;
       expect(betterThanCount).toBeGreaterThanOrEqual(2);
     });
 

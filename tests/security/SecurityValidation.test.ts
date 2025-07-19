@@ -425,9 +425,9 @@ describe('Security Validation Tests', () => {
 
     test('should scan container images for security issues', async () => {
       const containerScanResults = [
-        { image: 'codeforge/api-gateway:latest', vulnerabilities: { critical: 0, high: 1, medium: 3 } },
-        { image: 'codeforge/model-service:latest', vulnerabilities: { critical: 0, high: 0, medium: 2 } },
-        { image: 'codeforge/auth-service:latest', vulnerabilities: { critical: 0, high: 1, medium: 1 } },
+        { image: 'aura/api-gateway:latest', vulnerabilities: { critical: 0, high: 1, medium: 3 } },
+        { image: 'aura/model-service:latest', vulnerabilities: { critical: 0, high: 0, medium: 2 } },
+        { image: 'aura/auth-service:latest', vulnerabilities: { critical: 0, high: 1, medium: 1 } },
         { image: 'postgres:14-alpine', vulnerabilities: { critical: 0, high: 0, medium: 1 } },
         { image: 'redis:7-alpine', vulnerabilities: { critical: 0, high: 0, medium: 0 } }
       ];

@@ -26,7 +26,7 @@ const mockCSEvalRunner = {
 };
 
 const mockCustomBenchmarks = {
-  runCodeForgeSpecific: jest.fn(),
+  runauraSpecific: jest.fn(),
   test3DVisualization: jest.fn(),
   testAICompletion: jest.fn(),
   testModelRouting: jest.fn(),
@@ -41,7 +41,7 @@ const mockCIIntegration = {
   notifyTeam: jest.fn()
 };
 
-// Benchmark target scores for CodeForge MVP
+// Benchmark target scores for aura MVP
 const benchmarkTargets = {
   humanEval: {
     qwen3Coder14B: { target: 92.0, minimum: 90.0 },
@@ -110,7 +110,7 @@ describe('Benchmark Validation Tests', () => {
       }
     });
 
-    mockCustomBenchmarks.runCodeForgeSpecific.mockResolvedValue({
+    mockCustomBenchmarks.runauraSpecific.mockResolvedValue({
       completionAccuracy: 94.2,
       visualizationPerformance: 58.7,
       modelRoutingEfficiency: 96.8,
@@ -396,7 +396,7 @@ describe('Benchmark Validation Tests', () => {
     });
   });
 
-  describe('CodeForge Custom Benchmarks', () => {
+  describe('aura Custom Benchmarks', () => {
     test('should validate AI completion accuracy in real-world scenarios', async () => {
       const completionScenarios = [
         { type: 'function-completion', accuracy: 94.2, context: 'full-file' },
@@ -516,13 +516,13 @@ describe('Benchmark Validation Tests', () => {
       ];
 
       for (const workflow of workflowTests) {
-        const result = await mockCustomBenchmarks.runCodeForgeSpecific({
+        const result = await mockCustomBenchmarks.runauraSpecific({
           workflow: workflow.name,
           iterations: 100,
           measurePerformance: true
         });
 
-        mockCustomBenchmarks.runCodeForgeSpecific.mockResolvedValueOnce({
+        mockCustomBenchmarks.runauraSpecific.mockResolvedValueOnce({
           workflow: workflow.name,
           averageTime: workflow.targetTime - 200,
           successRate: workflow.successRate,
@@ -530,7 +530,7 @@ describe('Benchmark Validation Tests', () => {
           errorRate: 2.1
         });
 
-        const workflowResult = await mockCustomBenchmarks.runCodeForgeSpecific({ 
+        const workflowResult = await mockCustomBenchmarks.runauraSpecific({ 
           workflow: workflow.name 
         });
         expect(workflowResult.averageTime).toBeLessThanOrEqual(workflow.targetTime);

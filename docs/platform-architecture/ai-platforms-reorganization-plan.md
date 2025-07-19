@@ -27,7 +27,7 @@
 
 ### **Tier 4: Placeholder Platforms (10)**
 - **`automl/`** - Automated ML (high priority)
-- **`codeforge/`** - Code generation (high priority)
+- **`aura/`** - Code generation (high priority)
 - **`chatbuilder/`** - Chat platform builder
 - **`healthai/`** - Healthcare AI
 - **`financeai/`** - Financial AI
@@ -65,7 +65,7 @@ ai-platforms/
 │   └── documind/
 ├── 4-placeholder/          # Tier 4: Placeholder/Planning
 │   ├── automl/
-│   ├── codeforge/
+│   ├── aura/
 │   ├── chatbuilder/
 │   ├── healthai/
 │   ├── financeai/
@@ -109,7 +109,7 @@ ai-platforms/
 │   └── secureai/
 ├── infrastructure/         # Infrastructure and development
 │   ├── annotateai/
-│   ├── codeforge/
+│   ├── aura/
 │   ├── edgeai/
 │   └── vision-pro/
 └── emerging/               # Emerging technologies
@@ -181,7 +181,7 @@ ai-platforms/shared/
 1. **Standardize Tier 1 platforms** - Ensure production platforms meet all standards
 2. **Complete MVP platforms** - Bring Tier 2 platforms to production readiness
 3. **Create shared infrastructure** - Extract common components and utilities
-4. **Implement high-value placeholders** - Focus on `automl` and `codeforge`
+4. **Implement high-value placeholders** - Focus on `automl` and `aura`
 
 ### **Medium Priority (Next Phase)**
 1. **Develop prototype platforms** - Bring Tier 3 platforms to MVP status

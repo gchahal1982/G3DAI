@@ -256,7 +256,7 @@ describe('License Validation Tests', () => {
     });
 
     test('should validate network connectivity for on-prem licensing', async () => {
-      const licenseServer = 'https://license.codeforge.ai';
+      const licenseServer = 'https://license.aura.ai';
       const endpoints = [
         '/api/v1/license/validate',
         '/api/v1/license/heartbeat',
@@ -283,9 +283,9 @@ describe('License Validation Tests', () => {
         dockerVersion: '20.10.0',
         kubernetesVersion: '1.24.0',
         requiredImages: [
-          'codeforge/api-gateway:latest',
-          'codeforge/model-service:latest',
-          'codeforge/auth-service:latest',
+          'aura/api-gateway:latest',
+          'aura/model-service:latest',
+          'aura/auth-service:latest',
           'postgres:14',
           'redis:7'
         ],

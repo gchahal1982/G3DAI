@@ -38,10 +38,10 @@ data:
         scrape_interval: 15s
         scrape_timeout: 10s
 
-      # G3D CodeForge metrics
-      - job_name: 'codeforge'
+      # G3D aura metrics
+      - job_name: 'aura'
         static_configs:
-          - targets: ['codeforge-service:3002']
+          - targets: ['aura-service:3002']
         metrics_path: '/metrics'
         scrape_interval: 10s
         scrape_timeout: 5s

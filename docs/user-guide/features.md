@@ -1,6 +1,6 @@
-# CodeForge Features Guide
+# aura Features Guide
 
-Comprehensive guide to all CodeForge features and capabilities.
+Comprehensive guide to all aura features and capabilities.
 
 ## 🤖 AI-Powered Development
 
@@ -71,7 +71,7 @@ Comprehensive guide to all CodeForge features and capabilities.
 
 ### Cloud AI Models
 
-#### Kimi K2 (CodeForge Managed)
+#### Kimi K2 (aura Managed)
 **Advanced agentic workflows and complex reasoning.**
 - **65.8% SWE-bench** performance
 - Multi-step problem solving
@@ -79,7 +79,7 @@ Comprehensive guide to all CodeForge features and capabilities.
 - Included in Team+ subscriptions
 - Usage: $0.60 input / $2.50 output per 1M tokens
 
-#### DeepSeek R1 (CodeForge Managed) 
+#### DeepSeek R1 (aura Managed) 
 **685B parameter model for complex reasoning.**
 - Advanced mathematical reasoning
 - Complex architectural decisions
@@ -122,7 +122,7 @@ Comprehensive guide to all CodeForge features and capabilities.
 ### Smart Model Routing
 
 #### Automatic Selection
-CodeForge intelligently routes requests to the optimal model:
+aura intelligently routes requests to the optimal model:
 
 **Task-Based Routing:**
 - **Simple completions** → Local models (privacy + speed)
@@ -346,7 +346,7 @@ CodeForge intelligently routes requests to the optimal model:
 ### Deployment Options
 
 #### Cloud Deployment
-**Managed CodeForge in the cloud.**
+**Managed aura in the cloud.**
 
 - **Multi-region** - Global availability
 - **Auto-scaling** - Handle traffic spikes
@@ -355,7 +355,7 @@ CodeForge intelligently routes requests to the optimal model:
 - **24/7 monitoring** - Proactive support
 
 #### Private Cloud
-**Dedicated CodeForge infrastructure.**
+**Dedicated aura infrastructure.**
 
 - **VPC deployment** - Isolated environment
 - **Custom domains** - Your branding
@@ -364,7 +364,7 @@ CodeForge intelligently routes requests to the optimal model:
 - **Custom integrations** - API access
 
 #### On-Premises
-**Self-hosted CodeForge deployment.**
+**Self-hosted aura deployment.**
 
 - **Air-gapped** environments
 - **GPU cluster** support
@@ -464,7 +464,7 @@ CodeForge intelligently routes requests to the optimal model:
 ### Extensibility & Customization
 
 #### Plugin System
-**Extend CodeForge with custom functionality.**
+**Extend aura with custom functionality.**
 
 - **Plugin API** - Rich extension interface
 - **Sandboxed execution** - Safe plugin environment
@@ -482,7 +482,7 @@ CodeForge intelligently routes requests to the optimal model:
 - **Gradual rollout** - Safe model deployment
 
 #### Theming & UI
-**Customize the CodeForge experience.**
+**Customize the aura experience.**
 
 - **Theme engine** - Create custom themes
 - **Layout customization** - Arrange UI elements
@@ -555,4 +555,4 @@ CodeForge intelligently routes requests to the optimal model:
 
 ---
 
-*For detailed feature documentation, visit [docs.codeforge.ai](https://docs.codeforge.ai)* 
+*For detailed feature documentation, visit [docs.aura.ai](https://docs.aura.ai)* 

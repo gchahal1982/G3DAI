@@ -53,7 +53,7 @@ These platforms have basic structure and limited functionality:
 These platforms have directory structure but require implementation:
 
 - **`automl/`** - Automated machine learning platform (high priority)
-- **`codeforge/`** - AI-powered code generation and analysis (high priority)
+- **`aura/`** - AI-powered code generation and analysis (high priority)
 - **`chatbuilder/`** - Conversational AI platform builder
 - **`healthai/`** - Healthcare AI and medical analysis
 - **`financeai/`** - Financial analysis and trading AI
@@ -97,7 +97,7 @@ Based on comprehensive analysis, we recommend implementing a **Domain-Based Orga
 
 ### **Infrastructure & Development**
 - `annotateai/` - Data annotation platform
-- `codeforge/` - Code generation
+- `aura/` - Code generation
 - `edgeai/` - Edge computing
 - `vision-pro/` - Computer vision
 
@@ -225,7 +225,7 @@ npm run build
 1. **Standardize Tier 1 platforms** - Ensure production platforms meet all standards
 2. **Complete MVP platforms** - Bring Tier 2 platforms to production readiness
 3. **Implement shared infrastructure** - Extract common components and utilities
-4. **Develop high-value placeholders** - Focus on `automl` and `codeforge`
+4. **Develop high-value placeholders** - Focus on `automl` and `aura`
 
 ### **Quality Improvements**
 - Implement comprehensive testing frameworks

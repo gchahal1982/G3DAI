@@ -93,7 +93,7 @@ const platforms = [
     { name: "videoai", port: 3041, description: "G3D VideoAI - Video Intelligence Platform" },
     { name: "secureai", port: 3042, description: "G3D SecureAI - AI Security Operations Platform" },
     { name: "dataforge", port: 3043, description: "G3D DataForge - Enterprise Data Intelligence Platform" },
-    { name: "codeforge", port: 3044, description: "G3D CodeForge - Enterprise Code Generation Platform" },
+    { name: "aura", port: 3044, description: "G3D aura - Enterprise Code Generation Platform" },
     { name: "creativestudio", port: 3045, description: "G3D CreativeStudio - AI Content Generation Suite" },
     { name: "agriculturalai", port: 3046, description: "G3D AgriculturalAI - Smart Farming Intelligence Platform" },
     { name: "transportai", port: 3047, description: "G3D TransportAI - Transportation Intelligence Platform" }

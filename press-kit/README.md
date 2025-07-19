@@ -1,4 +1,4 @@
-# CodeForge Press Kit
+# aura Press Kit
 
 *Last Updated: December 2024*
 
@@ -21,16 +21,16 @@
 ## Quick Facts
 
 ### Company
-- **Name:** CodeForge AI
+- **Name:** aura AI
 - **Founded:** 2024
 - **Headquarters:** San Francisco, CA
-- **Website:** https://codeforge.ai
+- **Website:** https://aura.ai
 - **Industry:** Developer Tools, AI Software
 - **Funding:** Series A (Undisclosed Amount)
 - **Employees:** 25-50
 
 ### Product
-- **Name:** CodeForge
+- **Name:** aura
 - **Category:** AI-Powered Development Platform
 - **Launch Date:** December 2024
 - **Current Version:** 1.0.0
@@ -48,7 +48,7 @@
 
 ## Company Overview
 
-CodeForge AI is revolutionizing software development with the world's first AI-powered development platform that combines 3D code visualization, local AI models, and hybrid cloud capabilities. Founded in 2024 by a team of former Google, Microsoft, and OpenAI engineers, CodeForge aims to make programming more intuitive, efficient, and accessible to developers worldwide.
+aura AI is revolutionizing software development with the world's first AI-powered development platform that combines 3D code visualization, local AI models, and hybrid cloud capabilities. Founded in 2024 by a team of former Google, Microsoft, and OpenAI engineers, aura aims to make programming more intuitive, efficient, and accessible to developers worldwide.
 
 ### Mission Statement
 "To democratize advanced AI tools for developers and transform how software is built through immersive 3D visualization and intelligent assistance."
@@ -65,9 +65,9 @@ CodeForge AI is revolutionizing software development with the world's first AI-p
 
 ## Product Description
 
-CodeForge is the world's first AI-powered development platform that combines cutting-edge 3D code visualization with local AI models. Unlike traditional code editors, CodeForge allows developers to navigate their codebase in immersive 3D space, seeing relationships between files, functions, and modules like never before.
+aura is the world's first AI-powered development platform that combines cutting-edge 3D code visualization with local AI models. Unlike traditional code editors, aura allows developers to navigate their codebase in immersive 3D space, seeing relationships between files, functions, and modules like never before.
 
-### What Makes CodeForge Different
+### What Makes aura Different
 
 1. **3D Code Visualization**
    - Navigate codebases in stunning 3D environments
@@ -207,26 +207,26 @@ CodeForge is the world's first AI-powered development platform that combines cut
 ## Press Releases
 
 ### Launch Announcement
-**"CodeForge Launches Revolutionary 3D AI Development Platform"**
+**"aura Launches Revolutionary 3D AI Development Platform"**
 *December 2024*
 
-CodeForge AI today announced the launch of CodeForge, the world's first AI-powered development platform that combines 3D code visualization with local AI models. The platform enables developers to navigate their codebases in immersive 3D environments while leveraging cutting-edge AI for intelligent code completion and generation.
+aura AI today announced the launch of aura, the world's first AI-powered development platform that combines 3D code visualization with local AI models. The platform enables developers to navigate their codebases in immersive 3D environments while leveraging cutting-edge AI for intelligent code completion and generation.
 
 [Full Press Release](press-releases/launch-announcement.md)
 
 ### Funding Announcement
-**"CodeForge Raises Series A to Democratize AI Development Tools"**
+**"aura Raises Series A to Democratize AI Development Tools"**
 *November 2024*
 
-CodeForge AI announced it has raised a Series A funding round led by Andreessen Horowitz, with participation from GitHub's venture arm and several angel investors including former GitHub CEO Nat Friedman and former Stack Overflow CEO Joel Spolsky.
+aura AI announced it has raised a Series A funding round led by Andreessen Horowitz, with participation from GitHub's venture arm and several angel investors including former GitHub CEO Nat Friedman and former Stack Overflow CEO Joel Spolsky.
 
 [Full Press Release](press-releases/series-a-funding.md)
 
 ### Beta Launch
-**"CodeForge Opens Beta to 10,000 Developers Worldwide"**
+**"aura Opens Beta to 10,000 Developers Worldwide"**
 *October 2024*
 
-Following successful alpha testing with select enterprise customers, CodeForge AI opened its beta program to 10,000 developers worldwide, receiving overwhelmingly positive feedback and achieving a 4.8/5 rating.
+Following successful alpha testing with select enterprise customers, aura AI opened its beta program to 10,000 developers worldwide, receiving overwhelmingly positive feedback and achieving a 4.8/5 rating.
 
 [Full Press Release](press-releases/beta-launch.md)
 
@@ -235,15 +235,15 @@ Following successful alpha testing with select enterprise customers, CodeForge A
 ### Logos
 
 #### Primary Logo
-- **File:** `logos/codeforge-logo-primary.svg`
+- **File:** `logos/aura-logo-primary.svg`
 - **Usage:** Main brand representation
 - **Colors:** Full color on light backgrounds
 
 #### Logo Variations
-- `logos/codeforge-logo-white.svg` - White version for dark backgrounds
-- `logos/codeforge-logo-black.svg` - Black version for light backgrounds
-- `logos/codeforge-logo-monochrome.svg` - Single color version
-- `logos/codeforge-icon.svg` - Icon only version
+- `logos/aura-logo-white.svg` - White version for dark backgrounds
+- `logos/aura-logo-black.svg` - Black version for light backgrounds
+- `logos/aura-logo-monochrome.svg` - Single color version
+- `logos/aura-icon.svg` - Icon only version
 
 #### Logo Guidelines
 - Minimum size: 120px width for digital, 1 inch for print
@@ -254,7 +254,7 @@ Following successful alpha testing with select enterprise customers, CodeForge A
 ### Brand Colors
 
 #### Primary Palette
-- **CodeForge Blue:** #6366F1 (RGB: 99, 102, 241)
+- **aura Blue:** #6366F1 (RGB: 99, 102, 241)
 - **Accent Cyan:** #06B6D4 (RGB: 6, 182, 212)
 - **Warning Orange:** #F59E0B (RGB: 245, 158, 11)
 
@@ -276,7 +276,7 @@ Following successful alpha testing with select enterprise customers, CodeForge A
 
 1. **Main Interface**
    - `screenshots/main-interface-4k.png`
-   - Shows the complete CodeForge interface with 3D visualization
+   - Shows the complete aura interface with 3D visualization
 
 2. **3D Code Navigation**
    - `screenshots/3d-navigation-4k.png`
@@ -303,7 +303,7 @@ Following successful alpha testing with select enterprise customers, CodeForge A
 - **Mobile:** Responsive web interface screenshots
 
 ### Before/After Comparisons
-- Traditional IDE vs CodeForge side-by-side comparisons
+- Traditional IDE vs aura side-by-side comparisons
 - Performance improvement demonstrations
 - Productivity enhancement examples
 
@@ -312,10 +312,10 @@ Following successful alpha testing with select enterprise customers, CodeForge A
 ### Product Demo Videos
 
 #### Main Product Demo (3 minutes)
-- **File:** `videos/codeforge-main-demo.mp4`
+- **File:** `videos/aura-main-demo.mp4`
 - **Resolution:** 4K (3840x2160) @ 60fps
 - **Format:** MP4, H.264
-- **Description:** Comprehensive overview of CodeForge features
+- **Description:** Comprehensive overview of aura features
 
 #### 3D Visualization Showcase (90 seconds)
 - **File:** `videos/3d-visualization-demo.mp4`
@@ -366,9 +366,9 @@ Following successful alpha testing with select enterprise customers, CodeForge A
 ### Media Recognition
 
 #### Featured Coverage
-- **TechCrunch:** "CodeForge's 3D IDE Could Change How We Code"
+- **TechCrunch:** "aura's 3D IDE Could Change How We Code"
 - **The Verge:** "The Future of Programming is 3D"
-- **VentureBeat:** "AI Meets Immersive Development in CodeForge"
+- **VentureBeat:** "AI Meets Immersive Development in aura"
 - **Hacker News:** #1 trending story (3 separate occasions)
 - **Product Hunt:** #1 Product of the Day, #3 Product of the Week
 
@@ -386,21 +386,21 @@ Following successful alpha testing with select enterprise customers, CodeForge A
 
 ### Enterprise Customers
 
-> "CodeForge has transformed how our team understands and navigates our large codebase. The 3D visualization makes complex relationships immediately clear, and the AI assistance has improved our productivity by 40%."
+> "aura has transformed how our team understands and navigates our large codebase. The 3D visualization makes complex relationships immediately clear, and the AI assistance has improved our productivity by 40%."
 > 
 > **— Jennifer Walsh, Senior Engineering Manager, Stripe**
 
-> "The local AI models give us the intelligence we need while maintaining the security our enterprise requires. CodeForge has become essential to our development workflow."
+> "The local AI models give us the intelligence we need while maintaining the security our enterprise requires. aura has become essential to our development workflow."
 > 
 > **— Carlos Mendez, CTO, Shopify**
 
-> "I've never seen developers get excited about tooling like they have with CodeForge. The 3D interface is intuitive, and the AI suggestions are remarkably accurate."
+> "I've never seen developers get excited about tooling like they have with aura. The 3D interface is intuitive, and the AI suggestions are remarkably accurate."
 > 
 > **— Sarah Kim, VP of Engineering, Discord**
 
 ### Individual Developers
 
-> "As someone who works with legacy codebases, CodeForge's 3D visualization has been a game-changer. I can finally see how everything connects."
+> "As someone who works with legacy codebases, aura's 3D visualization has been a game-changer. I can finally see how everything connects."
 > 
 > **— Alex Thompson, Senior Software Engineer**
 
@@ -408,17 +408,17 @@ Following successful alpha testing with select enterprise customers, CodeForge A
 > 
 > **— Maria Gonzalez, Full-Stack Developer**
 
-> "CodeForge makes coding feel like the future. The 3D navigation is not just a gimmick—it genuinely helps me understand complex systems."
+> "aura makes coding feel like the future. The 3D navigation is not just a gimmick—it genuinely helps me understand complex systems."
 > 
 > **— David Chen, System Architect**
 
 ### Academic Users
 
-> "We've integrated CodeForge into our computer science curriculum. Students learn faster when they can visualize code structure in 3D."
+> "We've integrated aura into our computer science curriculum. Students learn faster when they can visualize code structure in 3D."
 > 
 > **— Dr. Robert Johnson, Professor of Computer Science, Stanford University**
 
-> "CodeForge is helping democratize access to advanced AI tools for developers worldwide. It's exactly what the open source community needs."
+> "aura is helping democratize access to advanced AI tools for developers worldwide. It's exactly what the open source community needs."
 > 
 > **— Lisa Park, Researcher, MIT CSAIL**
 
@@ -478,51 +478,51 @@ Following successful alpha testing with select enterprise customers, CodeForge A
 ### Media Inquiries
 **Sarah Rodriguez**  
 Head of Communications  
-CodeForge AI  
-📧 press@codeforge.ai  
+aura AI  
+📧 press@aura.ai  
 📱 +1 (415) 555-0123  
-🐦 [@CodeForgeAI](https://twitter.com/codeforgeai)
+🐦 [@auraAI](https://twitter.com/auraai)
 
 ### Product Inquiries
 **Product Team**  
-CodeForge AI  
-📧 product@codeforge.ai  
-💬 [Discord Community](https://discord.gg/codeforge)
+aura AI  
+📧 product@aura.ai  
+💬 [Discord Community](https://discord.gg/aura)
 
 ### Partnership Inquiries
 **Business Development**  
-📧 partnerships@codeforge.ai  
+📧 partnerships@aura.ai  
 📱 +1 (415) 555-0124
 
 ### Investor Relations
 **Executive Team**  
-📧 investors@codeforge.ai  
+📧 investors@aura.ai  
 📱 +1 (415) 555-0125
 
 ### General Information
-**CodeForge AI**  
+**aura AI**  
 📍 123 Innovation Drive, Suite 400  
 San Francisco, CA 94107  
-🌐 https://codeforge.ai  
-📧 hello@codeforge.ai  
+🌐 https://aura.ai  
+📧 hello@aura.ai  
 📱 +1 (415) 555-0100
 
 ### Social Media
-- **Twitter:** [@CodeForgeAI](https://twitter.com/codeforgeai)
-- **LinkedIn:** [CodeForge AI](https://linkedin.com/company/codeforge-ai)
-- **GitHub:** [@codeforge-ai](https://github.com/codeforge-ai)
-- **Discord:** [Community Server](https://discord.gg/codeforge)
-- **YouTube:** [CodeForge AI](https://youtube.com/@codeforgeai)
+- **Twitter:** [@auraAI](https://twitter.com/auraai)
+- **LinkedIn:** [aura AI](https://linkedin.com/company/aura-ai)
+- **GitHub:** [@aura-ai](https://github.com/aura-ai)
+- **Discord:** [Community Server](https://discord.gg/aura)
+- **YouTube:** [aura AI](https://youtube.com/@auraai)
 
 ### Developer Resources
-- **Documentation:** https://docs.codeforge.ai
-- **API Reference:** https://api.codeforge.ai
-- **Community Forum:** https://community.codeforge.ai
-- **Bug Reports:** https://github.com/codeforge-ai/codeforge/issues
+- **Documentation:** https://docs.aura.ai
+- **API Reference:** https://api.aura.ai
+- **Community Forum:** https://community.aura.ai
+- **Bug Reports:** https://github.com/aura-ai/aura/issues
 
 ---
 
-*This press kit is updated regularly. For the latest version and additional assets, visit https://codeforge.ai/press-kit*
+*This press kit is updated regularly. For the latest version and additional assets, visit https://aura.ai/press-kit*
 
 **Press Kit Version:** 1.0  
 **Last Updated:** December 2024  

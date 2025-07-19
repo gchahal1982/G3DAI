@@ -731,34 +731,34 @@ Our design system embodies **"Intelligent Precision"** - where cutting-edge AI t
 
 ---
 
-### **3. CodeForge - AI Development Platform**
+### **3. aura - AI Development Platform**
 
 #### **Brand Identity**
 - **Primary Color**: Developer Green (#22c55e) - Growth, development, success
 - **Secondary Color**: Code Purple (#a855f7) - Creativity, problem-solving
 - **Accent Color**: Terminal Orange (#f97316) - Energy, action, automation
 
-#### **CodeForge Color Palette**
+#### **aura Color Palette**
 ```css
-/* CodeForge Developer Colors */
---codeforge-primary-50: #f0fdf4
---codeforge-primary-100: #dcfce7
---codeforge-primary-200: #bbf7d0
---codeforge-primary-300: #86efac
---codeforge-primary-400: #4ade80
---codeforge-primary-500: #22c55e   /* Primary developer green */
---codeforge-primary-600: #16a34a
---codeforge-primary-700: #15803d
---codeforge-primary-800: #166534
---codeforge-primary-900: #14532d
+/* aura Developer Colors */
+--aura-primary-50: #f0fdf4
+--aura-primary-100: #dcfce7
+--aura-primary-200: #bbf7d0
+--aura-primary-300: #86efac
+--aura-primary-400: #4ade80
+--aura-primary-500: #22c55e   /* Primary developer green */
+--aura-primary-600: #16a34a
+--aura-primary-700: #15803d
+--aura-primary-800: #166534
+--aura-primary-900: #14532d
 
 /* Code Status Colors */
---codeforge-success: #22c55e      /* Successful builds */
---codeforge-error: #ef4444        /* Build errors */
---codeforge-warning: #f59e0b      /* Warnings */
---codeforge-info: #3b82f6         /* Information */
---codeforge-purple: #a855f7       /* AI suggestions */
---codeforge-orange: #f97316       /* Active processes */
+--aura-success: #22c55e      /* Successful builds */
+--aura-error: #ef4444        /* Build errors */
+--aura-warning: #f59e0b      /* Warnings */
+--aura-info: #3b82f6         /* Information */
+--aura-purple: #a855f7       /* AI suggestions */
+--aura-orange: #f97316       /* Active processes */
 ```
 
 ---
@@ -791,10 +791,10 @@ Our design system embodies **"Intelligent Precision"** - where cutting-edge AI t
 --creative-emerald: #10b981       /* Generated content */
 ```
 
-#### **CodeForge Glass Effects**
+#### **aura Glass Effects**
 ```css
-/* Primary CodeForge Glass */
-.codeforge-glass {
+/* Primary aura Glass */
+.aura-glass {
   background: linear-gradient(135deg, 
     rgba(34, 197, 94, 0.08) 0%, 
     rgba(168, 85, 247, 0.05) 100%);
@@ -808,7 +808,7 @@ Our design system embodies **"Intelligent Precision"** - where cutting-edge AI t
 }
 
 /* Code Editor Glass */
-.codeforge-editor-glass {
+.aura-editor-glass {
   background: rgba(0, 0, 0, 0.85);
   backdrop-filter: blur(20px) saturate(120%);
   border: 1px solid rgba(34, 197, 94, 0.2);
@@ -819,7 +819,7 @@ Our design system embodies **"Intelligent Precision"** - where cutting-edge AI t
 }
 
 /* AI Suggestion Glass */
-.codeforge-ai-glass {
+.aura-ai-glass {
   background: rgba(168, 85, 247, 0.1);
   backdrop-filter: blur(16px) saturate(180%);
   border: 1px solid rgba(168, 85, 247, 0.2);
@@ -828,19 +828,19 @@ Our design system embodies **"Intelligent Precision"** - where cutting-edge AI t
 }
 
 /* Build Status Glass */
-.codeforge-status-success {
+.aura-status-success {
   background: rgba(34, 197, 94, 0.1);
   border: 1px solid rgba(34, 197, 94, 0.2);
   backdrop-filter: blur(16px);
 }
 
-.codeforge-status-error {
+.aura-status-error {
   background: rgba(239, 68, 68, 0.1);
   border: 1px solid rgba(239, 68, 68, 0.2);
   backdrop-filter: blur(16px);
 }
 
-.codeforge-status-warning {
+.aura-status-warning {
   background: rgba(245, 158, 11, 0.1);
   border: 1px solid rgba(245, 158, 11, 0.2);
   backdrop-filter: blur(16px);

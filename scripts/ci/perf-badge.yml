@@ -1,4 +1,4 @@
-# CodeForge Performance Badge CI
+# aura Performance Badge CI
 # Automated performance validation and badge generation system
 # Integrates with GitHub Actions for continuous performance monitoring
 
@@ -28,7 +28,7 @@ on:
       benchmark_repo:
         description: 'Repository to benchmark against'
         required: false
-        default: 'codeforge/demo-repo'
+        default: 'aura/demo-repo'
         type: string
 
 env:
@@ -103,7 +103,7 @@ jobs:
         run: |
           benchmark_repo="${{ github.event.inputs.benchmark_repo }}"
           if [ -z "$benchmark_repo" ]; then
-            benchmark_repo="codeforge/demo-repo"
+            benchmark_repo="aura/demo-repo"
           fi
           echo "benchmark-repo=$benchmark_repo" >> $GITHUB_OUTPUT
 
@@ -653,7 +653,7 @@ jobs:
             console.log(`Cleaned up ${artifactsToDelete.length} old performance artifacts`);
 
 # Performance Test Commands (to be added to package.json)
-# These commands should be implemented in the codeforge repository:
+# These commands should be implemented in the aura repository:
 #
 # "scripts": {
 #   "test:performance:latency:keystroke": "node tests/performance/latency/keystroke-test.js",

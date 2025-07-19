@@ -75,7 +75,7 @@ export const AdminDashboard: React.FC = () => {
                     >
                         <option value="all">All Services</option>
                         <option value="vision-pro">Vision Pro</option>
-                        <option value="codeforge">CodeForge</option>
+                        <option value="aura">aura</option>
                         <option value="creative-studio">Creative Studio</option>
                         <option value="dataforge">DataForge</option>
                         <option value="secureai">SecureAI</option>
@@ -330,7 +330,7 @@ const GlassCard: React.FC<{ title: string; children: React.ReactNode }> = ({ tit
 const getServiceColor = (service: string): string => {
     const colors: Record<string, string> = {
         'vision-pro': '#2563eb',
-        'codeforge': '#7c3aed',
+        'aura': '#7c3aed',
         'creative-studio': '#ec4899',
         'dataforge': '#059669',
         'secureai': '#dc2626',
@@ -374,7 +374,7 @@ const generateMockData = (): DashboardData => ({
     ],
 
     serviceUsage: [
-        { service: 'codeforge', usage: 25 },
+        { service: 'aura', usage: 25 },
         { service: 'creative-studio', usage: 20 },
         { service: 'dataforge', usage: 15 },
         { service: 'chatbuilder', usage: 12 },
@@ -398,8 +398,8 @@ const generateMockData = (): DashboardData => ({
 
     serviceMetrics: [
         {
-            name: 'codeforge',
-            displayName: 'G3D CodeForge',
+            name: 'aura',
+            displayName: 'G3D aura',
             activeUsers: 1250,
             apiCalls: 125000,
             revenue: 450000,
@@ -430,7 +430,7 @@ const generateMockData = (): DashboardData => ({
         {
             severity: 'warning',
             title: 'High API Usage',
-            message: 'CodeForge service experiencing 150% normal traffic',
+            message: 'aura service experiencing 150% normal traffic',
             timestamp: '10 minutes ago'
         },
         {

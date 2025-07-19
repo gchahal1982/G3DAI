@@ -39,7 +39,7 @@ log_error() {
 declare -A SERVICES=(
     ["api-gateway"]="3000:production"
     ["vision-pro"]="3001:gpu-production"
-    ["codeforge"]="3002:production"
+    ["aura"]="3002:production"
     ["creative-studio"]="3003:gpu-production"
     ["dataforge"]="3004:production"
     ["secureai"]="3005:production"

@@ -68,7 +68,7 @@ export interface IUser extends Document {
     // Service Access
     serviceAccess: {
         visionPro: boolean;
-        codeForge: boolean;
+        aura: boolean;
         creativeStudio: boolean;
         dataForge: boolean;
         secureAI: boolean;
@@ -362,7 +362,7 @@ const UserSchema = new Schema<IUser>({
     // Service Access
     serviceAccess: {
         visionPro: { type: Boolean, default: false },
-        codeForge: { type: Boolean, default: false },
+        aura: { type: Boolean, default: false },
         creativeStudio: { type: Boolean, default: false },
         dataForge: { type: Boolean, default: false },
         secureAI: { type: Boolean, default: false },

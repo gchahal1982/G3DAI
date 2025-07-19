@@ -1,6 +1,6 @@
-# Getting Started with CodeForge
+# Getting Started with aura
 
-Welcome to CodeForge, the world's first AI-powered development platform with revolutionary 3D code visualization and hybrid local/cloud AI assistance.
+Welcome to aura, the world's first AI-powered development platform with revolutionary 3D code visualization and hybrid local/cloud AI assistance.
 
 ## 🚀 Quick Start
 
@@ -22,26 +22,26 @@ Welcome to CodeForge, the world's first AI-powered development platform with rev
 #### Option 1: VS Code Extension (Recommended for beginners)
 ```bash
 # Install via VS Code Marketplace
-code --install-extension codeforge.codeforge-ai
+code --install-extension aura.aura-ai
 
-# Or search "CodeForge AI" in VS Code Extensions
+# Or search "aura AI" in VS Code Extensions
 ```
 
 #### Option 2: Desktop Application
-- **Windows:** Download [CodeForge-Setup.exe](https://releases.codeforge.ai/latest/windows)
-- **macOS:** Download [CodeForge.dmg](https://releases.codeforge.ai/latest/macos)
-- **Linux:** Download [CodeForge.AppImage](https://releases.codeforge.ai/latest/linux)
+- **Windows:** Download [aura-Setup.exe](https://releases.aura.ai/latest/windows)
+- **macOS:** Download [aura.dmg](https://releases.aura.ai/latest/macos)
+- **Linux:** Download [aura.AppImage](https://releases.aura.ai/latest/linux)
 
 #### Option 3: CLI Tool (For power users)
 ```bash
 # Install via npm
-npm install -g @codeforge/cli
+npm install -g @aura/cli
 
 # Install via Homebrew (macOS/Linux)
-brew install codeforge/tap/codeforge
+brew install aura/tap/aura
 
 # Install via Cargo (Rust)
-cargo install codeforge-cli
+cargo install aura-cli
 ```
 
 ## 🎯 First Steps
@@ -49,7 +49,7 @@ cargo install codeforge-cli
 ### 1. Initial Setup
 
 #### Create Your Account
-1. Launch CodeForge or the VS Code extension
+1. Launch aura or the VS Code extension
 2. Click **"Sign Up"** or **"Continue with GitHub"**
 3. Choose your subscription tier:
    - **Developer** ($39/mo) - 15k cloud tokens/day, basic features
@@ -58,7 +58,7 @@ cargo install codeforge-cli
    - **Free Trial** - 7 days full access
 
 #### Configure AI Models
-CodeForge automatically downloads the best local model for your hardware:
+aura automatically downloads the best local model for your hardware:
 
 **Automatic Setup (Recommended):**
 - **Laptop/Light:** Qwen3-Coder 4B (2.4GB) - Fast, efficient
@@ -79,7 +79,7 @@ CodeForge automatically downloads the best local model for your hardware:
 #### Method 1: New Project Wizard
 ```bash
 # Via CLI
-codeforge new my-app --template=react-typescript
+aura new my-app --template=react-typescript
 
 # Via Desktop App
 File → New Project → React TypeScript → Create
@@ -88,15 +88,15 @@ File → New Project → React TypeScript → Create
 #### Method 2: Import Existing Project
 ```bash
 # Open existing folder
-codeforge open /path/to/project
+aura open /path/to/project
 
-# Or drag folder into CodeForge window
+# Or drag folder into aura window
 ```
 
 #### Method 3: Clone from Git
 ```bash
 # Clone and open in one command
-codeforge clone https://github.com/user/repo
+aura clone https://github.com/user/repo
 ```
 
 ### 3. Your First AI Completion
@@ -112,7 +112,7 @@ codeforge clone https://github.com/user/repo
 // Type this comment:
 // Function to calculate fibonacci sequence
 
-// CodeForge AI will suggest:
+// aura AI will suggest:
 function fibonacci(n: number): number {
   if (n <= 1) return n;
   return fibonacci(n - 1) + fibonacci(n - 2);
@@ -163,7 +163,7 @@ function fibonacci(n: number): number {
 - **BYO-Key Support** - Use your OpenAI/Anthropic/Google keys
 
 #### Smart Model Routing
-CodeForge automatically selects the best model for each task:
+aura automatically selects the best model for each task:
 - **Simple completions** → Local models (fast, private)
 - **Complex refactoring** → Cloud models (powerful)
 - **Architecture design** → Agentic models (comprehensive)
@@ -290,11 +290,11 @@ CodeForge automatically selects the best model for each task:
 ### Workspace Settings
 ```json
 {
-  "codeforge.models.preferred": "qwen3-coder-14b",
-  "codeforge.3d.enabled": true,
-  "codeforge.completion.autoAccept": false,
-  "codeforge.visualization.theme": "cyberpunk",
-  "codeforge.collaboration.voiceChat": true
+  "aura.models.preferred": "qwen3-coder-14b",
+  "aura.3d.enabled": true,
+  "aura.completion.autoAccept": false,
+  "aura.visualization.theme": "cyberpunk",
+  "aura.collaboration.voiceChat": true
 }
 ```
 
@@ -324,7 +324,7 @@ CodeForge automatically selects the best model for each task:
 1. **Check internet connection** (for cloud models)
 2. **Verify API quotas** in Settings → Usage
 3. **Try different model** via Ctrl+M
-4. **Restart CodeForge** if persistent
+4. **Restart aura** if persistent
 
 #### 3D Visualization Performance
 1. **Update GPU drivers** to latest version
@@ -361,10 +361,10 @@ CodeForge automatically selects the best model for each task:
 ### Getting Help
 
 #### Self-Service Resources
-- **Documentation Hub** - [docs.codeforge.ai](https://docs.codeforge.ai)
-- **Video Tutorials** - [learn.codeforge.ai](https://learn.codeforge.ai)
-- **Community Forum** - [community.codeforge.ai](https://community.codeforge.ai)
-- **GitHub Discussions** - [github.com/codeforge/discussions](https://github.com/codeforge/discussions)
+- **Documentation Hub** - [docs.aura.ai](https://docs.aura.ai)
+- **Video Tutorials** - [learn.aura.ai](https://learn.aura.ai)
+- **Community Forum** - [community.aura.ai](https://community.aura.ai)
+- **GitHub Discussions** - [github.com/aura/discussions](https://github.com/aura/discussions)
 
 #### Support Channels by Tier
 - **Developer:** Email support (48h response)
@@ -374,7 +374,7 @@ CodeForge automatically selects the best model for each task:
 
 #### Emergency Support
 For critical production issues (Enterprise+ only):
-- **Emergency Hotline:** +1-555-CODEFORGE
+- **Emergency Hotline:** +1-555-aura
 - **Slack Connect:** Direct channel with engineering
 - **Priority Escalation:** Automatic escalation to senior engineers
 
@@ -387,19 +387,19 @@ For critical production issues (Enterprise+ only):
 4. **Custom Model Training** - Train AI on your codebase
 
 ### Join the Community
-- **Discord:** [discord.gg/codeforge](https://discord.gg/codeforge)
-- **Twitter:** [@CodeForgeAI](https://twitter.com/CodeForgeAI)
-- **LinkedIn:** [CodeForge Company Page](https://linkedin.com/company/codeforge-ai)
-- **YouTube:** [CodeForge Channel](https://youtube.com/@CodeForgeAI)
+- **Discord:** [discord.gg/aura](https://discord.gg/aura)
+- **Twitter:** [@auraAI](https://twitter.com/auraAI)
+- **LinkedIn:** [aura Company Page](https://linkedin.com/company/aura-ai)
+- **YouTube:** [aura Channel](https://youtube.com/@auraAI)
 
 ### Stay Updated
 - **Newsletter:** Weekly updates and tips
-- **Blog:** [blog.codeforge.ai](https://blog.codeforge.ai) - Deep dives and tutorials
-- **Changelog:** [changelog.codeforge.ai](https://changelog.codeforge.ai) - Latest features
-- **Roadmap:** [roadmap.codeforge.ai](https://roadmap.codeforge.ai) - What's coming next
+- **Blog:** [blog.aura.ai](https://blog.aura.ai) - Deep dives and tutorials
+- **Changelog:** [changelog.aura.ai](https://changelog.aura.ai) - Latest features
+- **Roadmap:** [roadmap.aura.ai](https://roadmap.aura.ai) - What's coming next
 
 ---
 
-**Welcome to the future of coding with CodeForge! 🚀**
+**Welcome to the future of coding with aura! 🚀**
 
-*Need help? Contact us at [support@codeforge.ai](mailto:support@codeforge.ai)* 
+*Need help? Contact us at [support@aura.ai](mailto:support@aura.ai)* 

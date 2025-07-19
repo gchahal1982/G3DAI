@@ -1,4 +1,4 @@
-# CodeForge – Next‑Generation AI‑Assisted Development Platform  
+# aura – Next‑Generation AI‑Assisted Development Platform  
 **Version 3 – 18 July 2025**
 
 ---
@@ -6,7 +6,7 @@
 ## Executive Summary
 |           | Detail |
 |-----------|--------|
-| **Service** | CodeForge — an end‑to‑end AI development workspace that couples local privacy‑first coding assistance with cloud super‑context reasoning and G3D‑powered 3‑D visualisation. |
+| **Service** | aura — an end‑to‑end AI development workspace that couples local privacy‑first coding assistance with cloud super‑context reasoning and G3D‑powered 3‑D visualisation. |
 | **MVP Target** | A production‑ready hybrid IDE/CLI plug‑in (VS Code + NeoVim) and standalone desktop client, shipping with offline quantised models and optional secure cloud burst. |
 | **Revenue Potential** | \$40‑120 M ARR within 3 years. |
 | **Investment Required** | \$3.0 M over 9 months (32 devs inc. 8 G3D specialists). |
@@ -15,7 +15,7 @@
 ---
 
 ## 1 | Purpose & Vision
-CodeForge's mission is to **compress idea‑to‑deployment time from days to minutes** by fusing:
+aura's mission is to **compress idea‑to‑deployment time from days to minutes** by fusing:
 
 * **AI Swarms** — orchestrated specialist agents for design, code, test, security & docs.  
 * **Immersive 3‑D Visualisation** — G3D renders of architecture, call‑graphs & live intent graphs.  
@@ -80,9 +80,9 @@ CodeForge's mission is to **compress idea‑to‑deployment time from days to mi
 | **Cline** | OSS plan/act agent | Local | Mod. | None | Medium | VS Code ext | High | Low | Good | OSS |
 | **Roo** | Multi‑agent OSS | Local | Good | Med. | High | VS Code ext | High | Low | Good | OSS |
 | **Kilo Code** | Modular OSS | Local | Excellent | Med. | High | VS Code ext | Very High | Mod. | Excellent | OSS |
-| **CodeForge** | **3‑D G3D viz + AI swarms + hybrid local/cloud** | **Hybrid** | **Excellent** | **Adv. 3‑D** | **Intent‑Graph** | IDE + Desktop | **Marketplace** | **Enterprise suite** | **Zero‑trust** | **Hybrid (commercial core + open SDK)** |
+| **aura** | **3‑D G3D viz + AI swarms + hybrid local/cloud** | **Hybrid** | **Excellent** | **Adv. 3‑D** | **Intent‑Graph** | IDE + Desktop | **Marketplace** | **Enterprise suite** | **Zero‑trust** | **Hybrid (commercial core + open SDK)** |
 
-**Why CodeForge Wins**
+**Why aura Wins**
 
 * **Visual Clarity** – Only platform with *real‑time 3‑D* architecture & dependency renderings.  
 * **Hybrid Speed + Power** – 50 ms local completions *and* GPT‑4‑level deep refactors.  
@@ -190,9 +190,9 @@ CodeForge's mission is to **compress idea‑to‑deployment time from days to mi
 
 | Stage | Surface | Primary CTA / Goal | Key Metrics |
 |-------|---------|--------------------|-------------|
-| **Discover / Try** | VS Code & NeoVim extension (`ms-codeforge.vsix`) | Give developers a < 5 MB “taste” of AI swarm and 3‑D mini‑map without leaving their editor. | Conversion to desktop installer, weekly active installs |
+| **Discover / Try** | VS Code & NeoVim extension (`ms-aura.vsix`) | Give developers a < 5 MB “taste” of AI swarm and 3‑D mini‑map without leaving their editor. | Conversion to desktop installer, weekly active installs |
 | **Adopt / Delight** | **Standalone desktop client** (Electron/Tauri) – *hero experience* | Unlock local 6‑8 GB models, 120 Hz WebGPU, XR walkthroughs, and offline mode. | Daily active users, NPS, model‑latency p95 |
-| **Automate / Integrate** | `codeforge` **CLI** (headless) | Drive CI hooks, Git aliases, and terminal‑editor workflows. | CI minutes saved, script invocations per repo |
+| **Automate / Integrate** | `aura` **CLI** (headless) | Drive CI hooks, Git aliases, and terminal‑editor workflows. | CI minutes saved, script invocations per repo |
 
 > **Launch order:** extension ships first (funnel top), desktop GA follows within 4 weeks, CLI is bundled with desktop but documented for standalone use.
 
@@ -316,7 +316,7 @@ We use **7 local model families + 2 cloud APIs** optimized for different scenari
    - Optimized for fast inference with high efficiency
    - Alternative coding model with competitive performance
 
-**☁️ Cloud APIs (CodeForge Managed):**
+**☁️ Cloud APIs (aura Managed):**
 
 8. **Kimi K2** (CLOUD AGENTIC) - Advanced agentic workflows
    - 1T parameter MoE model (32B active) optimized for tool use
@@ -487,7 +487,7 @@ Open‑source leaderboard scripts will run inside GitHub Actions, posting badged
 ## 7.10 | Marketplace Governance
 
 1. **Submission Review** — Static scan, signature, automated tests (≤ 2 h SLA).  
-2. **Revenue Split** — 80 % creator / 20 % CodeForge; payouts via Stripe Connect.  
+2. **Revenue Split** — 80 % creator / 20 % aura; payouts via Stripe Connect.  
 3. **Takedown Process** — 24‑hour security/DMCA response window.  
 4. **Quality Ranking** — TrustScore combines install volume + crash telemetry.
 
@@ -570,7 +570,7 @@ Open‑source leaderboard scripts will run inside GitHub Actions, posting badged
 
 ## 8 | Strategic Model‑Vendor Integration Plan
 
-> Goal: deliver "best‑available" intelligence on Day 1 while protecting CodeForge from single‑vendor lock‑in or sudden price spikes.
+> Goal: deliver "best‑available" intelligence on Day 1 while protecting aura from single‑vendor lock‑in or sudden price spikes.
 
 ### 1. Multi‑Vendor Abstraction ("Model Mesh")
 
@@ -597,7 +597,7 @@ An internal **LLM Router** ranks adapters by *Cost × Latency × Quality* for ea
 |-------|--------------|-------------------------|
 | **Token ceilings** | Dev/Team tiers include daily cloud tokens; overages trigger pay‑as‑you‑go blocks or BYO prompt. | Protects gross margin on high‑usage accounts |
 | **Smart‑Router+ analytics add‑on** | \$10‑20/seat for cost‑optimisation dashboards, cache hit‑rates, vendor SLA alerts. | New ARR line, upsell path |
-| **Premium swarm personas** | Security‑Sweep & SBOM signer run only on CodeForge‑hardened models. | Ensures some paid tokens even for BYO orgs |
+| **Premium swarm personas** | Security‑Sweep & SBOM signer run only on aura‑hardened models. | Ensures some paid tokens even for BYO orgs |
 | **Runtime licence for on‑prem GPUs** | \$5 k/GPU/year for DeepSeek R1‑671B container key. | Captures value from self‑hosted clusters |
 | **Support SLAs** | 9×5 email (included), 24×7 pager (Enterprise Plus). | Service revenue & enterprise confidence |
 
@@ -651,7 +651,7 @@ POST /forge/ai/invoke
 | **Enterprise**     | \$299/mo        | 50‑5 000 devs | Private VPC, audit, SSO        |
 | **G3D Enterprise** | from \$100 k/yr | Fortune‑500   | On‑prem cluster, custom models |
 
-Marketplace revenue split 80/20 (creator/CodeForge).
+Marketplace revenue split 80/20 (creator/aura).
 
 ---
 
@@ -710,4 +710,4 @@ Marketplace revenue split 80/20 (creator/CodeForge).
 
 ---
 
-*Prepared by Product Strategy – CodeForge, July 2025*
+*Prepared by Product Strategy – aura, July 2025*

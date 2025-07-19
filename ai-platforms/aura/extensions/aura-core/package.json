@@ -1,0 +1,68 @@
+{
+  "name": "aura-core",
+  "displayName": "Aura Core",
+  "description": "Core functionality for Aura AI IDE",
+  "version": "0.1.0",
+  "engines": {
+    "vscode": "^1.74.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "configuration": {
+      "title": "Aura",
+      "properties": {
+        "aura.enableAI": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable AI features"
+        },
+        "aura.contextSize": {
+          "type": "number",
+          "default": 8192,
+          "description": "Maximum context size for AI operations"
+        },
+        "aura.enableTelemetry": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable anonymous telemetry"
+        }
+      }
+    },
+    "commands": [
+      {
+        "command": "aura.showSettings",
+        "title": "Aura: Open Settings"
+      },
+      {
+        "command": "aura.resetContext",
+        "title": "Aura: Reset Context Cache"
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile && npm run lint",
+    "lint": "eslint src --ext ts",
+    "test": "node ./out/test/runTest.js"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.74.0",
+    "@types/node": "^18.x",
+    "@typescript-eslint/eslint-plugin": "^5.45.0",
+    "@typescript-eslint/parser": "^5.45.0",
+    "eslint": "^8.28.0",
+    "typescript": "^4.9.4"
+  },
+  "dependencies": {
+    "lru-cache": "^7.14.1",
+    "sqlite3": "^5.1.6"
+  }
+}

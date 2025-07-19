@@ -112,11 +112,11 @@ export const G3D_SERVICES: ServiceConfig[] = [
         }
     },
     {
-        id: 'codeforge',
-        name: 'g3d-codeforge',
-        displayName: 'G3D CodeForge AI',
+        id: 'aura',
+        name: 'g3d-aura',
+        displayName: 'G3D aura AI',
         version: '1.0.0',
-        upstream: 'http://codeforge-service:3002',
+        upstream: 'http://aura-service:3002',
         healthCheck: '/health',
         timeout: 45000,
         retries: 2,

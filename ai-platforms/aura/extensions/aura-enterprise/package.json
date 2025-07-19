@@ -1,0 +1,103 @@
+{
+  "name": "aura-enterprise",
+  "displayName": "Aura Enterprise",
+  "description": "Enterprise features including SSO, compliance, and licensing",
+  "version": "0.1.0",
+  "engines": {
+    "vscode": "^1.74.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "configuration": {
+      "title": "Aura Enterprise",
+      "properties": {
+        "aura.enterprise.ssoProvider": {
+          "type": "string",
+          "enum": ["none", "saml", "oauth", "ldap"],
+          "default": "none",
+          "description": "Single Sign-On provider"
+        },
+        "aura.enterprise.complianceMode": {
+          "type": "string",
+          "enum": ["none", "soc2", "fedramp", "hipaa"],
+          "default": "none",
+          "description": "Compliance standard to enforce"
+        },
+        "aura.enterprise.auditLogging": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable comprehensive audit logging"
+        },
+        "aura.enterprise.licenseKey": {
+          "type": "string",
+          "default": "",
+          "description": "Enterprise license key"
+        }
+      }
+    },
+    "commands": [
+      {
+        "command": "aura.enterprise.login",
+        "title": "Aura Enterprise: Login"
+      },
+      {
+        "command": "aura.enterprise.showCompliance",
+        "title": "Aura Enterprise: Show Compliance Dashboard"
+      },
+      {
+        "command": "aura.enterprise.generateAuditReport",
+        "title": "Aura Enterprise: Generate Audit Report"
+      },
+      {
+        "command": "aura.enterprise.manageLicense",
+        "title": "Aura Enterprise: Manage License"
+      },
+      {
+        "command": "aura.enterprise.showUsageAnalytics",
+        "title": "Aura Enterprise: Show Usage Analytics"
+      }
+    ],
+    "views": {
+      "explorer": [
+        {
+          "id": "aura.enterpriseView",
+          "name": "Enterprise Dashboard",
+          "when": "config.aura.enterprise.licenseKey != ''"
+        }
+      ]
+    },
+    "authentication": [
+      {
+        "id": "aura-enterprise",
+        "label": "Aura Enterprise"
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile && npm run lint",
+    "lint": "eslint src --ext ts",
+    "test": "node ./out/test/runTest.js"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.74.0",
+    "@types/node": "^18.x",
+    "@typescript-eslint/eslint-plugin": "^5.45.0",
+    "@typescript-eslint/parser": "^5.45.0",
+    "eslint": "^8.28.0",
+    "typescript": "^4.9.4"
+  },
+  "dependencies": {
+    "jsonwebtoken": "^9.0.0",
+    "node-saml": "^4.0.0",
+    "ldapjs": "^3.0.0"
+  }
+}

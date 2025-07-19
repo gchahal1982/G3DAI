@@ -70,7 +70,7 @@ export const serviceThemeOverrides = {
             },
         },
     },
-    'codeforge': {
+    'aura': {
         colors: {
             ...baseGlassmorphismTheme.colors,
             primary: '#6366f1',

@@ -1,16 +1,16 @@
-# CodeForge API Reference
+# aura API Reference
 
-Complete API documentation for integrating with CodeForge.
+Complete API documentation for integrating with aura.
 
 ## Base URLs
 
-- **Production:** `https://api.codeforge.ai/v1`
-- **Staging:** `https://staging-api.codeforge.ai/v1`
+- **Production:** `https://api.aura.ai/v1`
+- **Staging:** `https://staging-api.aura.ai/v1`
 - **Self-hosted:** `https://your-domain.com/api/v1`
 
 ## Authentication
 
-CodeForge uses API keys for authentication. Include your API key in the `Authorization` header:
+aura uses API keys for authentication. Include your API key in the `Authorization` header:
 
 ```http
 Authorization: Bearer cf_api_xxxxxxxxxxxxxxxx
@@ -409,8 +409,8 @@ POST /workspaces/{workspace_id}/collaboration
 ```json
 {
   "session_id": "collab_xxxxxxxxxxxxxxxx",
-  "websocket_url": "wss://collab.codeforge.ai/ws/collab_xxxxxxxxxxxxxxxx",
-  "join_link": "https://codeforge.ai/join/collab_xxxxxxxxxxxxxxxx",
+  "websocket_url": "wss://collab.aura.ai/ws/collab_xxxxxxxxxxxxxxxx",
+  "join_link": "https://aura.ai/join/collab_xxxxxxxxxxxxxxxx",
   "expires_at": "2024-12-16T17:30:00Z"
 }
 ```
@@ -557,7 +557,7 @@ Every plugin must include a `manifest.json`:
   "id": "my-awesome-plugin",
   "name": "My Awesome Plugin",
   "version": "1.0.0",
-  "description": "Enhances CodeForge with awesome features",
+  "description": "Enhances aura with awesome features",
   "author": "John Doe",
   "license": "MIT",
   "main": "dist/index.js",
@@ -591,7 +591,7 @@ Every plugin must include a `manifest.json`:
 ### Plugin API Interface
 
 ```typescript
-interface CodeForgeAPI {
+interface auraAPI {
   // Workspace operations
   workspace: {
     getFiles(): Promise<File[]>;
@@ -634,12 +634,12 @@ interface CodeForgeAPI {
 ### Plugin Example
 
 ```typescript
-import { CodeForgeAPI } from '@codeforge/plugin-api';
+import { auraAPI } from '@aura/plugin-api';
 
 export default class MyPlugin {
-  private api: CodeForgeAPI;
+  private api: auraAPI;
 
-  activate(api: CodeForgeAPI) {
+  activate(api: auraAPI) {
     this.api = api;
     
     // Register commands
@@ -789,13 +789,13 @@ All API endpoints return consistent error responses:
 ### Node.js SDK
 
 ```bash
-npm install @codeforge/sdk
+npm install @aura/sdk
 ```
 
 ```javascript
-import { CodeForge } from '@codeforge/sdk';
+import { aura } from '@aura/sdk';
 
-const cf = new CodeForge('cf_api_xxxxxxxxxxxxxxxx');
+const cf = new aura('cf_api_xxxxxxxxxxxxxxxx');
 
 // Generate completion
 const completion = await cf.complete({
@@ -819,13 +819,13 @@ const workspace = await cf.workspaces.create({
 ### Python SDK
 
 ```bash
-pip install codeforge-sdk
+pip install aura-sdk
 ```
 
 ```python
-from codeforge import CodeForge
+from aura import aura
 
-cf = CodeForge(api_key='cf_api_xxxxxxxxxxxxxxxx')
+cf = aura(api_key='cf_api_xxxxxxxxxxxxxxxx')
 
 # Generate completion
 completion = cf.complete(
@@ -849,7 +849,7 @@ workspace = cf.workspaces.create(
 
 ## Webhooks
 
-CodeForge can send webhooks for various events:
+aura can send webhooks for various events:
 
 ### Configure Webhooks
 
@@ -861,7 +861,7 @@ POST /webhooks
 
 ```json
 {
-  "url": "https://your-app.com/webhooks/codeforge",
+  "url": "https://your-app.com/webhooks/aura",
   "events": [
     "completion.generated",
     "workspace.created",
@@ -907,4 +907,4 @@ POST /webhooks
 
 ---
 
-For more examples and detailed guides, visit our [Developer Documentation](https://docs.codeforge.ai). 
+For more examples and detailed guides, visit our [Developer Documentation](https://docs.aura.ai). 

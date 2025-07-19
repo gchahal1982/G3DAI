@@ -1,0 +1,98 @@
+{
+  "name": "aura-ai",
+  "displayName": "Aura AI",
+  "description": "AI-powered coding assistance with 7 local + 2 cloud models",
+  "version": "0.1.0",
+  "engines": {
+    "vscode": "^1.74.0"
+  },
+  "categories": [
+    "Programming Languages",
+    "Machine Learning"
+  ],
+  "activationEvents": [
+    "onLanguage:typescript",
+    "onLanguage:javascript",
+    "onLanguage:python",
+    "onLanguage:rust",
+    "onLanguage:go",
+    "onLanguage:java",
+    "onLanguage:cpp"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "configuration": {
+      "title": "Aura AI",
+      "properties": {
+        "aura.ai.model": {
+          "type": "string",
+          "default": "qwen3-8b",
+          "enum": [
+            "qwen3-8b",
+            "codellama-7b",
+            "starcoder2-7b",
+            "gpt-4",
+            "claude-3"
+          ],
+          "description": "Active AI model for completions"
+        },
+        "aura.ai.maxTokens": {
+          "type": "number",
+          "default": 2048,
+          "description": "Maximum tokens for AI responses"
+        },
+        "aura.ai.temperature": {
+          "type": "number",
+          "default": 0.1,
+          "description": "AI model temperature (0.0-1.0)"
+        }
+      }
+    },
+    "commands": [
+      {
+        "command": "aura.ai.selectModel",
+        "title": "Aura AI: Select Model"
+      },
+      {
+        "command": "aura.ai.downloadModel",
+        "title": "Aura AI: Download Model"
+      },
+      {
+        "command": "aura.ai.explainCode",
+        "title": "Aura AI: Explain Selected Code"
+      }
+    ],
+    "views": {
+      "explorer": [
+        {
+          "id": "aura.modelManager",
+          "name": "AI Models",
+          "when": "true"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile && npm run lint",
+    "lint": "eslint src --ext ts",
+    "test": "node ./out/test/runTest.js"
+  },
+  "devDependencies": {
+    "@types/node": "^18.19.120",
+    "@types/vscode": "^1.102.0",
+    "@typescript-eslint/eslint-plugin": "^5.45.0",
+    "@typescript-eslint/parser": "^5.45.0",
+    "eslint": "^8.28.0",
+    "typescript": "^4.9.4"
+  },
+  "dependencies": {
+    "@types/react": "^19.1.8",
+    "axios": "^1.6.0",
+    "llamaindex": "^0.1.0",
+    "onnxruntime-node": "^1.16.0",
+    "react": "^19.1.0"
+  }
+}

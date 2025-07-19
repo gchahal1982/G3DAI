@@ -15,7 +15,7 @@ G3DAI is a comprehensive monorepo containing 27+ specialized AI platforms and se
 - NeuroAI, Mesh3D, RenderAI, QuantumAI, SpaceAI, MetaverseAI
 
 **Tier 3-4 - Prototype/Planned:**
-- AutoML, CodeForge, ChatBuilder, HealthAI, FinanceAI, LegalAI, VoiceAI, VideoAI, SecureAI, and others
+- AutoML, aura, ChatBuilder, HealthAI, FinanceAI, LegalAI, VoiceAI, VideoAI, SecureAI, and others
 
 ### Key Characteristics
 

@@ -35,7 +35,7 @@ This document provides an accurate assessment of the G3D AI Services Portfolio's
 
 | Platform | Status | Lines of Code | Development Status |
 |----------|--------|---------------|-------------------|
-| **G3D CodeForge** | 📋 Concept | 0 | Planning phase - no implementation |
+| **G3D aura** | 📋 Concept | 0 | Planning phase - no implementation |
 | **G3D Creative Studio** | 📋 Concept | 0 | Planning phase - no implementation |
 | **G3D DataForge** | 📋 Concept | 0 | Planning phase - no implementation |
 | **G3D SecureAI** | 📋 Concept | 0 | Planning phase - no implementation |
@@ -75,7 +75,7 @@ This document provides an accurate assessment of the G3D AI Services Portfolio's
 
 ### **Priority 2: Develop Core Platforms** (High-Value Opportunities)
 - **BioAI Platform**: Develop from minimal structure to full production platform
-- **CodeForge Platform**: Begin development of AI code generation platform
+- **aura Platform**: Begin development of AI code generation platform
 - **Creative Studio**: Implement 3D content creation platform
 - **DataForge**: Build data processing and analytics platform
 

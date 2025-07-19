@@ -5,7 +5,7 @@
 
 ## Executive Summary
 
-**Focus**: Enhance G3D MedSight production platform and develop CodeForge and DataForge from concept to revenue-generating businesses  
+**Focus**: Enhance G3D MedSight production platform and develop aura and DataForge from concept to revenue-generating businesses  
 **Timeline**: 6 months to MVP launch  
 **Investment**: $1.5M, 30 developers  
 **Revenue Target**: $2M ARR by month 12
@@ -121,7 +121,7 @@ services/g3d-vision-pro/src/components/
 
 ---
 
-## Service 2: G3D CodeForge - Enterprise Code Generation
+## Service 2: G3D aura - Enterprise Code Generation
 ### **Current State**: Concept phase (no implementation) → **Target**: Production code generation platform
 
 ## **Month 1-3: Multi-Language AI Engine**
@@ -129,7 +129,7 @@ services/g3d-vision-pro/src/components/
 ### **Code Generation Core** (3 months, 6 AI engineers)
 ```typescript
 // New AI engine:
-services/g3d-codeforge/src/ai/
+services/g3d-aura/src/ai/
 ├── generators/
 │   ├── JavaScriptGenerator.ts   // 2,000 lines
 │   ├── TypeScriptGenerator.ts   // 2,000 lines
@@ -168,7 +168,7 @@ services/g3d-codeforge/src/ai/
 ### **Development Workflow Integration** (2 months, 4 backend developers)
 ```typescript
 // Integration services:
-backend/codeforge-service/src/
+backend/aura-service/src/
 ├── integrations/
 │   ├── GitHubIntegration.ts     // 1,500 lines
 │   ├── GitLabIntegration.ts     // 1,500 lines
@@ -196,7 +196,7 @@ backend/codeforge-service/src/
 ### **Intelligent Code Assistant** (1 month, 5 AI engineers)
 ```typescript
 // Advanced AI features:
-services/g3d-codeforge/src/ai/advanced/
+services/g3d-aura/src/ai/advanced/
 ├── CodeExplainer.ts             // 1,500 lines
 ├── RefactoringEngine.ts         // 2,000 lines
 ├── BugDetector.ts               // 1,500 lines
@@ -405,12 +405,12 @@ shared/support-service/src/
 - ✅ Shared authentication system
 - ✅ Basic billing infrastructure
 - ✅ MedSight DICOM engine
-- ✅ CodeForge language support (3 languages)
+- ✅ aura language support (3 languages)
 - ✅ DataForge basic connectors (5 sources)
 
 ### **Month 3-4: Core Features**
 - ✅ MedSight clinical workflow
-- ✅ CodeForge enterprise integrations
+- ✅ aura enterprise integrations
 - ✅ DataForge AI analytics
 - ✅ Shared support system
 - ✅ Security & compliance foundations

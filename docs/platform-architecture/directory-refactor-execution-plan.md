@@ -30,7 +30,7 @@ G3DAI/
 │   ├── dataforge/                    # ❌ Placeholder
 │   ├── secureai/                     # ❌ Placeholder
 │   ├── automl/                       # ❌ Placeholder
-│   ├── codeforge/                    # ❌ Placeholder
+│   ├── aura/                    # ❌ Placeholder
 │   ├── chatbuilder/                  # ❌ Placeholder
 │   ├── videoai/                      # ❌ Placeholder
 │   ├── healthai/                     # ❌ Placeholder
@@ -384,7 +384,7 @@ export class [PlatformName]ApiService {
 #### **Implementation Priority Order**
 
 **Week 5-6: Tier 4 Platforms (Placeholders)**
-- AutoML, CodeForge, ChatBuilder, VideoAI, HealthAI, FinanceAI
+- AutoML, aura, ChatBuilder, VideoAI, HealthAI, FinanceAI
 - **Goal**: Establish solid foundation structure
 - **Approach**: Apply full template implementation
 

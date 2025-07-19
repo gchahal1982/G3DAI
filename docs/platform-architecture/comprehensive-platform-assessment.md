@@ -62,7 +62,7 @@
 |----------|-------|-------|--------------|------------------|-----------------|
 | **automl** | 0 | 0 | ❌ | 🟢 **CLEAN** | 🔥 **HIGH** |
 | **chatbuilder** | 0 | 0 | ❌ | 🟢 **CLEAN** | 🔥 **HIGH** |
-| **codeforge** | 0 | 0 | ❌ | 🟢 **CLEAN** | 🔥 **HIGH** |
+| **aura** | 0 | 0 | ❌ | 🟢 **CLEAN** | 🔥 **HIGH** |
 | **creative-studio** | 0 | 0 | ❌ | 🟢 **CLEAN** | 🔥 **HIGH** |
 | **dataforge** | 0 | 0 | ❌ | 🟢 **CLEAN** | 🔥 **HIGH** |
 | **documind** | 0 | 0 | ❌ | 🟢 **CLEAN** | 🔥 **HIGH** |
@@ -92,7 +92,7 @@
 **Significant business potential, ready for development**
 1. **automl** - Clean, high demand market
 2. **chatbuilder** - Clean, AI chatbot market
-3. **codeforge** - Clean, developer tools market
+3. **aura** - Clean, developer tools market
 4. **creative-studio** - Clean, creative AI tools
 5. **dataforge** - Clean, data processing market
 6. **documind** - Clean, document AI market

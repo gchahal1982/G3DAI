@@ -25,7 +25,7 @@ const mockAlertingSystem = {
   notifyManagement: jest.fn()
 };
 
-// Support tier definitions matching CodeForge pricing
+// Support tier definitions matching aura pricing
 interface SupportTier {
   name: string;
   responseTime: {

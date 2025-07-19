@@ -1,0 +1,129 @@
+{
+  "folders": [
+    		{
+			"name": "Aura Core",
+			"path": "./extensions/aura-core"
+		},
+		{
+			"name": "Aura AI",
+			"path": "./extensions/aura-ai"
+		},
+		{
+			"name": "Aura 3D",
+			"path": "./extensions/aura-3d"
+		},
+		{
+			"name": "Aura Swarm",
+			"path": "./extensions/aura-swarm"
+		},
+		{
+			"name": "Aura Enterprise",
+			"path": "./extensions/aura-enterprise"
+		},
+    {
+      "name": "Source Library",
+      "path": "./src/lib"
+    }
+  ],
+  "settings": {
+    "typescript.preferences.includePackageJsonAutoImports": "on",
+    "typescript.suggest.autoImports": true,
+    "typescript.updateImportsOnFileMove.enabled": "always",
+    "eslint.workingDirectories": [
+      			"extensions/aura-core",
+			"extensions/aura-ai",
+			"extensions/aura-3d",
+			"extensions/aura-swarm",
+			"extensions/aura-enterprise"
+    ],
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.fixAll.eslint": "explicit"
+    }
+  },
+  "extensions": {
+    "recommendations": [
+      "ms-vscode.vscode-typescript-next",
+      "dbaeumer.vscode-eslint",
+      "esbenp.prettier-vscode",
+      "ms-vscode.extension-test-runner"
+    ]
+  },
+  "tasks": {
+    "version": "2.0.0",
+    "tasks": [
+      {
+        "label": "Build All Extensions",
+        "type": "shell",
+        "command": "npm run compile",
+        "group": "build",
+        "options": {
+          "cwd": "${workspaceFolder}/extensions/aura-core"
+        },
+        "dependsOrder": "sequence",
+        "dependsOn": [
+          "Build Core",
+          "Build AI", 
+          "Build 3D",
+          "Build Swarm",
+          "Build Enterprise"
+        ]
+      },
+      {
+        "label": "Build Core",
+        "type": "shell",
+        "command": "npm run compile",
+        "group": "build",
+        "options": {
+          "cwd": "${workspaceFolder}/extensions/aura-core"
+        }
+      },
+      {
+        "label": "Build AI",
+        "type": "shell", 
+        "command": "npm run compile",
+        "group": "build",
+        "options": {
+          "cwd": "${workspaceFolder}/extensions/aura-ai"
+        }
+      },
+      {
+        "label": "Build 3D",
+        "type": "shell",
+        "command": "npm run compile", 
+        "group": "build",
+        "options": {
+          "cwd": "${workspaceFolder}/extensions/aura-3d"
+        }
+      },
+      {
+        "label": "Build Swarm",
+        "type": "shell",
+        "command": "npm run compile",
+        "group": "build", 
+        "options": {
+          "cwd": "${workspaceFolder}/extensions/aura-swarm"
+        }
+      },
+      {
+        "label": "Build Enterprise",
+        "type": "shell",
+        "command": "npm run compile",
+        "group": "build",
+        "options": {
+          "cwd": "${workspaceFolder}/extensions/aura-enterprise"
+        }
+      },
+      {
+        "label": "Watch All Extensions",
+        "type": "shell",
+        "command": "npm run watch",
+        "group": "build",
+        "isBackground": true,
+        "options": {
+          "cwd": "${workspaceFolder}/extensions/aura-core"
+        }
+      }
+    ]
+  }
+} 
