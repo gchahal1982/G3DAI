@@ -92,52 +92,52 @@ export const LOCAL_MODELS: ModelVariant[] = [
     priority: 'workstation-only'
   },
 
-  // Phi-4-mini (LOCAL AGENTIC)
+  // Phi-4-mini-instruct (LOCAL AGENTIC)
   {
     id: 'phi-4-mini',
-    name: 'Phi-4-mini',
+    name: 'Phi-4-mini-instruct',
     family: 'phi-4',
     size: '3.8B',
     parameters: '3.8B',
-    downloadSize: 2.8 * 1024 * 1024 * 1024, // 2.8GB
-    vramRequired: 6,
+    downloadSize: 2.4 * 1024 * 1024 * 1024, // 2.4GB
+    vramRequired: 4,
     systemRamRequired: 4,
-    huggingFaceRepo: 'microsoft/Phi-4-mini-GGUF',
-    filename: 'phi-4-mini-q4_k_m.gguf',
+    huggingFaceRepo: 'microsoft/Phi-4-mini-instruct-GGUF',
+    filename: 'phi-4-mini-instruct-q4_k_m.gguf',
     sha256: 'e5f6789012345678901234567890abcdef1234567890abcdef1234567890a',
-    useCase: 'Local agentic workflows and function calling',
+    useCase: 'Local agentic workflows, function calling (88.6% GSM8K, 64.0% MATH, 62.8% HumanEval)',
     priority: 'auto-install'
   },
 
-  // Gemma 3 variants
+  // Gemma 3 QAT variants (Quantization Aware Training)
   {
     id: 'gemma-3-4b',
-    name: 'Gemma 3 4B',
+    name: 'Gemma 3 4B QAT',
     family: 'gemma-3',
     size: '4B',
     parameters: '4B',
     downloadSize: 3.2 * 1024 * 1024 * 1024, // 3.2GB
-    vramRequired: 6,
+    vramRequired: 4, // Reduced due to QAT 3x memory efficiency
     systemRamRequired: 4,
-    huggingFaceRepo: 'google/gemma-3-4b-GGUF',
-    filename: 'gemma-3-4b-q4_k_m.gguf',
+    huggingFaceRepo: 'google/gemma-3-4b-qat-GGUF',
+    filename: 'gemma-3-4b-qat-q4_k_m.gguf',
     sha256: 'f6789012345678901234567890abcdef1234567890abcdef1234567890ab',
-    useCase: 'Lightweight multimodal tasks',
+    useCase: 'Lightweight multimodal tasks (text + image, 128K context, 3x memory efficient)',
     priority: 'optional'
   },
   {
     id: 'gemma-3-12b',
-    name: 'Gemma 3 12B',
+    name: 'Gemma 3 12B QAT',
     family: 'gemma-3',
     size: '12B',
     parameters: '12B',
     downloadSize: 8.1 * 1024 * 1024 * 1024, // 8.1GB
-    vramRequired: 12,
+    vramRequired: 8, // Reduced due to QAT 3x memory efficiency
     systemRamRequired: 8,
-    huggingFaceRepo: 'google/gemma-3-12b-GGUF',
-    filename: 'gemma-3-12b-q4_k_m.gguf',
+    huggingFaceRepo: 'google/gemma-3-12b-qat-GGUF',
+    filename: 'gemma-3-12b-qat-q4_k_m.gguf',
     sha256: '6789012345678901234567890abcdef1234567890abcdef1234567890abc',
-    useCase: 'Advanced multimodal capabilities',
+    useCase: 'Advanced multimodal capabilities (text + image, 128K context, 3x memory efficient)',
     priority: 'optional'
   },
 

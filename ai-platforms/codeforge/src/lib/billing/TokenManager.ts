@@ -282,7 +282,7 @@ export class TokenManager extends EventEmitter {
 
       const billing: OverageBilling = {
         userId: usage.userId,
-        organizationId: usage.organizationId,
+        ...(usage.organizationId && { organizationId: usage.organizationId }),
         period: this.getDateKey(),
         excessTokens,
         overageAmount,

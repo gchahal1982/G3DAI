@@ -271,6 +271,33 @@ export class ModelRegistry extends EventEmitter {
       status: 'not-installed'
     };
 
+    // Phi-4-mini - Local agentic capabilities
+    const phi4MiniModel: ModelProfile = {
+      id: 'phi-4-mini',
+      family: 'phi-4-mini',
+      variant: '3.8B',
+      type: 'local',
+      capabilities: {
+        codeCompletion: 63, // 62.8% HumanEval
+        refactoring: 70,
+        debugging: 75,
+        architecture: 65,
+        documentation: 80,
+        agenticTasks: 85, // Strong agentic capabilities with function calling
+        reasoning: 82, // 88.6% GSM8K, 64.0% MATH - strong mathematical reasoning
+        contextLength: 128000, // 128K context length
+        speed: 100, // tokens/sec
+        costPerMillion: 0 // Free local
+      },
+      requirements: {
+        minRam: 8,
+        recommendedRam: 12,
+        minVram: 4,
+        diskSpace: 2.4 // ~2.4GB for efficient deployment
+      },
+      status: 'not-installed'
+    };
+
     // BYO-Key models - Optional additional providers
     const byoKeyModels: ModelProfile[] = [
       // OpenAI Models
@@ -469,8 +496,10 @@ export class ModelRegistry extends EventEmitter {
       }
     ];
 
-    // Mark our 4 core models
+    // Mark our 5 core models
     qwen3Models.forEach(model => { model.isCoreModel = true; model.requiresApiKey = false; });
+    phi4MiniModel.isCoreModel = true;
+    phi4MiniModel.requiresApiKey = false;
     kimiModel.isCoreModel = true;
     kimiModel.requiresApiKey = false; // Can be local or API
     deepseekModel.isCoreModel = true;
@@ -479,7 +508,7 @@ export class ModelRegistry extends EventEmitter {
     mistralModel.requiresApiKey = false;
 
     // Register all models - core models first, then BYO-Key models
-    [...qwen3Models, kimiModel, deepseekModel, mistralModel, ...byoKeyModels].forEach(model => {
+    [...qwen3Models, phi4MiniModel, kimiModel, deepseekModel, mistralModel, ...byoKeyModels].forEach(model => {
       this.models.set(model.id, model);
     });
   }

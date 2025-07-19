@@ -991,10 +991,10 @@ class Qwen3CoderAdapter implements ModelAdapter {
   getCost(tokens: number): number { return 0; } // Local model
 }
 
-// 2. Phi-4-mini Adapter - Local agentic capabilities (3.8B)
+// 2. Phi-4-mini-instruct Adapter - Local agentic capabilities (3.8B, 88.6% GSM8K, 64.0% MATH, 62.8% HumanEval)
 class Phi4MiniAdapter implements ModelAdapter {
   id = 'phi-4-mini';
-  name = 'Phi-4-mini';
+  name = 'Phi-4-mini-instruct';
   provider = 'Microsoft/Local';
   capabilities: ModelCapabilities = {
     contextWindow: 128000,
@@ -1014,7 +1014,7 @@ class Phi4MiniAdapter implements ModelAdapter {
       body: JSON.stringify(body),
     });
     if (!response.ok) {
-      throw new Error(`Phi-4-mini local server error: ${response.statusText}`);
+      throw new Error(`Phi-4-mini-instruct local server error: ${response.statusText}`);
     }
     return response.json();
   }
@@ -1039,7 +1039,7 @@ class Phi4MiniAdapter implements ModelAdapter {
         metadata: { finishReason: data.stop_reason, thinkingTokens: data.thinking_tokens }
       };
     } catch (error: any) {
-      throw new Error(`Phi-4-mini completion failed: ${error?.message || 'Unknown error'}`);
+      throw new Error(`Phi-4-mini-instruct completion failed: ${error?.message || 'Unknown error'}`);
     }
   }
 
@@ -1087,15 +1087,16 @@ class Phi4MiniAdapter implements ModelAdapter {
   getCost(tokens: number): number { return 0; }
 }
 
-// 3. Gemma 3 Adapter - Google's multimodal model (4B/12B/27B)
+// 3. Gemma 3 QAT Adapter - Google's multimodal model with Quantization Aware Training (1B/4B/12B/27B)
+// Memory efficient: QAT preserves bfloat16 quality while using 3x less memory
 class Gemma3Adapter implements ModelAdapter {
   id = 'gemma-3-12b';
-  name = 'Gemma 3 12B';
+  name = 'Gemma 3 12B QAT';
   provider = 'Google/Local';
   capabilities: ModelCapabilities = {
-    contextWindow: 32768,
+    contextWindow: 128000, // 128K context window for 4B, 12B, 27B variants
     outputTokens: 8192,
-    multimodal: true,
+    multimodal: true, // Text + image capabilities
     thinkingMode: false,
     reasoningChains: true,
     codeOptimized: true,
@@ -1110,7 +1111,7 @@ class Gemma3Adapter implements ModelAdapter {
       body: JSON.stringify(body),
     });
     if (!response.ok) {
-      throw new Error(`Gemma 3 local server error: ${response.statusText}`);
+      throw new Error(`Gemma 3 QAT local server error: ${response.statusText}`);
     }
     return response.json();
   }
@@ -1134,7 +1135,7 @@ class Gemma3Adapter implements ModelAdapter {
         metadata: { finishReason: data.stop_reason, modelSize: '12B' }
       };
     } catch (error: any) {
-      throw new Error(`Gemma 3 completion failed: ${error?.message || 'Unknown error'}`);
+      throw new Error(`Gemma 3 QAT completion failed: ${error?.message || 'Unknown error'}`);
     }
   }
 
