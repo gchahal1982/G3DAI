@@ -1,0 +1,83 @@
+{
+  "name": "aura-revolutionary-demo",
+  "displayName": "🚀 Aura Revolutionary Demo",
+  "description": "Experience the revolutionary AI coding assistant with 6 specialized personas and advanced security",
+  "version": "2.0.0",
+  "engines": {
+    "vscode": "^1.80.0"
+  },
+  "categories": [
+    "Other",
+    "Machine Learning",
+    "Snippets"
+  ],
+  "keywords": [
+    "ai",
+    "assistant",
+    "claude-code",
+    "security",
+    "revolutionary"
+  ],
+  "main": "./extension.js",
+  "activationEvents": [
+    "onCommand:aura.openRevolutionaryChat"
+  ],
+  "contributes": {
+    "commands": [
+      {
+        "command": "aura.openRevolutionaryChat",
+        "title": "🤖 Open Revolutionary AI Chat",
+        "category": "Aura"
+      },
+      {
+        "command": "aura.validateSecurity",
+        "title": "🔐 Validate Code Security",
+        "category": "Aura"
+      },
+      {
+        "command": "aura.showMemory",
+        "title": "🧠 Show Memory Context",
+        "category": "Aura"
+      },
+      {
+        "command": "aura.performanceMetrics",
+        "title": "📊 Performance Metrics",
+        "category": "Aura"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "aura.openRevolutionaryChat",
+        "key": "ctrl+shift+a",
+        "mac": "cmd+shift+a"
+      }
+    ],
+    "configuration": {
+      "title": "Aura Revolutionary Settings",
+      "properties": {
+        "aura.defaultPersona": {
+          "type": "string",
+          "default": "ultra-concise",
+          "enum": ["ultra-concise", "security-specialist", "mentor", "debug-specialist", "expert", "collaborative-partner"],
+          "description": "Default AI persona to use"
+        },
+        "aura.securityMode": {
+          "type": "string",
+          "default": "adaptive",
+          "enum": ["sandbox", "full", "adaptive"],
+          "description": "Security validation mode"
+        },
+        "aura.memoryPersistence": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable persistent memory across sessions"
+        }
+      }
+    }
+  },
+  "publisher": "aura-revolutionary",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/aura/revolutionary-prompt-system"
+  }
+}

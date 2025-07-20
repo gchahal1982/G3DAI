@@ -1,0 +1,50 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Test Aura Core Extension",
+            "type": "extensionHost",
+            "request": "launch",
+            "args": [
+                "--extensionDevelopmentPath=${workspaceFolder}/../codeforge-vscode/extensions/codeforge-core"
+            ],
+            "outFiles": [
+                "${workspaceFolder}/../codeforge-vscode/extensions/codeforge-core/out/**/*.js"
+            ]
+        },
+        {
+            "name": "Test Aura AI Extension",
+            "type": "extensionHost",
+            "request": "launch",
+            "args": [
+                "--extensionDevelopmentPath=${workspaceFolder}/../codeforge-vscode/extensions/codeforge-ai"
+            ],
+            "outFiles": [
+                "${workspaceFolder}/../codeforge-vscode/extensions/codeforge-ai/out/**/*.js"
+            ]
+        },
+        {
+            "name": "Test Aura 3D Extension",
+            "type": "extensionHost",
+            "request": "launch",
+            "args": [
+                "--extensionDevelopmentPath=${workspaceFolder}/../codeforge-vscode/extensions/codeforge-3d"
+            ],
+            "outFiles": [
+                "${workspaceFolder}/../codeforge-vscode/extensions/codeforge-3d/out/**/*.js"
+            ]
+        },
+        {
+            "name": "Test All Aura Extensions",
+            "type": "extensionHost",
+            "request": "launch",
+            "args": [
+                "--extensionDevelopmentPath=${workspaceFolder}/../codeforge-vscode/extensions/codeforge-core",
+                "--extensionDevelopmentPath=${workspaceFolder}/../codeforge-vscode/extensions/codeforge-ai",
+                "--extensionDevelopmentPath=${workspaceFolder}/../codeforge-vscode/extensions/codeforge-3d",
+                "--extensionDevelopmentPath=${workspaceFolder}/../codeforge-vscode/extensions/codeforge-swarm",
+                "--extensionDevelopmentPath=${workspaceFolder}/../codeforge-vscode/extensions/codeforge-enterprise"
+            ]
+        }
+    ]
+} 

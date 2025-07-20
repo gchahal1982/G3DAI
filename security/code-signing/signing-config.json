@@ -1,0 +1,45 @@
+{
+  "codeSigningConfig": {
+    "enabled": true,
+    "algorithm": "SHA256withRSA",
+    "keySize": 2048,
+    "certificateValidityDays": 365,
+    "timestampServer": "http://timestamp.digicert.com",
+    "certificatePaths": {
+      "development": "./certificates/dev-cert.p12",
+      "staging": "./certificates/staging-cert.p12", 
+      "production": "./certificates/prod-cert.p12"
+    },
+    "trustedCertificates": [
+      "./certificates/ca-root.crt",
+      "./certificates/intermediate.crt"
+    ]
+  },
+  "verificationConfig": {
+    "enforceSignatures": true,
+    "allowSelfSigned": false,
+    "checkRevocation": true,
+    "timestampTolerance": 300000,
+    "signatureValidation": {
+      "extensions": ["vsix", "js", "ts", "json"],
+      "excludePatterns": [
+        "node_modules/**",
+        "*.test.js",
+        "*.spec.ts"
+      ]
+    }
+  },
+  "securityPolicies": {
+    "requireCodeSigning": true,
+    "allowUnsignedExtensions": false,
+    "quarantineUnsigned": true,
+    "blockMaliciousSignatures": true,
+    "validateCertificateChain": true
+  },
+  "audit": {
+    "logSigningEvents": true,
+    "logVerificationFailures": true,
+    "alertOnFailures": true,
+    "retentionDays": 90
+  }
+} 

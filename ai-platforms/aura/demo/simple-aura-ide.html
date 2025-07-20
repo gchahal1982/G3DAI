@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aura IDE - AI-First Code Editor</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #1e1e1e;
+            color: #d4d4d4;
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        /* Main IDE Layout */
+        .aura-ide {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        /* Title Bar */
+        .title-bar {
+            background: #2d2d30;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #cccccc;
+            font-size: 13px;
+            font-weight: 500;
+            border-bottom: 1px solid #3e3e42;
+        }
+
+        .window-controls {
+            position: absolute;
+            left: 12px;
+            display: flex;
+            gap: 8px;
+        }
+
+        .window-control {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .close { background: #ff5f57; }
+        .minimize { background: #ffbd2e; }
+        .maximize { background: #28ca42; }
+
+        .title-text {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Main Content Area */
+        .main-content {
+            flex: 1;
+            display: flex;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 240px;
+            background: #252526;
+            border-right: 1px solid #3e3e42;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar-header {
+            padding: 12px 16px;
+            background: #2d2d30;
+            border-bottom: 1px solid #3e3e42;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #cccccc;
+        }
+
+        .sidebar-content {
+            flex: 1;
+            padding: 8px;
+        }
+
+        .folder-item {
+            display: flex;
+            align-items: center;
+            padding: 4px 8px;
+            font-size: 13px;
+            cursor: pointer;
+            border-radius: 3px;
+            margin-bottom: 2px;
+        }
+
+        .folder-item:hover {
+            background: #2a2d2e;
+        }
+
+        .folder-icon {
+            margin-right: 6px;
+            color: #569cd6;
+        }
+
+        /* Editor Area */
+        .editor-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* AI Command Bar */
+        .ai-command-bar {
+            background: linear-gradient(135deg, #0078d4 0%, #1ba1e2 100%);
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-bottom: 1px solid #3e3e42;
+        }
+
+        .ai-input {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 6px;
+            padding: 8px 12px;
+            color: white;
+            font-size: 14px;
+            outline: none;
+            backdrop-filter: blur(10px);
+        }
+
+        .ai-input::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .ai-input:focus {
+            border-color: rgba(255, 255, 255, 0.4);
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .quick-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .action-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .action-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Tab Bar */
+        .tab-bar {
+            background: #2d2d30;
+            height: 35px;
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid #3e3e42;
+            padding-left: 12px;
+        }
+
+        .tab {
+            display: flex;
+            align-items: center;
+            height: 35px;
+            padding: 0 12px;
+            background: #1e1e1e;
+            border-right: 1px solid #3e3e42;
+            font-size: 13px;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .tab.active {
+            background: #1e1e1e;
+            border-bottom: 2px solid #0078d4;
+        }
+
+        .tab-icon {
+            margin-right: 6px;
+            font-size: 12px;
+        }
+
+        /* Editor */
+        .editor {
+            flex: 1;
+            background: #1e1e1e;
+            padding: 20px;
+            font-family: 'Monaco', 'Consolas', 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.6;
+            overflow: auto;
+            position: relative;
+        }
+
+        .line-numbers {
+            color: #5a5a5a;
+            margin-right: 16px;
+            user-select: none;
+        }
+
+        .code-line {
+            display: flex;
+        }
+
+        .code-content {
+            flex: 1;
+        }
+
+        /* Syntax highlighting */
+        .keyword { color: #569cd6; }
+        .string { color: #ce9178; }
+        .comment { color: #6a9955; font-style: italic; }
+        .function { color: #dcdcaa; }
+        .number { color: #b5cea8; }
+
+        /* AI Suggestions */
+        .ai-suggestion {
+            position: absolute;
+            right: 20px;
+            top: 20px;
+            width: 320px;
+            background: rgba(0, 0, 0, 0.9);
+            backdrop-filter: blur(20px);
+            border-radius: 8px;
+            border: 1px solid #0078d4;
+            padding: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+        }
+
+        .suggestion-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 12px;
+            color: #0078d4;
+            font-weight: 600;
+            font-size: 13px;
+        }
+
+        .suggestion-content {
+            color: #d4d4d4;
+            font-size: 13px;
+            line-height: 1.4;
+            margin-bottom: 12px;
+        }
+
+        .suggestion-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .suggestion-btn {
+            background: #0078d4;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .suggestion-btn:hover {
+            background: #106ebe;
+        }
+
+        .suggestion-btn.secondary {
+            background: transparent;
+            border: 1px solid #3e3e42;
+        }
+
+        .suggestion-btn.secondary:hover {
+            background: #3e3e42;
+        }
+
+        /* Status Bar */
+        .status-bar {
+            background: #2d2d30;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 12px;
+            font-size: 12px;
+            color: #cccccc;
+            border-top: 1px solid #3e3e42;
+        }
+
+        .status-left, .status-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            cursor: pointer;
+            padding: 2px 4px;
+            border-radius: 3px;
+            transition: background 0.2s;
+        }
+
+        .status-item:hover {
+            background: #3e3e42;
+        }
+
+        .aura-status {
+            color: #0078d4;
+            font-weight: 600;
+        }
+
+        /* Agent Panel */
+        .agent-panel {
+            position: absolute;
+            bottom: 80px;
+            left: 260px;
+            width: 300px;
+            background: rgba(0, 0, 0, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 8px;
+            border: 1px solid #3e3e42;
+            padding: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+            display: none;
+        }
+
+        .agent-header {
+            color: #0078d4;
+            font-weight: 600;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .agent-task {
+            background: rgba(0, 120, 212, 0.1);
+            border: 1px solid rgba(0, 120, 212, 0.3);
+            border-radius: 4px;
+            padding: 8px;
+            margin-bottom: 8px;
+            font-size: 12px;
+        }
+
+        .agent-progress {
+            width: 100%;
+            height: 4px;
+            background: #3e3e42;
+            border-radius: 2px;
+            margin-top: 8px;
+            overflow: hidden;
+        }
+
+        .agent-progress-fill {
+            height: 100%;
+            background: #0078d4;
+            border-radius: 2px;
+            transition: width 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+    <div class="aura-ide">
+        <!-- Title Bar -->
+        <div class="title-bar">
+            <div class="window-controls">
+                <div class="window-control close"></div>
+                <div class="window-control minimize"></div>
+                <div class="window-control maximize"></div>
+            </div>
+            <div class="title-text">
+                <span>⚡ Aura IDE - AI-First Code Editor</span>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Sidebar -->
+            <div class="sidebar">
+                <div class="sidebar-header">📁 Project Files</div>
+                <div class="sidebar-content">
+                    <div class="folder-item">
+                        <span class="folder-icon">📁</span>
+                        my-app
+                    </div>
+                    <div class="folder-item">
+                        <span class="folder-icon">📁</span>
+                        src
+                    </div>
+                    <div class="folder-item" style="margin-left: 16px;">
+                        <span class="folder-icon">📄</span>
+                        App.tsx
+                    </div>
+                    <div class="folder-item" style="margin-left: 16px;">
+                        <span class="folder-icon">📄</span>
+                        index.ts
+                    </div>
+                    <div class="folder-item">
+                        <span class="folder-icon">📁</span>
+                        components
+                    </div>
+                    <div class="folder-item">
+                        <span class="folder-icon">📄</span>
+                        package.json
+                    </div>
+                </div>
+            </div>
+
+            <!-- Editor Area -->
+            <div class="editor-area">
+                <!-- AI Command Bar -->
+                <div class="ai-command-bar">
+                    <input type="text" class="ai-input" placeholder="Tell Aura what you want to build, plan, or fix..." />
+                    <div class="quick-actions">
+                        <button class="action-btn" onclick="generateCode()">🚀 Generate</button>
+                        <button class="action-btn" onclick="planArchitecture()">🏗️ Plan</button>
+                        <button class="action-btn" onclick="runAgent()">🤖 Agent</button>
+                    </div>
+                </div>
+
+                <!-- Tab Bar -->
+                <div class="tab-bar">
+                    <div class="tab active">
+                        <span class="tab-icon">📄</span>
+                        App.tsx
+                    </div>
+                    <div class="tab">
+                        <span class="tab-icon">🎨</span>
+                        styles.css
+                    </div>
+                </div>
+
+                <!-- Editor -->
+                <div class="editor">
+                    <div class="code-line">
+                        <span class="line-numbers">1</span>
+                        <span class="code-content"><span class="keyword">import</span> <span class="function">React</span> <span class="keyword">from</span> <span class="string">'react'</span>;</span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-numbers">2</span>
+                        <span class="code-content"></span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-numbers">3</span>
+                        <span class="code-content"><span class="keyword">function</span> <span class="function">App</span>() {</span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-numbers">4</span>
+                        <span class="code-content">  <span class="keyword">return</span> (</span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-numbers">5</span>
+                        <span class="code-content">    &lt;<span class="function">div</span> <span class="keyword">className</span>=<span class="string">"app"</span>&gt;</span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-numbers">6</span>
+                        <span class="code-content">      &lt;<span class="function">h1</span>&gt;My App&lt;/<span class="function">h1</span>&gt;</span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-numbers">7</span>
+                        <span class="code-content">    &lt;/<span class="function">div</span>&gt;</span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-numbers">8</span>
+                        <span class="code-content">  );</span>
+                    </div>
+                    <div class="code-line">
+                        <span class="line-numbers">9</span>
+                        <span class="code-content">}</span>
+                    </div>
+
+                    <!-- AI Suggestion -->
+                    <div class="ai-suggestion" id="aiSuggestion" style="display: none;">
+                        <div class="suggestion-header">
+                            <span>🚀</span>
+                            <span>Aura AI Suggestion</span>
+                        </div>
+                        <div class="suggestion-content" id="suggestionContent">
+                            Add a navigation bar and user authentication to your app?
+                        </div>
+                        <div class="suggestion-actions">
+                            <button class="suggestion-btn" onclick="applySuggestion()">Apply</button>
+                            <button class="suggestion-btn secondary" onclick="hideSuggestion()">Dismiss</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Status Bar -->
+        <div class="status-bar">
+            <div class="status-left">
+                <div class="status-item aura-status">
+                    <span>⚡</span>
+                    <span>Aura Active</span>
+                </div>
+                <div class="status-item">
+                    <span>📊</span>
+                    <span>No Issues</span>
+                </div>
+            </div>
+            <div class="status-right">
+                <div class="status-item">TypeScript React</div>
+                <div class="status-item">UTF-8</div>
+                <div class="status-item">Ln 6, Col 12</div>
+            </div>
+        </div>
+
+        <!-- Agent Panel -->
+        <div class="agent-panel" id="agentPanel">
+            <div class="agent-header">
+                <span>🤖</span>
+                <span>Agent Working...</span>
+            </div>
+            <div class="agent-task">Setting up authentication system</div>
+            <div class="agent-task">Creating login components</div>
+            <div class="agent-task">Adding routing</div>
+            <div class="agent-progress">
+                <div class="agent-progress-fill" style="width: 60%"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let suggestionVisible = false;
+
+        function generateCode() {
+            const input = document.querySelector('.ai-input');
+            const request = input.value.trim();
+            
+            if (request) {
+                showSuggestion(`Generated code for: "${request}". Click Apply to add it to your file.`);
+                input.value = '';
+            } else {
+                showSuggestion("I can generate React components, API calls, utility functions, or entire features. Just describe what you need!");
+            }
+        }
+
+        function planArchitecture() {
+            showSuggestion("Based on your project, I recommend:\n\n• Use React Router for navigation\n• Add Redux for state management\n• Implement authentication with JWT\n• Set up API layer with Axios\n\nShould I create this architecture?");
+        }
+
+        function runAgent() {
+            const agentPanel = document.getElementById('agentPanel');
+            agentPanel.style.display = 'block';
+            
+            // Simulate agent progress
+            let progress = 0;
+            const progressBar = document.querySelector('.agent-progress-fill');
+            
+            const interval = setInterval(() => {
+                progress += 10;
+                progressBar.style.width = progress + '%';
+                
+                if (progress >= 100) {
+                    clearInterval(interval);
+                    setTimeout(() => {
+                        agentPanel.style.display = 'none';
+                        showSuggestion("Agent completed! Added authentication system, routing, and user dashboard to your app.");
+                    }, 1000);
+                }
+            }, 500);
+        }
+
+        function showSuggestion(content) {
+            const suggestion = document.getElementById('aiSuggestion');
+            const suggestionContent = document.getElementById('suggestionContent');
+            
+            suggestionContent.textContent = content;
+            suggestion.style.display = 'block';
+            suggestionVisible = true;
+        }
+
+        function hideSuggestion() {
+            const suggestion = document.getElementById('aiSuggestion');
+            suggestion.style.display = 'none';
+            suggestionVisible = false;
+        }
+
+        function applySuggestion() {
+            hideSuggestion();
+            // In real implementation, this would apply the code changes
+            alert('Code applied! Aura has updated your files.');
+        }
+
+        // Handle Enter key in AI input
+        document.querySelector('.ai-input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                generateCode();
+            }
+        });
+
+        // Show initial suggestion after a delay
+        setTimeout(() => {
+            showSuggestion("I see you're working on a React app. Want me to add routing, authentication, or a component library?");
+        }, 2000);
+    </script>
+</body>
+</html> 

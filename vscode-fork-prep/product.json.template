@@ -1,0 +1,158 @@
+{
+  "nameShort": "Aura",
+  "nameLong": "Aura AI IDE",
+  "applicationName": "aura",
+  "dataFolderName": ".aura",
+  "win32MutexName": "aura",
+  "licenseName": "MIT",
+  "licenseUrl": "https://github.com/aura-ai/aura-ide/blob/main/LICENSE",
+  "darwinBundleIdentifier": "com.aura.AuraAI",
+  "linuxIconName": "aura",
+  "reportIssueUrl": "https://github.com/aura-ai/aura-ide/issues/new",
+  "urlProtocol": "aura",
+  "extensionAllowedProposedApi": [
+    "aura.core",
+    "aura.ai", 
+    "aura.3d",
+    "aura.swarm",
+    "aura.enterprise",
+    "aura.context",
+    "github.vscode-pull-request-github",
+    "ms-vscode.vscode-js-debug",
+    "ms-python.python"
+  ],
+  "builtInExtensions": [
+    {
+      "name": "aura-core",
+      "version": "1.0.0",
+      "repo": "https://github.com/aura-ai/aura-core",
+      "metadata": {
+        "id": "aura.core",
+        "displayName": "Aura Core",
+        "description": "Core functionality for Aura AI IDE",
+        "publisherId": {
+          "publisherId": "aura-ai",
+          "publisherName": "Aura AI",
+          "displayName": "Aura AI",
+          "flags": "verified"
+        }
+      }
+    },
+    {
+      "name": "aura-ai",
+      "version": "1.0.0", 
+      "repo": "https://github.com/aura-ai/aura-ai",
+      "metadata": {
+        "id": "aura.ai",
+        "displayName": "Aura AI Assistant",
+        "description": "Advanced AI coding assistant with multiple model support",
+        "publisherId": {
+          "publisherId": "aura-ai",
+          "publisherName": "Aura AI",
+          "displayName": "Aura AI",
+          "flags": "verified"
+        }
+      }
+    },
+    {
+      "name": "aura-3d",
+      "version": "1.0.0",
+      "repo": "https://github.com/aura-ai/aura-3d", 
+      "metadata": {
+        "id": "aura.3d",
+        "displayName": "Aura 3D Visualization",
+        "description": "3D code visualization and immersive development environment",
+        "publisherId": {
+          "publisherId": "aura-ai", 
+          "publisherName": "Aura AI",
+          "displayName": "Aura AI",
+          "flags": "verified"
+        }
+      }
+    },
+    {
+      "name": "aura-swarm",
+      "version": "1.0.0",
+      "repo": "https://github.com/aura-ai/aura-swarm",
+      "metadata": {
+        "id": "aura.swarm",
+        "displayName": "Aura AI Swarm",
+        "description": "Multi-agent AI swarm for complex development tasks", 
+        "publisherId": {
+          "publisherId": "aura-ai",
+          "publisherName": "Aura AI", 
+          "displayName": "Aura AI",
+          "flags": "verified"
+        }
+      }
+    },
+    {
+      "name": "aura-enterprise",
+      "version": "1.0.0",
+      "repo": "https://github.com/aura-ai/aura-enterprise",
+      "metadata": {
+        "id": "aura.enterprise",
+        "displayName": "Aura Enterprise",
+        "description": "Enterprise features including SSO, compliance, and advanced security",
+        "publisherId": {
+          "publisherId": "aura-ai",
+          "publisherName": "Aura AI",
+          "displayName": "Aura AI", 
+          "flags": "verified"
+        }
+      }
+    }
+  ],
+  "webEndpointUrl": "https://aura-ai.dev",
+  "webEndpointUrlTemplate": "https://aura-ai.dev/{version}/aura",
+  "linkProtectionTrustedDomains": [
+    "https://aura-ai.dev",
+    "https://github.com/aura-ai",
+    "https://docs.aura-ai.dev"
+  ],
+  "commandPaletteSuggestedCommandIds": [
+    "aura.ai.chat",
+    "aura.ai.generateCode", 
+    "aura.ai.explainCode",
+    "aura.ai.refactorCode",
+    "aura.3d.toggleView",
+    "aura.3d.immersiveMode",
+    "aura.swarm.createTask",
+    "aura.swarm.orchestrate",
+    "workbench.action.quickOpen",
+    "workbench.action.files.newFile"
+  ],
+  "tunnelApplicationName": "aura",
+  "tunnelApplicationConfig": {
+    "authenticationProviders": {
+      "github": {
+        "scopes": [
+          "user:email",
+          "read:user"
+        ]
+      }
+    },
+    "editSessionId": "aura",
+    "supportsUniversalLinks": true
+  },
+  "aiConfig": {
+    "enableInlineCompletions": true,
+    "enableChatAssistant": true,
+    "enable3DVisualization": true,
+    "enableSwarmOrchestration": true,
+    "defaultModel": "gpt-4",
+    "supportedProviders": [
+      "openai",
+      "anthropic", 
+      "local"
+    ]
+  },
+  "serverLicense": [
+    "commercial"
+  ],
+  "serverLicenseUrl": "https://aura-ai.dev/license",
+  "quality": "stable",
+  "commit": "{{COMMIT_HASH}}",
+  "date": "{{BUILD_DATE}}",
+  "version": "{{VERSION}}"
+} 

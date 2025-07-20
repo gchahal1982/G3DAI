@@ -1,0 +1,44 @@
+{
+  "extensionCSP": {
+    "default-src": "'self'",
+    "script-src": "'self' 'unsafe-inline' https://cdn.jsdelivr.net",
+    "style-src": "'self' 'unsafe-inline' https://fonts.googleapis.com",
+    "font-src": "'self' https://fonts.gstatic.com",
+    "img-src": "'self' data: https:",
+    "connect-src": "'self' https://api.openai.com https://api.anthropic.com https://api.mistral.ai",
+    "worker-src": "'self' blob:",
+    "child-src": "'self'",
+    "frame-src": "'none'",
+    "object-src": "'none'",
+    "base-uri": "'self'",
+    "form-action": "'self'",
+    "manifest-src": "'self'"
+  },
+  "webviewCSP": {
+    "default-src": "'self'",
+    "script-src": "'self' 'unsafe-eval' 'unsafe-inline'",
+    "style-src": "'self' 'unsafe-inline'",
+    "img-src": "'self' data: blob:",
+    "font-src": "'self' data:",
+    "connect-src": "'self' vscode-webview:",
+    "worker-src": "'self' blob:",
+    "child-src": "'self'",
+    "frame-src": "'none'",
+    "object-src": "'none'"
+  },
+  "restrictedDomains": [
+    "*.ads.com",
+    "*.tracking.com",
+    "*.analytics.evil.com",
+    "*.malware.com"
+  ],
+  "allowedDomains": [
+    "*.openai.com",
+    "*.anthropic.com", 
+    "*.mistral.ai",
+    "*.huggingface.co",
+    "*.jsdelivr.net",
+    "*.googleapis.com",
+    "*.gstatic.com"
+  ]
+} 

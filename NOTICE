@@ -1,0 +1,119 @@
+AURA - AI-FIRST VS CODE FORK
+Copyright (c) Aura Development Team
+
+This software is based on Visual Studio Code
+Copyright (c) Microsoft Corporation
+Licensed under the MIT License
+
+================================================================================
+
+THIRD-PARTY SOFTWARE NOTICES AND INFORMATION
+
+This software incorporates components from the projects listed below. The original copyright notices and the licenses under which the Aura Development Team received such components are set forth below.
+
+================================================================================
+
+1. Visual Studio Code
+   Copyright (c) Microsoft Corporation
+   Licensed under the MIT License
+
+   Permission is hereby granted, free of charge, to any person obtaining a copy
+   of this software and associated documentation files (the "Software"), to deal
+   in the Software without restriction, including without limitation the rights
+   to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+   copies of the Software, and to permit persons to whom the Software is
+   furnished to do so, subject to the following conditions:
+
+   The above copyright notice and this permission notice shall be included in all
+   copies or substantial portions of the Software.
+
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+   SOFTWARE.
+
+================================================================================
+
+2. Monaco Editor
+   Copyright (c) Microsoft Corporation
+   Licensed under the MIT License
+   
+   The Monaco Editor is distributed under the MIT License. The full license
+   text is available at: https://github.com/microsoft/monaco-editor/blob/main/LICENSE.md
+
+================================================================================
+
+3. TypeScript
+   Copyright (c) Microsoft Corporation
+   Licensed under the Apache License 2.0
+   
+   TypeScript is distributed under the Apache License 2.0. The full license
+   text is available at: https://github.com/microsoft/TypeScript/blob/main/LICENSE.txt
+
+================================================================================
+
+4. Electron
+   Copyright (c) GitHub Inc.
+   Licensed under the MIT License
+   
+   Electron is distributed under the MIT License. The full license
+   text is available at: https://github.com/electron/electron/blob/main/LICENSE
+
+================================================================================
+
+5. Node.js
+   Copyright Node.js contributors
+   Licensed under the MIT License
+   
+   Node.js is distributed under the MIT License. The full license
+   text is available at: https://github.com/nodejs/node/blob/main/LICENSE
+
+================================================================================
+
+6. Chromium
+   Copyright (c) The Chromium Authors
+   Licensed under the BSD 3-Clause License
+   
+   Chromium is distributed under the BSD 3-Clause License. The full license
+   text is available at: https://chromium.googlesource.com/chromium/src/+/main/LICENSE
+
+================================================================================
+
+AURA-SPECIFIC COMPONENTS
+
+The following components are original works of the Aura Development Team:
+
+- AI Engine Integration (aura-ai extension)
+- 3D Code Visualization (aura-3d extension)  
+- AI Swarm Orchestration (aura-swarm extension)
+- Enterprise Authentication (aura-enterprise extension)
+- Premium UI Enhancements (aura-ui components)
+
+These components are licensed under the MIT License and incorporate the base
+Visual Studio Code platform under the same license.
+
+================================================================================
+
+ACKNOWLEDGMENTS
+
+We extend our gratitude to:
+
+- Microsoft Corporation and the Visual Studio Code team for creating the
+  foundational platform that makes Aura possible
+  
+- The open source community for the countless libraries and tools that
+  enable modern software development
+  
+- Our contributors who have helped shape Aura into a revolutionary
+  AI-first development environment
+
+================================================================================
+
+For questions about licensing or attribution, please contact:
+- Legal: legal@aura-dev.io
+- Open Source: opensource@aura-dev.io
+
+Last Updated: December 2024 
